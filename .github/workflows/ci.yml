@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rust:
+    name: Build, lint and test
+    # The tool is Win32 through and through — process memory, toolhelp, the console,
+    # the window it draws. Only Windows builds all of it.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets --locked -- -D warnings
+
+      # On fake memory: the chain walker, name pool, anchor discovery, reflection
+      # chain, hero gate, attribute lookup, restore record and cheat table. Tests that read a real install skip when
+      # there is none, which on a runner is always.
+      - name: Tests
+        run: cargo test --locked
+
+  hygiene:
+    name: Nothing from the game is committed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # .gitignore keeps build output out, but `git add -f` walks past it, and the
+      # one thing this repository cannot take back is publishing the game's files.
+      - name: No game files or binaries
+        run: |
+          set -e
+          fail=0
+          for f in $(git ls-files); do
+            case "$f" in
+              *.exe|*.dll|*.pdb|*.pak|*.ucas|*.utoc|*.uasset|*.uexp|*.sav|*.Cache|*.Headers)
+                echo "::error file=$f::a game file or binary — this must not be committed"; fail=1 ;;
+              Mods/*|*/Mods/*)
+                echo "::error file=$f::a player's mod data folder — this must not be committed"; fail=1 ;;
+            esac
+          done
+          exit $fail

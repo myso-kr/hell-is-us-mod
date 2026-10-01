@@ -1,0 +1,46 @@
+# ── Build ─────────────────────────────────────────────────────────
+# Cargo.lock is deliberately NOT here: this is a binary, and a release has to be
+# rebuildable from exactly the dependencies it was tested with.
+/target/
+dist/
+*.pdb
+**/*.rs.bk
+
+# ── The player's mod data ─────────────────────────────────────────
+# The tool writes these into <install root>\Mods\ beside the game, never into
+# the repository — but --game-dir can point anywhere, a copy made while
+# debugging lands wherever it is made, and each one is a record of somebody's
+# play: their settings, what they tested, a log with times in it.
+Mods/
+settings.txt
+verify.txt
+originals.txt
+*.log
+
+# ── The game's files ──────────────────────────────────────────────
+# Nothing from the game may be committed. The CI hygiene job checks the same
+# list, because `git add -f` walks straight past this file.
+*.exe
+*.dll
+*.pak
+*.ucas
+*.utoc
+*.uasset
+*.uexp
+*.sav
+*.Cache
+*.Cache.Headers
+*.acf
+
+# ── Scratch ───────────────────────────────────────────────────────
+# Throwaway probes against a live game are written as examples; they read
+# memory by hand and are not kept.
+/examples/
+
+# ── Editors and the OS ────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+.DS_Store
