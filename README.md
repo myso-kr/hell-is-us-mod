@@ -1,6 +1,6 @@
 # Hell Is Us — mod
 
-Single-player cheats, and a minimap to come, for *Hell Is Us* (Steam, AppID 1620730,
+Single-player cheats and a minimap overlay for *Hell Is Us* (Steam, AppID 1620730,
 `HellIsUs-Win64-Shipping.exe`, Unreal Engine 5.5). They are applied from outside the
 game through its memory. **No game files are modified.**
 
@@ -21,6 +21,13 @@ game through its memory. **No game files are modified.**
 Double-click `hiumod.exe`, or run it with no arguments. It starts the game through
 Steam if the game is not running, attaches once you are in, and closes when the game
 exits. **F8** shows and hides the panel. Play in windowed or borderless mode.
+
+The minimap sits in the game window's top-right corner. It shows the path you
+walked and the markers you placed, around an arrow for the hero. **F9** shows and
+hides it. **F6** drops a marker where you stand, or removes the one you are standing
+next to. Trails and markers are kept per area in `Mods\minimap.txt`. The 지도 tab of
+the panel sets north-up or heading-up and the radius. The game's own map art is not
+drawn: there is no map image yet.
 
 ```
 hiumod doctor          # checks everything, writes nothing — load a save first

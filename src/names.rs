@@ -14,6 +14,8 @@ use crate::mem::{self, Memory};
 /// UObjectBase::ClassPrivate and ::NamePrivate.
 pub const CLASS: u64 = 0x10;
 pub const NAME: u64 = 0x18;
+/// UObjectBase::OuterPrivate.
+pub const OUTER: u64 = 0x20;
 
 /// UStruct::SuperStruct and ::ChildProperties. Engine layout, not game layout: the
 /// same from UE 5.0 through 5.6 in non-editor builds.

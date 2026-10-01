@@ -3,8 +3,9 @@
 //! Three threads, one job each:
 //!
 //! ```text
-//! worker   owns the Engine. Steps it four times a second and runs what the panel asks
+//! worker   owns the Engine. Steps it ten times a second and runs what the panel asks
 //! hotkey   watches F8 while the game or the panel has focus; shows and hides the window
+//! minimap  the map window: F9 shows/hides it, F6 drops a marker (both changeable); reads snapshots only
 //! ui       eframe. Draws the last snapshot and sends requests — never touches the game
 //! ```
 //!
@@ -15,6 +16,7 @@
 //! process skips that, as it does for `hold`; `hiumod restore` covers it the same way.
 
 mod hotkey;
+mod minimap;
 mod panel;
 
 use crate::cheats::Active;
@@ -47,12 +49,16 @@ pub struct Shared {
     pub visible: AtomicBool,
     /// run: this panel started the game and is waiting for it.
     pub launched: AtomicBool,
+    /// minimap and panel: the map's trail, markers and settings.
+    pub map: Mutex<crate::minimap::MapState>,
     /// hotkey: where the panel is — the player's place for it, kept across runs.
     pub pos: Mutex<Option<(i32, i32)>>,
     pub quit: AtomicBool,
 }
 
-const STEP: Duration = Duration::from_millis(250);
+/// Ten readings a second: the minimap turns with the camera from these, and at four
+/// a second it visibly stepped.
+const STEP: Duration = Duration::from_millis(100);
 
 fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context) {
     use crate::journal::line as log;
@@ -169,6 +175,7 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
     let shared = Arc::new(Shared::default());
     shared.visible.store(true, Ordering::SeqCst);
     *shared.pos.lock().unwrap() = crate::settings::load().pos;
+    *shared.map.lock().unwrap() = minimap::load();
     if launch && Game::find()?.is_none() {
         locate::find(None)?;
         launch::launch()?;
@@ -199,6 +206,8 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
                 threads.push(std::thread::spawn(move || worker(s, rx, c)));
                 let (s, c) = (shared.clone(), cc.egui_ctx.clone());
                 threads.push(std::thread::spawn(move || hotkey::watch(s, c)));
+                let s = shared.clone();
+                threads.push(std::thread::spawn(move || minimap::run(s)));
                 Ok(Box::new(panel::Panel::new(shared, tx)))
             }),
         )

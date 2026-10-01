@@ -11,9 +11,11 @@ pub mod hold;
 pub mod journal;
 pub mod log;
 pub mod mem;
+pub mod minimap;
 pub mod names;
 pub mod paths;
 pub mod player;
+pub mod raster;
 pub mod settings;
 #[cfg(windows)]
 pub mod ui;

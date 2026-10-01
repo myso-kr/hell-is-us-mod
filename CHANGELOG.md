@@ -31,3 +31,6 @@ been verified in play yet.
 - Second play test: `speed` and `hero_time` work. Six more coefficient cheats did
   nothing and were dropped. That leaves 7 cheats in three tabs, 4 of them verified.
   Damage, defense, cooldowns and XP need GameplayEffects applied in game.
+- Minimap overlay, seen working in game (shows, turns with the camera, F6 markers). It is a click-through window over the game
+  showing the trail walked, markers (F6) and the hero's heading, with F9 to toggle. Both keys can be changed in the panel: F7 was the first choice, but it is the game's photo mode.
+  It is kept per world in `Mods\minimap.txt` and has its own tab in the panel.

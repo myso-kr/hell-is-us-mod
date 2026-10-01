@@ -123,6 +123,15 @@ impl Chain {
         Ok(asc + self.sets)
     }
 
+    /// The name of the world the hero is in — the pawn's outer is its level, the
+    /// level's outer its world. Trails and markers are kept per world.
+    pub fn world(&self, m: &dyn Memory, a: &Anchors) -> Result<String, String> {
+        let pawn = self.hero(m, a)?;
+        let level = mem::read_u64(m, pawn + names::OUTER).filter(|&p| mem::plausible(p)).ok_or("no level")?;
+        let world = mem::read_u64(m, level + names::OUTER).filter(|&p| mem::plausible(p)).ok_or("no world")?;
+        a.names.object(m, world).ok_or_else(|| "world name unreadable".into())
+    }
+
     /// Where the hero stands (UE units, centimetres) and which way the camera faces
     /// (yaw, degrees).
     pub fn pose(&self, m: &dyn Memory, a: &Anchors) -> Result<([f64; 3], f64), String> {
@@ -212,6 +221,21 @@ pub mod tests {
         assert_eq!((c.pawn, c.asc, c.sets), (0x2F8, 0x688, 0x1088));
         assert_eq!(c.attribute_sets(&m, &a), Ok(ASC + 0x1088));
         assert_eq!(c.pose(&m, &a), Ok(([100.0, 200.0, 300.0], 90.0)));
+    }
+
+    #[test]
+    fn names_the_world_through_two_outers() {
+        let (m, mut pool) = world();
+        let a = anchors(&m);
+        let c = learn(&m, &a).unwrap();
+        let (level, w) = (0x2E00_0000u64, 0x2F00_0000u64);
+        m.put(level, &[0; 0x30]);
+        m.put(w, &[0; 0x30]);
+        m.ptr(PAWN + names::OUTER, level);
+        m.ptr(level + names::OUTER, w);
+        let idx = pool.name(&m, "Map_Forest_P");
+        m.put(w + names::NAME, &idx.to_le_bytes());
+        assert_eq!(c.world(&m, &a).as_deref(), Ok("Map_Forest_P"));
     }
 
     #[test]

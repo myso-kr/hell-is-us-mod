@@ -51,6 +51,8 @@ pub struct Panel {
     tab: Group,
     /// The debug tab, which is not a group of cheats.
     debug: bool,
+    /// The minimap tab.
+    map: bool,
     marks: verify::Marks,
     on: HashMap<&'static str, bool>,
     value: HashMap<&'static str, f32>,
@@ -100,6 +102,7 @@ impl Panel {
             tx,
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
             debug: tab == Some("debug"),
+            map: tab == Some("map"),
             wanted: resume.clone(),
             keep: saved.keep,
             resume: (saved.keep && !resume.is_empty()).then_some(resume),
@@ -133,7 +136,16 @@ impl Panel {
     fn settings(&self) -> Settings {
         Settings {
             keep: self.keep,
-            tab: Some(if self.debug { "debug" } else { self.tab.id() }.to_string()),
+            tab: Some(
+                if self.debug {
+                    "debug"
+                } else if self.map {
+                    "map"
+                } else {
+                    self.tab.id()
+                }
+                .to_string(),
+            ),
             pos: *self.shared.pos.lock().unwrap(),
             on: self.wanted.iter().map(|a| (a.cheat.to_string(), a.value)).collect(),
             values: self.value.iter().map(|(id, v)| (id.to_string(), *v)).collect(),
@@ -234,21 +246,84 @@ impl Panel {
             for g in Group::ALL {
                 let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
                 let text = if on > 0 { format!("{} ({on})", g.label()) } else { g.label().to_string() };
-                if ui.selectable_label(!self.debug && self.tab == g, text).clicked() {
+                if ui.selectable_label(!self.debug && !self.map && self.tab == g, text).clicked() {
                     self.tab = g;
                     self.debug = false;
+                    self.map = false;
                 }
             }
             ui.separator();
+            if ui.selectable_label(self.map, "지도").clicked() {
+                self.map = true;
+                self.debug = false;
+            }
             if ui.selectable_label(self.debug, "디버그").clicked() {
                 self.debug = true;
+                self.map = false;
             }
         });
         ui.add_space(4.0);
         match self.tab {
+            _ if self.map => self.map_tab(ui, snap),
             _ if self.debug => self.debug_tab(ui, snap),
             g => self.held(ui, g, snap),
         }
+    }
+
+    /// The minimap's settings, and what it knows about where the hero is.
+    fn map_tab(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+        let world = snap.and_then(|s| s.world.clone());
+        let mut state = self.shared.map.lock().unwrap();
+        let before = (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key);
+        let label = format!("미니맵 표시 (F{})", state.toggle_key);
+        ui.checkbox(&mut state.show, label);
+        ui.checkbox(&mut state.heading_up, "진행 방향을 위로 (끄면 북쪽이 위)");
+        ui.horizontal(|ui| {
+            ui.label("반경");
+            ui.add(egui::Slider::new(&mut state.radius_m, 20.0..=300.0).step_by(10.0).suffix(" m"));
+        });
+        ui.horizontal(|ui| {
+            let other = state.marker_key;
+            key_picker(ui, "표시 키", "toggle_key", &mut state.toggle_key, other);
+            let other = state.toggle_key;
+            key_picker(ui, "마커 키", "marker_key", &mut state.marker_key, other);
+        });
+        if before != (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key) {
+            state.dirty = true;
+        }
+        ui.separator();
+        match (&world, snap.and_then(|s| s.pose)) {
+            (Some(w), Some((p, yaw))) => {
+                ui.label(RichText::new(format!("지역 {w}")).color(DIM).small());
+                ui.label(
+                    RichText::new(format!("위치 ({:.0}, {:.0}, {:.0}) · 방향 {yaw:.0}°", p[0], p[1], p[2]))
+                        .color(DIM)
+                        .small(),
+                );
+                let trail = state.trails.get(w).map_or(0, |t| t.iter().flatten().count());
+                let markers = state.markers.get(w).map_or(0, Vec::len);
+                ui.label(format!("이 지역: 지나온 길 {trail}점 · 마커 {markers}개"));
+                ui.horizontal(|ui| {
+                    if ui.button("이 지역 경로 지우기").clicked() {
+                        state.clear_trail(w);
+                    }
+                    if ui.button("이 지역 마커 지우기").clicked() {
+                        state.clear_markers(w);
+                    }
+                });
+            }
+            _ => {
+                ui.label(RichText::new("주인공을 조작할 수 있을 때 표시됩니다").color(DIM));
+            }
+        }
+        ui.label(
+            RichText::new(format!(
+                "F{} — 지금 위치에 마커 (마커 옆에서 누르면 지움) · 게임 창 오른쪽 위에 표시",
+                state.marker_key
+            ))
+            .color(DIM)
+            .small(),
+        );
     }
 
     /// For each cheat that is on: every attribute it writes — what it was before,
@@ -456,4 +531,14 @@ impl eframe::App for Panel {
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
         self.persist(true);
     }
+}
+
+/// A function key, F1–F12 — not F8 (the panel's) and not the one the other picker holds.
+fn key_picker(ui: &mut egui::Ui, label: &str, id: &str, key: &mut u8, other: u8) {
+    ui.label(label);
+    egui::ComboBox::from_id_salt(id).width(56.0).selected_text(format!("F{key}")).show_ui(ui, |ui| {
+        for k in (1..=12u8).filter(|&k| crate::minimap::usable_key(k) && k != other) {
+            ui.selectable_value(key, k, format!("F{k}"));
+        }
+    });
 }

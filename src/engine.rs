@@ -86,6 +86,8 @@ pub struct Snapshot {
     pub notice: Option<String>,
     /// Where the hero is (cm) and the camera's yaw (degrees) — the minimap's input.
     pub pose: Option<([f64; 3], f64)>,
+    /// The world the hero is in, by name.
+    pub world: Option<String>,
 }
 
 impl Snapshot {
@@ -160,6 +162,7 @@ impl Engine {
             originals: Vec::new(),
             notice: None,
             pose: None,
+            world: None,
         };
         if let Err(e) = self.refresh() {
             snap.game = Err(e.clone());
@@ -169,6 +172,7 @@ impl Engine {
             snap.game = Ok((a.game.pid, a.version.clone()));
             snap.gate = a.gate();
             snap.pose = a.pose().ok();
+            snap.world = a.chain().ok().and_then(|c| c.world(&a.game, &a.anchors).ok());
             // A closed gate pauses the toggles rather than ending them: it closes on
             // every loading screen, and the player expects god mode to survive one.
             if snap.gate.is_ok() {

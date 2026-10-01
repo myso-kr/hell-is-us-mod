@@ -68,6 +68,8 @@ src/
   attr.rs         속성 세트/속성을 이름으로 해석(`*` 포함), 검사된 읽기·쓰기 (Session).
                   일반 float 필드도 같은 Session 에 (`add_fields`, 레이블 Hero / Movement)
   cheats.rs       치트 표 (7행), 일반 필드 목록 HERO_FIELDS / MOVEMENT_FIELDS
+  minimap.rs      미니맵 상태(경로·마커·설정, 월드별), 투영(View), minimap.txt 형식
+  raster.rs       미리 곱한 알파 픽셀 버퍼에 원·고리·선·삼각형·N, draw_map (한 프레임)
   hold.rs         원래 값 기록(originals.txt), 부분 복구
   settings.rs     패널 설정(settings.txt)
   verify.rs       사용자 검증 기록(verify.txt)
@@ -79,10 +81,14 @@ src/
     locate.rs     Steam 라이브러리에서 설치 찾기, buildid 읽기
     launch.rs     steam://rungameid/1620730
     process.rs    프로세스 찾기·열기, ReadProcessMemory/WriteProcessMemory, Ctrl+C
-  ui/             dungeons2-mod 와 같은 F8 패널 (worker·hotkey·eframe 스레드 3개)
+  ui/             dungeons2-mod 와 같은 F8 패널 (worker·hotkey·eframe) + minimap 스레드:
+                  ui/minimap.rs — 레이어드 창, UpdateLayeredWindow, 표시·마커 키 폴링 (패널에서 고름), 10초마다 저장
 ```
 
-패널 스레드 규칙: **게임 메모리는 worker 스레드만 만진다.** `Attached` 는 `RefCell`
+좌표: UE X 앞("북"으로 씀), Y 오른쪽, Z 위, yaw 는 +X 에서 +Y 쪽으로(위에서 보면 시계 방향).
+월드 이름 = 폰 → OuterPrivate(레벨) → OuterPrivate(월드) 의 이름.
+
+패널 스레드 규칙: **게임 메모리는 worker 스레드만 만진다.** 미니맵도 스냅숏만 읽는다. `Attached` 는 `RefCell`
 을 가지므로 Sync 가 아니다 — worker 밖으로 넘기지 않는다.
 
 ## 테스트 고정물

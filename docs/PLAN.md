@@ -18,8 +18,8 @@
 
 | Phase | Attaches by | Gives | Status |
 |---|---|---|---|
-| **0** | external process, `ReadProcessMemory`/`WriteProcessMemory` | cheat panel, `pose` | code done, **not yet run against the game** |
-| 0b | same process, a second click-through window | minimap: position, heading, trail, markers | planned |
+| **0** | external process, `ReadProcessMemory`/`WriteProcessMemory` | cheat panel, `pose` | **attaches to build 24045435; 4 cheats verified in play** |
+| 0b | same process, a second click-through window | minimap: position, heading, trail, markers | **working in game** |
 | 1 | RE-UE4SS (Nexus #43, UE 5.5 preset) | in-game UI, developer cheat manager, the game's own map textures, achievement blocking | later |
 
 ## The minimap, step by step

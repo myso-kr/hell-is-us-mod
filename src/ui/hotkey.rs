@@ -22,14 +22,14 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
     SWP_SHOWWINDOW, SW_HIDE,
 };
 
-fn pid_of(hwnd: HWND) -> u32 {
+pub(super) fn pid_of(hwnd: HWND) -> u32 {
     let mut pid = 0;
     unsafe { GetWindowThreadProcessId(hwnd, &mut pid) };
     pid
 }
 
 /// The game's main window: its largest visible top-level window.
-fn game_window(pid: u32) -> Option<(HWND, RECT)> {
+pub(super) fn game_window(pid: u32) -> Option<(HWND, RECT)> {
     struct Search {
         pid: u32,
         best: Option<(HWND, RECT)>,
