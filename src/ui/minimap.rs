@@ -20,7 +20,7 @@ use super::hotkey::{game_window, pid_of};
 use super::layered::{pump, Layered};
 use super::Shared;
 use crate::goals::{Goal, Tier};
-use crate::minimap::{MapState, ReliefMode, View};
+use crate::minimap::{Display, MapState, ReliefMode, View};
 use crate::raster::{draw_compass, draw_map, Canvas, Pin};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -164,7 +164,7 @@ pub fn run(shared: Arc<Shared>) {
     };
     let mut icon_px = shared.map.lock().unwrap().icon_px;
     let mut icons = make(icon_px);
-    let mut was = [false; 5];
+    let mut was = [false; 4];
     let mut route = Route::default();
     let mut baking = Baking::default();
     let mut saved = Instant::now();
@@ -203,21 +203,18 @@ pub fn run(shared: Arc<Shared>) {
             icons = make(icon_px);
         }
         let keys = state.keys();
-        let mut now = [false; 5];
-        for i in 0..5 {
+        let mut now = [false; 4];
+        for i in 0..4 {
             now[i] = pressed(fkey(keys[i]), &mut was[i]) && focused;
         }
-        let [toggle_now, marker_now, compass_now, cycle_now, big_now] = now;
+        let [toggle_now, marker_now, compass_now, cycle_now] = now;
         if toggle_now {
-            state.show = !state.show;
+            state.display = state.next_display();
             state.dirty = true;
         }
         if compass_now {
             state.compass = !state.compass;
             state.dirty = true;
-        }
-        if big_now {
-            state.big = !state.big;
         }
         // A game menu is open: the game shows its cursor (only while it has focus —
         // the panel shows one too), or it is paused.
@@ -313,7 +310,7 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 let relief = baking.done.clone().filter(|_| state.relief != ReliefMode::Off);
 
-                if state.big {
+                if state.display == Display::Big {
                     map_window.hide();
                     let side = ((r.bottom - r.top) as f32 * BIG_SHARE) as i32;
                     if big_window.as_ref().is_none_or(|w| w.w != side) {
@@ -328,6 +325,7 @@ pub fn run(shared: Arc<Shared>) {
                                 heading_up: false,
                                 scale: (side as f32 / 2.0 - 14.0) / (state.big_radius_m * 100.0),
                                 north_deg: state.north_yaw,
+                                outline: state.big_outline,
                             };
                             draw_map(
                                 &mut big_cv,
@@ -350,13 +348,14 @@ pub fn run(shared: Arc<Shared>) {
                     if let Some(w) = big_window.as_mut() {
                         w.hide();
                     }
-                    if state.show {
+                    if state.display == Display::Mini {
                         let view = View {
                             center: p,
                             yaw_deg: yaw,
                             heading_up: state.heading_up,
                             scale: (MAP_PX as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
                             north_deg: state.north_yaw,
+                            outline: state.mini_outline,
                         };
                         draw_map(
                             &mut map_cv,

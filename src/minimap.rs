@@ -23,7 +23,10 @@ pub type Point = [f32; 3];
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct MapState {
-    pub show: bool,
+    /// Which map is up: none, the minimap, or the big map — and which of those the
+    /// map key steps through, one bit per `Display::ALL`.
+    pub display: Display,
+    pub cycle: u8,
     /// Heading-up when true, north-up when false.
     pub heading_up: bool,
     /// How many metres the map's radius covers.
@@ -56,11 +59,11 @@ pub struct MapState {
     pub north_yaw: f32,
     /// How opaque the big map is, in percent (20–100).
     pub big_alpha: u8,
-    /// The big map in the middle of the game window, and its key and radius (m).
-    pub big_key: u8,
+    /// The big map and the minimap drawn as outlines on a clear background.
+    pub big_outline: bool,
+    pub mini_outline: bool,
+    /// The big map's radius (m).
     pub big_radius_m: f32,
-    /// Shown now; not kept across runs.
-    pub big: bool,
     /// Hide every overlay while a game menu is open (the game shows its cursor, or is
     /// paused).
     pub hide_in_menus: bool,
@@ -79,7 +82,8 @@ pub struct MapState {
 impl Default for MapState {
     fn default() -> MapState {
         MapState {
-            show: true,
+            display: Display::Mini,
+            cycle: 0b111,
             heading_up: true,
             radius_m: 60.0,
             toggle_key: 9,
@@ -96,10 +100,10 @@ impl Default for MapState {
             goal_tiers: 0b111,
             target: None,
             north_yaw: 270.0,
-            big_key: 3,
             big_radius_m: 250.0,
             big_alpha: 100,
-            big: false,
+            big_outline: true,
+            mini_outline: false,
             hide_in_menus: true,
             route: true,
             trails: BTreeMap::new(),
@@ -161,8 +165,9 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_key {}\nbig_radius {}\nbig_alpha {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\n",
-            self.show,
+            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\n",
+            self.display.key(),
+            self.cycle,
             self.heading_up,
             self.radius_m,
             self.toggle_key,
@@ -176,9 +181,10 @@ impl MapState {
             self.cycle_key,
             self.guide_auto,
             self.goal_tiers,
-            self.big_key,
             self.big_radius_m,
             self.big_alpha,
+            self.big_outline,
+            self.mini_outline,
             self.hide_in_menus,
             self.route,
             self.north_yaw
@@ -213,7 +219,22 @@ impl MapState {
         for line in text.lines() {
             let f: Vec<&str> = line.split_whitespace().collect();
             match f[..] {
-                ["show", v] => s.show = v == "true",
+                // Before display modes: "show false" was the minimap off.
+                ["show", v] => {
+                    if v != "true" {
+                        s.display = Display::Off;
+                    }
+                }
+                ["display", v] => {
+                    if let Some(d) = Display::ALL.into_iter().find(|d| d.key() == v) {
+                        s.display = d;
+                    }
+                }
+                ["cycle_modes", v] => {
+                    if let Some(c) = v.parse::<u8>().ok().filter(|c| *c & 0b111 != 0) {
+                        s.cycle = c & 0b111;
+                    }
+                }
                 ["heading_up", v] => s.heading_up = v == "true",
                 ["radius", v] => {
                     if let Some(r) = v.parse::<f32>().ok().filter(|r| (10.0..=1000.0).contains(r)) {
@@ -234,6 +255,8 @@ impl MapState {
                         s.north_yaw = n;
                     }
                 }
+                ["big_outline", v] => s.big_outline = v == "true",
+                ["mini_outline", v] => s.mini_outline = v == "true",
                 ["big_alpha", v] => {
                     if let Some(a) = v.parse::<u8>().ok().filter(|a| (20..=100).contains(a)) {
                         s.big_alpha = a;
@@ -242,11 +265,6 @@ impl MapState {
                 ["big_radius", v] => {
                     if let Some(r) = v.parse::<f32>().ok().filter(|r| (50.0..=2000.0).contains(r)) {
                         s.big_radius_m = r;
-                    }
-                }
-                ["big_key", v] => {
-                    if let Some(k) = v.parse().ok().filter(|k| usable_key(*k)) {
-                        s.big_key = k;
                     }
                 }
                 ["guide_auto", v] => s.guide_auto = v == "true",
@@ -309,10 +327,10 @@ impl MapState {
         if layers_version < 2 {
             s.layers |= crate::actors::Kind::Save.bit();
         }
-        // Five keys, five different keys — or all back to their defaults.
+        // Four keys, four different keys — or all back to their defaults.
         let keys = s.keys();
         if (0..keys.len()).any(|i| keys[i + 1..].contains(&keys[i])) {
-            (s.toggle_key, s.marker_key, s.compass_key, s.cycle_key, s.big_key) = (9, 6, 10, 11, 3);
+            (s.toggle_key, s.marker_key, s.compass_key, s.cycle_key) = (9, 6, 10, 11);
         }
         s
     }
@@ -329,9 +347,20 @@ impl MapState {
 }
 
 impl MapState {
-    /// Every key this map uses: map, marker, compass, cycle, big map.
-    pub fn keys(&self) -> [u8; 5] {
-        [self.toggle_key, self.marker_key, self.compass_key, self.cycle_key, self.big_key]
+    /// Every key this map uses: map (steps through the displays), marker, compass,
+    /// cycle.
+    pub fn keys(&self) -> [u8; 4] {
+        [self.toggle_key, self.marker_key, self.compass_key, self.cycle_key]
+    }
+
+    /// The display the map key moves to: the next in `Display::ALL` order that is in
+    /// the cycle — or, if the current one is the only one, the same.
+    pub fn next_display(&self) -> Display {
+        let at = Display::ALL.iter().position(|d| *d == self.display).unwrap_or(0);
+        (1..=Display::ALL.len())
+            .map(|k| Display::ALL[(at + k) % Display::ALL.len()])
+            .find(|d| self.cycle & d.bit() != 0)
+            .unwrap_or(self.display)
     }
 }
 
@@ -343,6 +372,40 @@ const LAYERS_VERSION: u8 = 2;
 /// F1–F12, except F8: that one is the panel's.
 pub fn usable_key(k: u8) -> bool {
     (1..=12).contains(&k) && k != 8
+}
+
+/// Which map is up.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Display {
+    Mini,
+    Big,
+    Off,
+}
+
+impl Display {
+    /// In the order the map key steps through them.
+    pub const ALL: [Display; 3] = [Display::Mini, Display::Big, Display::Off];
+
+    /// As kept in the settings file.
+    pub fn key(self) -> &'static str {
+        match self {
+            Display::Mini => "mini",
+            Display::Big => "big",
+            Display::Off => "off",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Display::Mini => "미니맵",
+            Display::Big => "큰 지도",
+            Display::Off => "끔",
+        }
+    }
+
+    pub fn bit(self) -> u8 {
+        1 << Display::ALL.iter().position(|d| *d == self).unwrap()
+    }
 }
 
 /// How the landscape is drawn on the map.
@@ -398,6 +461,9 @@ pub struct View {
     /// The world yaw the game calls north (degrees). In Hell Is Us that is 270: what
     /// the game's own compass shows as north lies along −Y.
     pub north_deg: f32,
+    /// Drawn as outlines on a clear background (as Diablo's overlay map): no disc, no
+    /// fills — walls, contours and shores as lines, so the game shows through.
+    pub outline: bool,
 }
 
 impl View {
@@ -449,7 +515,7 @@ mod tests {
 
     #[test]
     fn north_up_puts_x_up_and_y_right() {
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: false, scale: 1.0, north_deg: 0.0 };
+        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: false, scale: 1.0, north_deg: 0.0, outline: false };
         assert!(close(v.project([100.0, 0.0, 0.0]), (0.0, -100.0)));
         assert!(close(v.project([0.0, 100.0, 0.0]), (100.0, 0.0)));
         assert!(close(v.north(), (0.0, -1.0)));
@@ -459,9 +525,40 @@ mod tests {
     }
 
     #[test]
+    fn the_map_key_steps_through_the_cycle() {
+        let mut s = MapState::default();
+        let mut seen = Vec::new();
+        for _ in 0..4 {
+            s.display = s.next_display();
+            seen.push(s.display);
+        }
+        assert_eq!(seen, [Display::Big, Display::Off, Display::Mini, Display::Big]);
+        s.cycle = Display::Mini.bit() | Display::Big.bit();
+        s.display = Display::Big;
+        assert_eq!(s.next_display(), Display::Mini, "off is left out");
+        s.cycle = Display::Big.bit();
+        s.display = Display::Big;
+        assert_eq!(s.next_display(), Display::Big);
+    }
+
+    #[test]
+    fn an_old_file_that_hid_the_map_starts_off() {
+        assert_eq!(MapState::parse("show false\n").display, Display::Off);
+        assert_eq!(MapState::parse("show true\n").display, Display::Mini);
+        assert_eq!(MapState::parse("display big\n").display, Display::Big);
+    }
+
+    #[test]
     fn unproject_undoes_project() {
         for (heading_up, yaw) in [(false, 30.0), (true, 123.0)] {
-            let v = View { center: [100.0, -50.0, 0.0], yaw_deg: yaw, heading_up, scale: 0.02, north_deg: 270.0 };
+            let v = View {
+                center: [100.0, -50.0, 0.0],
+                yaw_deg: yaw,
+                heading_up,
+                scale: 0.02,
+                north_deg: 270.0,
+                outline: false,
+            };
             let (x, y) = v.project([900.0, 400.0, 0.0]);
             let w = v.unproject(x, y);
             assert!((w[0] - 900.0).abs() < 0.1 && (w[1] - 400.0).abs() < 0.1, "{w:?}");
@@ -472,7 +569,8 @@ mod tests {
     fn north_up_follows_the_games_north() {
         // The game's north along -Y (yaw 270). Yaw turns clockwise seen from above, so
         // facing -Y the right hand points along +X (yaw 0 = 270 + 90): the game's east.
-        let v = View { center: [0.0; 3], yaw_deg: 270.0, heading_up: false, scale: 1.0, north_deg: 270.0 };
+        let v =
+            View { center: [0.0; 3], yaw_deg: 270.0, heading_up: false, scale: 1.0, north_deg: 270.0, outline: false };
         let close = |a: (f32, f32), b: (f32, f32)| (a.0 - b.0).abs() < 1e-3 && (a.1 - b.1).abs() < 1e-3;
         assert!(close(v.project([0.0, -100.0, 0.0]), (0.0, -100.0)), "north is up");
         assert!(close(v.project([100.0, 0.0, 0.0]), (100.0, 0.0)), "+X is the game's east");
@@ -482,7 +580,7 @@ mod tests {
 
     #[test]
     fn heading_up_puts_what_is_ahead_up() {
-        let v = View { center: [0.0; 3], yaw_deg: 90.0, heading_up: true, scale: 0.5, north_deg: 0.0 };
+        let v = View { center: [0.0; 3], yaw_deg: 90.0, heading_up: true, scale: 0.5, north_deg: 0.0, outline: false };
         // Facing +Y: a point ahead on +Y is up, +X (north) is on the left.
         assert!(close(v.project([0.0, 100.0, 0.0]), (0.0, -50.0)));
         assert!(close(v.project([100.0, 0.0, 0.0]), (-50.0, 0.0)));
@@ -515,7 +613,6 @@ mod tests {
     #[test]
     fn round_trips_and_shrugs_off_bad_lines() {
         let mut s = MapState {
-            show: false,
             heading_up: false,
             radius_m: 120.0,
             layers: 0b101,
@@ -527,9 +624,12 @@ mod tests {
             cycle_key: 3,
             guide_auto: false,
             goal_tiers: 0b101,
-            big_key: 4,
+            display: Display::Big,
+            cycle: 0b011,
             big_radius_m: 400.0,
             big_alpha: 60,
+            big_outline: false,
+            mini_outline: true,
             north_yaw: 90.0,
             hide_in_menus: false,
             route: false,
@@ -556,6 +656,6 @@ mod tests {
         let t = MapState::parse("radius 99999\nmarker W 1 2\ntrail W a b c\nshow false\n???\n");
         assert_eq!(t.radius_m, 60.0);
         assert!(t.markers.is_empty() && t.trails.is_empty());
-        assert!(!t.show);
+        assert_eq!(t.display, Display::Off);
     }
 }

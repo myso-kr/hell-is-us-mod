@@ -2,6 +2,7 @@
 //! read off the cheat table; the panel reads the worker's last snapshot and never
 //! touches the game itself.
 
+use super::layout::{choices, field, grid, note, switch};
 use super::{hotkey, Request, Shared};
 use crate::actors::{Kind as ThingKind, Sub};
 use crate::cheats::{self, Active, Cheat, Effect, Group, Kind, CHEATS};
@@ -24,6 +25,8 @@ const DIM: Color32 = Color32::from_gray(150);
 pub const WIDTH: f32 = 960.0;
 /// The sidebar: status, then the pages.
 const NAV: f32 = 172.0;
+/// The gap between sidebar and page, with the divider in its middle.
+const DIVIDER: f32 = 14.0;
 
 /// egui's own fonts have no Hangul. Malgun Gothic ships with Windows, so it is
 /// borrowed from the system rather than bundled; without it the panel still works,
@@ -302,7 +305,7 @@ impl Panel {
             _ if self.map => self.map_tab(ui, snap),
             _ if self.debug => self.debug_tab(ui, snap),
             g => {
-                ui.columns(2, |cols| {
+                grid(ui, 2, |cols| {
                     let (left, right) = cols.split_at_mut(1);
                     section(&mut left[0], g.label(), |ui| self.held(ui, g, snap));
                     self.summary(&mut right[0], snap);
@@ -318,10 +321,8 @@ impl Panel {
             if on.is_empty() {
                 ui.label(RichText::new("켜진 치트가 없습니다").color(DIM));
             }
-            egui::Grid::new("summary").num_columns(3).spacing([12.0, 6.0]).show(ui, |ui| {
-                for c in on {
-                    ui.label(RichText::new(c.group.label()).color(DIM).small());
-                    ui.label(c.label);
+            for c in on {
+                field(ui, c.label, |ui| {
                     match c.kind {
                         Kind::Slider { .. } => {
                             let v = self.value.get(c.id).copied().unwrap_or(0.0);
@@ -336,9 +337,9 @@ impl Panel {
                             ui.label(RichText::new("켜짐").color(OK));
                         }
                     }
-                    ui.end_row();
-                }
-            });
+                    ui.label(RichText::new(c.group.label()).color(DIM).small());
+                });
+            }
         });
         section(ui, "알아둘 것", |ui| {
             for t in [
@@ -347,7 +348,7 @@ impl Panel {
                 "숨기기(—) 후 F8로 다시 엽니다",
                 "‘미검증’ 표시는 아직 게임에서 확인하지 않은 치트입니다",
             ] {
-                ui.label(RichText::new(format!("· {t}")).color(DIM).small());
+                note(ui, format!("· {t}"));
             }
         });
     }
@@ -359,7 +360,7 @@ impl Panel {
         let shared = self.shared.clone();
         let mut guard = shared.map.lock().unwrap();
         let before = guard.clone();
-        ui.columns(2, |cols| {
+        grid(ui, 2, |cols| {
             let (left, right) = cols.split_at_mut(1);
             self.map_column(&mut left[0], &mut guard, snap);
             self.guide_column(&mut right[0], &mut guard, snap);
@@ -373,99 +374,88 @@ impl Panel {
         let world = snap.and_then(|s| s.world.clone());
         let near = snap.map(|s| s.things.clone()).unwrap_or_default();
         section(ui, "미니맵", |ui| {
-            egui::Grid::new("map-basic").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
-                ui.label(format!("표시 (F{})", state.toggle_key));
-                toggle(ui, &mut state.show);
-                ui.end_row();
-                ui.label("진행 방향을 위로");
-                ui.horizontal(|ui| {
-                    toggle(ui, &mut state.heading_up);
-                    ui.label(
-                        RichText::new(if state.heading_up { "카메라 방향이 위" } else { "북쪽(N)이 위" })
-                            .color(DIM)
-                            .small(),
-                    );
-                });
-                ui.end_row();
-                ui.label("반경");
-                ui.add(egui::Slider::new(&mut state.radius_m, 20.0..=300.0).step_by(10.0).suffix(" m"));
-                ui.end_row();
-                ui.label("아이콘 크기");
-                ui.add(egui::Slider::new(&mut state.icon_px, crate::minimap::ICON_PX).suffix(" px"));
-                ui.end_row();
-                ui.label("지형 표시");
-                ui.horizontal(|ui| {
-                    for m in crate::minimap::ReliefMode::ALL {
-                        ui.selectable_value(&mut state.relief, m, m.label());
-                    }
-                });
-                ui.end_row();
-                if state.relief != crate::minimap::ReliefMode::Off {
-                    ui.label("");
-                    ui.label(
-                        RichText::new(
-                            "음영: 나보다 낮은 곳은 푸르게, 높은 곳은 황토색 · 등고선: 2 m (굵게 10 m) · 물은 파랑",
-                        )
-                        .color(DIM)
-                        .small(),
-                    );
-                    ui.end_row();
-                }
-                ui.label("벽·바닥 윤곽");
-                ui.horizontal(|ui| {
-                    toggle(ui, &mut state.terrain);
-                    let n = snap.map_or(0, |s| s.footprints.len());
-                    ui.label(RichText::new(format!("지금 불러온 구조물 ({n})")).color(DIM).small());
-                });
-                ui.end_row();
-                if state.terrain {
-                    ui.label("");
-                    ui.horizontal_wrapped(|ui| {
-                        ui.spacing_mut().item_spacing.x = 10.0;
-                        for b in crate::raster::Band::ALL {
-                            let (fill, edge) = b.colours();
-                            let swatch = Color32::from_rgb(
-                                fill.0.max(edge.0 / 2),
-                                fill.1.max(edge.1 / 2),
-                                fill.2.max(edge.2 / 2),
-                            );
-                            let (r, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
-                            ui.painter().rect_filled(r, 2.0, swatch);
-                            ui.painter().rect_stroke(
-                                r,
-                                2.0,
-                                egui::Stroke::new(1.0, Color32::from_rgb(edge.0, edge.1, edge.2)),
-                                egui::StrokeKind::Inside,
-                            );
-                            ui.label(RichText::new(b.label()).small());
-                        }
-                    });
-                    ui.end_row();
+            field(ui, "표시 방식", |ui| {
+                for d in crate::minimap::Display::ALL {
+                    ui.selectable_value(&mut state.display, d, d.label());
                 }
             });
+            field(ui, format!("F{} 순환", state.toggle_key), |ui| {
+                for d in crate::minimap::Display::ALL {
+                    let on = state.cycle & d.bit() != 0;
+                    let last = on && state.cycle.count_ones() == 1;
+                    if ui.add_enabled(!last, chip(d.label(), on, OK)).clicked() {
+                        state.cycle ^= d.bit();
+                    }
+                }
+            });
+            note(ui, format!("F{} 를 누를 때마다 미니맵 → 큰 지도 → 끔 순서로, 고른 것만 돕니다", state.toggle_key));
+            field(ui, "위쪽", |ui| {
+                ui.selectable_value(&mut state.heading_up, false, "북쪽(N)");
+                ui.selectable_value(&mut state.heading_up, true, "카메라 방향");
+            });
+            field(ui, "반경", |ui| {
+                ui.add(egui::Slider::new(&mut state.radius_m, 20.0..=300.0).step_by(10.0).suffix(" m"))
+            });
+            field(ui, "스타일", |ui| {
+                ui.selectable_value(&mut state.mini_outline, true, "윤곽선");
+                ui.selectable_value(&mut state.mini_outline, false, "채움");
+            });
+            field(ui, "아이콘 크기", |ui| {
+                ui.add(egui::Slider::new(&mut state.icon_px, crate::minimap::ICON_PX).suffix(" px"))
+            });
+        });
+
+        section(ui, "지형", |ui| {
+            field(ui, "지형 표시", |ui| {
+                for m in crate::minimap::ReliefMode::ALL {
+                    ui.selectable_value(&mut state.relief, m, m.label());
+                }
+            });
+            if state.relief != crate::minimap::ReliefMode::Off {
+                note(ui, "음영: 나보다 낮은 곳은 푸르게, 높은 곳은 황토색 · 등고선: 2 m (굵게 10 m) · 물은 파랑");
+            }
+            let n = snap.map_or(0, |s| s.footprints.len());
+            field(ui, "벽·바닥 윤곽", |ui| {
+                toggle(ui, &mut state.terrain);
+                ui.label(RichText::new(format!("구조물 ({n})")).color(DIM).small());
+            });
+            if state.terrain {
+                choices(ui, |ui| {
+                    for b in crate::raster::Band::ALL {
+                        let (fill, edge) = b.colours();
+                        let swatch =
+                            Color32::from_rgb(fill.0.max(edge.0 / 2), fill.1.max(edge.1 / 2), fill.2.max(edge.2 / 2));
+                        let (r, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                        ui.painter().rect_filled(r, 2.0, swatch);
+                        ui.painter().rect_stroke(
+                            r,
+                            2.0,
+                            egui::Stroke::new(1.0, Color32::from_rgb(edge.0, edge.1, edge.2)),
+                            egui::StrokeKind::Inside,
+                        );
+                        ui.label(RichText::new(b.label()).small());
+                    }
+                });
+            }
         });
 
         section(ui, "큰 지도", |ui| {
-            egui::Grid::new("map-big").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
-                ui.label("반경");
-                ui.add(egui::Slider::new(&mut state.big_radius_m, 50.0..=1000.0).step_by(25.0).suffix(" m"));
-                ui.end_row();
-                ui.label("불투명도");
-                ui.add(egui::Slider::new(&mut state.big_alpha, 20..=100).suffix(" %"));
-                ui.end_row();
+            field(ui, "반경", |ui| {
+                ui.add(egui::Slider::new(&mut state.big_radius_m, 50.0..=1000.0).step_by(25.0).suffix(" m"))
             });
-            ui.label(
-                RichText::new(format!(
-                    "F{} 로 화면 가운데에 펼칩니다 · 낮출수록 게임 화면이 비쳐 보입니다",
-                    state.big_key
-                ))
-                .color(DIM)
-                .small(),
-            );
+            field(ui, "스타일", |ui| {
+                ui.selectable_value(&mut state.big_outline, true, "윤곽선");
+                ui.selectable_value(&mut state.big_outline, false, "채움");
+            });
+            field(ui, "불투명도", |ui| ui.add(egui::Slider::new(&mut state.big_alpha, 20..=100).suffix(" %")));
+            if state.big_outline {
+                note(ui, "윤곽선: 배경 없이 벽·등고선·물가를 선으로만 (디아블로식) — 게임 화면이 그대로 보입니다");
+            }
+            note(ui, "표시 방식이 ‘큰 지도’일 때 화면 가운데에 펼칩니다 · 불투명도를 낮출수록 게임이 비쳐 보입니다");
         });
 
         section(ui, "표시할 것", |ui| {
-            ui.label(RichText::new("괄호 안 숫자는 지금 불러온 범위에 남아 있는 개수입니다").color(DIM).small());
+            note(ui, "괄호 안 숫자는 지금 불러온 범위에 남아 있는 개수입니다");
             ui.add_space(2.0);
             for (i, k) in ThingKind::ALL.into_iter().enumerate() {
                 let [r, g, b] = k.rgb();
@@ -523,19 +513,16 @@ impl Panel {
             (Some(w), Some((p, yaw))) => {
                 let trail = state.trails.get(w).map_or(0, |t| t.iter().flatten().count());
                 let markers = state.markers.get(w).map_or(0, Vec::len);
-                egui::Grid::new("map-area").num_columns(2).spacing([16.0, 6.0]).show(ui, |ui| {
-                    ui.label("지역");
-                    ui.label(RichText::new(w).color(DIM));
-                    ui.end_row();
-                    ui.label("위치");
-                    ui.label(
-                        RichText::new(format!("{:.0}, {:.0}, {:.0} · 방향 {yaw:.0}°", p[0], p[1], p[2])).color(DIM),
-                    );
-                    ui.end_row();
-                    ui.label("기록");
-                    ui.label(format!("지나온 길 ({trail}점) · 마커 ({markers}개)"));
-                    ui.end_row();
+                field(ui, "지역", |ui| ui.add(egui::Label::new(RichText::new(w).color(DIM)).truncate()));
+                field(ui, "위치", |ui| {
+                    ui.add(
+                        egui::Label::new(
+                            RichText::new(format!("{:.0}, {:.0}, {:.0} · {yaw:.0}°", p[0], p[1], p[2])).color(DIM),
+                        )
+                        .truncate(),
+                    )
                 });
+                field(ui, "기록", |ui| ui.label(format!("길 {trail}점 · 마커 {markers}개")));
                 ui.horizontal(|ui| {
                     if ui.button("경로 지우기").clicked() {
                         state.clear_trail(w);
@@ -559,36 +546,36 @@ impl Panel {
         };
 
         section(ui, "나침반 · 방향", |ui| {
-            egui::Grid::new("compass").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
-                ui.label(format!("나침반 — 화면 위 가운데 (F{})", state.compass_key));
+            field(ui, format!("나침반 (F{})", state.compass_key), |ui| {
                 toggle(ui, &mut state.compass);
-                ui.end_row();
-                ui.label("북쪽 보정");
-                ui.horizontal(|ui| {
-                    for (deg, name) in [(270.0, "기본 (−Y)"), (0.0, "+X"), (90.0, "+Y"), (180.0, "−X")] {
-                        ui.selectable_value(&mut state.north_yaw, deg, name);
-                    }
-                });
-                ui.end_row();
+                ui.label(RichText::new("화면 위 가운데").color(DIM).small());
             });
-            ui.label(
-                RichText::new("게임 나침반 아이템의 북쪽과 다르면 바꾸세요 — 미니맵·큰 지도·나침반 모두에 적용")
-                    .color(DIM)
-                    .small(),
-            );
+            field(ui, "북쪽 보정", |ui| {
+                egui::ComboBox::from_id_salt("north")
+                    .width(ui.available_width().min(160.0))
+                    .selected_text(match state.north_yaw as i32 {
+                        0 => "+X",
+                        90 => "+Y",
+                        180 => "−X",
+                        _ => "기본 (−Y)",
+                    })
+                    .show_ui(ui, |ui| {
+                        for (deg, name) in [(270.0, "기본 (−Y)"), (0.0, "+X"), (90.0, "+Y"), (180.0, "−X")] {
+                            ui.selectable_value(&mut state.north_yaw, deg, name);
+                        }
+                    });
+            });
+            note(ui, "게임 나침반 아이템의 북쪽과 다르면 바꾸세요 — 미니맵·큰 지도·나침반 모두에 적용");
         });
 
         section(ui, "안내", |ui| {
-            ui.horizontal(|ui| {
-                toggle(ui, &mut state.guide_auto);
-                ui.label("자동 — 고른 곳이 없으면 가장 가까운 퀘스트 목표로");
-            });
-            ui.horizontal(|ui| {
-                toggle(ui, &mut state.route);
-                ui.label("실제 이동 경로 (A*) — 벽을 돌아가는 길을 그리고 나침반이 다음 꺾이는 곳을 가리킴");
-            });
-            ui.horizontal_wrapped(|ui| {
-                ui.spacing_mut().item_spacing = egui::vec2(6.0, 6.0);
+            switch(ui, &mut state.guide_auto, "자동 — 고른 곳이 없으면 가장 가까운 퀘스트 목표로");
+            switch(
+                ui,
+                &mut state.route,
+                "실제 이동 경로 (A*) — 지형·물·벽을 돌아가는 길, 나침반이 다음 꺾이는 곳을 가리킴",
+            );
+            choices(ui, |ui| {
                 for t in crate::goals::Tier::ALL {
                     let [r, g, b] = t.rgb();
                     let n = goals.iter().filter(|x| x.tier == t).count();
@@ -602,24 +589,29 @@ impl Panel {
                 Some(g) => {
                     let [r, gg, b] = g.tier.rgb();
                     ui.horizontal(|ui| {
-                        ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
-                        ui.label(RichText::new(&g.label).strong());
-                        ui.label(RichText::new(format!("({})", crate::raster::distance(dist(g)))).color(DIM));
                         ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                             if ui.button("안내 끄기").clicked() {
                                 state.target = None;
                                 state.guide_auto = false;
                             }
+                            ui.label(RichText::new(crate::raster::distance(dist(g))).color(DIM));
+                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
+                                ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
+                                ui.add(egui::Label::new(RichText::new(&g.label).strong()).truncate());
+                            });
                         });
                     });
-                    ui.label(RichText::new(&g.detail).color(DIM).small());
+                    note(ui, g.detail.clone());
                     if state.route && *self.shared.route_uncertain.lock().unwrap() {
-                        ui.label(
-                            RichText::new(
-                                "⚠ 들어가는 길을 찾지 못해 장애물을 넘는 추정 구간이 있습니다 (지도에 노란 점선)",
+                        ui.add(
+                            egui::Label::new(
+                                RichText::new(
+                                    "⚠ 들어가는 길을 찾지 못해 장애물을 넘는 추정 구간이 있습니다 (지도에 노란 점선)",
+                                )
+                                .color(WAIT)
+                                .small(),
                             )
-                            .color(WAIT)
-                            .small(),
+                            .wrap(),
                         );
                     }
                 }
@@ -634,7 +626,7 @@ impl Panel {
             if quests.is_empty() {
                 ui.label(RichText::new("없음 (또는 아직 읽지 못함)").color(DIM));
             } else {
-                ui.label(quests.join(", "));
+                ui.add(egui::Label::new(quests.join(", ")).wrap());
             }
         });
 
@@ -642,9 +634,7 @@ impl Panel {
             goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
         list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
         section(ui, &format!("갈 곳 ({})", list.len()), |ui| {
-            ui.label(
-                RichText::new("아직 얻지 않은 사실·태그를 주는 곳입니다. 눌러서 안내를 시작합니다").color(DIM).small(),
-            );
+            note(ui, "아직 얻지 않은 사실·태그를 주는 곳입니다. 눌러서 안내를 시작합니다");
             egui::ScrollArea::vertical().max_height(220.0).show(ui, |ui| {
                 for g in list {
                     let [r, gg, b] = g.tier.rgb();
@@ -652,7 +642,8 @@ impl Panel {
                     ui.horizontal(|ui| {
                         ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
                         let text = format!("{}  ({})", g.label, crate::raster::distance(dist(g)));
-                        if ui.selectable_label(chosen, text).on_hover_text(&g.detail).clicked() {
+                        let button = egui::Button::selectable(chosen, text).truncate();
+                        if ui.add(button).on_hover_text(&g.detail).clicked() {
                             state.target = Some(g.id);
                         }
                     });
@@ -661,19 +652,16 @@ impl Panel {
         });
 
         section(ui, "단축키", |ui| {
-            egui::Grid::new("keys").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
+            {
                 for (label, id) in [
-                    ("미니맵 표시/숨김", "toggle_key"),
+                    ("지도 표시 방식 전환", "toggle_key"),
                     ("마커 찍기/지우기", "marker_key"),
-                    ("큰 지도 (화면 가운데)", "big_key"),
                     ("나침반 표시/숨김", "compass_key"),
                     ("다음 목표로 안내", "cycle_key"),
                 ] {
-                    ui.label(label);
                     let mine = match id {
                         "toggle_key" => state.toggle_key,
                         "marker_key" => state.marker_key,
-                        "big_key" => state.big_key,
                         "compass_key" => state.compass_key,
                         _ => state.cycle_key,
                     };
@@ -681,27 +669,18 @@ impl Panel {
                     let key = match id {
                         "toggle_key" => &mut state.toggle_key,
                         "marker_key" => &mut state.marker_key,
-                        "big_key" => &mut state.big_key,
                         "compass_key" => &mut state.compass_key,
                         _ => &mut state.cycle_key,
                     };
-                    key_picker(ui, id, key, &taken);
-                    ui.end_row();
+                    field(ui, label, |ui| key_picker(ui, id, key, &taken));
                 }
-            });
-            ui.label(
-                RichText::new("마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다 · F8 은 패널")
-                    .color(DIM)
-                    .small(),
-            );
+            }
+            note(ui, "마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다 · F8 은 패널");
         });
 
         let (cursor, paused) = *self.shared.menu.lock().unwrap();
         section(ui, "게임 메뉴", |ui| {
-            ui.horizontal(|ui| {
-                toggle(ui, &mut state.hide_in_menus);
-                ui.label("인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
-            });
+            switch(ui, &mut state.hide_in_menus, "인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
             let sig =
                 |on: bool| if on { RichText::new("켜짐").color(WAIT) } else { RichText::new("꺼짐").color(DIM) };
             ui.horizontal(|ui| {
@@ -810,6 +789,7 @@ impl Panel {
 
     fn held(&mut self, ui: &mut egui::Ui, group: Group, snap: Option<&Snapshot>) {
         let mut changed = false;
+        ui.spacing_mut().slider_width = (ui.available_width() - 230.0).max(80.0);
         egui::Grid::new(group.label()).num_columns(3).spacing([8.0, 6.0]).show(ui, |ui| {
             for c in CHEATS.iter().filter(|c| c.group == group) {
                 let mut on = self.on.get(c.id).copied().unwrap_or(false);
@@ -903,20 +883,31 @@ impl eframe::App for Panel {
             .show(ui, |ui| {
                 ui.set_width(WIDTH - 16.0);
                 self.title_bar(ui);
-                ui.horizontal_top(|ui| {
-                    ui.vertical(|ui| {
-                        ui.set_width(NAV);
-                        self.status(ui, snap.as_ref());
-                        ui.separator();
-                        self.nav(ui);
-                    });
-                    ui.separator();
+                // The divider between sidebar and page is painted afterwards, as tall as
+                // the taller of the two: a separator laid out between them would take
+                // all the height the window has — so the window could grow but never
+                // shrink back when a shorter page is chosen.
+                let row = ui.horizontal_top(|ui| {
+                    let side = ui
+                        .vertical(|ui| {
+                            ui.set_width(NAV);
+                            self.status(ui, snap.as_ref());
+                            ui.separator();
+                            self.nav(ui);
+                        })
+                        .response
+                        .rect;
+                    ui.add_space(DIVIDER);
                     ui.vertical(|ui| {
                         ui.add_enabled_ui(open, |ui| self.page(ui, snap.as_ref()));
                         ui.separator();
                         self.footer(ui, snap.as_ref());
                     });
+                    side.right()
                 });
+                let x = row.inner + DIVIDER / 2.0;
+                let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
+                ui.painter().vline(x, row.response.rect.y_range(), stroke);
             })
             .response
             .rect;
@@ -955,7 +946,7 @@ fn section(ui: &mut egui::Ui, title: &str, body: impl FnOnce(&mut egui::Ui)) {
 }
 
 /// An on/off switch — clearer at a glance than a checkbox.
-fn toggle(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
+pub(super) fn toggle(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
     let size = ui.spacing().interact_size.y * egui::vec2(1.8, 0.9);
     let (rect, mut response) = ui.allocate_exact_size(size, egui::Sense::click());
     if response.clicked() {

@@ -47,6 +47,16 @@ been verified in play yet.
   hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
   from each mesh's bounds and transform. The game ships no map of the area it could
   use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- The panel shrinks back when a shorter page is chosen. The divider between the
+  sidebar and the page used to take all the window's height, so it could only grow.
+- The big map is drawn as outlines on a clear background by default, in the
+  style of Diablo's overlay: walls, shores and contours as lines, nothing filled.
+  The minimap can use the same style.
+- One map key steps through the displays, as most games do: minimap, big map,
+  off. The panel picks the display and which displays the key steps through.
+  The big map's own key is gone.
+- Panel cards no longer overlap: columns hold to their width and clip, form
+  rows have a fixed label column, and sliders, button rows and notes fit or wrap.
 - Maps draw about ten times faster (the big map with everything on: 261 → 27 ms
   a frame), and the overlay keeps its pace however long a frame takes to draw.
 - The big map's opacity can be set (20–100 %).

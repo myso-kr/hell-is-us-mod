@@ -17,6 +17,7 @@
 
 mod hotkey;
 mod layered;
+mod layout;
 mod minimap;
 mod panel;
 

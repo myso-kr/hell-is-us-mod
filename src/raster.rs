@@ -471,13 +471,15 @@ pub fn band(f: &Footprint, feet: f32) -> Option<Band> {
     })
 }
 
+/// Deadly water's shore, as an outline.
+const SHORE: Rgba = Rgba(90, 170, 255, 230);
 /// Contour spacing (cm): thin lines, and every so many a strong one.
 const CONTOUR: f32 = 200.0;
 const CONTOUR_MAJOR: f32 = 1000.0;
 
 /// The landscape under the map's disc of radius `r` (pixels): its baked colours
 /// (shaded, tinted, water) and/or contour lines.
-fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: f32) {
+fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: f32, outline: bool) {
     let (w, h) = (cv.w, cv.h);
     let (cx, cy) = (w as f32 / 2.0, h as f32 / 2.0);
     // The map is a rotation and a scale of the world, so a pixel's place among the
@@ -537,7 +539,21 @@ fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: 
                             continue;
                         }
                         let t = near[i] as usize;
-                        if rel.wet[t] || mode.shade() {
+                        if outline {
+                            // The shore: a wet pixel next to a dry one.
+                            let shore = rel.wet[t]
+                                && [(px + 1, py), (px.wrapping_sub(1), py), (px, py + 1), (px, py.wrapping_sub(1))]
+                                    .iter()
+                                    .any(|&(nx, ny)| {
+                                        nx < w
+                                            && ny < h
+                                            && near[ny * w + nx] != u32::MAX
+                                            && !rel.wet[near[ny * w + nx] as usize]
+                                    });
+                            if shore {
+                                *o = over(*o, SHORE, SHORE.3 as u32);
+                            }
+                        } else if rel.wet[t] || mode.shade() {
                             let c = rel.colour[t];
                             if c.3 > 0 {
                                 *o = over(*o, c, c.3 as u32);
@@ -560,10 +576,13 @@ fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: 
                             edge.0 |= step(here, CONTOUR) != step(there, CONTOUR);
                             edge.1 |= step(here, CONTOUR_MAJOR) != step(there, CONTOUR_MAJOR);
                         }
+                        let (major, minor) = if outline { (190, 90) } else { (150, 70) };
                         if edge.1 {
-                            *o = over(*o, Rgba(236, 222, 180, 150), 150);
+                            *o = over(*o, Rgba(236, 222, 180, major), major as u32);
+                        } else if edge.0 && !outline {
+                            *o = over(*o, Rgba(210, 205, 185, minor), minor as u32);
                         } else if edge.0 {
-                            *o = over(*o, Rgba(210, 205, 185, 70), 70);
+                            *o = over(*o, Rgba(200, 196, 180, minor), minor as u32);
                         }
                     }
                 }
@@ -638,18 +657,23 @@ pub fn draw_map(
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
     let r = cx.min(cy) - 14.0;
     let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
-    // The empty disc is the same every frame at a size: drawn once, then copied.
-    BASE.with(|base| {
-        let mut base = base.borrow_mut();
-        if base.as_ref().is_none_or(|b: &Canvas| (b.w, b.h) != (cv.w, cv.h)) {
-            let mut b = Canvas::new(cv.w, cv.h);
-            b.disc(cx, cy, r, BACKGROUND);
-            *base = Some(b);
-        }
-        cv.px.copy_from_slice(&base.as_ref().unwrap().px);
-    });
+    // The empty disc is the same every frame at a size: drawn once, then copied. As
+    // outlines, there is no disc: the background stays clear.
+    if view.outline {
+        cv.clear();
+    } else {
+        BASE.with(|base| {
+            let mut base = base.borrow_mut();
+            if base.as_ref().is_none_or(|b: &Canvas| (b.w, b.h) != (cv.w, cv.h)) {
+                let mut b = Canvas::new(cv.w, cv.h);
+                b.disc(cx, cy, r, BACKGROUND);
+                *base = Some(b);
+            }
+            cv.px.copy_from_slice(&base.as_ref().unwrap().px);
+        });
+    }
     if let Some(rel) = relief.filter(|_| state.relief != ReliefMode::Off) {
-        draw_relief(cv, state.relief, view, rel, r);
+        draw_relief(cv, state.relief, view, rel, r, view.outline);
     }
 
     if state.terrain {
@@ -681,7 +705,20 @@ pub fn draw_map(
         }
         let rim = (r - 1.0) * (r - 1.0);
         let colours: Vec<(Rgba, Rgba)> = Band::ALL.iter().map(|b| b.colours()).collect();
-        let (class, colours) = (&class, &colours);
+        let (class, colours, outline) = (&class, &colours, view.outline);
+        // As outlines only walls and raised floors are drawn: the cliff and rock boxes
+        // are bigger than what they hold (the contours show the real ground), and the
+        // lower bands' blue would read as water.
+        let kept: Vec<bool> = Band::ALL.iter().map(|b| !outline || matches!(b, Band::Wall | Band::Raised)).collect();
+        let kept = &kept;
+        let class_at = move |i: usize| {
+            let k = class[i];
+            if k > 0 && kept[k as usize - 1] {
+                k
+            } else {
+                0
+            }
+        };
         let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
         let rows = h.div_ceil(workers);
         std::thread::scope(|scope| {
@@ -696,20 +733,40 @@ pub fn draw_map(
                         let half = (rim - dy * dy).sqrt();
                         let (x0, x1) =
                             (((cx - half).floor() as usize).max(1), ((cx + half).ceil() as usize).min(w - 1));
+                        #[allow(clippy::needless_range_loop)]
+                        #[allow(clippy::needless_range_loop)]
                         for x in x0..x1 {
-                            let k = class[y * w + x];
+                            let k = class_at(y * w + x);
                             if k == 0 {
+                                // As outlines, a dark rim just outside each shape keeps its
+                                // line readable over any background.
+                                let beside = [
+                                    class_at(y * w + x - 1),
+                                    class_at(y * w + x + 1),
+                                    class_at((y - 1) * w + x),
+                                    class_at((y + 1) * w + x),
+                                ];
+                                if outline && beside.iter().any(|&n| n > 0) {
+                                    out[x] = over(out[x], Rgba(0, 0, 0, 120), 120);
+                                }
                                 continue;
                             }
                             let (fill, edge) = colours[k as usize - 1];
                             let edged = [
-                                class[y * w + x - 1],
-                                class[y * w + x + 1],
-                                class[(y - 1) * w + x],
-                                class[(y + 1) * w + x],
+                                class_at(y * w + x - 1),
+                                class_at(y * w + x + 1),
+                                class_at((y - 1) * w + x),
+                                class_at((y + 1) * w + x),
                             ]
                             .iter()
                             .any(|&n| n < k);
+                            if outline {
+                                if edged {
+                                    let c = Rgba(edge.0, edge.1, edge.2, 235);
+                                    out[x] = over(out[x], c, 235);
+                                }
+                                continue;
+                            }
                             let c = if edged { edge } else { fill };
                             out[x] = over(out[x], c, c.3 as u32);
                         }
@@ -857,7 +914,9 @@ pub fn draw_map(
         }
     }
 
-    cv.ring(cx, cy, r, 2.0, EDGE);
+    if !view.outline {
+        cv.ring(cx, cy, r, 2.0, EDGE);
+    }
     let (nx, ny) = view.north();
     cv.disc(cx + nx * r, cy + ny * r, 9.0, BACKGROUND);
     cv.letter_n(cx + nx * r, cy + ny * r, 11.0, NORTH);
@@ -957,7 +1016,14 @@ mod tests {
     #[test]
     fn walls_on_the_heros_floor_are_drawn_and_ceilings_are_not() {
         let s = MapState { terrain: true, ..MapState::default() };
-        let v = View { center: [0.0, 0.0, 100.0], yaw_deg: 0.0, heading_up: false, scale: 0.05, north_deg: 0.0 };
+        let v = View {
+            center: [0.0, 0.0, 100.0],
+            yaw_deg: 0.0,
+            heading_up: false,
+            scale: 0.05,
+            north_deg: 0.0,
+            outline: false,
+        };
         // A wall 10 m north of the hero, standing on their floor; a ceiling slab over them.
         let wall =
             crate::geometry::footprint([1000.0, 0.0, 100.0], 0.0, [1.0; 3], [0.0; 3], [100.0, 300.0, 150.0]).unwrap();
@@ -979,7 +1045,7 @@ mod tests {
         let icons = Icons::new(16).unwrap();
         let mut cv = Canvas::new(200, 200);
         let s = MapState::default();
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0 };
+        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0, outline: false };
         draw_map(
             &mut cv,
             &s,
@@ -1002,7 +1068,7 @@ mod tests {
         s.observe("W", [0.0, 0.0, 0.0]);
         s.observe("W", [1000.0, 0.0, 0.0]);
         s.toggle_marker("W", [100_000.0, 0.0, 0.0]);
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0 };
+        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0, outline: false };
         draw_map(
             &mut cv,
             &s,

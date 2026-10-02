@@ -95,7 +95,8 @@ src/
     process.rs    프로세스 찾기·열기, ReadProcessMemory/WriteProcessMemory, Ctrl+C
   ui/             dungeons2-mod 와 같은 F8 패널 (worker·hotkey·eframe) + 오버레이 스레드:
                   ui/layered.rs — 레이어드 창 공용, ui/minimap.rs — 미니맵·나침반·안내 대상,
-                  ui/minimap.rs — 레이어드 창, UpdateLayeredWindow, 표시·마커 키 폴링 (패널에서 고름), 10초마다 저장
+                  ui/layout.rs — 패널 그리드: 폭을 강제하고 잘라내는 열, 라벨 칸 고정 폼 행, 줄바꿈 버튼 줄·설명,
+  ui/minimap.rs — 레이어드 창, UpdateLayeredWindow, 표시·마커 키 폴링 (패널에서 고름), 10초마다 저장
 ```
 
 좌표: UE X 앞, Y 오른쪽, Z 위, yaw 는 +X 에서 +Y 쪽으로(위에서 보면 시계 방향).
