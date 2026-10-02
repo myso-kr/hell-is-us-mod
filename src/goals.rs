@@ -73,6 +73,31 @@ pub struct Goal {
     pub tags: Vec<String>,
     /// Journal keys it belongs to directly (`Quest01` for a quest item).
     pub keys: Vec<String>,
+    pub gate: Gate,
+}
+
+/// Whether going there is enough.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Gate {
+    /// Something to use, pick up or talk to.
+    #[default]
+    Open,
+    /// A `_PayloadInactive_` marker that pays out when the hero comes near
+    /// (`Visited`, `Proximity`, `Met`).
+    Visit,
+    /// A `_PayloadInactive_` marker that pays out when something else happens there —
+    /// a door opened with a key, a puzzle solved: going there is not enough, so auto
+    /// guiding never picks it.
+    Conditional,
+}
+
+/// What a `_PayloadInactive_` actor's class says about how it pays out.
+fn gate_of(class: &str) -> Gate {
+    match class.split_once("_PayloadInactive_") {
+        None => Gate::Open,
+        Some((stem, _)) if ["Visited", "Proximity", "Met"].iter().any(|w| stem.ends_with(w)) => Gate::Visit,
+        Some(_) => Gate::Conditional,
+    }
 }
 
 impl Goal {
@@ -100,6 +125,7 @@ struct Payload {
     keys: Vec<String>,
     /// What to say instead of the first new tag (an NPC's hand-over).
     note: Option<String>,
+    gate: Gate,
 }
 
 /// A PayloadData's facts (asset addresses), tags (name indices) and the items it
@@ -256,8 +282,8 @@ impl Goals {
         let rc = mem::read_u64(m, actor + root).filter(|&p| mem::plausible(p))?;
         let used = crate::actors::component(m, n, actor, "InteractionActionComponent")
             .and_then(|c| n.field(m, c, "bHasBeenActivated").filter(|p| p.size == 1).map(|p| c + p.offset as u64));
-        let label = pretty(&n.class(m, actor).unwrap_or_default());
-        Some(Payload { facts, tags, used, root: rc, label, items, keys, note: None })
+        let class = n.class(m, actor).unwrap_or_default();
+        Some(Payload { facts, tags, used, root: rc, label: pretty(&class), items, keys, note: None, gate: gate_of(&class) })
     }
 
     /// What an NPC hands out: every payload in its conversations (following topic
@@ -332,7 +358,7 @@ impl Goals {
         }
         let rc = mem::read_u64(m, actor + root).filter(|&p| mem::plausible(p))?;
         let label = format!("대화: {}", pretty(&n.class(m, actor).unwrap_or_default()));
-        Some(Payload { facts, tags, used: None, root: rc, label, items: Vec::new(), keys: Vec::new(), note })
+        Some(Payload { facts, tags, used: None, root: rc, label, items: Vec::new(), keys: Vec::new(), note, gate: Gate::Open })
     }
 
     /// Read what the loaded interactables hand out, when a scan is due.
@@ -423,14 +449,17 @@ impl Goals {
             if !at.iter().all(|v| v.is_finite()) {
                 continue;
             }
-            let detail = p.note.clone().or_else(|| items_left.then(|| format!("아이템: {}", p.items.join(", ")))).unwrap_or_else(|| {
+            let mut detail = p.note.clone().or_else(|| items_left.then(|| format!("아이템: {}", p.items.join(", ")))).unwrap_or_else(|| {
                 new_tags.first().map(|t| tag(t)).unwrap_or_else(|| format!("새 사실 {}개", new_facts.len()))
             });
             let mut quests: Vec<u32> = new_facts.iter().filter_map(|(_, q)| *q).collect();
             quests.sort_unstable();
             quests.dedup();
             let tags = new_tags.iter().map(|t| tag(t)).collect();
-            out.push(Goal { tier, id: actor, label: p.label.clone(), detail, at, quests, tags, keys: p.keys.clone() });
+            if p.gate == Gate::Conditional {
+                detail += " · 조건 필요 (열쇠·퍼즐 등 — 가기만 해선 안 됨)";
+            }
+            out.push(Goal { tier, id: actor, label: p.label.clone(), detail, at, quests, tags, keys: p.keys.clone(), gate: p.gate });
         }
         out
     }
@@ -439,6 +468,16 @@ impl Goals {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn inactive_payloads_are_told_apart() {
+        assert_eq!(gate_of("Cons_Medicine_GatherSingleUse_Interact_BP_C"), Gate::Open);
+        assert_eq!(gate_of("ArcasSpireVisited_PayloadInactive_Interact_BP_C"), Gate::Visit);
+        assert_eq!(gate_of("Senedra_Timeloop_A_Proximity_PayloadInactive_Interact_BP_C"), Gate::Visit);
+        assert_eq!(gate_of("SenedraSmugglersRefugeesMet_PayloadInactive_Interact_BP_C"), Gate::Visit);
+        assert_eq!(gate_of("SenedraForestArcasSpireDoorOpening_PayloadInactive_Interact_BP_C"), Gate::Conditional);
+        assert_eq!(gate_of("SenedraForestPillarPuzzleComplete_PayloadInactive_Interact_BP_C"), Gate::Conditional);
+    }
 
     #[test]
     fn class_names_read_like_names() {

@@ -129,6 +129,8 @@ enum Role {
     Strings,
     /// A FlowAsset (a conversation, a topic): goals.rs follows NPCs into them.
     Flow,
+    /// A NavigationDataChunkActor: navmesh.rs reads the navmesh from them.
+    NavChunks,
     Fact,
     Other,
 }
@@ -148,6 +150,9 @@ pub struct Quests {
     /// Loaded flow assets by name index: this pass's, and the last complete one's.
     flows_found: HashMap<u32, u64>,
     flows: HashMap<u32, u64>,
+    /// NavigationDataChunkActors: this pass's, and the last complete one's.
+    nav_found: Vec<u64>,
+    nav: Vec<u64>,
     /// `UI_Secrets_ST`: source strings by text key index.
     strings: HashMap<u32, String>,
     roles: HashMap<u64, Role>,
@@ -247,6 +252,11 @@ impl Quests {
         &self.flows
     }
 
+    /// The loaded NavigationDataChunkActors, as of the last complete pass.
+    pub fn nav_actors(&self) -> &[u64] {
+        &self.nav
+    }
+
     /// Whether the journal has been put together at least once.
     pub fn ready(&self) -> bool {
         !self.mains.is_empty()
@@ -272,6 +282,7 @@ impl Quests {
                 Some("QuestData") => Role::Quest,
                 Some("SecretsSubsystem") => Role::Secrets,
                 Some("StringTable") => Role::Strings,
+                Some("NavigationDataChunkActor") => Role::NavChunks,
                 _ if n.is_a(m, o, "FlowAsset") => Role::Flow,
                 _ if n.is_a(m, o, "FactData") => Role::Fact,
                 _ => Role::Other,
@@ -294,6 +305,11 @@ impl Quests {
                     }
                 }
                 Role::Fact => self.fact(m, n, o),
+                Role::NavChunks => {
+                    if !n.object(m, o).unwrap_or_default().starts_with("Default__") {
+                        self.nav_found.push(o);
+                    }
+                }
                 Role::Flow => {
                     if let Some(i) = mem::read_u32(m, o + crate::names::NAME) {
                         self.flows_found.insert(i, o);
@@ -323,6 +339,7 @@ impl Quests {
         let mut by_quest = std::mem::take(&mut self.by_quest);
         let mut changed = false;
         self.flows = std::mem::take(&mut self.flows_found);
+        self.nav = std::mem::take(&mut self.nav_found);
         if let Some(s) = self.secrets.take() {
             changed |= self.read_deeds(m, n, s);
         }

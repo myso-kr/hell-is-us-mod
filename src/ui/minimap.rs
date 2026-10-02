@@ -19,7 +19,7 @@
 use super::hotkey::{game_window, pid_of};
 use super::layered::{pump, Layered};
 use super::Shared;
-use crate::goals::{Goal, Tier};
+use crate::goals::{Gate, Goal, Tier};
 use super::pen::Pen;
 use super::tracker;
 use crate::quests::Quest;
@@ -48,6 +48,11 @@ const ROUTE_EVERY: Duration = Duration::from_secs(1);
 const ROUTE_MOVED: f32 = 500.0;
 /// The compass points at the route this far ahead (cm), not at the goal itself.
 const ROUTE_AHEAD: f32 = 800.0;
+/// A goal's actor stands about this far above the floor it is on (cm).
+const GOAL_FEET: f32 = 50.0;
+/// Near a blocked goal, a goal this close (cm) may be what opens the way: a clue, a key,
+/// a lever, a puzzle.
+const HELPER: f32 = 4000.0;
 const SAVE_EVERY: Duration = Duration::from_secs(10);
 
 pub fn path() -> std::path::PathBuf {
@@ -107,6 +112,8 @@ struct Route {
     /// A route being worked out off this thread (it can take a few hundred ms), and
     /// the goal it is for.
     pending: Option<std::thread::JoinHandle<(crate::pathfind::Path, u64)>>,
+    /// Goals whose last route had to go through something.
+    blocked: std::collections::HashSet<u64>,
 }
 
 fn flat(a: [f32; 3], b: [f32; 3]) -> f32 {
@@ -120,11 +127,23 @@ fn bearing(from: [f32; 3], to: [f32; 3]) -> f32 {
 
 /// Keep the guide's target sensible: drop it when its place is gone (used up,
 /// streamed out); with auto on, take the nearest quest goal when there is none.
-/// Whether `g` is what auto guiding wants: a place that moves the followed quest
-/// along — or, following the main story with none of its places loaded, any quest goal.
-fn wanted(g: &Goal, goals: &[Goal], followed: Option<&Quest>) -> bool {
+/// Whether auto guiding can send the hero to `g` at all: not a place that pays out
+/// only when something else happens there (a locked door), and not an item of a main
+/// quest not begun.
+fn reachable(g: &Goal, journal: &[Quest]) -> bool {
+    g.gate != Gate::Conditional
+        && !g.keys.iter().any(|k| journal.iter().any(|q| &q.key == k && q.status == crate::quests::Status::NotStarted))
+}
+
+/// Whether `g` is what auto guiding wants: a reachable place that moves the followed
+/// quest along — or, following the main story with none of its places loaded, any
+/// reachable quest goal.
+fn wanted(g: &Goal, goals: &[Goal], followed: Option<&Quest>, journal: &[Quest]) -> bool {
+    if !reachable(g, journal) {
+        return false;
+    }
     match followed {
-        Some(q) if goals.iter().any(|g| g.serves(q)) => g.serves(q),
+        Some(q) if goals.iter().any(|x| x.serves(q) && reachable(x, journal)) => g.serves(q),
         Some(q) if !matches!(q.kind, crate::quests::Kind::Main(_)) => false,
         _ => g.tier == Tier::Quest,
     }
@@ -134,7 +153,20 @@ fn wanted(g: &Goal, goals: &[Goal], followed: Option<&Quest>) -> bool {
 /// it is used up, then the next — and a target it no longer wants (the quest was
 /// changed, or one of its places came into range) gives way. A target picked by hand
 /// is left alone until it is used up.
-pub fn settle_target(state: &mut MapState, goals: &[Goal], here: [f32; 3], followed: Option<&Quest>) {
+///
+/// A goal whose route had to go through something (a locked door, a puzzle, another
+/// way into a cellar) is `blocked`: auto guiding prefers one that can be walked to; when
+/// every wanted goal is blocked, it goes to something that can be reached near the
+/// nearest of them — a note, a key, a lever: what opens the way, often — and else to
+/// the blocked goal itself, as near as the route gets.
+pub fn settle_target(
+    state: &mut MapState,
+    goals: &[Goal],
+    here: [f32; 3],
+    followed: Option<&Quest>,
+    journal: &[Quest],
+    blocked: &std::collections::HashSet<u64>,
+) {
     if state.target.is_some_and(|t| !goals.iter().any(|g| g.id == t)) {
         state.target = None;
         state.chosen = false;
@@ -142,15 +174,27 @@ pub fn settle_target(state: &mut MapState, goals: &[Goal], here: [f32; 3], follo
     if !state.guide_auto || state.chosen {
         return;
     }
-    if state.target.is_some_and(|t| goals.iter().any(|g| g.id == t && !wanted(g, goals, followed))) {
-        state.target = None;
-    }
-    if state.target.is_none() {
-        state.target = goals
+    let near = |a: &&Goal, b: &&Goal| flat(a.at, here).total_cmp(&flat(b.at, here));
+    let wanted_all: Vec<&Goal> = goals.iter().filter(|g| wanted(g, goals, followed, journal)).collect();
+    let open = wanted_all.iter().copied().filter(|g| !blocked.contains(&g.id)).min_by(near);
+    let pick = open.or_else(|| {
+        let stuck = wanted_all.iter().copied().min_by(near)?;
+        let helper = goals
             .iter()
-            .filter(|g| wanted(g, goals, followed))
-            .min_by(|a, b| flat(a.at, here).total_cmp(&flat(b.at, here)))
-            .map(|g| g.id);
+            .filter(|g| g.id != stuck.id && !blocked.contains(&g.id) && g.gate == Gate::Open)
+            .filter(|g| flat(g.at, stuck.at) <= HELPER)
+            .filter(|g| reachable(g, journal))
+            .min_by(|a, b| flat(a.at, stuck.at).total_cmp(&flat(b.at, stuck.at)));
+        Some(helper.unwrap_or(stuck))
+    });
+    // Keep the target while it is still what would be picked, or still wanted and not
+    // blocked (nearness alone does not make the guide hop between goals).
+    let keep = state.target.is_some_and(|t| {
+        Some(t) == pick.map(|g| g.id)
+            || wanted_all.iter().any(|g| g.id == t) && !blocked.contains(&t) && open.is_some()
+    });
+    if !keep {
+        state.target = pick.map(|g| g.id);
     }
 }
 
@@ -178,7 +222,7 @@ pub fn run(shared: Arc<Shared>) {
     let mut tracker_window = Layered::new("hiumod-tracker", "Hell Is Us Quests", tracker::W, tracker::H);
     let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
     let mut pen = Pen::new(tracker::W, tracker::H);
-    let mut tracked: Option<(Vec<Quest>, Option<String>, bool)> = None;
+    let mut tracked: Option<(Vec<Quest>, Option<String>, bool, bool)> = None;
     let mut tracker_used = 0;
     // The big map's window is made at the game window's size, and again if that changes.
     let mut big_window: Option<Layered> = None;
@@ -214,7 +258,7 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
-        let (pose, world, things, footprints, goals, paused, obstacles, journal) = match shared.snap.lock().unwrap().as_ref() {
+        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav) = match shared.snap.lock().unwrap().as_ref() {
             Some(s) => (
                 s.pose,
                 s.world.clone(),
@@ -224,8 +268,11 @@ pub fn run(shared: Arc<Shared>) {
                 s.paused,
                 s.obstacles.clone(),
                 s.journal.clone(),
+                s.nav.clone(),
             ),
-            None => (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Vec::new()),
+            None => {
+                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Vec::new(), Default::default())
+            }
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
 
@@ -269,7 +316,7 @@ pub fn run(shared: Arc<Shared>) {
                     ));
                 }
                 let chosen = state.quest.clone();
-                settle_target(&mut state, &goals, p, crate::quests::followed(&journal, chosen.as_deref()));
+                settle_target(&mut state, &goals, p, crate::quests::followed(&journal, chosen.as_deref()), &journal, &route.blocked);
                 if cycle_now {
                     cycle(&mut state, &goals, p);
                 }
@@ -284,7 +331,19 @@ pub fn run(shared: Arc<Shared>) {
                             || route.at.is_none_or(|t| t.elapsed() >= ROUTE_EVERY);
                         if route.pending.as_ref().is_some_and(|h| h.is_finished()) {
                             if let Ok((path, id)) = route.pending.take().unwrap().join() {
-                                if id == g.id {
+                                // Same goal: keep the way being followed unless this one
+                                // is clearly better, so the compass does not swing.
+                                // Whether it can be walked to at all: a route that has to go
+                                // through (a locked door, a puzzle) marks its goal blocked.
+                                if path.uncertain() {
+                                    route.blocked.insert(id);
+                                } else {
+                                    route.blocked.remove(&id);
+                                }
+                                if id == g.id
+                                    && (route.path.points.len() < 2
+                                        || crate::pathfind::better(&route.path, &path, [p[0], p[1]], ROUTE_AHEAD))
+                                {
                                     route.path = path;
                                 }
                             }
@@ -295,11 +354,18 @@ pub fn run(shared: Arc<Shared>) {
                                 .get(world)
                                 .map(|t| t.iter().flatten().map(|q| [q[0], q[1]]).collect())
                                 .unwrap_or_default();
-                            let (from, to, feet, id, scene) =
-                                ([p[0], p[1]], [g.at[0], g.at[1]], p[2] - 90.0, g.id, obstacles.clone());
+                            let (from, to, feet, id, scene, nav) =
+                                ([p[0], p[1]], [g.at[0], g.at[1]], p[2] - 90.0, g.id, obstacles.clone(), nav.clone());
+                            let goal_feet = g.at[2] - GOAL_FEET;
                             route.pending = Some(std::thread::spawn(move || {
-                                let path =
-                                    crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail);
+                                // The game's navmesh first: it knows stairs, cellars and
+                                // closed doors. The obstacle grid where it has nothing.
+                                let path = nav
+                                    .route([from[0], from[1], feet], [to[0], to[1], goal_feet])
+                                    .map(|(path, _)| path)
+                                    .unwrap_or_else(|| {
+                                        crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail)
+                                    });
                                 (path, id)
                             }));
                             if route.goal != Some(g.id) {
@@ -310,7 +376,10 @@ pub fn run(shared: Arc<Shared>) {
                             route.at = Some(Instant::now());
                         }
                     }
-                    None => route = Route::default(),
+                    None => {
+                        let blocked = std::mem::take(&mut route.blocked);
+                        route = Route { blocked, ..Route::default() };
+                    }
                 }
                 // Keep the drawn route starting at the hero.
                 let mut path = route.path.clone();
@@ -429,6 +498,7 @@ pub fn run(shared: Arc<Shared>) {
                                 rgb: g.tier.rgb(),
                                 target,
                                 distance_m: distance / 100.0,
+                                dz_m: (g.at[2] - p[2]) / 100.0,
                             }
                         })
                         .collect();
@@ -438,6 +508,7 @@ pub fn run(shared: Arc<Shared>) {
                             rgb: [255, 200, 60],
                             target: false,
                             distance_m: flat(p, *m) / 100.0,
+                            dz_m: (m[2] - p[2]) / 100.0,
                         }));
                     }
                     draw_compass(&mut compass_cv, yaw - state.north_yaw, &pins);
@@ -450,9 +521,11 @@ pub fn run(shared: Arc<Shared>) {
                     let followed = crate::quests::followed(&journal, state.quest.as_deref());
                     // Whether any place that moves the followed quest along is loaded.
                     let near = followed.is_none_or(|q| goals.iter().any(|g| g.serves(q)));
-                    let now = (journal.clone(), followed.map(|q| q.key.clone()), near);
+                    // The goal being guided to can only be reached through something.
+                    let stuck = state.target.is_some_and(|t| route.blocked.contains(&t));
+                    let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck);
                     if tracked.as_ref() != Some(&now) {
-                        tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near);
+                        tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck);
                         tracked = Some(now);
                     }
                     if tracker_used > 0 {
@@ -505,19 +578,19 @@ mod tests {
     use super::*;
 
     fn goal(id: u64, tier: Tier, x: f32) -> Goal {
-        Goal { tier, id, label: String::new(), detail: String::new(), at: [x, 0.0, 0.0], quests: vec![], tags: vec![], keys: vec![] }
+        Goal { tier, id, label: String::new(), detail: String::new(), at: [x, 0.0, 0.0], quests: vec![], tags: vec![], keys: vec![], gate: Gate::Open }
     }
 
     #[test]
     fn auto_guides_to_the_nearest_quest_goal_and_lets_go_of_a_vanished_one() {
         let mut s = MapState::default();
         let goals = [goal(1, Tier::Clue, 100.0), goal(2, Tier::Quest, 5000.0), goal(3, Tier::Quest, 900.0)];
-        settle_target(&mut s, &goals, [0.0; 3], None);
+        settle_target(&mut s, &goals, [0.0; 3], None, &[], &Default::default());
         assert_eq!(s.target, Some(3));
-        settle_target(&mut s, &goals[..2], [0.0; 3], None);
+        settle_target(&mut s, &goals[..2], [0.0; 3], None, &[], &Default::default());
         assert_eq!(s.target, Some(2), "3 used up: the next quest goal");
         s.guide_auto = false;
-        settle_target(&mut s, &goals[..1], [0.0; 3], None);
+        settle_target(&mut s, &goals[..1], [0.0; 3], None, &[], &Default::default());
         assert_eq!(s.target, None, "auto off: nothing chosen for the player");
     }
 
@@ -538,15 +611,28 @@ mod tests {
         hand_over.tags = vec!["Secrets.Facts.GoldenWatchCompleted".into()];
         let goals = [goal(3, Tier::Quest, 900.0), hand_over];
         let mut s = MapState::default();
-        settle_target(&mut s, &goals, [0.0; 3], None);
+        settle_target(&mut s, &goals, [0.0; 3], None, &[], &Default::default());
         assert_eq!(s.target, Some(3), "the main story: the nearest quest goal");
-        settle_target(&mut s, &goals, [0.0; 3], Some(&deed));
+        settle_target(&mut s, &goals, [0.0; 3], Some(&deed), &[], &Default::default());
         assert_eq!(s.target, Some(4), "following the deed: its hand-over, though farther");
-        settle_target(&mut s, &goals[..1], [0.0; 3], Some(&deed));
+        settle_target(&mut s, &goals[..1], [0.0; 3], Some(&deed), &[], &Default::default());
         assert_eq!(s.target, None, "nothing of the deed loaded: no stand-in");
+        let mut door = goal(5, Tier::Quest, 10.0);
+        door.gate = Gate::Conditional;
+        let mut s2 = MapState::default();
+        settle_target(&mut s2, &[door, goal(6, Tier::Quest, 500.0)], [0.0; 3], None, &[], &Default::default());
+        assert_eq!(s2.target, Some(6), "a locked door is not where auto guiding sends the hero");
+        // Blocked: the wanted goal is behind a door; a note near it is reachable.
+        let mut cellar = goal(7, Tier::Quest, 1000.0);
+        cellar.at[2] = -1200.0;
+        let note = goal(8, Tier::Clue, 1300.0);
+        let blocked: std::collections::HashSet<u64> = [7].into_iter().collect();
+        let mut s3 = MapState::default();
+        settle_target(&mut s3, &[cellar, note], [0.0; 3], None, &[], &blocked);
+        assert_eq!(s3.target, Some(8), "behind a door: first what is near it and reachable");
         s.target = Some(3);
         s.chosen = true;
-        settle_target(&mut s, &goals, [0.0; 3], Some(&deed));
+        settle_target(&mut s, &goals, [0.0; 3], Some(&deed), &[], &Default::default());
         assert_eq!(s.target, Some(3), "picked by hand: kept");
     }
 

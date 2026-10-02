@@ -161,8 +161,20 @@ impl Canvas {
 
     /// A premultiplied bitmap, centred on (cx, cy), drawn over what is there.
     pub fn blit(&mut self, cx: f32, cy: f32, size: usize, px: &[u32]) {
+        self.blit_alpha(cx, cy, size, px, 255);
+    }
+
+    /// `blit`, at `alpha` (0–255) of the image's own opacity.
+    pub fn blit_alpha(&mut self, cx: f32, cy: f32, size: usize, px: &[u32], alpha: u32) {
         let (x0, y0) = ((cx - size as f32 / 2.0).round() as i32, (cy - size as f32 / 2.0).round() as i32);
         for (i, &s) in px.iter().enumerate() {
+            // Premultiplied: every channel scales with the opacity.
+            let s = if alpha >= 255 {
+                s
+            } else {
+                let k = |shift: u32| (((s >> shift) & 0xFF) * alpha / 255) << shift;
+                k(24) | k(16) | k(8) | k(0)
+            };
             let sa = s >> 24;
             if sa == 0 {
                 continue;
@@ -297,7 +309,21 @@ pub struct Pin {
     /// The guide's target: drawn larger, with its distance.
     pub target: bool,
     pub distance_m: f32,
+    /// How far above (+) or below (−) the hero it is (m).
+    pub dz_m: f32,
 }
+
+/// A pin's size and opacity by distance: full and a little large near, smaller and
+/// fainter far — on a log scale, 10 m to 200 m. The target never fades below 70%.
+pub fn pin_look(distance_m: f32, target: bool) -> (f32, f32) {
+    let t = ((distance_m.max(1.0).ln() - 10f32.ln()) / (200f32.ln() - 10f32.ln())).clamp(0.0, 1.0);
+    let scale = 1.15 - 0.45 * t;
+    let alpha = if target { 1.0 - 0.3 * t } else { 1.0 - 0.65 * t };
+    (scale, alpha)
+}
+
+/// A height difference worth showing (m): another floor, not a slope.
+pub const FLOOR_DZ: f32 = 3.0;
 
 /// Bearings closer than this to straight ahead are on the strip; the rest pin to its ends.
 pub const COMPASS_SPAN: f32 = 90.0;
@@ -367,20 +393,69 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
         let y = bar_bottom - 13.0;
         if d.abs() <= COMPASS_SPAN {
             let x = cx + d * ppd;
-            let s = if p.target { 6.5 } else { 4.0 };
-            cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], Rgba(0, 0, 0, 200));
+            let (k, a) = pin_look(p.distance_m, p.target);
+            let s = if p.target { 6.5 } else { 4.0 } * k;
+            let colour = Rgba(r, g, b, (255.0 * a) as u8);
+            cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], Rgba(0, 0, 0, (200.0 * a) as u8));
             cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], colour);
+            // Another floor: a small arrow beside it, up or down.
+            if p.dz_m.abs() >= FLOOR_DZ {
+                let (ax, up) = (x + s + 5.0, p.dz_m > 0.0);
+                let (tip, base) = if up { (y - 5.0, y + 2.0) } else { (y + 5.0, y - 2.0) };
+                cv.triangle([(ax, tip), (ax - 3.5, base), (ax + 3.5, base)], Rgba(255, 255, 255, (230.0 * a) as u8));
+            }
             if p.target {
-                cv.text(x, bar_bottom + 12.0, 10.0, &distance(p.distance_m), Rgba(255, 255, 255, 240));
+                target_label(cv, x, bar_bottom + 12.0, p);
             }
         } else if p.target {
             // Behind or beside: an arrow at the end it is nearer to, with the distance.
             let side = d.signum();
             let x = cx + side * (w / 2.0 - 14.0);
             cv.triangle([(x + side * 7.0, y), (x - side * 3.0, y - 7.0), (x - side * 3.0, y + 7.0)], colour);
-            cv.text(x - side * 4.0, bar_bottom + 12.0, 10.0, &distance(p.distance_m), Rgba(255, 255, 255, 240));
+            target_label(cv, x - side * 4.0, bar_bottom + 12.0, p);
         }
     }
+}
+
+/// Under the target: its distance, and on another floor an arrow up or down with the
+/// height difference — `85m ▼12m` — centred on `x`, kept on the strip.
+fn target_label(cv: &mut Canvas, x: f32, y: f32, p: &Pin) {
+    const SIZE: f32 = 10.0;
+    let width = |s: &str| 5.5 * SIZE / 6.0 * s.chars().count() as f32 - 1.5 * SIZE / 6.0;
+    let dist = distance(p.distance_m);
+    let height = (p.dz_m.abs() >= FLOOR_DZ).then(|| format!("{:.0}m", p.dz_m.abs()));
+    let (arrow, gap) = (8.0, 6.0);
+    let total = width(&dist) + height.as_ref().map_or(0.0, |h| gap + arrow + 2.0 + width(h));
+    let x0 = (x - total / 2.0).clamp(4.0, cv.w as f32 - 4.0 - total);
+    cv.text(x0 + width(&dist) / 2.0, y, SIZE, &dist, Rgba(255, 255, 255, 240));
+    if let Some(h) = height {
+        let up = p.dz_m > 0.0;
+        // Up in sky blue, down in amber.
+        let c = if up { Rgba(120, 200, 255, 245) } else { Rgba(255, 180, 80, 245) };
+        let ax = x0 + width(&dist) + gap + arrow / 2.0;
+        let (tip, base) = if up { (y - 5.0, y + 4.0) } else { (y + 5.0, y - 4.0) };
+        cv.triangle([(ax, tip), (ax - arrow / 2.0, base), (ax + arrow / 2.0, base)], c);
+        cv.text(ax + arrow / 2.0 + 2.0 + width(&h) / 2.0, y, SIZE, &h, c);
+    }
+}
+
+/// How opaque something on another floor is drawn (0–255): its own floor in full,
+/// fading over 3–6 m of height difference to about a third.
+pub fn floor_alpha(dz_m: f32) -> u32 {
+    let t = ((dz_m.abs() - FLOOR_DZ) / FLOOR_DZ).clamp(0.0, 1.0);
+    (255.0 - 170.0 * t) as u32
+}
+
+/// A small arrow at (x, y) when `dz_m` is another floor: up in sky blue, down in amber.
+fn floor_arrow(cv: &mut Canvas, x: f32, y: f32, dz_m: f32) {
+    if dz_m.abs() < FLOOR_DZ {
+        return;
+    }
+    let up = dz_m > 0.0;
+    let c = if up { Rgba(120, 200, 255, 240) } else { Rgba(255, 180, 80, 240) };
+    let (tip, base) = if up { (y - 4.0, y + 3.0) } else { (y + 4.0, y - 3.0) };
+    cv.triangle([(x, tip + 1.0), (x - 4.5, base + 1.0), (x + 4.5, base + 1.0)], Rgba(0, 0, 0, 170));
+    cv.triangle([(x, tip), (x - 3.5, base), (x + 3.5, base)], c);
 }
 
 /// `85m`, `1.2km`.
@@ -415,6 +490,10 @@ const MAX_STANDING: f32 = 2_500.0;
 /// up or down a line runs — the map's contour lines. Drawn in this order.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Band {
+    /// Walls and rooms of a floor above the hero's (3–12 m up): a ghost.
+    Above,
+    /// Walls and rooms of a floor below the hero's (top 1.5–15 m down): a ghost.
+    Below,
     /// Surfaces more than 4 m below the feet.
     Deep,
     /// Surfaces from 4 m to 1.2 m below.
@@ -430,11 +509,14 @@ pub enum Band {
 }
 
 impl Band {
-    pub const ALL: [Band; 6] = [Band::Deep, Band::Lower, Band::Level, Band::Raised, Band::High, Band::Wall];
+    pub const ALL: [Band; 8] =
+        [Band::Above, Band::Below, Band::Deep, Band::Lower, Band::Level, Band::Raised, Band::High, Band::Wall];
 
     /// (fill, edge).
     pub fn colours(self) -> (Rgba, Rgba) {
         match self {
+            Band::Above => (Rgba(150, 190, 230, 14), Rgba(150, 200, 240, 70)),
+            Band::Below => (Rgba(230, 170, 90, 14), Rgba(240, 180, 100, 75)),
             Band::Deep => (Rgba(40, 70, 120, 45), Rgba(70, 110, 170, 90)),
             Band::Lower => (Rgba(70, 110, 150, 55), Rgba(110, 160, 205, 140)),
             Band::Level => (Rgba(120, 130, 140, 55), Rgba(165, 175, 185, 140)),
@@ -446,6 +528,8 @@ impl Band {
 
     pub fn label(self) -> &'static str {
         match self {
+            Band::Above => "위층 (흐리게)",
+            Band::Below => "아래층·지하 (흐리게)",
             Band::Deep => "깊은 곳",
             Band::Lower => "낮은 곳",
             Band::Level => "같은 높이",
@@ -460,6 +544,14 @@ impl Band {
 /// `None` when it is not drawn: a ceiling, or too far up or down to matter.
 pub fn band(f: &Footprint, feet: f32) -> Option<Band> {
     let (bottom, top) = (f.zmin - feet, f.zmax - feet);
+    let standing = f.height() >= FLAT && f.size() <= MAX_STANDING;
+    // Other floors' walls, as ghosts: a floor up, a floor or a cellar down.
+    if standing && bottom > 300.0 && bottom <= 1200.0 && top > bottom {
+        return Some(Band::Above);
+    }
+    if standing && (-1500.0..-150.0).contains(&top) {
+        return Some(Band::Below);
+    }
     if bottom > 300.0 || top < -800.0 {
         return None; // overhead (ceilings, upper floors) or far below
     }
@@ -718,7 +810,8 @@ pub fn draw_map(
         // As outlines only walls and raised floors are drawn: the cliff and rock boxes
         // are bigger than what they hold (the contours show the real ground), and the
         // lower bands' blue would read as water.
-        let kept: Vec<bool> = Band::ALL.iter().map(|b| !outline || matches!(b, Band::Wall | Band::Raised)).collect();
+        let kept: Vec<bool> =
+            Band::ALL.iter().map(|b| !outline || matches!(b, Band::Wall | Band::Raised | Band::Above | Band::Below)).collect();
         let kept = &kept;
         let class_at = move |i: usize| {
             let k = class[i];
@@ -832,15 +925,21 @@ pub fn draw_map(
         if p.0 * p.0 + p.1 * p.1 > (r - 6.0) * (r - 6.0) {
             continue;
         }
+        // Another floor: faint, with an arrow up or down.
+        let dz = (at[2] - view.center[2]) / 100.0;
+        let alpha = floor_alpha(dz);
         match icons {
             Some(icons) => {
                 let i = icons.get(*k);
-                cv.blit(cx + p.0, cy + p.1, i.size, &i.px);
+                cv.blit_alpha(cx + p.0, cy + p.1, i.size, &i.px, alpha);
+                floor_arrow(cv, cx + p.0 + i.size as f32 / 2.0, cy + p.1 - i.size as f32 / 2.0 + 3.0, dz);
             }
             None => {
                 let size = if *k == Kind::Enemy { 4.5 } else { 3.5 };
-                cv.disc(cx + p.0, cy + p.1, size + 1.2, OUTLINE);
-                cv.disc(cx + p.0, cy + p.1, size, colour(*k));
+                let c = colour(*k);
+                cv.disc(cx + p.0, cy + p.1, size + 1.2, Rgba(OUTLINE.0, OUTLINE.1, OUTLINE.2, (OUTLINE.3 as u32 * alpha / 255) as u8));
+                cv.disc(cx + p.0, cy + p.1, size, Rgba(c.0, c.1, c.2, (c.3 as u32 * alpha / 255) as u8));
+                floor_arrow(cv, cx + p.0 + size + 2.0, cy + p.1 - size, dz);
             }
         }
     }
@@ -912,8 +1011,13 @@ pub fn draw_map(
         if d <= r - 6.0 {
             let s = if target { 7.0 } else { 4.5 };
             let (x, y) = (cx + p.0, cy + p.1);
-            cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], OUTLINE);
-            cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], colour);
+            // Another floor: faint (the target less so), with an arrow up or down.
+            let dz = (g.at[2] - view.center[2]) / 100.0;
+            let a = if target { floor_alpha(dz).max(190) } else { floor_alpha(dz) };
+            let fade = |c: Rgba| Rgba(c.0, c.1, c.2, (c.3 as u32 * a / 255) as u8);
+            cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], fade(OUTLINE));
+            cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], fade(colour));
+            floor_arrow(cv, x + s + 3.0, y - s + 1.0, dz);
         } else if target {
             let (ux, uy) = (p.0 / d, p.1 / d);
             let tip = (cx + ux * (r - 1.0), cy + uy * (r - 1.0));
@@ -976,10 +1080,20 @@ mod tests {
     }
 
     #[test]
+    fn other_floors_are_ghosts_and_fade() {
+        let wall = |z0: f32, z1: f32| Footprint { corners: [[0.0, 0.0], [100.0, 0.0], [100.0, 20.0], [0.0, 20.0]], zmin: z0, zmax: z1 };
+        assert_eq!(band(&wall(0.0, 300.0), 0.0), Some(Band::Wall));
+        assert_eq!(band(&wall(-1300.0, -1000.0), 0.0), Some(Band::Below), "a cellar's wall");
+        assert_eq!(band(&wall(400.0, 700.0), 0.0), Some(Band::Above), "an upper floor's wall");
+        assert_eq!(floor_alpha(0.0), 255);
+        assert_eq!(floor_alpha(-12.0), 85);
+    }
+
+    #[test]
     fn the_compass_puts_north_ahead_and_a_target_where_it_lies() {
         let mut cv = Canvas::new(400, 60);
         // Facing north (yaw 0); a target due east (bearing 90) sits at the right end.
-        draw_compass(&mut cv, 0.0, &[Pin { bearing: 45.0, rgb: [255, 0, 255], target: true, distance_m: 85.0 }]);
+        draw_compass(&mut cv, 0.0, &[Pin { bearing: 45.0, rgb: [255, 0, 255], target: true, distance_m: 8.0, dz_m: -12.0 }]);
         let ppd = (400.0 / 2.0 - 22.0) / COMPASS_SPAN;
         let x = (200.0 + 45.0 * ppd) as usize;
         let px = cv.px[(34 - 13) * 400 + x];

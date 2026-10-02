@@ -136,3 +136,15 @@
 - 금시계(Caddell_GoldenWatch)는 이미 인벤토리에 있고, 받는 NPC 는 이 지역(Senedra)에 로드되지 않음 → 역참조 스캔에서도
   선행 태그·아이템을 가리키는 월드 오브젝트 없음. 그 NPC 가 있는 지역에 가면 전달 목표가 잡힘.
 - `GoodDeedData.LocationNameFact` 는 출시 데이터에서 비어 있음(26개 모두 null) — 선행 장소 표시 불가.
+
+### 조건형 표시 (2026-10-03, 실측 후 수정)
+- 사용자: 가족 재회를 따라가다 Arcas Spire 문으로 안내됨 → 필요 아이템이 없음. 원인: 그 목표는
+  `SenedraForestArcasSpireDoorOpening_PayloadInactive_Interact_BP_C` — 직접 상호작용하는 게 아니라 다른 사건(열쇠로 문
+  열기)이 일어나면 보상을 주는 표시(GrantPayloadComponent). 게다가 Quest03(시작 전) 내용인데, Quest01 목표가 이 지역에
+  없어서 "아무 퀘스트 목표" 대체로 골라졌음.
+- `Goal.gate`: `_PayloadInactive_` 클래스 중 이름이 `Visited`/`Proximity`/`Met` 로 끝나면 **Visit**(가면 됨), 나머지는
+  **Conditional**(문 열림·퍼즐 완료 등 — 가기만 해선 안 됨). 이 지역 13개 중 실측: 조건형 = 문 3, 저장실, 타임루프 완료,
+  Arcas Spire 문.
+- 자동 안내는 조건형을 고르지 않고, **시작 전 메인 퀘스트의 아이템**(`Goal.keys` 가 NotStarted 퀘스트)도 고르지 않음.
+  목록에는 "조건 필요 (열쇠·퍼즐 등 — 가기만 해선 안 됨)" 로 남음.
+- 어떤 열쇠가 필요한지는 문 액터에 없음(PayloadRune 의 사실 하나뿐) — 열쇠를 찾아 안내하는 건 불가.

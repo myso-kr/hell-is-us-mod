@@ -50,6 +50,8 @@ struct Guide {
     goals: Goals,
     /// The quest journal, rebuilt a slice at a time.
     quests: crate::quests::Quests,
+    /// The game's navmesh, read a little at a time.
+    nav: crate::navmesh::Nav,
     /// The save state the knowledge was read from.
     save: u64,
     /// What stands in the way: collision shapes, collected a slice per step.
@@ -249,6 +251,7 @@ impl Attached {
             let g = &mut *g;
             let objects = g.objects.as_ref().unwrap();
             g.quests.step(m, n, || objects.all(m));
+            g.nav.step(m, n, g.quests.nav_actors());
         }
         let k = g.knowledge.clone().unwrap();
         Ok((g.goals.evaluate(m, &k, chain.location), k))
@@ -261,6 +264,11 @@ impl Attached {
             (Some(k), true) => g.quests.journal(k, &crate::quests::deed_states(&self.game, &self.anchors.names, g.save)),
             _ => Vec::new(),
         }
+    }
+
+    /// The navmesh as last read (shared, not copied).
+    pub fn nav(&self) -> Arc<crate::navmesh::NavMesh> {
+        self.guide.borrow().nav.done.clone()
     }
 
     /// The obstacles and ground of the last complete pass (shared, not copied).
@@ -306,6 +314,8 @@ pub struct Snapshot {
     pub paused: bool,
     /// What stands in the way, and the ground, for the route.
     pub obstacles: Arc<Scene>,
+    /// The game's navmesh: the route's first choice.
+    pub nav: Arc<crate::navmesh::NavMesh>,
     /// Saved positions: (world, where).
     pub slots: [Option<(String, [f64; 3])>; SLOTS],
 }
@@ -398,6 +408,7 @@ impl Engine {
             things: Vec::new(),
             footprints: Arc::default(),
             goals: Vec::new(),
+            nav: Default::default(),
             journal: Vec::new(),
             paused: false,
             obstacles: Arc::default(),
@@ -428,6 +439,7 @@ impl Engine {
                         snap.goals = g;
                         snap.journal = a.journal();
                         snap.obstacles = a.obstacles();
+                        snap.nav = a.nav();
                     }
                     Err(e) => snap.notice = Some(format!("minimap: {e}")),
                 }

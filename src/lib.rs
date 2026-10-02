@@ -20,6 +20,7 @@ pub mod log;
 pub mod mem;
 pub mod minimap;
 pub mod names;
+pub mod navmesh;
 pub mod obstacles;
 pub mod pathfind;
 pub mod paths;

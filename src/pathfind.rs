@@ -4,7 +4,8 @@
 //! The game keeps no ground navmesh in memory here, so the grid is drawn from the
 //! collision shapes of the world's meshes (obstacles.rs): anything at the hero's level
 //! — above a step, below head height — blocks; the trail the hero has walked is
-//! cheap (it is known to be walkable); steep ground is dear; deadly water blocks;
+//! cheap (it is known to be walkable); steep ground is dear, and ground too steep to
+//! walk up (over 45° — the hero cannot jump) blocks; deadly water blocks;
 //! everything else is open ground. "The hero's level" is both the hero's own and the
 //! ground's where the obstacle stands, so rocks down a slope count too. When no route
 //! gets through, a second pass lets the route cross obstacles at a high cost, so a goal
@@ -18,8 +19,9 @@ use crate::terrain::Terrain;
 use std::cmp::Reverse;
 use std::collections::BinaryHeap;
 
-/// Cell costs, per cell crossed (×1.414 diagonally).
-const TRAIL: u16 = 1;
+/// Cell costs, per cell crossed (×1.414 diagonally). The trail is only a little
+/// cheaper: at a third of open ground, routes doubled back along it.
+const TRAIL: u16 = 2;
 const OPEN: u16 = 3;
 /// What an obstacle costs when the first pass found no way round.
 const WALL: u16 = 400;
@@ -33,9 +35,11 @@ const MIN_CELL: f32 = 50.0;
 /// measured from the feet (cm).
 const STEP: f32 = 45.0;
 const HEAD: f32 = 180.0;
-/// Ground steeper than these (rise per run: 40°, 55°) costs this much a cell.
-const STEEP: (f32, u16) = (0.84, 12);
-const CLIFF: (f32, u16) = (1.43, 60);
+/// Ground steeper than this (rise per run: 35°) costs this much a cell.
+const STEEP: (f32, u16) = (0.70, 12);
+/// Ground steeper than this (45°, Unreal's walkable floor angle) cannot be walked up,
+/// and the hero cannot jump: it blocks, like a wall.
+const CLIFF: f32 = 1.0;
 /// A floor: thinner than this top to bottom (cm), at least this big from above (cm²).
 const FLOOR: (f32, f32) = (150.0, 40_000.0);
 /// A floor counts if its top is no higher than this above the ground or the hero (cm).
@@ -161,8 +165,8 @@ impl Grid {
                     let c = g.centre((x, y));
                     level[i] = terrain.height(c[0], c[1]).unwrap_or(f32::NAN);
                     if let Some(s) = terrain.slope(c[0], c[1]) {
-                        if s > CLIFF.0 {
-                            g.cost[i] = CLIFF.1;
+                        if s > CLIFF {
+                            g.cost[i] = BLOCK;
                         } else if s > STEEP.0 {
                             g.cost[i] = STEEP.1;
                         }
@@ -394,6 +398,53 @@ pub fn length(route: &[[f32; 2]]) -> f32 {
     route.windows(2).map(|w| ((w[1][0] - w[0][0]).powi(2) + (w[1][1] - w[0][1]).powi(2)).sqrt()).sum()
 }
 
+/// How far `from` is off the route, and how much of the route is left from the
+/// point on it nearest `from` (cm).
+pub fn remaining(route: &[[f32; 2]], from: [f32; 2]) -> Option<(f32, f32)> {
+    let mut best: Option<(f32, f32)> = None;
+    for i in 0..route.len().saturating_sub(1) {
+        let (a, b) = (route[i], route[i + 1]);
+        let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
+        let len2 = (dx * dx + dy * dy).max(f32::EPSILON);
+        let t = (((from[0] - a[0]) * dx + (from[1] - a[1]) * dy) / len2).clamp(0.0, 1.0);
+        let q = [a[0] + dx * t, a[1] + dy * t];
+        let off = (from[0] - q[0]).hypot(from[1] - q[1]);
+        if best.is_none_or(|(o, _)| off < o) {
+            let left = (b[0] - q[0]).hypot(b[1] - q[1]) + length(&route[i + 1..]);
+            best = Some((off, left));
+        }
+    }
+    best
+}
+
+/// Whether a fresh route should replace the one being followed. It does when it
+/// heads the same way from here (within 100°) — so the route keeps up with the hero —
+/// and when the hero has strayed from the old one. One that turns the hero round only
+/// when it is clearly shorter, or the old one crossed obstacles and it does not:
+/// otherwise two near-equal ways round trade places on every recompute and the
+/// compass swings from ahead to behind and back.
+pub fn better(old: &Path, new: &Path, from: [f32; 2], ahead: f32) -> bool {
+    const STRAYED: f32 = 600.0;
+    const SHORTER: f32 = 0.85;
+    const SAME_WAY: f32 = 100.0;
+    let Some((off, left)) = remaining(&old.points, from) else { return true };
+    if off > STRAYED || length(&new.points) < (off + left) * SHORTER || (old.uncertain() && !new.uncertain()) {
+        return true;
+    }
+    let heading = |p: &Path| {
+        let q = next_point(&p.points, from, ahead)?;
+        Some((q[1] - from[1]).atan2(q[0] - from[0]).to_degrees())
+    };
+    match (heading(old), heading(new)) {
+        (Some(a), Some(b)) => ((b - a + 540.0).rem_euclid(360.0) - 180.0).abs() <= SAME_WAY,
+        _ => true,
+    }
+}
+
+/// How much further than the nearest segment a later one may be and still count as
+/// where the hero is (cm).
+const PASSED: f32 = 300.0;
+
 /// The point to head for now: from the route segment nearest `from`, the first point
 /// further along that is at least `ahead` cm away — or the end.
 pub fn next_point(route: &[[f32; 2]], from: [f32; 2], ahead: f32) -> Option<[f32; 2]> {
@@ -403,8 +454,12 @@ pub fn next_point(route: &[[f32; 2]], from: [f32; 2], ahead: f32) -> Option<[f32
         let t = (((from[0] - a[0]) * (b[0] - a[0]) + (from[1] - a[1]) * (b[1] - a[1])) / len).clamp(0.0, 1.0);
         d2(from, [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t])
     };
-    let seg = (0..route.len().saturating_sub(1))
-        .min_by(|&i, &j| to_segment(route[i], route[i + 1]).total_cmp(&to_segment(route[j], route[j + 1])))?;
+    // The furthest-along segment about as near as the nearest: a corner cut short is
+    // passed, not pointed back at.
+    let near: Vec<f32> = (0..route.len().saturating_sub(1)).map(|i| to_segment(route[i], route[i + 1])).collect();
+    let best = near.iter().copied().fold(f32::INFINITY, f32::min);
+    let slack = (best.sqrt() + PASSED).powi(2);
+    let seg = near.iter().rposition(|&d| d <= slack)?;
     route[seg + 1..].iter().find(|p| d2(**p, from) >= ahead * ahead).or(route.last()).copied()
 }
 
@@ -420,6 +475,27 @@ mod tests {
             zmax: z1,
             water: false,
         }
+    }
+
+    #[test]
+    fn a_route_is_kept_unless_the_new_one_is_clearly_better() {
+        let old = Path { points: vec![[0.0, 0.0], [1000.0, 0.0], [1000.0, 1000.0]], through: vec![false, false] };
+        let (off, left) = remaining(&old.points, [500.0, 100.0]).unwrap();
+        assert_eq!((off, left), (100.0, 1500.0));
+        let back = Path { points: vec![[500.0, 100.0], [0.0, 100.0], [0.0, 1000.0], [1000.0, 1000.0]], through: vec![false; 3] };
+        assert!(!better(&old, &back, [500.0, 100.0], 300.0), "turns the hero round, not shorter: keep the old one");
+        let same = Path { points: vec![[500.0, 100.0], [1000.0, 100.0], [1000.0, 1000.0]], through: vec![false; 2] };
+        assert!(better(&old, &same, [500.0, 100.0], 300.0), "the same way: take it, it is fresher");
+        let short = Path { points: vec![[500.0, 100.0], [1000.0, 1000.0]], through: vec![false] };
+        assert!(better(&old, &short, [500.0, 100.0], 300.0), "clearly shorter: take it");
+        assert!(better(&old, &back, [500.0, 3000.0], 300.0), "strayed far from the old one: take the new one");
+    }
+
+    #[test]
+    fn a_corner_cut_short_is_passed() {
+        let r = [[0.0, 0.0], [1000.0, 0.0], [1000.0, 1000.0]];
+        // Cutting across, nearer the second leg's start than the first leg's end.
+        assert_eq!(next_point(&r, [900.0, 150.0], 100.0), Some([1000.0, 1000.0]));
     }
 
     /// A wall `2·half_len` long along Y, 1 m thick, 3 m tall, on the hero's level.

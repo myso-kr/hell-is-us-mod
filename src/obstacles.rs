@@ -50,6 +50,9 @@ pub struct Obstacle {
 
 /// Water is found in cells this big (cm).
 const SAMPLE: f32 = 200.0;
+/// A deck over water: its top from this far below the surface to this far above (cm),
+/// thinner than this (cm), at least this big from above (cm²).
+const DECK: (f32, f32, f32, f32) = (50.0, 300.0, 200.0, 20_000.0);
 
 /// What a pass found: what stands in the way, and the ground.
 #[derive(Clone, Debug, Default)]
@@ -341,11 +344,22 @@ struct Hazard {
 fn water(hazards: &[Hazard], terrain: &Terrain, solid: &[Obstacle], hero: [f64; 3]) -> Vec<Obstacle> {
     let key = |v: f32| (v / SAMPLE).floor() as i32;
     let (hx, hy, reach) = (key(hero[0] as f32), key(hero[1] as f32), (REACH as f32 / SAMPLE) as i32);
-    // Cells under something that stands above the water — a bridge, a pier, a rock —
-    // are not water: the hero walks on it or is stopped by it as an obstacle.
+    // Cells under a deck over the water — a bridge, a pier, a boardwalk: a thin slab
+    // whose top is near the surface, big enough to walk on — are not water. Trees,
+    // rocks and reeds standing in the water are not decks: counted, their 2 m cells
+    // left the marsh full of dry holes that routes went through.
     let lowest = hazards.iter().map(|h| h.top).fold(f32::MAX, f32::min);
+    let highest = hazards.iter().map(|h| h.top).fold(f32::MIN, f32::max);
+    let deck = |o: &Obstacle| {
+        let (lo, hi) = (o.hull.iter().fold([f32::MAX; 2], |a, p| [a[0].min(p[0]), a[1].min(p[1])]),
+            o.hull.iter().fold([f32::MIN; 2], |a, p| [a[0].max(p[0]), a[1].max(p[1])]));
+        o.zmax > lowest - DECK.0
+            && o.zmax < highest + DECK.1
+            && o.zmax - o.zmin < DECK.2
+            && (hi[0] - lo[0]) * (hi[1] - lo[1]) >= DECK.3
+    };
     let mut dry: std::collections::HashSet<(i32, i32)> = std::collections::HashSet::new();
-    for o in solid.iter().filter(|o| o.zmax > lowest) {
+    for o in solid.iter().filter(|o| deck(o)) {
         let lo = [
             o.hull.iter().map(|p| p[0]).fold(f32::MAX, f32::min),
             o.hull.iter().map(|p| p[1]).fold(f32::MAX, f32::min),
@@ -630,6 +644,25 @@ mod tests {
             assert_eq!(xs.iter().cloned().fold(f32::MIN, f32::max), 1000.0, "dry from the middle on");
             assert!(o.water);
         }
+    }
+
+    #[test]
+    fn a_deck_dries_the_water_under_it_and_a_tree_does_not() {
+        let hazard = Hazard { hull: vec![[0.0, 0.0], [2000.0, 0.0], [2000.0, 2000.0], [0.0, 2000.0]], top: 0.0 };
+        let n = 21;
+        let terrain = Terrain::new(vec![Heightfield { origin: [0.0, 0.0, 0.0], spacing: [100.0, 100.0], n, z: vec![-100.0; n * n] }]);
+        let slab = |x0: f32, x1: f32, z0: f32, z1: f32| Obstacle {
+            hull: vec![[x0, 0.0], [x1, 0.0], [x1, 2000.0], [x0, 2000.0]],
+            zmin: z0,
+            zmax: z1,
+            water: false,
+        };
+        let wet = |solid: &[Obstacle]| -> f32 {
+            water(std::slice::from_ref(&hazard), &terrain, solid, [1000.0, 1000.0, 0.0]).iter().map(|o| o.hull[1][0] - o.hull[0][0]).sum()
+        };
+        let all = wet(&[]);
+        assert_eq!(wet(&[slab(900.0, 1100.0, -500.0, 900.0)]), all, "a tree standing in it: still water");
+        assert!(wet(&[slab(800.0, 1200.0, 20.0, 60.0)]) < all, "a bridge deck: dry under it");
     }
 
     #[test]

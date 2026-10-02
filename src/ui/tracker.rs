@@ -35,7 +35,7 @@ fn kind_label(q: &Quest) -> String {
 
 /// Draw the tracker into `cv` (cleared first); the height used, 0 when there is
 /// nothing to show.
-pub fn draw(cv: &mut Canvas, pen: &mut Pen, journal: &[Quest], followed: Option<&Quest>, near: bool) -> i32 {
+pub fn draw(cv: &mut Canvas, pen: &mut Pen, journal: &[Quest], followed: Option<&Quest>, near: bool, stuck: bool) -> i32 {
     cv.clear();
     let mut list: Vec<&Quest> = Vec::new();
     if let Some(f) = followed {
@@ -70,6 +70,10 @@ pub fn draw(cv: &mut Canvas, pen: &mut Pen, journal: &[Quest], followed: Option<
                     Kind::GoodDeed => "이 지역엔 이 선행의 목표가 없음 — 다른 지역에서 진행",
                 };
                 y += pen.write(cv, x, y, width, why, 12, true, Rgba(255, 190, 90, 255), 2) + 2;
+            }
+            if near && stuck {
+                let why = "닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저";
+                y += pen.write(cv, x, y, width, why, 12, true, Rgba(255, 220, 60, 255), 2) + 2;
             }
             if !q.detail.is_empty() {
                 y += pen.write(cv, x, y, width, &q.detail, 13, false, TEXT, 4) + 4;

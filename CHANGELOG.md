@@ -146,3 +146,27 @@ been verified in play yet.
   by hand is kept. NPCs are now goals: conversation payloads, including topic
   subgraphs, and item hand-overs that complete good deeds. Pickups that hold quest
   items are goals until taken.
+- Auto guiding skips places that only pay out when something else happens there,
+  such as a door opened with a key or a solved puzzle (`_PayloadInactive_` markers
+  other than visit triggers). It also skips items of main quests not begun. The
+  list marks such places "조건 필요".
+- Fixed the route flipping between ahead and back. A recomputed route that heads
+  the same way (within 100°) always replaces the old one, and so does any route
+  once the hero strays more than 6 m. One that turns the hero round must be
+  clearly shorter (under 85% of what is left). The compass passes corners cut
+  short instead of pointing back at them. The walked trail is now only slightly
+  cheaper than open ground.
+- Routes no longer cross marsh water or unwalkable slopes. Only bridge-like decks
+  near the surface make the water under them dry; trees, rocks and reeds used to
+  punch dry holes through it (+26% water found in Acasa). Ground steeper than 45°
+  now blocks, since the hero cannot jump; 35–45° stays dear.
+- Floors on the map and the compass. Icons and goals on another floor (3 m or more
+  up or down) are drawn faint, with a ▲/▼. The walls of the floor above and of the
+  floor or cellar below show as ghosts. Compass pins shrink and fade with distance,
+  and the target's label shows its height difference (`85m ▼12m`).
+- Routes now use the game's own navmesh, read from World Partition navigation
+  chunks in memory. They follow stairs, floors and cellars as the game's AI walks
+  them, with the obstacle grid as fallback. A goal that can't be walked to (behind
+  a locked door or a puzzle) gets a route to the nearest reachable point and a
+  dashed last leg. Auto guiding then goes first to something reachable near it
+  (a note, a key, a lever).
