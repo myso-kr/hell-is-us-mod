@@ -2,6 +2,7 @@
 //! the active toggles, read the values. The CLI's `hold` and the overlay are both a
 //! thin layer over `Engine::step`.
 
+use crate::actors::{Scanner, Thing};
 use crate::anchors::{self, Anchors};
 use crate::attr::{Attr, Session};
 use crate::cheats::{self, Active};
@@ -19,13 +20,15 @@ pub struct Attached {
     pub version: String,
     /// Learned the first time the hero is in play, then kept for the process.
     chain: RefCell<Option<Chain>>,
+    /// Enemies, items and the like for the minimap.
+    scanner: RefCell<Scanner>,
 }
 
 pub fn attach() -> Result<Attached, String> {
     let game = Game::find()?.ok_or("the game is not running")?;
     let version = locate::from_exe(&game.exe).map(|i| i.version).unwrap_or_else(|_| "unknown".into());
     let anchors = anchors::discover(&game, game.base)?;
-    Ok(Attached { game, anchors, version, chain: RefCell::new(None) })
+    Ok(Attached { game, anchors, version, chain: RefCell::new(None), scanner: RefCell::default() })
 }
 
 impl Attached {
@@ -66,6 +69,15 @@ impl Attached {
     pub fn pose(&self) -> Result<([f64; 3], f64), String> {
         self.chain()?.pose(&self.game, &self.anchors)
     }
+
+    /// Enemies, items, loot, people and doors in the loaded levels, and where they are.
+    pub fn things(&self) -> Result<Vec<Thing>, String> {
+        let chain = self.chain()?;
+        let hero = chain.hero(&self.game, &self.anchors)?;
+        let mut s = self.scanner.borrow_mut();
+        s.refresh(&self.game, &self.anchors.names, hero, chain.root, chain.sets)?;
+        Ok(s.positions(&self.game, chain.location))
+    }
 }
 
 /// What one step saw. Plain data, so a UI thread can hold a copy.
@@ -88,6 +100,8 @@ pub struct Snapshot {
     pub pose: Option<([f64; 3], f64)>,
     /// The world the hero is in, by name.
     pub world: Option<String>,
+    /// What the minimap marks besides the hero.
+    pub things: Vec<Thing>,
 }
 
 impl Snapshot {
@@ -163,6 +177,7 @@ impl Engine {
             notice: None,
             pose: None,
             world: None,
+            things: Vec::new(),
         };
         if let Err(e) = self.refresh() {
             snap.game = Err(e.clone());
@@ -176,6 +191,10 @@ impl Engine {
             // A closed gate pauses the toggles rather than ending them: it closes on
             // every loading screen, and the player expects god mode to survive one.
             if snap.gate.is_ok() {
+                match a.things() {
+                    Ok(t) => snap.things = t,
+                    Err(e) => snap.notice = Some(format!("minimap: {e}")),
+                }
                 match a.session() {
                     Err(e) => snap.notice = Some(e),
                     Ok(s) => {

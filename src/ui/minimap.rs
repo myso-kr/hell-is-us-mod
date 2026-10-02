@@ -171,6 +171,16 @@ pub fn run(shared: Arc<Shared>) {
         return;
     };
     let mut cv = Canvas::new(SIZE_PX as usize, SIZE_PX as usize);
+    // Without icons the map still works, with dots.
+    let make = |px: u8| match crate::icons::Icons::new(px as usize) {
+        Ok(i) => Some(i),
+        Err(e) => {
+            crate::journal::line(&format!("minimap: {e} — drawing dots"));
+            None
+        }
+    };
+    let mut icon_px = shared.map.lock().unwrap().icon_px;
+    let mut icons = make(icon_px);
     let (mut marker_was, mut toggle_was) = (false, false);
     let mut shown = false;
     let mut saved = Instant::now();
@@ -183,13 +193,18 @@ pub fn run(shared: Arc<Shared>) {
         let game = shared.game_pid.load(Ordering::SeqCst);
         let focus = pid_of(unsafe { GetForegroundWindow() });
         let focused = game != 0 && (focus == game || focus == std::process::id());
-        let (pose, world) = match shared.snap.lock().unwrap().as_ref() {
-            Some(s) => (s.pose, s.world.clone()),
-            None => (None, None),
+        let (pose, world, things) = match shared.snap.lock().unwrap().as_ref() {
+            Some(s) => (s.pose, s.world.clone(), s.things.clone()),
+            None => (None, None, Vec::new()),
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
 
         let mut state = shared.map.lock().unwrap();
+        // The panel changed the icon size: rasterise them again, once.
+        if state.icon_px != icon_px {
+            icon_px = state.icon_px;
+            icons = make(icon_px);
+        }
         let fkey = |n: u8| VK_F1 + n as u16 - 1;
         let (toggle_now, marker_now) =
             (pressed(fkey(state.toggle_key), &mut toggle_was), pressed(fkey(state.marker_key), &mut marker_was));
@@ -217,7 +232,7 @@ pub fn run(shared: Arc<Shared>) {
                     heading_up: state.heading_up,
                     scale: (SIZE_PX as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
                 };
-                draw_map(&mut cv, &state, world, &view);
+                draw_map(&mut cv, &state, world, &view, &things, icons.as_ref());
                 surface.present(hwnd, &cv, r.right - SIZE_PX - MARGIN, r.top + MARGIN + 24);
                 if !shown {
                     unsafe { ShowWindow(hwnd, SW_SHOWNOACTIVATE) };

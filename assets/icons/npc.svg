@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <!-- NPC: 사람 -->
+  <circle cx="12" cy="7.5" r="4" fill="#50c8f0" stroke="#04121a" stroke-width="1.6"/>
+  <path d="M4.5 21c0-4.4 3.4-7.5 7.5-7.5s7.5 3.1 7.5 7.5z" fill="#50c8f0" stroke="#04121a" stroke-width="1.6" stroke-linejoin="round"/>
+</svg>

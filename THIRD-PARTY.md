@@ -13,3 +13,9 @@ are the game's own reflection names. They were first read from community Cheat
 Engine tables posted on FearLess Revolution (topic 35282, tables by matthew80,
 Sianz and VampTY). No code or offsets from those tables are used: the tool finds
 every attribute by name at run time.
+
+## resvg
+
+The minimap's SVG icons are rasterised with resvg and usvg (Apache-2.0 OR MIT,
+https://github.com/linebender/resvg) and tiny-skia (BSD-3-Clause,
+https://github.com/linebender/tiny-skia), linked into the binary from crates.io.

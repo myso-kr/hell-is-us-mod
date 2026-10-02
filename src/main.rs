@@ -98,6 +98,25 @@ fn doctor(opt: &Options) -> R {
         Err(e) => log!("FAIL pose: {e}"),
     }
 
+    let started = std::time::Instant::now();
+    match a.things() {
+        Ok(t) => {
+            let count = |k: hiumod::actors::Kind| t.iter().filter(|x| x.kind() == k).count();
+            let kinds: Vec<String> =
+                hiumod::actors::Kind::ALL.iter().map(|&k| format!("{} {}", k.label(), count(k))).collect();
+            log!("ok   minimap things: {} in {} ms — {}", t.len(), started.elapsed().as_millis(), kinds.join(", "));
+            let subs: Vec<String> = hiumod::actors::Sub::ALL
+                .iter()
+                .filter_map(|&s| {
+                    let n = t.iter().filter(|x| x.sub == s).count();
+                    (n > 0).then(|| format!("{} {n}", s.label()))
+                })
+                .collect();
+            println!("        {}", subs.join(", "));
+        }
+        Err(e) => log!("FAIL minimap things: {e}"),
+    }
+
     let s = match a.session() {
         Ok(s) => s,
         Err(e) => {

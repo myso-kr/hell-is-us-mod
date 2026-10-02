@@ -34,3 +34,15 @@ been verified in play yet.
 - Minimap overlay, seen working in game (shows, turns with the camera, F6 markers). It is a click-through window over the game
   showing the trail walked, markers (F6) and the hero's heading, with F9 to toggle. Both keys can be changed in the panel: F7 was the first choice, but it is the game's photo mode.
   It is kept per world in `Mods\minimap.txt` and has its own tab in the panel.
+- The minimap dots enemies, items, loot, NPCs, and doors and puzzles. The tool finds
+  them by class among the actors of every loaded level, with a full scan once a second
+  (18 ms) and positions every tenth of a second. Each kind can be toggled.
+- Corpses (health 0) and things already picked up or used (`bHasBeenActivated`) are
+  no longer shown. Things are drawn as SVG icons (`assets/icons/`, rasterised by
+  resvg) instead of dots.
+- Map filters go below the five kinds, to 22 finer sorts read from class names
+  (enemy families; medicine, food, weapons, gear, skills, research, lore, quest
+  items...). The icon size is set in the panel (10–32 px).
+- The panel has more room: it is wider and uses larger spacing and text. The map tab
+  is split into four boxes. Kinds are on/off switches with their map colour, finer
+  sorts are coloured chips under 'details', and counts are in parentheses.

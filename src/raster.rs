@@ -5,6 +5,8 @@
 //! Pixels are `0xAARRGGBB`, premultiplied, top row first: what `UpdateLayeredWindow`
 //! takes from a 32-bit top-down DIB. Edges are anti-aliased by coverage over one pixel.
 
+use crate::actors::{Kind, Thing};
+use crate::icons::Icons;
 use crate::minimap::{MapState, View};
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -96,6 +98,26 @@ impl Canvas {
         });
     }
 
+    /// A premultiplied bitmap, centred on (cx, cy), drawn over what is there.
+    pub fn blit(&mut self, cx: f32, cy: f32, size: usize, px: &[u32]) {
+        let (x0, y0) = ((cx - size as f32 / 2.0).round() as i32, (cy - size as f32 / 2.0).round() as i32);
+        for (i, &s) in px.iter().enumerate() {
+            let sa = s >> 24;
+            if sa == 0 {
+                continue;
+            }
+            let (x, y) = (x0 + (i % size) as i32, y0 + (i / size) as i32);
+            if x < 0 || y < 0 || x as usize >= self.w || y as usize >= self.h {
+                continue;
+            }
+            let at = y as usize * self.w + x as usize;
+            let d = self.px[at];
+            let keep = 255 - sa;
+            let ch = |shift: u32| ((((d >> shift) & 0xFF) * keep / 255 + ((s >> shift) & 0xFF)).min(255)) << shift;
+            self.px[at] = ch(24) | ch(16) | ch(8) | ch(0);
+        }
+    }
+
     /// The letter N, `size` px tall, centred on (cx, cy) — the only text the map needs.
     pub fn letter_n(&mut self, cx: f32, cy: f32, size: f32, c: Rgba) {
         let (hw, hh) = (size * 0.32, size / 2.0);
@@ -112,9 +134,16 @@ const TRAIL: Rgba = Rgba(150, 200, 255, 210);
 const MARKER: Rgba = Rgba(255, 200, 60, 240);
 const HERO: Rgba = Rgba(255, 255, 255, 255);
 const NORTH: Rgba = Rgba(255, 110, 90, 255);
+const OUTLINE: Rgba = Rgba(0, 0, 0, 200);
+
+fn colour(k: Kind) -> Rgba {
+    let [r, g, b] = k.rgb();
+    Rgba(r, g, b, 255)
+}
 
 /// One frame of the minimap: a disc of radius `r` px centred in the canvas.
-pub fn draw_map(cv: &mut Canvas, state: &MapState, world: &str, view: &View) {
+/// With `icons`, things are drawn as icons; without, as coloured dots.
+pub fn draw_map(cv: &mut Canvas, state: &MapState, world: &str, view: &View, things: &[Thing], icons: Option<&Icons>) {
     cv.clear();
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
     let r = cx.min(cy) - 14.0;
@@ -155,6 +184,28 @@ pub fn draw_map(cv: &mut Canvas, state: &MapState, world: &str, view: &View) {
                 let base = (cx + ux * (r - 12.0), cy + uy * (r - 12.0));
                 let (nx, ny) = (-uy * 5.0, ux * 5.0);
                 cv.triangle([tip, (base.0 + nx, base.1 + ny), (base.0 - nx, base.1 - ny)], MARKER);
+            }
+        }
+    }
+
+    // Enemies last, so they sit on top of the rest.
+    let mut sorted: Vec<&Thing> = things.iter().filter(|t| state.shows(t.sub)).collect();
+    sorted.sort_by_key(|t| std::cmp::Reverse(t.kind()));
+    for t in sorted {
+        let (k, at) = (&t.kind(), &t.at);
+        let p = view.project(*at);
+        if p.0 * p.0 + p.1 * p.1 > (r - 6.0) * (r - 6.0) {
+            continue;
+        }
+        match icons {
+            Some(icons) => {
+                let i = icons.get(*k);
+                cv.blit(cx + p.0, cy + p.1, i.size, &i.px);
+            }
+            None => {
+                let size = if *k == Kind::Enemy { 4.5 } else { 3.5 };
+                cv.disc(cx + p.0, cy + p.1, size + 1.2, OUTLINE);
+                cv.disc(cx + p.0, cy + p.1, size, colour(*k));
             }
         }
     }
@@ -210,6 +261,23 @@ mod tests {
     }
 
     #[test]
+    fn icons_blit_opaque_over_the_map() {
+        let icons = Icons::new(16).unwrap();
+        let mut cv = Canvas::new(200, 200);
+        let s = MapState::default();
+        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01 };
+        draw_map(
+            &mut cv,
+            &s,
+            "W",
+            &v,
+            &[Thing { sub: crate::actors::Sub::Medicine, at: [3000.0, 0.0, 0.0] }],
+            Some(&icons),
+        );
+        assert!(cv.px[70 * 200 + 100] >> 24 > 200, "item icon 30 px above the centre");
+    }
+
+    #[test]
     fn a_map_frame_draws_the_hero_at_the_centre() {
         let mut cv = Canvas::new(200, 200);
         let mut s = MapState::default();
@@ -217,8 +285,13 @@ mod tests {
         s.observe("W", [1000.0, 0.0, 0.0]);
         s.toggle_marker("W", [100_000.0, 0.0, 0.0]);
         let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01 };
-        draw_map(&mut cv, &s, "W", &v);
+        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None);
         assert_eq!(cv.px[100 * 200 + 100] >> 24, 255, "hero arrow");
+        // 30 m ahead at 0.01 px/cm is 30 px above the centre, in enemy red.
+        assert_eq!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235);
+        s.layers = 0;
+        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None);
+        assert_ne!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235, "layer off, not drawn");
         assert_eq!(cv.px[0], 0, "outside the disc stays clear");
     }
 }

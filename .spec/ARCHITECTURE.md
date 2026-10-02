@@ -68,7 +68,11 @@ src/
   attr.rs         속성 세트/속성을 이름으로 해석(`*` 포함), 검사된 읽기·쓰기 (Session).
                   일반 float 필드도 같은 Session 에 (`add_fields`, 레이블 Hero / Movement)
   cheats.rs       치트 표 (7행), 일반 필드 목록 HERO_FIELDS / MOVEMENT_FIELDS
-  minimap.rs      미니맵 상태(경로·마커·설정, 월드별), 투영(View), minimap.txt 형식
+  actors.rs       미니맵에 찍을 액터: 레벨 순회, 클래스 계보로 분류(classify), 1 Hz 스캔 + 매 스텝 위치,
+                  다 쓴 것 거르기(Done: 적 체력 0, InteractionActionComponent.bHasBeenActivated),
+                  세부 종류 Sub 22종 (적: 계열명, 아이템: 클래스 이름 접두사·단어, 문·퍼즐: 계보) — Kind 는 Sub 에서
+  icons.rs        assets/icons/*.svg 를 include_str! 로 넣고 resvg 로 래스터화 (미리 곱한 ARGB)
+  minimap.rs      미니맵 상태(경로·마커·설정·레이어, 월드별), 투영(View), minimap.txt 형식
   raster.rs       미리 곱한 알파 픽셀 버퍼에 원·고리·선·삼각형·N, draw_map (한 프레임)
   hold.rs         원래 값 기록(originals.txt), 부분 복구
   settings.rs     패널 설정(settings.txt)
@@ -87,6 +91,8 @@ src/
 
 좌표: UE X 앞("북"으로 씀), Y 오른쪽, Z 위, yaw 는 +X 에서 +Y 쪽으로(위에서 보면 시계 방향).
 월드 이름 = 폰 → OuterPrivate(레벨) → OuterPrivate(월드) 의 이름.
+로드된 레벨 = `World.Levels` (+0x178, 리플렉션). 레벨의 액터 = `ULevel::Actors` (+0xA0, 리플렉션 밖 —
+주인공 레벨에서 주인공을 담은 유일한 TArray 로 찾음). 빌드 24045435: 레벨 140, 액터 10,671.
 
 패널 스레드 규칙: **게임 메모리는 worker 스레드만 만진다.** 미니맵도 스냅숏만 읽는다. `Attached` 는 `RefCell`
 을 가지므로 Sync 가 아니다 — worker 밖으로 넘기지 않는다.

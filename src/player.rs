@@ -53,7 +53,7 @@ fn first(n: &Names, m: &dyn Memory, obj: u64, name: &str) -> Result<(u64, u64), 
 }
 
 /// The pawn's property that holds an AbilitySystemComponent.
-fn find_asc(n: &Names, m: &dyn Memory, pawn: u64) -> Result<(u64, u64), String> {
+pub fn find_asc(n: &Names, m: &dyn Memory, pawn: u64) -> Result<(u64, u64), String> {
     let class = mem::read_u64(m, pawn + names::CLASS).unwrap_or(0);
     for c in n.lineage(m, class) {
         for p in n.properties(m, c).into_iter().filter(|p| p.size == 8) {

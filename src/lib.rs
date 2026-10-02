@@ -1,5 +1,6 @@
 //! The module list, so the tests can drive everything that does not need the game.
 
+pub mod actors;
 pub mod anchors;
 pub mod attr;
 pub mod cheats;
@@ -8,6 +9,7 @@ pub mod cli;
 pub mod engine;
 pub mod game;
 pub mod hold;
+pub mod icons;
 pub mod journal;
 pub mod log;
 pub mod mem;

@@ -25,7 +25,12 @@ exits. **F8** shows and hides the panel. Play in windowed or borderless mode.
 The minimap sits in the game window's top-right corner. It shows the path you
 walked and the markers you placed, around an arrow for the hero. **F9** shows and
 hides it. **F6** drops a marker where you stand, or removes the one you are standing
-next to. Trails and markers are kept per area in `Mods\minimap.txt`. The 지도 tab of
+next to. Nearby enemies (red skull), items to pick up (green gem), loot (orange chest),
+NPCs (blue figure) and doors or puzzles (violet door) are drawn on it as icons.
+Corpses and things already picked up or used drop off the map. Each kind can be
+switched off, and so can its finer sorts: enemy families, and items split into
+medicine, food, weapons, gear, skills, research, lore, quest items and more. Icon size
+is set in the panel. The icons are SVGs in `assets/icons/`. Trails and markers are kept per area in `Mods\minimap.txt`. The 지도 tab of
 the panel sets north-up or heading-up and the radius. The game's own map art is not
 drawn: there is no map image yet.
 

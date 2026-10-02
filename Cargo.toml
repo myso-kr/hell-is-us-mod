@@ -35,3 +35,6 @@ lto = true
 codegen-units = 1
 panic = "abort"
 strip = true
+
+[dependencies]
+resvg = { version = "0.45", default-features = false }

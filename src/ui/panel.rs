@@ -3,6 +3,7 @@
 //! touches the game itself.
 
 use super::{hotkey, Request, Shared};
+use crate::actors::{Kind as ThingKind, Sub};
 use crate::cheats::{self, Active, Cheat, Effect, Group, Kind, CHEATS};
 use crate::engine::Snapshot;
 use crate::settings::{self, Settings};
@@ -20,11 +21,29 @@ const BAD: Color32 = Color32::from_rgb(0xF0, 0x82, 0x78);
 const WAIT: Color32 = Color32::from_rgb(0xE8, 0xC0, 0x6A);
 const DIM: Color32 = Color32::from_gray(150);
 
-pub const WIDTH: f32 = 420.0;
+pub const WIDTH: f32 = 470.0;
 
 /// egui's own fonts have no Hangul. Malgun Gothic ships with Windows, so it is
 /// borrowed from the system rather than bundled; without it the panel still works,
 /// with boxes where the Korean would be.
+/// Room to breathe: bigger hit targets and wider gaps than egui's compact default.
+pub fn install_style(ctx: &egui::Context) {
+    ctx.all_styles_mut(|s| {
+        s.spacing.item_spacing = egui::vec2(8.0, 6.0);
+        s.spacing.button_padding = egui::vec2(8.0, 4.0);
+        s.spacing.interact_size.y = 23.0;
+        s.spacing.slider_width = 180.0;
+        s.spacing.combo_width = 72.0;
+        for (style, size) in
+            [(egui::TextStyle::Body, 14.0), (egui::TextStyle::Button, 14.0), (egui::TextStyle::Small, 12.0)]
+        {
+            if let Some(f) = s.text_styles.get_mut(&style) {
+                f.size = size;
+            }
+        }
+    });
+}
+
 pub fn install_fonts(ctx: &egui::Context) {
     let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\malgun.ttf") else { return };
     let mut fonts = egui::FontDefinitions::default();
@@ -53,6 +72,8 @@ pub struct Panel {
     debug: bool,
     /// The minimap tab.
     map: bool,
+    /// Which kinds' finer sorts are unfolded in the map tab.
+    unfolded: [bool; 5],
     marks: verify::Marks,
     on: HashMap<&'static str, bool>,
     value: HashMap<&'static str, f32>,
@@ -103,6 +124,7 @@ impl Panel {
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
             debug: tab == Some("debug"),
             map: tab == Some("map"),
+            unfolded: [false; 5],
             wanted: resume.clone(),
             keep: saved.keep,
             resume: (saved.keep && !resume.is_empty()).then_some(resume),
@@ -270,44 +292,130 @@ impl Panel {
         }
     }
 
-    /// The minimap's settings, and what it knows about where the hero is.
+    /// The minimap's settings, and what it knows about where the hero is — in four
+    /// boxes: the map, its keys, what it shows, and this area.
     fn map_tab(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
         let world = snap.and_then(|s| s.world.clone());
-        let mut state = self.shared.map.lock().unwrap();
-        let before = (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key);
-        let label = format!("미니맵 표시 (F{})", state.toggle_key);
-        ui.checkbox(&mut state.show, label);
-        ui.checkbox(&mut state.heading_up, "진행 방향을 위로 (끄면 북쪽이 위)");
-        ui.horizontal(|ui| {
-            ui.label("반경");
-            ui.add(egui::Slider::new(&mut state.radius_m, 20.0..=300.0).step_by(10.0).suffix(" m"));
+        let near = snap.map(|s| s.things.clone()).unwrap_or_default();
+        let shared = self.shared.clone();
+        let mut state = shared.map.lock().unwrap();
+        let before = state.clone();
+
+        section(ui, "미니맵", |ui| {
+            egui::Grid::new("map-basic").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
+                ui.label(format!("표시 (F{})", state.toggle_key));
+                toggle(ui, &mut state.show);
+                ui.end_row();
+                ui.label("진행 방향을 위로");
+                ui.horizontal(|ui| {
+                    toggle(ui, &mut state.heading_up);
+                    ui.label(
+                        RichText::new(if state.heading_up { "카메라 방향이 위" } else { "북쪽(N)이 위" })
+                            .color(DIM)
+                            .small(),
+                    );
+                });
+                ui.end_row();
+                ui.label("반경");
+                ui.add(egui::Slider::new(&mut state.radius_m, 20.0..=300.0).step_by(10.0).suffix(" m"));
+                ui.end_row();
+                ui.label("아이콘 크기");
+                ui.add(egui::Slider::new(&mut state.icon_px, crate::minimap::ICON_PX).suffix(" px"));
+                ui.end_row();
+            });
         });
-        ui.horizontal(|ui| {
-            let other = state.marker_key;
-            key_picker(ui, "표시 키", "toggle_key", &mut state.toggle_key, other);
-            let other = state.toggle_key;
-            key_picker(ui, "마커 키", "marker_key", &mut state.marker_key, other);
+
+        section(ui, "단축키", |ui| {
+            egui::Grid::new("map-keys").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
+                ui.label("미니맵 표시/숨김");
+                let other = state.marker_key;
+                key_picker(ui, "toggle_key", &mut state.toggle_key, other);
+                ui.end_row();
+                ui.label("마커 찍기/지우기");
+                let other = state.toggle_key;
+                key_picker(ui, "marker_key", &mut state.marker_key, other);
+                ui.end_row();
+            });
+            ui.label(RichText::new("마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다").color(DIM).small());
         });
-        if before != (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key) {
-            state.dirty = true;
-        }
-        ui.separator();
-        match (&world, snap.and_then(|s| s.pose)) {
+
+        section(ui, "표시할 것", |ui| {
+            ui.label(RichText::new("괄호 안 숫자는 지금 불러온 범위에 남아 있는 개수입니다").color(DIM).small());
+            ui.add_space(2.0);
+            for (i, k) in ThingKind::ALL.into_iter().enumerate() {
+                let [r, g, b] = k.rgb();
+                let colour = Color32::from_rgb(r, g, b);
+                let total = near.iter().filter(|t| t.kind() == k).count();
+                let mut on = state.layers & k.bit() != 0;
+                ui.horizontal(|ui| {
+                    if toggle(ui, &mut on).changed() {
+                        state.layers ^= k.bit();
+                    }
+                    let (dot, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                    ui.painter().circle_filled(dot.center(), 6.0, if on { colour } else { colour.gamma_multiply(0.3) });
+                    let name = RichText::new(k.label()).strong().color(if on { Color32::WHITE } else { DIM });
+                    ui.label(name);
+                    ui.label(RichText::new(format!("({total})")).color(DIM));
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let subs = Sub::ALL.iter().filter(|x| x.kind() == k).count();
+                        if subs > 1 {
+                            let hidden = Sub::ALL.iter().filter(|x| x.kind() == k && state.hidden.contains(x)).count();
+                            let text = match (self.unfolded[i], hidden) {
+                                (true, _) => "세부 ▲".to_string(),
+                                (false, 0) => "세부 ▼".to_string(),
+                                (false, h) => format!("세부 ▼ ({h}개 숨김)"),
+                            };
+                            if ui.add(egui::Button::new(RichText::new(text).small()).frame(false)).clicked() {
+                                self.unfolded[i] = !self.unfolded[i];
+                            }
+                        }
+                    });
+                });
+                if self.unfolded[i] && Sub::ALL.iter().filter(|x| x.kind() == k).count() > 1 {
+                    ui.indent(("subs", i), |ui| {
+                        ui.horizontal_wrapped(|ui| {
+                            ui.spacing_mut().item_spacing = egui::vec2(6.0, 6.0);
+                            for sub in Sub::ALL.into_iter().filter(|x| x.kind() == k) {
+                                let n = near.iter().filter(|t| t.sub == sub).count();
+                                let shown = !state.hidden.contains(&sub);
+                                if ui.add_enabled(on, chip(&format!("{} ({n})", sub.label()), shown, colour)).clicked()
+                                {
+                                    if shown {
+                                        state.hidden.insert(sub);
+                                    } else {
+                                        state.hidden.remove(&sub);
+                                    }
+                                }
+                            }
+                        });
+                    });
+                    ui.add_space(4.0);
+                }
+            }
+        });
+
+        section(ui, "이 지역", |ui| match (&world, snap.and_then(|s| s.pose)) {
             (Some(w), Some((p, yaw))) => {
-                ui.label(RichText::new(format!("지역 {w}")).color(DIM).small());
-                ui.label(
-                    RichText::new(format!("위치 ({:.0}, {:.0}, {:.0}) · 방향 {yaw:.0}°", p[0], p[1], p[2]))
-                        .color(DIM)
-                        .small(),
-                );
                 let trail = state.trails.get(w).map_or(0, |t| t.iter().flatten().count());
                 let markers = state.markers.get(w).map_or(0, Vec::len);
-                ui.label(format!("이 지역: 지나온 길 {trail}점 · 마커 {markers}개"));
+                egui::Grid::new("map-area").num_columns(2).spacing([16.0, 6.0]).show(ui, |ui| {
+                    ui.label("지역");
+                    ui.label(RichText::new(w).color(DIM));
+                    ui.end_row();
+                    ui.label("위치");
+                    ui.label(
+                        RichText::new(format!("{:.0}, {:.0}, {:.0} · 방향 {yaw:.0}°", p[0], p[1], p[2])).color(DIM),
+                    );
+                    ui.end_row();
+                    ui.label("기록");
+                    ui.label(format!("지나온 길 ({trail}점) · 마커 ({markers}개)"));
+                    ui.end_row();
+                });
                 ui.horizontal(|ui| {
-                    if ui.button("이 지역 경로 지우기").clicked() {
+                    if ui.button("경로 지우기").clicked() {
                         state.clear_trail(w);
                     }
-                    if ui.button("이 지역 마커 지우기").clicked() {
+                    if ui.button("마커 지우기").clicked() {
                         state.clear_markers(w);
                     }
                 });
@@ -315,15 +423,15 @@ impl Panel {
             _ => {
                 ui.label(RichText::new("주인공을 조작할 수 있을 때 표시됩니다").color(DIM));
             }
+        });
+
+        let changed = (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key)
+            != (before.show, before.heading_up, before.radius_m, before.toggle_key, before.marker_key)
+            || (state.layers, state.icon_px) != (before.layers, before.icon_px)
+            || state.hidden != before.hidden;
+        if changed {
+            state.dirty = true;
         }
-        ui.label(
-            RichText::new(format!(
-                "F{} — 지금 위치에 마커 (마커 옆에서 누르면 지움) · 게임 창 오른쪽 위에 표시",
-                state.marker_key
-            ))
-            .color(DIM)
-            .small(),
-        );
     }
 
     /// For each cheat that is on: every attribute it writes — what it was before,
@@ -482,7 +590,7 @@ impl Panel {
             }
         }
         ui.add_space(4.0);
-        ui.label(RichText::new("혼자 플레이할 때만 동작합니다 · 업적은 차단되지 않습니다").color(DIM).small());
+        ui.label(RichText::new("주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다").color(DIM).small());
     }
 
     /// The window is exactly as tall as what is in it: nothing clipped, nothing empty.
@@ -534,11 +642,49 @@ impl eframe::App for Panel {
 }
 
 /// A function key, F1–F12 — not F8 (the panel's) and not the one the other picker holds.
-fn key_picker(ui: &mut egui::Ui, label: &str, id: &str, key: &mut u8, other: u8) {
-    ui.label(label);
-    egui::ComboBox::from_id_salt(id).width(56.0).selected_text(format!("F{key}")).show_ui(ui, |ui| {
+fn key_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, other: u8) {
+    egui::ComboBox::from_id_salt(id).width(72.0).selected_text(format!("F{key}")).show_ui(ui, |ui| {
         for k in (1..=12u8).filter(|&k| crate::minimap::usable_key(k) && k != other) {
             ui.selectable_value(key, k, format!("F{k}"));
         }
     });
+}
+
+/// A titled box with room inside it.
+fn section(ui: &mut egui::Ui, title: &str, body: impl FnOnce(&mut egui::Ui)) {
+    ui.add_space(4.0);
+    egui::Frame::group(ui.style()).inner_margin(egui::Margin::same(9)).show(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(RichText::new(title).strong().size(15.0));
+        ui.add_space(4.0);
+        body(ui);
+    });
+}
+
+/// An on/off switch — clearer at a glance than a checkbox.
+fn toggle(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
+    let size = ui.spacing().interact_size.y * egui::vec2(1.8, 0.9);
+    let (rect, mut response) = ui.allocate_exact_size(size, egui::Sense::click());
+    if response.clicked() {
+        *on = !*on;
+        response.mark_changed();
+    }
+    if ui.is_rect_visible(rect) {
+        let t = ui.ctx().animate_bool_responsive(response.id, *on);
+        let radius = rect.height() / 2.0;
+        let track = if *on { OK.gamma_multiply(0.85) } else { Color32::from_gray(70) };
+        ui.painter().rect_filled(rect, radius, track);
+        let x = egui::lerp((rect.left() + radius)..=(rect.right() - radius), t);
+        ui.painter().circle_filled(egui::pos2(x, rect.center().y), radius - 3.0, Color32::from_gray(235));
+    }
+    response
+}
+
+/// A pill that is filled with the kind's colour while on.
+fn chip(text: &str, on: bool, colour: Color32) -> egui::Button<'static> {
+    let label = RichText::new(text.to_string()).color(if on { Color32::from_gray(15) } else { DIM });
+    egui::Button::new(label)
+        .fill(if on { colour } else { Color32::TRANSPARENT })
+        .stroke(egui::Stroke::new(1.0, if on { colour } else { colour.gamma_multiply(0.5) }))
+        .corner_radius(12.0)
 }

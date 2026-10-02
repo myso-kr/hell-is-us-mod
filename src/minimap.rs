@@ -6,7 +6,8 @@
 //! yaw is degrees from +X towards +Y, so it turns clockwise seen from above. The map
 //! is either north-up (+X up) or heading-up (the camera's facing up).
 
-use std::collections::BTreeMap;
+use crate::actors::Sub;
+use std::collections::{BTreeMap, BTreeSet};
 
 /// A trail point is only added this far (cm) from the last one: 3 m.
 const STEP: f32 = 300.0;
@@ -31,6 +32,12 @@ pub struct MapState {
     /// first choice, is the game's photo mode, so the player picks.
     pub toggle_key: u8,
     pub marker_key: u8,
+    /// Which kinds of thing are drawn, one bit per `actors::Kind`.
+    pub layers: u8,
+    /// Finer sorts switched off within a kind that is on.
+    pub hidden: BTreeSet<Sub>,
+    /// How big the icons are, in pixels.
+    pub icon_px: u8,
     /// Per world: the trail, with `None` where it breaks.
     pub trails: BTreeMap<String, Vec<Option<Point>>>,
     pub markers: BTreeMap<String, Vec<Point>>,
@@ -46,6 +53,9 @@ impl Default for MapState {
             radius_m: 60.0,
             toggle_key: 9,
             marker_key: 6,
+            layers: ALL_LAYERS,
+            hidden: BTreeSet::new(),
+            icon_px: 16,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
             dirty: false,
@@ -105,9 +115,12 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\n",
-            self.show, self.heading_up, self.radius_m, self.toggle_key, self.marker_key
+            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nicon_px {}\n",
+            self.show, self.heading_up, self.radius_m, self.toggle_key, self.marker_key, self.layers, self.icon_px
         );
+        for s in &self.hidden {
+            out += &format!("hide {}\n", s.id());
+        }
         for (world, list) in &self.markers {
             for m in list {
                 out += &format!("marker {world} {} {} {}\n", m[0], m[1], m[2]);
@@ -141,6 +154,21 @@ impl MapState {
                         s.radius_m = r;
                     }
                 }
+                ["icon_px", v] => {
+                    if let Some(px) = v.parse::<u8>().ok().filter(|p| ICON_PX.contains(p)) {
+                        s.icon_px = px;
+                    }
+                }
+                ["hide", id] => {
+                    if let Some(sub) = Sub::ALL.into_iter().find(|x| x.id() == id) {
+                        s.hidden.insert(sub);
+                    }
+                }
+                ["layers", v] => {
+                    if let Ok(b) = v.parse::<u8>() {
+                        s.layers = b & ALL_LAYERS;
+                    }
+                }
                 ["toggle_key", v] => {
                     if let Some(k) = v.parse().ok().filter(|k| usable_key(*k)) {
                         s.toggle_key = k;
@@ -171,6 +199,19 @@ impl MapState {
         s
     }
 }
+
+/// The icon sizes the panel offers.
+pub const ICON_PX: std::ops::RangeInclusive<u8> = 10..=32;
+
+impl MapState {
+    /// Whether a thing of this sort is drawn: its kind on, and the sort not hidden.
+    pub fn shows(&self, sub: Sub) -> bool {
+        self.layers & sub.kind().bit() != 0 && !self.hidden.contains(&sub)
+    }
+}
+
+/// Every `actors::Kind` drawn.
+pub const ALL_LAYERS: u8 = 0b1_1111;
 
 /// F1–F12, except F8: that one is the panel's.
 pub fn usable_key(k: u8) -> bool {
@@ -272,7 +313,15 @@ mod tests {
 
     #[test]
     fn round_trips_and_shrugs_off_bad_lines() {
-        let mut s = MapState { show: false, heading_up: false, radius_m: 120.0, ..MapState::default() };
+        let mut s = MapState {
+            show: false,
+            heading_up: false,
+            radius_m: 120.0,
+            layers: 0b101,
+            icon_px: 22,
+            hidden: [Sub::Lore, Sub::Door].into_iter().collect(),
+            ..MapState::default()
+        };
         s.toggle_marker("Map_A", [1.5, -2.0, 3.0]);
         s.observe("Map_A", [0.0, 0.0, 0.0]);
         s.observe("Map_A", [90_000.0, 0.0, 0.0]);
