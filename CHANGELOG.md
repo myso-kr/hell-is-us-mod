@@ -47,6 +47,14 @@ been verified in play yet.
   hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
   from each mesh's bounds and transform. The game ships no map of the area it could
   use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- Maps draw about ten times faster (the big map with everything on: 261 → 27 ms
+  a frame), and the overlay keeps its pace however long a frame takes to draw.
+- The big map's opacity can be set (20–100 %).
+- The panel is wider, in a console layout: a sidebar with status and pages, and
+  two columns of cards. Map, guide and north correction are one page.
+- The map can draw the land itself: hill shading tinted by height against the
+  hero's, contour lines (every 2 m, strong every 10 m), or both, with water in
+  blue. Choose "지형 표시" on the map tab.
 - Routes know water, slopes and bridges. Deadly water comes from the game's
   own kill boxes, cut to where the ground lies below them. The ground comes from
   the landscape's physics heightfields: steep ground costs more, and rocks are

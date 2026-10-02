@@ -40,6 +40,8 @@ pub struct MapState {
     pub icon_px: u8,
     /// Whether the level's walls and floors are drawn under everything else.
     pub terrain: bool,
+    /// How the landscape itself is drawn under everything: shaded, contoured, both.
+    pub relief: ReliefMode,
     /// The compass strip at the top of the game window, and its key.
     pub compass: bool,
     pub compass_key: u8,
@@ -52,6 +54,8 @@ pub struct MapState {
     /// The world yaw the game calls north (degrees): 270 in Hell Is Us, found by
     /// comparing with the game's compass item. Kept, in case an area differs.
     pub north_yaw: f32,
+    /// How opaque the big map is, in percent (20–100).
+    pub big_alpha: u8,
     /// The big map in the middle of the game window, and its key and radius (m).
     pub big_key: u8,
     pub big_radius_m: f32,
@@ -84,6 +88,7 @@ impl Default for MapState {
             hidden: BTreeSet::new(),
             icon_px: 16,
             terrain: true,
+            relief: ReliefMode::Both,
             compass: true,
             compass_key: 10,
             cycle_key: 11,
@@ -93,6 +98,7 @@ impl Default for MapState {
             north_yaw: 270.0,
             big_key: 3,
             big_radius_m: 250.0,
+            big_alpha: 100,
             big: false,
             hide_in_menus: true,
             route: true,
@@ -155,7 +161,7 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_key {}\nbig_radius {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\n",
+            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_key {}\nbig_radius {}\nbig_alpha {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\n",
             self.show,
             self.heading_up,
             self.radius_m,
@@ -164,6 +170,7 @@ impl MapState {
             self.layers,
             self.icon_px,
             self.terrain,
+            self.relief.key(),
             self.compass,
             self.compass_key,
             self.cycle_key,
@@ -171,6 +178,7 @@ impl MapState {
             self.goal_tiers,
             self.big_key,
             self.big_radius_m,
+            self.big_alpha,
             self.hide_in_menus,
             self.route,
             self.north_yaw
@@ -213,12 +221,22 @@ impl MapState {
                     }
                 }
                 ["terrain", v] => s.terrain = v == "true",
+                ["relief", v] => {
+                    if let Some(m) = ReliefMode::ALL.into_iter().find(|m| m.key() == v) {
+                        s.relief = m;
+                    }
+                }
                 ["compass", v] => s.compass = v == "true",
                 ["hide_in_menus", v] => s.hide_in_menus = v == "true",
                 ["route", v] => s.route = v == "true",
                 ["north_yaw", v] => {
                     if let Some(n) = v.parse::<f32>().ok().filter(|n| (0.0..360.0).contains(n)) {
                         s.north_yaw = n;
+                    }
+                }
+                ["big_alpha", v] => {
+                    if let Some(a) = v.parse::<u8>().ok().filter(|a| (20..=100).contains(a)) {
+                        s.big_alpha = a;
                     }
                 }
                 ["big_radius", v] => {
@@ -327,6 +345,48 @@ pub fn usable_key(k: u8) -> bool {
     (1..=12).contains(&k) && k != 8
 }
 
+/// How the landscape is drawn on the map.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ReliefMode {
+    Off,
+    /// Hill shading, tinted by height against the hero's.
+    Shade,
+    /// Contour lines: thin every 2 m, strong every 10 m.
+    Contour,
+    Both,
+}
+
+impl ReliefMode {
+    pub const ALL: [ReliefMode; 4] = [ReliefMode::Off, ReliefMode::Shade, ReliefMode::Contour, ReliefMode::Both];
+
+    /// As kept in the settings file.
+    pub fn key(self) -> &'static str {
+        match self {
+            ReliefMode::Off => "off",
+            ReliefMode::Shade => "shade",
+            ReliefMode::Contour => "contour",
+            ReliefMode::Both => "both",
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            ReliefMode::Off => "끔",
+            ReliefMode::Shade => "음영",
+            ReliefMode::Contour => "등고선",
+            ReliefMode::Both => "둘 다",
+        }
+    }
+
+    pub fn shade(self) -> bool {
+        matches!(self, ReliefMode::Shade | ReliefMode::Both)
+    }
+
+    pub fn contour(self) -> bool {
+        matches!(self, ReliefMode::Contour | ReliefMode::Both)
+    }
+}
+
 /// Where the map stands and faces: the hero's position and the camera's yaw.
 #[derive(Clone, Copy, Debug)]
 pub struct View {
@@ -350,6 +410,14 @@ impl View {
         let forward = dx * c + dy * s;
         let right = -dx * s + dy * c;
         (right * self.scale, -forward * self.scale)
+    }
+
+    /// The world X/Y under a pixel offset from the map's centre — `project` undone.
+    pub fn unproject(&self, x: f32, y: f32) -> [f32; 2] {
+        let up = if self.heading_up { self.yaw_deg } else { self.north_deg };
+        let (s, c) = up.to_radians().sin_cos();
+        let (right, forward) = (x / self.scale, -y / self.scale);
+        [self.center[0] + forward * c - right * s, self.center[1] + forward * s + right * c]
     }
 
     /// Which way the hero's arrow points on the map, as a unit vector, y down.
@@ -388,6 +456,16 @@ mod tests {
         // Facing +Y (yaw 90) points the arrow right.
         let v = View { yaw_deg: 90.0, ..v };
         assert!(close(v.heading(), (1.0, 0.0)));
+    }
+
+    #[test]
+    fn unproject_undoes_project() {
+        for (heading_up, yaw) in [(false, 30.0), (true, 123.0)] {
+            let v = View { center: [100.0, -50.0, 0.0], yaw_deg: yaw, heading_up, scale: 0.02, north_deg: 270.0 };
+            let (x, y) = v.project([900.0, 400.0, 0.0]);
+            let w = v.unproject(x, y);
+            assert!((w[0] - 900.0).abs() < 0.1 && (w[1] - 400.0).abs() < 0.1, "{w:?}");
+        }
     }
 
     #[test]
@@ -443,6 +521,7 @@ mod tests {
             layers: 0b101,
             icon_px: 22,
             terrain: false,
+            relief: ReliefMode::Contour,
             compass: false,
             compass_key: 2,
             cycle_key: 3,
@@ -450,6 +529,7 @@ mod tests {
             goal_tiers: 0b101,
             big_key: 4,
             big_radius_m: 400.0,
+            big_alpha: 60,
             north_yaw: 90.0,
             hide_in_menus: false,
             route: false,

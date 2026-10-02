@@ -87,13 +87,19 @@ impl Layered {
 
     /// Show `cv` (exactly w × h) with its top-left at (x, y) on the screen.
     pub fn present(&mut self, cv: &Canvas, x: i32, y: i32) {
+        self.present_alpha(cv, x, y, 255);
+    }
+
+    /// As `present`, the whole window faded to `alpha` (0–255) as it is composed —
+    /// free: Windows applies it, nothing is redrawn.
+    pub fn present_alpha(&mut self, cv: &Canvas, x: i32, y: i32, alpha: u8) {
         debug_assert_eq!(cv.px.len(), (self.w * self.h) as usize);
         unsafe {
             std::ptr::copy_nonoverlapping(cv.px.as_ptr(), self.bits, cv.px.len());
             let blend = BLENDFUNCTION {
                 BlendOp: AC_SRC_OVER as u8,
                 BlendFlags: 0,
-                SourceConstantAlpha: 255,
+                SourceConstantAlpha: alpha,
                 AlphaFormat: AC_SRC_ALPHA as u8,
             };
             let (pos, size, src) = (POINT { x, y }, SIZE { cx: self.w, cy: self.h }, POINT { x: 0, y: 0 });

@@ -74,6 +74,7 @@ src/
   icons.rs        assets/icons/*.svg 를 include_str! 로 넣고 resvg 로 래스터화 (미리 곱한 ARGB)
   gobjects.rs     GUObjectArray 찾기·객체 목록·클래스로 찾기
   knowledge.rs    현재 저장 상태 → 아는 사실·태그·진행 중 조사
+  relief.rs       지도용 지형: 주인공 주변을 높이·음영·물 격자로 굽기(별도 스레드), bilinear 조회
   terrain.rs      지형: 충돌 컴포넌트 → HeightfieldRef(CookedPhysicalMaterials 뒤) → Chaos FHeightField 높이, 경사
   obstacles.rs    장애물: (+ 죽는 물 상자·지형으로 물 구간) 메시 충돌 형상(AggGeom) × 인스턴스 행렬 × ComponentToWorld(+0x1D0) → 2D 껍질+높이, GUObjectArray 조금씩
   pathfind.rs     A*: 장애물(주인공 높이) 완전 차단 + 지나온 길 싼 길, 안 되면 비싼 통과, 줄 당기기, 다음 지점

@@ -21,7 +21,9 @@ const BAD: Color32 = Color32::from_rgb(0xF0, 0x82, 0x78);
 const WAIT: Color32 = Color32::from_rgb(0xE8, 0xC0, 0x6A);
 const DIM: Color32 = Color32::from_gray(150);
 
-pub const WIDTH: f32 = 470.0;
+pub const WIDTH: f32 = 960.0;
+/// The sidebar: status, then the pages.
+const NAV: f32 = 172.0;
 
 /// egui's own fonts have no Hangul. Malgun Gothic ships with Windows, so it is
 /// borrowed from the system rather than bundled; without it the panel still works,
@@ -70,10 +72,8 @@ pub struct Panel {
     tab: Group,
     /// The debug tab, which is not a group of cheats.
     debug: bool,
-    /// The minimap tab.
+    /// The map & guide page: minimap, big map, compass, north, where to go.
     map: bool,
-    /// The guide tab: compass and where to go.
-    guide: bool,
     /// Which kinds' finer sorts are unfolded in the map tab.
     unfolded: [bool; 6],
     marks: verify::Marks,
@@ -125,8 +125,7 @@ impl Panel {
             tx,
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
             debug: tab == Some("debug"),
-            map: tab == Some("map"),
-            guide: tab == Some("guide"),
+            map: tab == Some("map") || tab == Some("guide"),
             unfolded: [false; 6],
             wanted: resume.clone(),
             keep: saved.keep,
@@ -166,8 +165,6 @@ impl Panel {
                     "debug"
                 } else if self.map {
                     "map"
-                } else if self.guide {
-                    "guide"
                 } else {
                     self.tab.id()
                 }
@@ -243,70 +240,138 @@ impl Panel {
         ui.separator();
     }
 
+    /// The game and the hero gate, stacked for the sidebar.
     fn status(&self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
         let launching = self.shared.launched.load(Ordering::SeqCst);
-        egui::Grid::new("status").num_columns(2).spacing([12.0, 4.0]).show(ui, |ui| {
-            ui.label("게임");
-            match snap.map(|s| &s.game) {
-                Some(Ok((pid, version))) => {
-                    ui.label(RichText::new(format!("연결됨 · v{version} · PID {pid}")).color(OK))
-                }
-                _ if launching => ui.label(RichText::new("실행하는 중 — 켜지면 자동으로 연결합니다").color(WAIT)),
-                Some(Err(e)) => ui.label(RichText::new(format!("연결 안 됨 — {e}")).color(DIM)),
-                None => ui.label(RichText::new("시작하는 중…").color(DIM)),
-            };
-            ui.end_row();
-            ui.label("주인공 게이트");
-            match snap.map(|s| &s.gate) {
-                Some(Ok(())) => ui.label(RichText::new("열림 — 주인공 조작 중").color(OK)),
-                Some(Err(e)) if snap.is_some_and(|s| s.game.is_ok()) => {
-                    ui.label(RichText::new(format!("닫힘 — {e}")).color(WAIT))
-                }
-                _ => ui.label(RichText::new("닫힘").color(DIM)),
-            };
-            ui.end_row();
-        });
-    }
-
-    fn tabs(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
-        ui.horizontal(|ui| {
-            for g in Group::ALL {
-                let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
-                let text = if on > 0 { format!("{} ({on})", g.label()) } else { g.label().to_string() };
-                if ui.selectable_label(!self.debug && !self.map && !self.guide && self.tab == g, text).clicked() {
-                    self.tab = g;
-                    (self.debug, self.map, self.guide) = (false, false, false);
-                }
+        let line = |ui: &mut egui::Ui, title: &str, text: RichText| {
+            ui.label(RichText::new(title).color(DIM).small());
+            ui.add(egui::Label::new(text).wrap());
+            ui.add_space(4.0);
+        };
+        match snap.map(|s| &s.game) {
+            Some(Ok((pid, version))) => {
+                line(ui, "게임", RichText::new(format!("● 연결됨\nv{version} · PID {pid}")).color(OK))
             }
-            ui.separator();
-            if ui.selectable_label(self.guide, "안내").clicked() {
-                (self.debug, self.map, self.guide) = (false, false, true);
+            _ if launching => line(ui, "게임", RichText::new("실행하는 중 — 켜지면 자동으로 연결").color(WAIT)),
+            Some(Err(e)) => line(ui, "게임", RichText::new(format!("○ 연결 안 됨 — {e}")).color(DIM)),
+            None => line(ui, "게임", RichText::new("시작하는 중…").color(DIM)),
+        }
+        match snap.map(|s| &s.gate) {
+            Some(Ok(())) => line(ui, "주인공 게이트", RichText::new("● 열림 — 조작 중").color(OK)),
+            Some(Err(e)) if snap.is_some_and(|s| s.game.is_ok()) => {
+                line(ui, "주인공 게이트", RichText::new(format!("○ 닫힘 — {e}")).color(WAIT))
             }
-            if ui.selectable_label(self.map, "지도").clicked() {
-                (self.debug, self.map, self.guide) = (false, true, false);
-            }
-            if ui.selectable_label(self.debug, "디버그").clicked() {
-                (self.debug, self.map, self.guide) = (true, false, false);
-            }
-        });
-        ui.add_space(4.0);
-        match self.tab {
-            _ if self.guide => self.guide_tab(ui, snap),
-            _ if self.map => self.map_tab(ui, snap),
-            _ if self.debug => self.debug_tab(ui, snap),
-            g => self.held(ui, g, snap),
+            _ => line(ui, "주인공 게이트", RichText::new("○ 닫힘").color(DIM)),
         }
     }
 
-    /// The minimap's settings, and what it knows about where the hero is — in four
-    /// boxes: the map, its keys, what it shows, and this area.
+    /// The sidebar's pages: each cheat group (with how many are on), then the map &
+    /// guide, then debugging.
+    fn nav(&mut self, ui: &mut egui::Ui) {
+        let item = |ui: &mut egui::Ui, on: bool, text: String| {
+            let label = RichText::new(text).size(14.5).color(if on { Color32::WHITE } else { Color32::from_gray(190) });
+            let button = egui::Button::new(label)
+                .fill(if on { Color32::from_rgb(0x2E, 0x3B, 0x4E) } else { Color32::TRANSPARENT })
+                .stroke(egui::Stroke::NONE)
+                .corner_radius(6.0)
+                .min_size(egui::vec2(ui.available_width(), 30.0));
+            ui.add(button).clicked()
+        };
+        ui.label(RichText::new("치트").color(DIM).small());
+        for g in Group::ALL {
+            let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
+            let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
+            if item(ui, !self.debug && !self.map && self.tab == g, text) {
+                self.tab = g;
+                (self.debug, self.map) = (false, false);
+            }
+        }
+        ui.add_space(6.0);
+        ui.label(RichText::new("도구").color(DIM).small());
+        if item(ui, self.map, "지도 · 안내".to_string()) {
+            (self.debug, self.map) = (false, true);
+        }
+        if item(ui, self.debug, "디버그".to_string()) {
+            (self.debug, self.map) = (true, false);
+        }
+    }
+
+    /// The page chosen in the sidebar.
+    fn page(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+        match self.tab {
+            _ if self.map => self.map_tab(ui, snap),
+            _ if self.debug => self.debug_tab(ui, snap),
+            g => {
+                ui.columns(2, |cols| {
+                    let (left, right) = cols.split_at_mut(1);
+                    section(&mut left[0], g.label(), |ui| self.held(ui, g, snap));
+                    self.summary(&mut right[0], snap);
+                });
+            }
+        }
+    }
+
+    /// Every cheat that is on, across the groups, with its value.
+    fn summary(&self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+        let on: Vec<&Cheat> = CHEATS.iter().filter(|c| self.on.get(c.id).copied().unwrap_or(false)).collect();
+        section(ui, &format!("켜진 치트 ({})", on.len()), |ui| {
+            if on.is_empty() {
+                ui.label(RichText::new("켜진 치트가 없습니다").color(DIM));
+            }
+            egui::Grid::new("summary").num_columns(3).spacing([12.0, 6.0]).show(ui, |ui| {
+                for c in on {
+                    ui.label(RichText::new(c.group.label()).color(DIM).small());
+                    ui.label(c.label);
+                    match c.kind {
+                        Kind::Slider { .. } => {
+                            let v = self.value.get(c.id).copied().unwrap_or(0.0);
+                            let now = chosen(c).and_then(|a| snap.and_then(|s| s.value(a)));
+                            let text = match now {
+                                Some(n) => format!("{v:.2} (게임 {n:.2})"),
+                                None => format!("{v:.2}"),
+                            };
+                            ui.label(RichText::new(text).color(OK));
+                        }
+                        _ => {
+                            ui.label(RichText::new("켜짐").color(OK));
+                        }
+                    }
+                    ui.end_row();
+                }
+            });
+        });
+        section(ui, "알아둘 것", |ui| {
+            for t in [
+                "주인공을 조작하는 동안만 값을 씁니다",
+                "패널을 닫으면 원래 값으로 되돌립니다 (✕)",
+                "숨기기(—) 후 F8로 다시 엽니다",
+                "‘미검증’ 표시는 아직 게임에서 확인하지 않은 치트입니다",
+            ] {
+                ui.label(RichText::new(format!("· {t}")).color(DIM).small());
+            }
+        });
+    }
+
+    /// The map & guide page, in two columns. Left: the minimap, the big map, what is
+    /// shown, this area. Right: compass and north, the guide and where to go, every
+    /// key, the game's menus.
     fn map_tab(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+        let shared = self.shared.clone();
+        let mut guard = shared.map.lock().unwrap();
+        let before = guard.clone();
+        ui.columns(2, |cols| {
+            let (left, right) = cols.split_at_mut(1);
+            self.map_column(&mut left[0], &mut guard, snap);
+            self.guide_column(&mut right[0], &mut guard, snap);
+        });
+        if *guard != before {
+            guard.dirty = true;
+        }
+    }
+
+    fn map_column(&mut self, ui: &mut egui::Ui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let world = snap.and_then(|s| s.world.clone());
         let near = snap.map(|s| s.things.clone()).unwrap_or_default();
-        let shared = self.shared.clone();
-        let mut state = shared.map.lock().unwrap();
-        let before = state.clone();
-
         section(ui, "미니맵", |ui| {
             egui::Grid::new("map-basic").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
                 ui.label(format!("표시 (F{})", state.toggle_key));
@@ -328,6 +393,24 @@ impl Panel {
                 ui.label("아이콘 크기");
                 ui.add(egui::Slider::new(&mut state.icon_px, crate::minimap::ICON_PX).suffix(" px"));
                 ui.end_row();
+                ui.label("지형 표시");
+                ui.horizontal(|ui| {
+                    for m in crate::minimap::ReliefMode::ALL {
+                        ui.selectable_value(&mut state.relief, m, m.label());
+                    }
+                });
+                ui.end_row();
+                if state.relief != crate::minimap::ReliefMode::Off {
+                    ui.label("");
+                    ui.label(
+                        RichText::new(
+                            "음영: 나보다 낮은 곳은 푸르게, 높은 곳은 황토색 · 등고선: 2 m (굵게 10 m) · 물은 파랑",
+                        )
+                        .color(DIM)
+                        .small(),
+                    );
+                    ui.end_row();
+                }
                 ui.label("벽·바닥 윤곽");
                 ui.horizontal(|ui| {
                     toggle(ui, &mut state.terrain);
@@ -362,41 +445,23 @@ impl Panel {
             });
         });
 
-        let (cursor, paused) = *self.shared.menu.lock().unwrap();
-        section(ui, "게임 메뉴", |ui| {
-            ui.horizontal(|ui| {
-                toggle(ui, &mut state.hide_in_menus);
-                ui.label("인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
-            });
-            let sig =
-                |on: bool| if on { RichText::new("켜짐").color(WAIT) } else { RichText::new("꺼짐").color(DIM) };
-            ui.horizontal(|ui| {
-                ui.label(RichText::new("감지 — 게임 커서").color(DIM).small());
-                ui.label(sig(cursor).small());
-                ui.label(RichText::new("· 일시정지").color(DIM).small());
-                ui.label(sig(paused).small());
-            });
-        });
-
-        section(ui, "단축키", |ui| {
-            egui::Grid::new("map-keys").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
-                ui.label("미니맵 표시/숨김");
-                let taken = others(&state, state.toggle_key);
-                key_picker(ui, "toggle_key", &mut state.toggle_key, &taken);
-                ui.end_row();
-                ui.label("마커 찍기/지우기");
-                let taken = others(&state, state.marker_key);
-                key_picker(ui, "marker_key", &mut state.marker_key, &taken);
-                ui.end_row();
-                ui.label("큰 지도 (화면 가운데)");
-                let taken = others(&state, state.big_key);
-                key_picker(ui, "big_key", &mut state.big_key, &taken);
-                ui.end_row();
-                ui.label("큰 지도 반경");
+        section(ui, "큰 지도", |ui| {
+            egui::Grid::new("map-big").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
+                ui.label("반경");
                 ui.add(egui::Slider::new(&mut state.big_radius_m, 50.0..=1000.0).step_by(25.0).suffix(" m"));
                 ui.end_row();
+                ui.label("불투명도");
+                ui.add(egui::Slider::new(&mut state.big_alpha, 20..=100).suffix(" %"));
+                ui.end_row();
             });
-            ui.label(RichText::new("마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다").color(DIM).small());
+            ui.label(
+                RichText::new(format!(
+                    "F{} 로 화면 가운데에 펼칩니다 · 낮출수록 게임 화면이 비쳐 보입니다",
+                    state.big_key
+                ))
+                .color(DIM)
+                .small(),
+            );
         });
 
         section(ui, "표시할 것", |ui| {
@@ -484,51 +549,30 @@ impl Panel {
                 ui.label(RichText::new("주인공을 조작할 수 있을 때 표시됩니다").color(DIM));
             }
         });
-
-        let changed = (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key)
-            != (before.show, before.heading_up, before.radius_m, before.toggle_key, before.marker_key)
-            || (state.layers, state.icon_px, state.terrain) != (before.layers, before.icon_px, before.terrain)
-            || state.hidden != before.hidden
-            || (state.big_key, state.big_radius_m, state.hide_in_menus)
-                != (before.big_key, before.big_radius_m, before.hide_in_menus);
-        if changed {
-            state.dirty = true;
-        }
     }
 
-    /// The compass, and the guide: what to point at, chosen here or by the cycle key.
-    fn guide_tab(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+    fn guide_column(&mut self, ui: &mut egui::Ui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         let dist = |g: &crate::goals::Goal| {
             here.map_or(f32::MAX, |h| ((g.at[0] - h[0]).powi(2) + (g.at[1] - h[1]).powi(2)).sqrt() / 100.0)
         };
-        let shared = self.shared.clone();
-        let mut state = shared.map.lock().unwrap();
-        let before = state.clone();
 
-        section(ui, "나침반", |ui| {
+        section(ui, "나침반 · 방향", |ui| {
             egui::Grid::new("compass").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
-                ui.label(format!("화면 위 가운데 (F{})", state.compass_key));
+                ui.label(format!("나침반 — 화면 위 가운데 (F{})", state.compass_key));
                 toggle(ui, &mut state.compass);
                 ui.end_row();
-                ui.label("나침반 표시/숨김");
-                let taken = others(&state, state.compass_key);
-                key_picker(ui, "compass_key", &mut state.compass_key, &taken);
-                ui.end_row();
-                ui.label("다음 목표로 안내");
-                let taken = others(&state, state.cycle_key);
-                key_picker(ui, "cycle_key", &mut state.cycle_key, &taken);
-                ui.end_row();
-            });
-            ui.horizontal(|ui| {
                 ui.label("북쪽 보정");
-                for (deg, name) in [(270.0, "기본 (−Y)"), (0.0, "+X"), (90.0, "+Y"), (180.0, "−X")] {
-                    ui.selectable_value(&mut state.north_yaw, deg, name);
-                }
+                ui.horizontal(|ui| {
+                    for (deg, name) in [(270.0, "기본 (−Y)"), (0.0, "+X"), (90.0, "+Y"), (180.0, "−X")] {
+                        ui.selectable_value(&mut state.north_yaw, deg, name);
+                    }
+                });
+                ui.end_row();
             });
             ui.label(
-                RichText::new("게임 나침반 아이템의 북쪽과 다르면 바꾸세요 (미니맵·큰 지도·나침반 모두에 적용)")
+                RichText::new("게임 나침반 아이템의 북쪽과 다르면 바꾸세요 — 미니맵·큰 지도·나침반 모두에 적용")
                     .color(DIM)
                     .small(),
             );
@@ -616,20 +660,57 @@ impl Panel {
             });
         });
 
-        let changed =
-            (state.compass, state.compass_key, state.cycle_key, state.guide_auto, state.goal_tiers, state.route)
-                != (
-                    before.compass,
-                    before.compass_key,
-                    before.cycle_key,
-                    before.guide_auto,
-                    before.goal_tiers,
-                    before.route,
-                )
-                || state.north_yaw != before.north_yaw;
-        if changed {
-            state.dirty = true;
-        }
+        section(ui, "단축키", |ui| {
+            egui::Grid::new("keys").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
+                for (label, id) in [
+                    ("미니맵 표시/숨김", "toggle_key"),
+                    ("마커 찍기/지우기", "marker_key"),
+                    ("큰 지도 (화면 가운데)", "big_key"),
+                    ("나침반 표시/숨김", "compass_key"),
+                    ("다음 목표로 안내", "cycle_key"),
+                ] {
+                    ui.label(label);
+                    let mine = match id {
+                        "toggle_key" => state.toggle_key,
+                        "marker_key" => state.marker_key,
+                        "big_key" => state.big_key,
+                        "compass_key" => state.compass_key,
+                        _ => state.cycle_key,
+                    };
+                    let taken = others(state, mine);
+                    let key = match id {
+                        "toggle_key" => &mut state.toggle_key,
+                        "marker_key" => &mut state.marker_key,
+                        "big_key" => &mut state.big_key,
+                        "compass_key" => &mut state.compass_key,
+                        _ => &mut state.cycle_key,
+                    };
+                    key_picker(ui, id, key, &taken);
+                    ui.end_row();
+                }
+            });
+            ui.label(
+                RichText::new("마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다 · F8 은 패널")
+                    .color(DIM)
+                    .small(),
+            );
+        });
+
+        let (cursor, paused) = *self.shared.menu.lock().unwrap();
+        section(ui, "게임 메뉴", |ui| {
+            ui.horizontal(|ui| {
+                toggle(ui, &mut state.hide_in_menus);
+                ui.label("인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
+            });
+            let sig =
+                |on: bool| if on { RichText::new("켜짐").color(WAIT) } else { RichText::new("꺼짐").color(DIM) };
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("감지 — 게임 커서").color(DIM).small());
+                ui.label(sig(cursor).small());
+                ui.label(RichText::new("· 일시정지").color(DIM).small());
+                ui.label(sig(paused).small());
+            });
+        });
     }
 
     /// For each cheat that is on: every attribute it writes — what it was before,
@@ -822,11 +903,20 @@ impl eframe::App for Panel {
             .show(ui, |ui| {
                 ui.set_width(WIDTH - 16.0);
                 self.title_bar(ui);
-                self.status(ui, snap.as_ref());
-                ui.separator();
-                ui.add_enabled_ui(open, |ui| self.tabs(ui, snap.as_ref()));
-                ui.separator();
-                self.footer(ui, snap.as_ref());
+                ui.horizontal_top(|ui| {
+                    ui.vertical(|ui| {
+                        ui.set_width(NAV);
+                        self.status(ui, snap.as_ref());
+                        ui.separator();
+                        self.nav(ui);
+                    });
+                    ui.separator();
+                    ui.vertical(|ui| {
+                        ui.add_enabled_ui(open, |ui| self.page(ui, snap.as_ref()));
+                        ui.separator();
+                        self.footer(ui, snap.as_ref());
+                    });
+                });
             })
             .response
             .rect;

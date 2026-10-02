@@ -20,7 +20,7 @@ use super::hotkey::{game_window, pid_of};
 use super::layered::{pump, Layered};
 use super::Shared;
 use crate::goals::{Goal, Tier};
-use crate::minimap::{MapState, View};
+use crate::minimap::{MapState, ReliefMode, View};
 use crate::raster::{draw_compass, draw_map, Canvas, Pin};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -81,6 +81,20 @@ fn cursor_shown() -> bool {
 }
 
 /// What the overlay thread knows about the current route.
+/// The landscape baked for the map, and the bake under way.
+#[derive(Default)]
+struct Baking {
+    done: Option<Arc<crate::relief::Relief>>,
+    /// The scene it was baked from.
+    from: Option<Arc<crate::obstacles::Scene>>,
+    pending: Option<std::thread::JoinHandle<(crate::relief::Relief, Arc<crate::obstacles::Scene>)>>,
+}
+
+/// Bake again when the hero is this far from the baked square's centre (cm), or the
+/// scene changes; the square reaches this far past the widest map's edge.
+const RELIEF_MOVED: f32 = 10_000.0;
+const RELIEF_SPARE: f32 = 15_000.0;
+
 #[derive(Default)]
 struct Route {
     path: crate::pathfind::Path,
@@ -152,11 +166,16 @@ pub fn run(shared: Arc<Shared>) {
     let mut icons = make(icon_px);
     let mut was = [false; 5];
     let mut route = Route::default();
+    let mut baking = Baking::default();
     let mut saved = Instant::now();
     let mut tick = 0u32;
+    let mut frame_start = Instant::now();
     while !shared.quit.load(Ordering::SeqCst) {
         pump();
-        std::thread::sleep(FRAME);
+        // A frame every FRAME, whatever the last one took to draw.
+        let spent = frame_start.elapsed();
+        std::thread::sleep(FRAME.saturating_sub(spent).max(Duration::from_millis(5)));
+        frame_start = Instant::now();
         tick = tick.wrapping_add(1);
 
         let game = shared.game_pid.load(Ordering::SeqCst);
@@ -269,6 +288,31 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 *shared.route_uncertain.lock().unwrap() = path.uncertain();
 
+                // The landscape for the map, baked off this thread when the hero has
+                // moved far, the map grew, or the scene changed.
+                if baking.pending.as_ref().is_some_and(|h| h.is_finished()) {
+                    if let Ok((rel, scene)) = baking.pending.take().unwrap().join() {
+                        baking.done = Some(Arc::new(rel));
+                        baking.from = Some(scene);
+                    }
+                }
+                let half = state.radius_m.max(state.big_radius_m) * 100.0 + RELIEF_SPARE;
+                let stale = baking.done.as_ref().is_none_or(|r| {
+                    let (c, h) = r.extent();
+                    (p[0] - c[0]).hypot(p[1] - c[1]) > RELIEF_MOVED
+                        || h < half - RELIEF_SPARE / 2.0
+                        || h > half * 2.0
+                        || (p[2] - 90.0 - r.feet).abs() > crate::relief::TINT_MOVED
+                }) || baking.from.as_ref().is_none_or(|s| !Arc::ptr_eq(s, &obstacles));
+                if state.relief != ReliefMode::Off && !obstacles.terrain.is_empty() && stale && baking.pending.is_none()
+                {
+                    let (scene, centre, feet) = (obstacles.clone(), [p[0], p[1]], p[2] - 90.0);
+                    baking.pending = Some(std::thread::spawn(move || {
+                        (crate::relief::Relief::bake(&scene, centre, half, feet), scene)
+                    }));
+                }
+                let relief = baking.done.clone().filter(|_| state.relief != ReliefMode::Off);
+
                 if state.big {
                     map_window.hide();
                     let side = ((r.bottom - r.top) as f32 * BIG_SHARE) as i32;
@@ -295,10 +339,11 @@ pub fn run(shared: Arc<Shared>) {
                                 &footprints,
                                 &goals,
                                 &path,
+                                relief.as_deref(),
                             );
                             let x = r.left + (r.right - r.left - side) / 2;
                             let y = r.top + (r.bottom - r.top - side) / 2;
-                            w.present(&big_cv, x, y);
+                            w.present_alpha(&big_cv, x, y, (state.big_alpha as u32 * 255 / 100) as u8);
                         }
                     }
                 } else {
@@ -323,6 +368,7 @@ pub fn run(shared: Arc<Shared>) {
                             &footprints,
                             &goals,
                             &path,
+                            relief.as_deref(),
                         );
                         map_window.present(&map_cv, r.right - MAP_PX - MARGIN, r.top + MARGIN + 24);
                     } else {

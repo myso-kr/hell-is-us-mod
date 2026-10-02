@@ -9,8 +9,9 @@ use crate::actors::{Kind, Thing};
 use crate::geometry::Footprint;
 use crate::goals::Goal;
 use crate::icons::Icons;
-use crate::minimap::{MapState, View};
+use crate::minimap::{MapState, ReliefMode, View};
 use crate::pathfind::Path;
+use crate::relief::Relief;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
@@ -35,16 +36,12 @@ impl Canvas {
         if x < 0 || y < 0 || x as usize >= self.w || y as usize >= self.h || coverage <= 0.0 {
             return;
         }
-        let a = (c.3 as f32 / 255.0) * coverage.min(1.0);
+        let a = (c.3 as f32 * coverage.min(1.0) + 0.5) as u32;
+        if a == 0 {
+            return;
+        }
         let i = y as usize * self.w + x as usize;
-        let d = self.px[i];
-        let ch = |shift: u32, s: u8| {
-            let dst = ((d >> shift) & 0xFF) as f32;
-            ((s as f32 * a + dst * (1.0 - a)).round() as u32).min(255) << shift
-        };
-        let da = ((d >> 24) & 0xFF) as f32;
-        let out_a = ((255.0 * a + da * (1.0 - a)).round() as u32).min(255) << 24;
-        self.px[i] = out_a | ch(16, c.0) | ch(8, c.1) | ch(0, c.2);
+        self.px[i] = over(self.px[i], c, a);
     }
 
     /// Every pixel within `reach` of the box around (x0, y0)–(x1, y1), handed its
@@ -59,16 +56,57 @@ impl Canvas {
         }
     }
 
+    /// Each row from `y0` to `y1`, over only the columns `span` gives for the row's
+    /// centre (any number of ranges), each pixel handed its centre — so a thin or round
+    /// shape costs its own pixels, not its bounding box's.
+    fn rows(
+        &mut self,
+        y0: f32,
+        y1: f32,
+        span: impl Fn(f32) -> [Option<(f32, f32)>; 2],
+        mut f: impl FnMut(&mut Self, i32, i32, f32, f32),
+    ) {
+        let (ly, hy) = ((y0.floor() as i32 - 1).max(0), (y1.ceil() as i32 + 1).min(self.h as i32 - 1));
+        for y in ly..=hy {
+            let py = y as f32 + 0.5;
+            for (a, b) in span(py).into_iter().flatten() {
+                let (lx, hx) = ((a.floor() as i32 - 1).max(0), (b.ceil() as i32 + 1).min(self.w as i32 - 1));
+                for x in lx..=hx {
+                    f(self, x, y, x as f32 + 0.5, py);
+                }
+            }
+        }
+    }
+
     pub fn disc(&mut self, cx: f32, cy: f32, r: f32, c: Rgba) {
-        self.each(cx - r, cy - r, cx + r, cy + r, |s, x, y, px, py| {
+        let o = r + 1.0;
+        let span = |py: f32| {
+            let dy = py - cy;
+            let w = (o * o - dy * dy).max(0.0).sqrt();
+            [(w > 0.0).then_some((cx - w, cx + w)), None]
+        };
+        self.rows(cy - o, cy + o, span, |s, x, y, px, py| {
             let d = ((px - cx).powi(2) + (py - cy).powi(2)).sqrt();
             s.blend(x, y, c, r - d + 0.5);
         });
     }
 
     pub fn ring(&mut self, cx: f32, cy: f32, r: f32, width: f32, c: Rgba) {
-        let o = r + width;
-        self.each(cx - o, cy - o, cx + o, cy + o, |s, x, y, px, py| {
+        let (o, i) = (r + width / 2.0 + 1.0, (r - width / 2.0 - 1.0).max(0.0));
+        let span = |py: f32| {
+            let dy = py - cy;
+            let wo = (o * o - dy * dy).max(0.0).sqrt();
+            if wo <= 0.0 {
+                return [None, None];
+            }
+            if dy.abs() < i {
+                let wi = (i * i - dy * dy).sqrt();
+                [Some((cx - wo, cx - wi)), Some((cx + wi, cx + wo))]
+            } else {
+                [Some((cx - wo, cx + wo)), None]
+            }
+        };
+        self.rows(cy - o, cy + o, span, |s, x, y, px, py| {
             let d = ((px - cx).powi(2) + (py - cy).powi(2)).sqrt();
             s.blend(x, y, c, width / 2.0 - (d - r).abs() + 0.5);
         });
@@ -78,7 +116,18 @@ impl Canvas {
         let (dx, dy) = (b.0 - a.0, b.1 - a.1);
         let len2 = (dx * dx + dy * dy).max(f32::EPSILON);
         let h = width / 2.0;
-        self.each(a.0.min(b.0) - h, a.1.min(b.1) - h, a.0.max(b.0) + h, a.1.max(b.1) + h, |s, x, y, px, py| {
+        let (bx0, bx1) = (a.0.min(b.0) - h - 1.0, a.0.max(b.0) + h + 1.0);
+        // Along a row, the pixels near the line lie within this of where it crosses.
+        let reach = (h + 1.5) * len2.sqrt() / dy.abs().max(f32::EPSILON);
+        let span = |py: f32| {
+            if dy.abs() < 1e-3 || reach > bx1 - bx0 {
+                return [Some((bx0, bx1)), None];
+            }
+            let x = a.0 + (py - a.1) * dx / dy;
+            let (lo, hi) = ((x - reach).max(bx0), (x + reach).min(bx1));
+            [(lo <= hi).then_some((lo, hi)), None]
+        };
+        self.rows(a.1.min(b.1) - h, a.1.max(b.1) + h, span, |s, x, y, px, py| {
             let t = (((px - a.0) * dx + (py - a.1) * dy) / len2).clamp(0.0, 1.0);
             let d = ((px - a.0 - t * dx).powi(2) + (py - a.1 - t * dy).powi(2)).sqrt();
             s.blend(x, y, c, h - d + 0.5);
@@ -422,6 +471,155 @@ pub fn band(f: &Footprint, feet: f32) -> Option<Band> {
     })
 }
 
+/// Contour spacing (cm): thin lines, and every so many a strong one.
+const CONTOUR: f32 = 200.0;
+const CONTOUR_MAJOR: f32 = 1000.0;
+
+/// The landscape under the map's disc of radius `r` (pixels): its baked colours
+/// (shaded, tinted, water) and/or contour lines.
+fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: f32) {
+    let (w, h) = (cv.w, cv.h);
+    let (cx, cy) = (w as f32 / 2.0, h as f32 / 2.0);
+    // The map is a rotation and a scale of the world, so a pixel's place among the
+    // texels is the first pixel's plus whole steps along a row and down a column.
+    let texel = |p: [f32; 2]| [(p[0] - rel.origin[0]) / rel.res - 0.5, (p[1] - rel.origin[1]) / rel.res - 0.5];
+    let first = texel(view.unproject(0.5 - cx, 0.5 - cy));
+    let across = texel(view.unproject(1.5 - cx, 0.5 - cy));
+    let down = texel(view.unproject(0.5 - cx, 1.5 - cy));
+    let (ex, ey) = ([across[0] - first[0], across[1] - first[1]], [down[0] - first[0], down[1] - first[1]]);
+    let (n, last) = (rel.n, (rel.n - 1) as f32);
+    let rim = r * r;
+    // Rows are independent: each worker takes a band of them. First every pixel's
+    // ground height (bilinear, for contours) and nearest texel (colour)…
+    let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
+    let band = h.div_ceil(workers);
+    let mut z = vec![f32::NAN; w * h];
+    let mut near = vec![u32::MAX; w * h];
+    std::thread::scope(|scope| {
+        for (k, (zs, ns)) in z.chunks_mut(band * w).zip(near.chunks_mut(band * w)).enumerate() {
+            scope.spawn(move || {
+                for (row, (zr, nr)) in zs.chunks_mut(w).zip(ns.chunks_mut(w)).enumerate() {
+                    let py = k * band + row;
+                    let dy = py as f32 + 0.5 - cy;
+                    if dy * dy > rim {
+                        continue;
+                    }
+                    let half = (rim - dy * dy).sqrt();
+                    let (x0, x1) = (((cx - half).floor().max(0.0)) as usize, ((cx + half).ceil() as usize).min(w));
+                    let mut tx = first[0] + ex[0] * x0 as f32 + ey[0] * py as f32;
+                    let mut ty = first[1] + ex[1] * x0 as f32 + ey[1] * py as f32;
+                    for px in x0..x1 {
+                        if (0.0..last).contains(&tx) && (0.0..last).contains(&ty) {
+                            let (ix, iy) = (tx as usize, ty as usize);
+                            let (fx, fy) = (tx - ix as f32, ty - iy as f32);
+                            let i = iy * n + ix;
+                            let (a, b, c, d) = (rel.z[i], rel.z[i + 1], rel.z[i + n], rel.z[i + n + 1]);
+                            zr[px] = (a + (b - a) * fx) * (1.0 - fy) + (c + (d - c) * fx) * fy;
+                            nr[px] = ((ty + 0.5) as usize * n + (tx + 0.5) as usize) as u32;
+                        }
+                        tx += ex[0];
+                        ty += ex[1];
+                    }
+                }
+            });
+        }
+    });
+    // …then colour and contours, again a band of rows each.
+    let (z, near) = (&z, &near);
+    std::thread::scope(|scope| {
+        for (k, out) in cv.px.chunks_mut(band * w).enumerate() {
+            scope.spawn(move || {
+                for (row, out) in out.chunks_mut(w).enumerate() {
+                    let py = k * band + row;
+                    for (px, o) in out.iter_mut().enumerate() {
+                        let i = py * w + px;
+                        if near[i] == u32::MAX {
+                            continue;
+                        }
+                        let t = near[i] as usize;
+                        if rel.wet[t] || mode.shade() {
+                            let c = rel.colour[t];
+                            if c.3 > 0 {
+                                *o = over(*o, c, c.3 as u32);
+                            }
+                        }
+                        let here = z[i];
+                        if !mode.contour() || here.is_nan() {
+                            continue;
+                        }
+                        let step = |v: f32, s: f32| (v / s).floor();
+                        let mut edge = (false, false);
+                        for (nx, ny) in [(px + 1, py), (px, py + 1)] {
+                            if nx >= w || ny >= h {
+                                continue;
+                            }
+                            let there = z[ny * w + nx];
+                            if there.is_nan() {
+                                continue;
+                            }
+                            edge.0 |= step(here, CONTOUR) != step(there, CONTOUR);
+                            edge.1 |= step(here, CONTOUR_MAJOR) != step(there, CONTOUR_MAJOR);
+                        }
+                        if edge.1 {
+                            *o = over(*o, Rgba(236, 222, 180, 150), 150);
+                        } else if edge.0 {
+                            *o = over(*o, Rgba(210, 205, 185, 70), 70);
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
+/// A convex polygon's pixels (centres inside), set to at least `k` — no antialiasing.
+fn fill_convex(class: &mut [u8], w: usize, h: usize, p: &[(f32, f32)], k: u8) {
+    let (y0, y1) = (p.iter().map(|q| q.1).fold(f32::MAX, f32::min), p.iter().map(|q| q.1).fold(f32::MIN, f32::max));
+    let (ly, hy) = ((y0 - 0.5).ceil().max(0.0) as usize, ((y1 - 0.5).floor().min(h as f32 - 1.0)) as i64);
+    if hy < 0 {
+        return;
+    }
+    for y in ly..=hy as usize {
+        let py = y as f32 + 0.5;
+        let (mut lo, mut hi) = (f32::MAX, f32::MIN);
+        for i in 0..p.len() {
+            let (a, b) = (p[i], p[(i + 1) % p.len()]);
+            if (a.1 <= py && b.1 > py) || (b.1 <= py && a.1 > py) {
+                let x = a.0 + (py - a.1) * (b.0 - a.0) / (b.1 - a.1);
+                lo = lo.min(x);
+                hi = hi.max(x);
+            }
+        }
+        if lo > hi {
+            continue;
+        }
+        let (lx, hx) = ((lo - 0.5).ceil().max(0.0) as usize, ((hi - 0.5).floor().min(w as f32 - 1.0)) as i64);
+        if hx < lx as i64 {
+            continue;
+        }
+        for c in &mut class[y * w + lx..=y * w + hx as usize] {
+            *c = (*c).max(k);
+        }
+    }
+}
+
+/// Integer source-over of `c` at alpha `a` (0..=255) onto the pixel `d`: each
+/// channel (s·a + d·(255 − a)) / 255.
+#[inline]
+fn over(d: u32, c: Rgba, a: u32) -> u32 {
+    let keep = 255 - a;
+    let mix = |shift: u32, s: u32| {
+        let v = s * a + ((d >> shift) & 0xFF) * keep + 127;
+        (((v + (v >> 8)) >> 8).min(255)) << shift
+    };
+    mix(24, 255) | mix(16, c.0 as u32) | mix(8, c.1 as u32) | mix(0, c.2 as u32)
+}
+
+thread_local! {
+    /// The map's empty disc at the last size drawn, per thread.
+    static BASE: std::cell::RefCell<Option<Canvas>> = const { std::cell::RefCell::new(None) };
+}
+
 /// One frame of the minimap: a disc of radius `r` px centred in the canvas.
 /// With `icons`, things are drawn as icons; without, as coloured dots.
 #[allow(clippy::too_many_arguments)]
@@ -435,18 +633,34 @@ pub fn draw_map(
     footprints: &[Footprint],
     goals: &[Goal],
     route: &Path,
+    relief: Option<&Relief>,
 ) {
-    cv.clear();
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
     let r = cx.min(cy) - 14.0;
     let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
-    cv.disc(cx, cy, r, BACKGROUND);
+    // The empty disc is the same every frame at a size: drawn once, then copied.
+    BASE.with(|base| {
+        let mut base = base.borrow_mut();
+        if base.as_ref().is_none_or(|b: &Canvas| (b.w, b.h) != (cv.w, cv.h)) {
+            let mut b = Canvas::new(cv.w, cv.h);
+            b.disc(cx, cy, r, BACKGROUND);
+            *base = Some(b);
+        }
+        cv.px.copy_from_slice(&base.as_ref().unwrap().px);
+    });
+    if let Some(rel) = relief.filter(|_| state.relief != ReliefMode::Off) {
+        draw_relief(cv, state.relief, view, rel, r);
+    }
 
     if state.terrain {
         // Feet are about 90 cm below the capsule's centre.
         let feet = view.center[2] - 90.0;
         let reach = r / view.scale.max(f32::EPSILON);
-        let mut masks: Vec<Canvas> = Band::ALL.iter().map(|_| Canvas::new(cv.w, cv.h)).collect();
+        // One class per pixel (0 = none, else 1 + the band's place in `Band::ALL`; the
+        // later band wins where they overlap), filled without antialiasing, then
+        // coloured once with an edge where a band ends. Overlaps do not pile up.
+        let (w, h) = (cv.w, cv.h);
+        let mut class = vec![0u8; w * h];
         for f in footprints {
             let c = f.center();
             let d = ((c[0] - view.center[0]).powi(2) + (c[1] - view.center[1]).powi(2)).sqrt();
@@ -454,6 +668,7 @@ pub fn draw_map(
                 continue;
             }
             let Some(b) = band(f, feet) else { continue };
+            let k = 1 + Band::ALL.iter().position(|x| *x == b).unwrap() as u8;
             let pts: Vec<(f32, f32)> = f
                 .corners
                 .iter()
@@ -462,34 +677,46 @@ pub fn draw_map(
                     (cx + x, cy + y)
                 })
                 .collect();
-            masks[Band::ALL.iter().position(|x| *x == b).unwrap()].polygon(&pts, Rgba(255, 255, 255, 255));
+            fill_convex(&mut class, w, h, &pts, k);
         }
-        // Each band is one shape — the union of its footprints — laid over the map once,
-        // with an edge where it ends. Overlaps do not pile up.
         let rim = (r - 1.0) * (r - 1.0);
-        for (mask, band) in masks.iter().zip(Band::ALL) {
-            let (fill, edge) = band.colours();
-            let cover = |x: usize, y: usize| (mask.px[y * mask.w + x] >> 24) as f32 / 255.0;
-            for y in 1..cv.h - 1 {
-                for x in 1..cv.w - 1 {
-                    let (dx, dy) = (x as f32 + 0.5 - cx, y as f32 + 0.5 - cy);
-                    if dx * dx + dy * dy > rim {
-                        continue;
+        let colours: Vec<(Rgba, Rgba)> = Band::ALL.iter().map(|b| b.colours()).collect();
+        let (class, colours) = (&class, &colours);
+        let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
+        let rows = h.div_ceil(workers);
+        std::thread::scope(|scope| {
+            for (k, out) in cv.px.chunks_mut(rows * w).enumerate() {
+                scope.spawn(move || {
+                    for (row, out) in out.chunks_mut(w).enumerate() {
+                        let y = k * rows + row;
+                        let dy = y as f32 + 0.5 - cy;
+                        if y == 0 || y + 1 >= h || dy * dy > rim {
+                            continue;
+                        }
+                        let half = (rim - dy * dy).sqrt();
+                        let (x0, x1) =
+                            (((cx - half).floor() as usize).max(1), ((cx + half).ceil() as usize).min(w - 1));
+                        for x in x0..x1 {
+                            let k = class[y * w + x];
+                            if k == 0 {
+                                continue;
+                            }
+                            let (fill, edge) = colours[k as usize - 1];
+                            let edged = [
+                                class[y * w + x - 1],
+                                class[y * w + x + 1],
+                                class[(y - 1) * w + x],
+                                class[(y + 1) * w + x],
+                            ]
+                            .iter()
+                            .any(|&n| n < k);
+                            let c = if edged { edge } else { fill };
+                            out[x] = over(out[x], c, c.3 as u32);
+                        }
                     }
-                    let a = cover(x, y);
-                    if a <= 0.0 {
-                        continue;
-                    }
-                    let edged = a >= 0.5
-                        && [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)].iter().any(|&(nx, ny)| cover(nx, ny) < 0.5);
-                    if edged {
-                        cv.blend(x as i32, y as i32, edge, 1.0);
-                    } else {
-                        cv.blend(x as i32, y as i32, fill, a);
-                    }
-                }
+                });
             }
-        }
+        });
     }
 
     if let Some(trail) = state.trails.get(world) {
@@ -737,13 +964,13 @@ mod tests {
         let ceiling =
             crate::geometry::footprint([0.0, 0.0, 900.0], 0.0, [1.0; 3], [0.0; 3], [400.0, 400.0, 20.0]).unwrap();
         let mut cv = Canvas::new(200, 200);
-        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling], &[], &Path::default());
+        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling], &[], &Path::default(), None);
         // The wall at 10 m north, 0.05 px/cm: 50 px above the centre.
         assert!((cv.px[50 * 200 + 100] >> 16) & 0xFF > 60, "wall drawn");
         // Beside the hero (10 px left), where only the ceiling would be.
         let bg = cv.px[100 * 200 + 85];
         let mut plain = Canvas::new(200, 200);
-        draw_map(&mut plain, &s, "W", &v, &[], None, &[], &[], &Path::default());
+        draw_map(&mut plain, &s, "W", &v, &[], None, &[], &[], &Path::default(), None);
         assert_eq!(bg, plain.px[100 * 200 + 85], "ceiling not drawn");
     }
 
@@ -763,6 +990,7 @@ mod tests {
             &[],
             &[],
             &Path::default(),
+            None,
         );
         assert!(cv.px[70 * 200 + 100] >> 24 > 200, "item icon 30 px above the centre");
     }
@@ -785,6 +1013,7 @@ mod tests {
             &[],
             &[],
             &Path::default(),
+            None,
         );
         assert_eq!(cv.px[100 * 200 + 100] >> 24, 255, "hero arrow");
         // 30 m ahead at 0.01 px/cm is 30 px above the centre, in enemy red.
@@ -800,6 +1029,7 @@ mod tests {
             &[],
             &[],
             &Path::default(),
+            None,
         );
         assert_ne!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235, "layer off, not drawn");
         assert_eq!(cv.px[0], 0, "outside the disc stays clear");
