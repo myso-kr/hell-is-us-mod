@@ -51,6 +51,8 @@ pub struct Property {
     pub name: String,
     pub offset: u32,
     pub size: u32,
+    /// The FField itself — where a struct property says which struct it holds.
+    pub field: u64,
 }
 
 /// FNameEntryAllocator: an 8-byte lock, CurrentBlock, CurrentByteCursor, Blocks[].
@@ -122,7 +124,7 @@ impl Names {
             else {
                 break;
             };
-            out.push(Property { name, offset, size });
+            out.push(Property { name, offset, size, field });
             field = mem::read_u64(m, field + l.next).unwrap_or(0);
         }
         out
@@ -160,6 +162,45 @@ impl Names {
     pub fn field(&self, m: &dyn Memory, obj: u64, name: &str) -> Option<Property> {
         let class = mem::read_u64(m, obj + CLASS).filter(|&p| mem::plausible(p))?;
         self.find(m, class, name)
+    }
+
+    /// The struct a struct (or array-of-struct inner) property holds: the first pointer
+    /// past the FProperty base that leads to a `ScriptStruct`.
+    pub fn struct_of(&self, m: &dyn Memory, field: u64) -> Option<u64> {
+        (0x70..0xA0).step_by(8).find_map(|o| {
+            let p = mem::read_u64(m, field + o).filter(|&p| mem::plausible(p))?;
+            (self.class(m, p).as_deref() == Some("ScriptStruct")).then_some(p)
+        })
+    }
+
+    /// What kind of property a field is: `StructProperty`, `ArrayProperty` … — the name
+    /// of its FFieldClass (FField::ClassPrivate, +0x8, whose first member is its FName).
+    pub fn field_type(&self, m: &dyn Memory, field: u64) -> Option<String> {
+        let fc = mem::read_u64(m, field + 8).filter(|&p| mem::plausible(p))?;
+        self.get(m, mem::read_u32(m, fc)?)
+    }
+
+    /// An array or set property's inner property: the first pointer past the FProperty
+    /// base that is itself a property.
+    pub fn inner_of(&self, m: &dyn Memory, field: u64) -> Option<u64> {
+        (0x70..0xA0).step_by(8).find_map(|o| {
+            let p = mem::read_u64(m, field + o).filter(|&p| mem::plausible(p))?;
+            self.field_type(m, p).is_some_and(|t| t.ends_with("Property")).then_some(p)
+        })
+    }
+
+    /// Where a path of properties leads, from an object into the structs it holds:
+    /// `["Player", "Knowledge", "KnownFacts"]` → that field's address and property.
+    pub fn path(&self, m: &dyn Memory, obj: u64, path: &[&str]) -> Option<(u64, Property)> {
+        let (first, rest) = path.split_first()?;
+        let mut p = self.field(m, obj, first)?;
+        let mut at = obj + p.offset as u64;
+        for name in rest {
+            let strukt = self.struct_of(m, p.field)?;
+            p = self.find(m, strukt, name)?;
+            at += p.offset as u64;
+        }
+        Some((at, p))
     }
 
     /// An object-pointer property of an object, followed: `controller.Pawn`.
@@ -278,13 +319,21 @@ pub mod fixture {
         }
 
         /// `object` is an instance of a class named `class`, declaring `props` as
-        /// (name, offset, element size).
-        pub fn class(&mut self, m: &Fake, object: u64, class_obj: u64, class: &str, props: &[(&str, u32, u32)]) {
+        /// (name, offset, element size). Returns the fields, in order.
+        pub fn class(
+            &mut self,
+            m: &Fake,
+            object: u64,
+            class_obj: u64,
+            class: &str,
+            props: &[(&str, u32, u32)],
+        ) -> Vec<u64> {
             m.put(class_obj, &[0; 0x60]);
             m.ptr(object + CLASS, class_obj);
             let idx = self.name(m, class);
             m.put(class_obj + NAME, &idx.to_le_bytes());
             let mut link = class_obj + CHILD_PROPERTIES;
+            let mut fields = Vec::new();
             for &(name, offset, size) in props {
                 let f = self.next_field;
                 self.next_field += 0x60;
@@ -296,7 +345,38 @@ pub mod fixture {
                 m.put(f + l.offset, &offset.to_le_bytes());
                 m.ptr(link, f);
                 link = f + l.next;
+                fields.push(f);
             }
+            fields
+        }
+
+        /// Make `field` a struct property holding a struct named `name` that declares
+        /// `props`. Returns the struct.
+        pub fn strukt(&mut self, m: &Fake, field: u64, name: &str, props: &[(&str, u32, u32)]) -> u64 {
+            let (strukt, meta, holder) = (self.next_field + 0x100, self.next_field + 0x200, self.next_field + 0x300);
+            self.next_field += 0x400;
+            // `class` hangs `props` off its class object and names it: here, the struct.
+            m.put(holder, &[0; 0x20]);
+            self.class(m, holder, strukt, name, props);
+            // The struct's own class is one named ScriptStruct.
+            m.put(meta, &[0; 0x60]);
+            m.ptr(strukt + CLASS, meta);
+            let idx = self.name(m, "ScriptStruct");
+            m.put(meta + NAME, &idx.to_le_bytes());
+            m.ptr(field + 0x78, strukt);
+            strukt
+        }
+
+        /// The fields declared on `owner` (a class or struct), in order.
+        pub fn properties_of(&self, m: &Fake, owner: u64) -> Vec<u64> {
+            let l = LAYOUTS[0];
+            let mut out = Vec::new();
+            let mut f = crate::mem::read_u64(m, owner + CHILD_PROPERTIES).unwrap_or(0);
+            while f != 0 {
+                out.push(f);
+                f = crate::mem::read_u64(m, f + l.next).unwrap_or(0);
+            }
+            out
         }
 
         /// `class_obj` derives from `super_obj`.
@@ -417,6 +497,23 @@ mod tests {
         assert_eq!(n.follow(&m, obj, "Pawnish"), Ok(0x4200_0000));
         assert!(n.follow(&m, obj, "Mesh2").is_err(), "unset pointer");
         assert!(n.follow(&m, obj, "Nope").is_err());
+    }
+
+    #[test]
+    fn follows_a_path_into_nested_structs() {
+        let m = Fake::default();
+        let mut pool = fixture::Pool::new(&m, 0x1000_0000, 0x3000_0000);
+        let (obj, class) = (0x4000_0000u64, 0x5000_0000u64);
+        m.put(obj, &[0; 0x100]);
+        let f = pool.class(&m, obj, class, "CharlieSaveGame", &[("Version", 0x38, 4), ("Player", 0x60, 0x5A0)]);
+        let player = pool.strukt(&m, f[1], "CharlieSavePlayerState", &[("Knowledge", 0x8, 0x30)]);
+        let kf = pool.properties_of(&m, player);
+        pool.strukt(&m, kf[0], "CharlieKnowledgeState", &[("KnownFacts", 0x0, 0x10), ("FactTags", 0x10, 0x20)]);
+        let n = Names::new(0x1000_0000);
+        let (at, p) = n.path(&m, obj, &["Player", "Knowledge", "FactTags"]).unwrap();
+        assert_eq!((at, p.name.as_str(), p.size), (obj + 0x60 + 0x8 + 0x10, "FactTags", 0x20));
+        assert!(n.path(&m, obj, &["Player", "Nope"]).is_none());
+        assert!(n.path(&m, obj, &["Version", "X"]).is_none(), "not a struct");
     }
 
     #[test]

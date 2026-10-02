@@ -16,6 +16,7 @@
 //! process skips that, as it does for `hold`; `hiumod restore` covers it the same way.
 
 mod hotkey;
+mod layered;
 mod minimap;
 mod panel;
 

@@ -7,6 +7,7 @@
 
 use crate::actors::{Kind, Thing};
 use crate::geometry::Footprint;
+use crate::goals::Goal;
 use crate::icons::Icons;
 use crate::minimap::{MapState, View};
 
@@ -139,6 +140,22 @@ impl Canvas {
         });
     }
 
+    /// Text in a small stroke font (N E S W, digits, `m`, `.`, `-`), `size` px tall,
+    /// centred on (cx, cy). Characters it does not know are spaces.
+    pub fn text(&mut self, cx: f32, cy: f32, size: f32, s: &str, c: Rgba) {
+        let unit = size / 6.0;
+        let advance = 5.5 * unit;
+        let width = advance * s.chars().count() as f32 - 1.5 * unit;
+        let (x0, y0) = (cx - width / 2.0, cy - size / 2.0);
+        let w = (unit * 0.9).max(1.3);
+        for (i, ch) in s.chars().enumerate() {
+            let ox = x0 + i as f32 * advance;
+            for &((ax, ay), (bx, by)) in glyph(ch) {
+                self.line((ox + ax * unit, y0 + ay * unit), (ox + bx * unit, y0 + by * unit), w, c);
+            }
+        }
+    }
+
     /// The letter N, `size` px tall, centred on (cx, cy) — the only text the map needs.
     pub fn letter_n(&mut self, cx: f32, cy: f32, size: f32, c: Rgba) {
         let (hw, hh) = (size * 0.32, size / 2.0);
@@ -146,6 +163,173 @@ impl Canvas {
         self.line((l, b), (l, t), 2.0, c);
         self.line((l, t), (r, b), 2.0, c);
         self.line((r, b), (r, t), 2.0, c);
+    }
+}
+
+type Seg = ((f32, f32), (f32, f32));
+
+/// Strokes on a 4 × 6 grid, y down.
+fn glyph(c: char) -> &'static [Seg] {
+    const BOX: [Seg; 4] = [((0., 0.), (4., 0.)), ((4., 0.), (4., 6.)), ((4., 6.), (0., 6.)), ((0., 6.), (0., 0.))];
+    match c {
+        'N' => &[((0., 6.), (0., 0.)), ((0., 0.), (4., 6.)), ((4., 6.), (4., 0.))],
+        'E' => &[((4., 0.), (0., 0.)), ((0., 0.), (0., 6.)), ((0., 6.), (4., 6.)), ((0., 3.), (3., 3.))],
+        'S' => &[
+            ((4., 0.), (0., 0.)),
+            ((0., 0.), (0., 3.)),
+            ((0., 3.), (4., 3.)),
+            ((4., 3.), (4., 6.)),
+            ((4., 6.), (0., 6.)),
+        ],
+        'W' => &[((0., 0.), (1., 6.)), ((1., 6.), (2., 2.)), ((2., 2.), (3., 6.)), ((3., 6.), (4., 0.))],
+        '0' => &BOX,
+        '1' => &[((2., 0.), (2., 6.)), ((1., 1.), (2., 0.))],
+        '2' => &[
+            ((0., 0.), (4., 0.)),
+            ((4., 0.), (4., 3.)),
+            ((4., 3.), (0., 3.)),
+            ((0., 3.), (0., 6.)),
+            ((0., 6.), (4., 6.)),
+        ],
+        '3' => &[((0., 0.), (4., 0.)), ((4., 0.), (4., 6.)), ((4., 6.), (0., 6.)), ((0., 3.), (4., 3.))],
+        '4' => &[((0., 0.), (0., 3.)), ((0., 3.), (4., 3.)), ((4., 0.), (4., 6.))],
+        '5' => &[
+            ((4., 0.), (0., 0.)),
+            ((0., 0.), (0., 3.)),
+            ((0., 3.), (4., 3.)),
+            ((4., 3.), (4., 6.)),
+            ((4., 6.), (0., 6.)),
+        ],
+        '6' => &[
+            ((4., 0.), (0., 0.)),
+            ((0., 0.), (0., 6.)),
+            ((0., 6.), (4., 6.)),
+            ((4., 6.), (4., 3.)),
+            ((4., 3.), (0., 3.)),
+        ],
+        '7' => &[((0., 0.), (4., 0.)), ((4., 0.), (4., 6.))],
+        '8' => &[
+            ((0., 0.), (4., 0.)),
+            ((4., 0.), (4., 6.)),
+            ((4., 6.), (0., 6.)),
+            ((0., 6.), (0., 0.)),
+            ((0., 3.), (4., 3.)),
+        ],
+        '9' => &[
+            ((4., 3.), (0., 3.)),
+            ((0., 3.), (0., 0.)),
+            ((0., 0.), (4., 0.)),
+            ((4., 0.), (4., 6.)),
+            ((4., 6.), (0., 6.)),
+        ],
+        'm' => &[((0., 6.), (0., 3.)), ((0., 3.), (4., 3.)), ((4., 3.), (4., 6.)), ((2., 3.), (2., 6.))],
+        'k' => &[((0., 0.), (0., 6.)), ((0., 4.), (4., 2.)), ((1., 3.5), (4., 6.))],
+        '.' => &[((1.5, 5.6), (2.5, 5.6))],
+        '-' => &[((0.5, 3.), (3.5, 3.))],
+        _ => &[],
+    }
+}
+
+/// A place on the compass: which way (world yaw, degrees), how it looks, how far.
+#[derive(Clone, Copy, Debug)]
+pub struct Pin {
+    pub bearing: f32,
+    pub rgb: [u8; 3],
+    /// The guide's target: drawn larger, with its distance.
+    pub target: bool,
+    pub distance_m: f32,
+}
+
+/// Bearings closer than this to straight ahead are on the strip; the rest pin to its ends.
+pub const COMPASS_SPAN: f32 = 90.0;
+
+fn wrap(a: f32) -> f32 {
+    (a + 540.0).rem_euclid(360.0) - 180.0
+}
+
+/// One frame of the compass strip, for a camera facing `yaw` (UE degrees: 0 = +X,
+/// called north; 90 = +Y, east).
+pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
+    cv.clear();
+    let w = cv.w as f32;
+    let (cx, bar_top, bar_bottom) = (w / 2.0, 4.0, 34.0);
+    let ppd = (w / 2.0 - 22.0) / COMPASS_SPAN;
+    cv.polygon(&[(8.0, bar_top), (w - 8.0, bar_top), (w - 8.0, bar_bottom), (8.0, bar_bottom)], Rgba(14, 16, 20, 150));
+    cv.line((8.0, bar_bottom), (w - 8.0, bar_bottom), 1.0, Rgba(200, 200, 190, 120));
+    let fade = |x: f32| (1.0 - ((x - cx).abs() / (w / 2.0 - 10.0)).powi(3)).clamp(0.0, 1.0);
+    // Ticks every 15°, labels on the eight winds.
+    for step in 0..24 {
+        let bearing = step as f32 * 15.0;
+        let d = wrap(bearing - yaw);
+        if d.abs() > COMPASS_SPAN + 1.0 {
+            continue;
+        }
+        let x = cx + d * ppd;
+        let a = fade(x);
+        let cardinal = step % 6 == 0;
+        let ordinal = step % 3 == 0 && !cardinal;
+        let len = if cardinal {
+            9.0
+        } else if ordinal {
+            6.0
+        } else {
+            3.5
+        };
+        cv.line((x, bar_bottom - len), (x, bar_bottom), 1.4, Rgba(220, 220, 210, (200.0 * a) as u8));
+        let label = match step {
+            0 => "N",
+            3 => "NE",
+            6 => "E",
+            9 => "SE",
+            12 => "S",
+            15 => "SW",
+            18 => "W",
+            21 => "NW",
+            _ => "",
+        };
+        if !label.is_empty() {
+            let colour =
+                if step == 0 { Rgba(255, 110, 90, (255.0 * a) as u8) } else { Rgba(235, 235, 225, (230.0 * a) as u8) };
+            cv.text(x, bar_top + 10.0, if cardinal { 11.0 } else { 8.0 }, label, colour);
+        }
+    }
+    // Straight ahead.
+    cv.triangle(
+        [(cx, bar_bottom - 4.0), (cx - 5.0, bar_bottom + 4.0), (cx + 5.0, bar_bottom + 4.0)],
+        Rgba(255, 255, 255, 230),
+    );
+    // The pins: others first, the target last and on top.
+    let mut order: Vec<&Pin> = pins.iter().collect();
+    order.sort_by_key(|p| p.target);
+    for p in order {
+        let d = wrap(p.bearing - yaw);
+        let [r, g, b] = p.rgb;
+        let colour = Rgba(r, g, b, 255);
+        let y = bar_bottom - 13.0;
+        if d.abs() <= COMPASS_SPAN {
+            let x = cx + d * ppd;
+            let s = if p.target { 6.5 } else { 4.0 };
+            cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], Rgba(0, 0, 0, 200));
+            cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], colour);
+            if p.target {
+                cv.text(x, bar_bottom + 12.0, 10.0, &distance(p.distance_m), Rgba(255, 255, 255, 240));
+            }
+        } else if p.target {
+            // Behind or beside: an arrow at the end it is nearer to, with the distance.
+            let side = d.signum();
+            let x = cx + side * (w / 2.0 - 14.0);
+            cv.triangle([(x + side * 7.0, y), (x - side * 3.0, y - 7.0), (x - side * 3.0, y + 7.0)], colour);
+            cv.text(x - side * 4.0, bar_bottom + 12.0, 10.0, &distance(p.distance_m), Rgba(255, 255, 255, 240));
+        }
+    }
+}
+
+/// `85m`, `1.2km`.
+pub fn distance(m: f32) -> String {
+    if m < 1000.0 {
+        format!("{:.0}m", m.max(0.0))
+    } else {
+        format!("{:.1}km", m / 1000.0)
     }
 }
 
@@ -239,6 +423,7 @@ pub fn band(f: &Footprint, feet: f32) -> Option<Band> {
 
 /// One frame of the minimap: a disc of radius `r` px centred in the canvas.
 /// With `icons`, things are drawn as icons; without, as coloured dots.
+#[allow(clippy::too_many_arguments)]
 pub fn draw_map(
     cv: &mut Canvas,
     state: &MapState,
@@ -247,6 +432,7 @@ pub fn draw_map(
     things: &[Thing],
     icons: Option<&Icons>,
     footprints: &[Footprint],
+    goals: &[Goal],
 ) {
     cv.clear();
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
@@ -364,6 +550,39 @@ pub fn draw_map(
         }
     }
 
+    // Goals: diamonds in their tier's colour; the guide's target larger, with a line
+    // from the hero to it — or an arrow on the rim when it is off the map.
+    for g in goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || Some(g.id) == state.target) {
+        let target = Some(g.id) == state.target;
+        let [cr, cg, cb] = g.tier.rgb();
+        let colour = Rgba(cr, cg, cb, 255);
+        let p = view.project(g.at);
+        let d = (p.0 * p.0 + p.1 * p.1).sqrt();
+        if target {
+            let reach = d.min(r - 8.0);
+            let (ux, uy) = (p.0 / d.max(f32::EPSILON), p.1 / d.max(f32::EPSILON));
+            // Dashed: 6 px on, 4 off.
+            let mut t = 10.0;
+            while t < reach {
+                let e = (t + 6.0).min(reach);
+                cv.line((cx + ux * t, cy + uy * t), (cx + ux * e, cy + uy * e), 2.0, Rgba(cr, cg, cb, 200));
+                t += 10.0;
+            }
+        }
+        if d <= r - 6.0 {
+            let s = if target { 7.0 } else { 4.5 };
+            let (x, y) = (cx + p.0, cy + p.1);
+            cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], OUTLINE);
+            cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], colour);
+        } else if target {
+            let (ux, uy) = (p.0 / d, p.1 / d);
+            let tip = (cx + ux * (r - 1.0), cy + uy * (r - 1.0));
+            let base = (cx + ux * (r - 13.0), cy + uy * (r - 13.0));
+            let (nx, ny) = (-uy * 6.0, ux * 6.0);
+            cv.triangle([tip, (base.0 + nx, base.1 + ny), (base.0 - nx, base.1 - ny)], colour);
+        }
+    }
+
     cv.ring(cx, cy, r, 2.0, EDGE);
     let (nx, ny) = view.north();
     cv.disc(cx + nx * r, cy + ny * r, 9.0, BACKGROUND);
@@ -415,6 +634,25 @@ mod tests {
     }
 
     #[test]
+    fn the_compass_puts_north_ahead_and_a_target_where_it_lies() {
+        let mut cv = Canvas::new(400, 60);
+        // Facing north (yaw 0); a target due east (bearing 90) sits at the right end.
+        draw_compass(&mut cv, 0.0, &[Pin { bearing: 45.0, rgb: [255, 0, 255], target: true, distance_m: 85.0 }]);
+        let ppd = (400.0 / 2.0 - 22.0) / COMPASS_SPAN;
+        let x = (200.0 + 45.0 * ppd) as usize;
+        let px = cv.px[(34 - 13) * 400 + x];
+        assert_eq!(((px >> 16) & 0xFF, px & 0xFF), (255, 255), "the target's diamond, 45° right");
+        assert_eq!(wrap(350.0 - 10.0), -20.0);
+        assert_eq!(wrap(10.0 - 350.0), 20.0);
+    }
+
+    #[test]
+    fn distances_read_short() {
+        assert_eq!(distance(84.6), "85m");
+        assert_eq!(distance(1234.0), "1.2km");
+    }
+
+    #[test]
     fn a_square_polygon_fills_inside_only() {
         let mut cv = Canvas::new(20, 20);
         cv.polygon(&[(4.0, 4.0), (16.0, 4.0), (16.0, 16.0), (4.0, 16.0)], Rgba(255, 255, 255, 255));
@@ -452,13 +690,13 @@ mod tests {
         let ceiling =
             crate::geometry::footprint([0.0, 0.0, 900.0], 0.0, [1.0; 3], [0.0; 3], [400.0, 400.0, 20.0]).unwrap();
         let mut cv = Canvas::new(200, 200);
-        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling]);
+        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling], &[]);
         // The wall at 10 m north, 0.05 px/cm: 50 px above the centre.
         assert!((cv.px[50 * 200 + 100] >> 16) & 0xFF > 60, "wall drawn");
         // Beside the hero (10 px left), where only the ceiling would be.
         let bg = cv.px[100 * 200 + 85];
         let mut plain = Canvas::new(200, 200);
-        draw_map(&mut plain, &s, "W", &v, &[], None, &[]);
+        draw_map(&mut plain, &s, "W", &v, &[], None, &[], &[]);
         assert_eq!(bg, plain.px[100 * 200 + 85], "ceiling not drawn");
     }
 
@@ -476,6 +714,7 @@ mod tests {
             &[Thing { sub: crate::actors::Sub::Medicine, at: [3000.0, 0.0, 0.0] }],
             Some(&icons),
             &[],
+            &[],
         );
         assert!(cv.px[70 * 200 + 100] >> 24 > 200, "item icon 30 px above the centre");
     }
@@ -488,12 +727,30 @@ mod tests {
         s.observe("W", [1000.0, 0.0, 0.0]);
         s.toggle_marker("W", [100_000.0, 0.0, 0.0]);
         let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01 };
-        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None, &[]);
+        draw_map(
+            &mut cv,
+            &s,
+            "W",
+            &v,
+            &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }],
+            None,
+            &[],
+            &[],
+        );
         assert_eq!(cv.px[100 * 200 + 100] >> 24, 255, "hero arrow");
         // 30 m ahead at 0.01 px/cm is 30 px above the centre, in enemy red.
         assert_eq!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235);
         s.layers = 0;
-        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None, &[]);
+        draw_map(
+            &mut cv,
+            &s,
+            "W",
+            &v,
+            &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }],
+            None,
+            &[],
+            &[],
+        );
         assert_ne!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235, "layer off, not drawn");
         assert_eq!(cv.px[0], 0, "outside the disc stays clear");
     }

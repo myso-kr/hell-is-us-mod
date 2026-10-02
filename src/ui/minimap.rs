@@ -1,41 +1,33 @@
-//! The minimap window: a click-through, always-on-top layered window in the game
-//! window's top-right corner, drawn by `raster::draw_map` on its own thread.
+//! The overlay thread: the minimap in the game window's top-right corner and the
+//! compass strip at its top centre, both click-through layered windows
+//! (ui/layered.rs) drawn by raster.rs — and the guide that picks what they point to.
 //!
-//! Not an eframe viewport: eframe stops running frames while the panel is hidden
-//! (F8), and the map has to keep drawing then. A layered window is one Win32 call
-//! per frame (`UpdateLayeredWindow`) from a pixel buffer, and never takes focus or
-//! clicks — the game keeps the mouse.
+//! Not eframe viewports: eframe stops running frames while the panel is hidden (F8),
+//! and these have to keep drawing then.
 //!
-//! Keys, polled like F8 and only while the game or the panel has focus, chosen in
-//! the panel (F9 and F6 unless changed — F7 is the game's photo mode): one shows and
-//! hides the map, the other drops a marker where the hero stands (or removes the one
-//! it stands beside). The map only reads the worker's snapshot — it never
-//! touches the game's memory.
+//! Keys, polled like F8 and only while the game or the panel has focus, chosen in the
+//! panel: show/hide the map (F9), drop or remove a marker (F6), show/hide the compass
+//! (F10), move the guide to the next place (F11). Only the worker's snapshot is read
+//! here — never the game's memory.
 
 use super::hotkey::{game_window, pid_of};
+use super::layered::{pump, Layered};
 use super::Shared;
+use crate::goals::{Goal, Tier};
 use crate::minimap::{MapState, View};
-use crate::raster::{draw_map, Canvas};
+use crate::raster::{draw_compass, draw_map, Canvas, Pin};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use windows_sys::Win32::Foundation::{HWND, POINT, SIZE};
-use windows_sys::Win32::Graphics::Gdi::{
-    CreateCompatibleDC, CreateDIBSection, DeleteDC, DeleteObject, GetDC, ReleaseDC, SelectObject, AC_SRC_ALPHA,
-    AC_SRC_OVER, BITMAPINFO, BITMAPINFOHEADER, BI_RGB, BLENDFUNCTION, DIB_RGB_COLORS, HBITMAP, HDC,
-};
-use windows_sys::Win32::System::LibraryLoader::GetModuleHandleW;
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F1};
-use windows_sys::Win32::UI::WindowsAndMessaging::{
-    CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetForegroundWindow, PeekMessageW,
-    RegisterClassW, SetWindowPos, ShowWindow, TranslateMessage, UpdateLayeredWindow, HWND_TOPMOST, MSG, PM_REMOVE,
-    SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SW_HIDE, SW_SHOWNOACTIVATE, ULW_ALPHA, WNDCLASSW, WS_EX_LAYERED,
-    WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_POPUP,
-};
+use windows_sys::Win32::UI::WindowsAndMessaging::GetForegroundWindow;
 
-/// The window is this many pixels square.
-const SIZE_PX: i32 = 240;
-/// Gap from the game window's top-right corner.
+/// The minimap is this many pixels square.
+const MAP_PX: i32 = 240;
+/// The compass strip.
+const COMPASS_W: i32 = 560;
+const COMPASS_H: i32 = 60;
+/// Gap from the game window's edges.
 const MARGIN: i32 = 24;
 const FRAME: Duration = Duration::from_millis(50);
 const SAVE_EVERY: Duration = Duration::from_secs(10);
@@ -54,109 +46,6 @@ fn save(state: &mut MapState) {
     }
 }
 
-fn wide(s: &str) -> Vec<u16> {
-    s.encode_utf16().chain([0]).collect()
-}
-
-/// A 32-bit top-down DIB the canvas is copied into each frame.
-struct Surface {
-    screen: HDC,
-    dc: HDC,
-    bitmap: HBITMAP,
-    bits: *mut u32,
-}
-
-impl Surface {
-    fn new() -> Option<Surface> {
-        unsafe {
-            let screen = GetDC(std::ptr::null_mut());
-            let dc = CreateCompatibleDC(screen);
-            let mut info: BITMAPINFO = std::mem::zeroed();
-            info.bmiHeader = BITMAPINFOHEADER {
-                biSize: std::mem::size_of::<BITMAPINFOHEADER>() as u32,
-                biWidth: SIZE_PX,
-                biHeight: -SIZE_PX,
-                biPlanes: 1,
-                biBitCount: 32,
-                biCompression: BI_RGB,
-                ..std::mem::zeroed()
-            };
-            let mut bits = std::ptr::null_mut();
-            let bitmap = CreateDIBSection(dc, &info, DIB_RGB_COLORS, &mut bits, std::ptr::null_mut(), 0);
-            if bitmap.is_null() || bits.is_null() {
-                DeleteDC(dc);
-                ReleaseDC(std::ptr::null_mut(), screen);
-                return None;
-            }
-            SelectObject(dc, bitmap);
-            Some(Surface { screen, dc, bitmap, bits: bits.cast() })
-        }
-    }
-
-    fn present(&self, hwnd: HWND, cv: &Canvas, x: i32, y: i32) {
-        unsafe {
-            std::ptr::copy_nonoverlapping(cv.px.as_ptr(), self.bits, cv.px.len());
-            let blend = BLENDFUNCTION {
-                BlendOp: AC_SRC_OVER as u8,
-                BlendFlags: 0,
-                SourceConstantAlpha: 255,
-                AlphaFormat: AC_SRC_ALPHA as u8,
-            };
-            let (pos, size, src) = (POINT { x, y }, SIZE { cx: SIZE_PX, cy: SIZE_PX }, POINT { x: 0, y: 0 });
-            UpdateLayeredWindow(hwnd, self.screen, &pos, &size, self.dc, &src, 0, &blend, ULW_ALPHA);
-        }
-    }
-}
-
-impl Drop for Surface {
-    fn drop(&mut self) {
-        unsafe {
-            DeleteObject(self.bitmap);
-            DeleteDC(self.dc);
-            ReleaseDC(std::ptr::null_mut(), self.screen);
-        }
-    }
-}
-
-fn create_window() -> HWND {
-    unsafe {
-        let instance = GetModuleHandleW(std::ptr::null());
-        let class = wide("hiumod-minimap");
-        let wc = WNDCLASSW {
-            lpfnWndProc: Some(DefWindowProcW),
-            hInstance: instance,
-            lpszClassName: class.as_ptr(),
-            ..std::mem::zeroed()
-        };
-        RegisterClassW(&wc);
-        let title = wide("Hell Is Us Minimap");
-        CreateWindowExW(
-            WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
-            class.as_ptr(),
-            title.as_ptr(),
-            WS_POPUP,
-            0,
-            0,
-            SIZE_PX,
-            SIZE_PX,
-            std::ptr::null_mut(),
-            std::ptr::null_mut(),
-            instance,
-            std::ptr::null(),
-        )
-    }
-}
-
-fn pump() {
-    unsafe {
-        let mut msg: MSG = std::mem::zeroed();
-        while PeekMessageW(&mut msg, std::ptr::null_mut(), 0, 0, PM_REMOVE) != 0 {
-            TranslateMessage(&msg);
-            DispatchMessageW(&msg);
-        }
-    }
-}
-
 fn pressed(key: u16, was: &mut bool) -> bool {
     let down = unsafe { GetAsyncKeyState(key as i32) } as u16 & 0x8000 != 0;
     let edge = down && !*was;
@@ -164,13 +53,55 @@ fn pressed(key: u16, was: &mut bool) -> bool {
     edge
 }
 
+fn fkey(n: u8) -> u16 {
+    VK_F1 + n as u16 - 1
+}
+
+fn flat(a: [f32; 3], b: [f32; 3]) -> f32 {
+    ((a[0] - b[0]).powi(2) + (a[1] - b[1]).powi(2)).sqrt()
+}
+
+/// Which way `to` lies from `from`, as a UE yaw in degrees.
+fn bearing(from: [f32; 3], to: [f32; 3]) -> f32 {
+    (to[1] - from[1]).atan2(to[0] - from[0]).to_degrees()
+}
+
+/// Keep the guide's target sensible: drop it when its place is gone (used up,
+/// streamed out); with auto on, take the nearest quest goal when there is none.
+pub fn settle_target(state: &mut MapState, goals: &[Goal], here: [f32; 3]) {
+    if state.target.is_some_and(|t| !goals.iter().any(|g| g.id == t)) {
+        state.target = None;
+    }
+    if state.target.is_none() && state.guide_auto {
+        state.target = goals
+            .iter()
+            .filter(|g| g.tier == Tier::Quest)
+            .min_by(|a, b| flat(a.at, here).total_cmp(&flat(b.at, here)))
+            .map(|g| g.id);
+    }
+}
+
+/// The next goal, by distance, after the current target — among the tiers shown.
+fn cycle(state: &mut MapState, goals: &[Goal], here: [f32; 3]) {
+    let mut shown: Vec<&Goal> = goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
+    shown.sort_by(|a, b| flat(a.at, here).total_cmp(&flat(b.at, here)));
+    let next = match state.target.and_then(|t| shown.iter().position(|g| g.id == t)) {
+        Some(i) => shown.get(i + 1).or(shown.first()),
+        None => shown.first(),
+    };
+    state.target = next.map(|g| g.id);
+}
+
 pub fn run(shared: Arc<Shared>) {
-    let hwnd = create_window();
-    let Some(surface) = (!hwnd.is_null()).then(Surface::new).flatten() else {
-        crate::journal::line("minimap: could not create its window");
+    let (Some(mut map_window), Some(mut compass_window)) = (
+        Layered::new("hiumod-minimap", "Hell Is Us Minimap", MAP_PX, MAP_PX),
+        Layered::new("hiumod-compass", "Hell Is Us Compass", COMPASS_W, COMPASS_H),
+    ) else {
+        crate::journal::line("overlay: could not create its windows");
         return;
     };
-    let mut cv = Canvas::new(SIZE_PX as usize, SIZE_PX as usize);
+    let mut map_cv = Canvas::new(MAP_PX as usize, MAP_PX as usize);
+    let mut compass_cv = Canvas::new(COMPASS_W as usize, COMPASS_H as usize);
     // Without icons the map still works, with dots.
     let make = |px: u8| match crate::icons::Icons::new(px as usize) {
         Ok(i) => Some(i),
@@ -181,8 +112,7 @@ pub fn run(shared: Arc<Shared>) {
     };
     let mut icon_px = shared.map.lock().unwrap().icon_px;
     let mut icons = make(icon_px);
-    let (mut marker_was, mut toggle_was) = (false, false);
-    let mut shown = false;
+    let (mut marker_was, mut toggle_was, mut compass_was, mut cycle_was) = (false, false, false, false);
     let mut saved = Instant::now();
     let mut tick = 0u32;
     while !shared.quit.load(Ordering::SeqCst) {
@@ -193,9 +123,9 @@ pub fn run(shared: Arc<Shared>) {
         let game = shared.game_pid.load(Ordering::SeqCst);
         let focus = pid_of(unsafe { GetForegroundWindow() });
         let focused = game != 0 && (focus == game || focus == std::process::id());
-        let (pose, world, things, footprints) = match shared.snap.lock().unwrap().as_ref() {
-            Some(s) => (s.pose, s.world.clone(), s.things.clone(), s.footprints.clone()),
-            None => (None, None, Vec::new(), Default::default()),
+        let (pose, world, things, footprints, goals) = match shared.snap.lock().unwrap().as_ref() {
+            Some(s) => (s.pose, s.world.clone(), s.things.clone(), s.footprints.clone(), s.goals.clone()),
+            None => (None, None, Vec::new(), Default::default(), Vec::new()),
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
 
@@ -205,51 +135,85 @@ pub fn run(shared: Arc<Shared>) {
             icon_px = state.icon_px;
             icons = make(icon_px);
         }
-        let fkey = |n: u8| VK_F1 + n as u16 - 1;
-        let (toggle_now, marker_now) =
-            (pressed(fkey(state.toggle_key), &mut toggle_was), pressed(fkey(state.marker_key), &mut marker_was));
+        let toggle_now = pressed(fkey(state.toggle_key), &mut toggle_was);
+        let marker_now = pressed(fkey(state.marker_key), &mut marker_was);
+        let compass_now = pressed(fkey(state.compass_key), &mut compass_was);
+        let cycle_now = pressed(fkey(state.cycle_key), &mut cycle_was);
         if focused && toggle_now {
             state.show = !state.show;
             state.dirty = true;
         }
-        if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
-            state.observe(world, p);
-            if focused && marker_now {
-                let added = state.toggle_marker(world, p);
-                crate::journal::line(&format!(
-                    "minimap: marker {} at ({:.0}, {:.0}, {:.0}) in {world}",
-                    if added { "added" } else { "removed" },
-                    p[0],
-                    p[1],
-                    p[2]
-                ));
-            }
-            let window = game_window(game).filter(|_| focused && state.show);
-            if let Some((_, r)) = window {
-                let view = View {
-                    center: p,
-                    yaw_deg: yaw,
-                    heading_up: state.heading_up,
-                    scale: (SIZE_PX as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
-                };
-                draw_map(&mut cv, &state, world, &view, &things, icons.as_ref(), &footprints);
-                surface.present(hwnd, &cv, r.right - SIZE_PX - MARGIN, r.top + MARGIN + 24);
-                if !shown {
-                    unsafe { ShowWindow(hwnd, SW_SHOWNOACTIVATE) };
-                    shown = true;
+        if focused && compass_now {
+            state.compass = !state.compass;
+            state.dirty = true;
+        }
+
+        let window = game_window(game).filter(|_| focused).map(|(_, r)| r);
+        match (here, world.as_deref(), window) {
+            (Some((p, yaw)), Some(world), Some(r)) => {
+                state.observe(world, p);
+                if focused && marker_now {
+                    let added = state.toggle_marker(world, p);
+                    crate::journal::line(&format!(
+                        "minimap: marker {} at ({:.0}, {:.0}, {:.0}) in {world}",
+                        if added { "added" } else { "removed" },
+                        p[0],
+                        p[1],
+                        p[2]
+                    ));
                 }
-                // A borderless game re-asserts its z-order on focus; stay above it.
+                settle_target(&mut state, &goals, p);
+                if focused && cycle_now {
+                    cycle(&mut state, &goals, p);
+                }
+
+                if state.show {
+                    let view = View {
+                        center: p,
+                        yaw_deg: yaw,
+                        heading_up: state.heading_up,
+                        scale: (MAP_PX as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
+                    };
+                    draw_map(&mut map_cv, &state, world, &view, &things, icons.as_ref(), &footprints, &goals);
+                    map_window.present(&map_cv, r.right - MAP_PX - MARGIN, r.top + MARGIN + 24);
+                } else {
+                    map_window.hide();
+                }
+
+                if state.compass {
+                    let mut pins: Vec<Pin> = goals
+                        .iter()
+                        .filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || Some(g.id) == state.target)
+                        .map(|g| Pin {
+                            bearing: bearing(p, g.at),
+                            rgb: g.tier.rgb(),
+                            target: Some(g.id) == state.target,
+                            distance_m: flat(p, g.at) / 100.0,
+                        })
+                        .collect();
+                    if let Some(markers) = state.markers.get(world) {
+                        pins.extend(markers.iter().map(|m| Pin {
+                            bearing: bearing(p, *m),
+                            rgb: [255, 200, 60],
+                            target: false,
+                            distance_m: flat(p, *m) / 100.0,
+                        }));
+                    }
+                    draw_compass(&mut compass_cv, yaw, &pins);
+                    let x = r.left + (r.right - r.left - COMPASS_W) / 2;
+                    compass_window.present(&compass_cv, x, r.top + 12);
+                } else {
+                    compass_window.hide();
+                }
                 if tick % 20 == 0 {
-                    unsafe { SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE) };
+                    map_window.keep_on_top();
+                    compass_window.keep_on_top();
                 }
             }
-            if window.is_none() && shown {
-                unsafe { ShowWindow(hwnd, SW_HIDE) };
-                shown = false;
+            _ => {
+                map_window.hide();
+                compass_window.hide();
             }
-        } else if shown {
-            unsafe { ShowWindow(hwnd, SW_HIDE) };
-            shown = false;
         }
         if saved.elapsed() >= SAVE_EVERY {
             save(&mut state);
@@ -257,6 +221,45 @@ pub fn run(shared: Arc<Shared>) {
         }
     }
     save(&mut shared.map.lock().unwrap());
-    drop(surface);
-    unsafe { DestroyWindow(hwnd) };
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn goal(id: u64, tier: Tier, x: f32) -> Goal {
+        Goal { tier, id, label: String::new(), detail: String::new(), at: [x, 0.0, 0.0] }
+    }
+
+    #[test]
+    fn auto_guides_to_the_nearest_quest_goal_and_lets_go_of_a_vanished_one() {
+        let mut s = MapState::default();
+        let goals = [goal(1, Tier::Clue, 100.0), goal(2, Tier::Quest, 5000.0), goal(3, Tier::Quest, 900.0)];
+        settle_target(&mut s, &goals, [0.0; 3]);
+        assert_eq!(s.target, Some(3));
+        settle_target(&mut s, &goals[..2], [0.0; 3]);
+        assert_eq!(s.target, Some(2), "3 used up: the next quest goal");
+        s.guide_auto = false;
+        settle_target(&mut s, &goals[..1], [0.0; 3]);
+        assert_eq!(s.target, None, "auto off: nothing chosen for the player");
+    }
+
+    #[test]
+    fn the_cycle_key_walks_the_shown_goals_by_distance() {
+        let mut s = MapState { guide_auto: false, ..MapState::default() };
+        let goals = [goal(1, Tier::Clue, 300.0), goal(2, Tier::Quest, 100.0), goal(3, Tier::Secret, 200.0)];
+        cycle(&mut s, &goals, [0.0; 3]);
+        assert_eq!(s.target, Some(2));
+        cycle(&mut s, &goals, [0.0; 3]);
+        assert_eq!(s.target, Some(3));
+        s.goal_tiers = 0b011; // no clues
+        cycle(&mut s, &goals, [0.0; 3]);
+        assert_eq!(s.target, Some(2), "wraps, skipping the hidden tier");
+    }
+
+    #[test]
+    fn bearings_follow_unreal_yaw() {
+        assert_eq!(bearing([0.0; 3], [100.0, 0.0, 0.0]), 0.0);
+        assert_eq!(bearing([0.0; 3], [0.0, 100.0, 0.0]), 90.0);
+    }
 }

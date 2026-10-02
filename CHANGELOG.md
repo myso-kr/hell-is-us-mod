@@ -47,6 +47,13 @@ been verified in play yet.
   hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
   from each mesh's bounds and transform. The game ships no map of the area it could
   use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- Compass strip at the top centre of the game window (F10). Quest guidance comes
+  from the game's own state. The hero's known facts and tags are read from the save
+  state, and every interactable's payload is compared against them. Places still
+  holding something new become quest goals, secrets or clues. The compass and the
+  minimap point to the chosen goal with its distance. F11 cycles goals. The panel's
+  new 안내 tab lists them, and auto mode follows the nearest quest goal. Built on
+  GUObjectArray and struct reflection (`.spec/GUIDE.md`).
 - Save points, the objects you interact with to save, get their own group and icon.
   Autosave triggers are not shown.
 - Heights are told apart. Ground is coloured by its height against the hero's feet:

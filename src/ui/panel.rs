@@ -72,6 +72,8 @@ pub struct Panel {
     debug: bool,
     /// The minimap tab.
     map: bool,
+    /// The guide tab: compass and where to go.
+    guide: bool,
     /// Which kinds' finer sorts are unfolded in the map tab.
     unfolded: [bool; 6],
     marks: verify::Marks,
@@ -124,6 +126,7 @@ impl Panel {
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
             debug: tab == Some("debug"),
             map: tab == Some("map"),
+            guide: tab == Some("guide"),
             unfolded: [false; 6],
             wanted: resume.clone(),
             keep: saved.keep,
@@ -163,6 +166,8 @@ impl Panel {
                     "debug"
                 } else if self.map {
                     "map"
+                } else if self.guide {
+                    "guide"
                 } else {
                     self.tab.id()
                 }
@@ -268,24 +273,25 @@ impl Panel {
             for g in Group::ALL {
                 let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
                 let text = if on > 0 { format!("{} ({on})", g.label()) } else { g.label().to_string() };
-                if ui.selectable_label(!self.debug && !self.map && self.tab == g, text).clicked() {
+                if ui.selectable_label(!self.debug && !self.map && !self.guide && self.tab == g, text).clicked() {
                     self.tab = g;
-                    self.debug = false;
-                    self.map = false;
+                    (self.debug, self.map, self.guide) = (false, false, false);
                 }
             }
             ui.separator();
+            if ui.selectable_label(self.guide, "안내").clicked() {
+                (self.debug, self.map, self.guide) = (false, false, true);
+            }
             if ui.selectable_label(self.map, "지도").clicked() {
-                self.map = true;
-                self.debug = false;
+                (self.debug, self.map, self.guide) = (false, true, false);
             }
             if ui.selectable_label(self.debug, "디버그").clicked() {
-                self.debug = true;
-                self.map = false;
+                (self.debug, self.map, self.guide) = (true, false, false);
             }
         });
         ui.add_space(4.0);
         match self.tab {
+            _ if self.guide => self.guide_tab(ui, snap),
             _ if self.map => self.map_tab(ui, snap),
             _ if self.debug => self.debug_tab(ui, snap),
             g => self.held(ui, g, snap),
@@ -359,12 +365,12 @@ impl Panel {
         section(ui, "단축키", |ui| {
             egui::Grid::new("map-keys").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
                 ui.label("미니맵 표시/숨김");
-                let other = state.marker_key;
-                key_picker(ui, "toggle_key", &mut state.toggle_key, other);
+                let taken = [state.marker_key, state.compass_key, state.cycle_key];
+                key_picker(ui, "toggle_key", &mut state.toggle_key, &taken);
                 ui.end_row();
                 ui.label("마커 찍기/지우기");
-                let other = state.toggle_key;
-                key_picker(ui, "marker_key", &mut state.marker_key, other);
+                let taken = [state.toggle_key, state.compass_key, state.cycle_key];
+                key_picker(ui, "marker_key", &mut state.marker_key, &taken);
                 ui.end_row();
             });
             ui.label(RichText::new("마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다").color(DIM).small());
@@ -460,6 +466,112 @@ impl Panel {
             != (before.show, before.heading_up, before.radius_m, before.toggle_key, before.marker_key)
             || (state.layers, state.icon_px, state.terrain) != (before.layers, before.icon_px, before.terrain)
             || state.hidden != before.hidden;
+        if changed {
+            state.dirty = true;
+        }
+    }
+
+    /// The compass, and the guide: what to point at, chosen here or by the cycle key.
+    fn guide_tab(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let dist = |g: &crate::goals::Goal| {
+            here.map_or(f32::MAX, |h| ((g.at[0] - h[0]).powi(2) + (g.at[1] - h[1]).powi(2)).sqrt() / 100.0)
+        };
+        let shared = self.shared.clone();
+        let mut state = shared.map.lock().unwrap();
+        let before = state.clone();
+
+        section(ui, "나침반", |ui| {
+            egui::Grid::new("compass").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
+                ui.label(format!("화면 위 가운데 (F{})", state.compass_key));
+                toggle(ui, &mut state.compass);
+                ui.end_row();
+                ui.label("나침반 표시/숨김");
+                let taken = [state.toggle_key, state.marker_key, state.cycle_key];
+                key_picker(ui, "compass_key", &mut state.compass_key, &taken);
+                ui.end_row();
+                ui.label("다음 목표로 안내");
+                let taken = [state.toggle_key, state.marker_key, state.compass_key];
+                key_picker(ui, "cycle_key", &mut state.cycle_key, &taken);
+                ui.end_row();
+            });
+            ui.label(
+                RichText::new("N 은 월드의 +X 방향입니다. 게임 나침반 아이템과 다를 수 있습니다").color(DIM).small(),
+            );
+        });
+
+        section(ui, "안내", |ui| {
+            ui.horizontal(|ui| {
+                toggle(ui, &mut state.guide_auto);
+                ui.label("자동 — 고른 곳이 없으면 가장 가까운 퀘스트 목표로");
+            });
+            ui.horizontal_wrapped(|ui| {
+                ui.spacing_mut().item_spacing = egui::vec2(6.0, 6.0);
+                for t in crate::goals::Tier::ALL {
+                    let [r, g, b] = t.rgb();
+                    let n = goals.iter().filter(|x| x.tier == t).count();
+                    let on = state.goal_tiers & (1 << t as u8) != 0;
+                    if ui.add(chip(&format!("{} ({n})", t.label()), on, Color32::from_rgb(r, g, b))).clicked() {
+                        state.goal_tiers ^= 1 << t as u8;
+                    }
+                }
+            });
+            match state.target.and_then(|t| goals.iter().find(|g| g.id == t)) {
+                Some(g) => {
+                    let [r, gg, b] = g.tier.rgb();
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
+                        ui.label(RichText::new(&g.label).strong());
+                        ui.label(RichText::new(format!("({})", crate::raster::distance(dist(g)))).color(DIM));
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            if ui.button("안내 끄기").clicked() {
+                                state.target = None;
+                                state.guide_auto = false;
+                            }
+                        });
+                    });
+                    ui.label(RichText::new(&g.detail).color(DIM).small());
+                }
+                None => {
+                    ui.label(RichText::new("안내 중인 곳이 없습니다").color(DIM));
+                }
+            }
+        });
+
+        let quests = snap.map(|s| s.quests.clone()).unwrap_or_default();
+        section(ui, "진행 중인 조사", |ui| {
+            if quests.is_empty() {
+                ui.label(RichText::new("없음 (또는 아직 읽지 못함)").color(DIM));
+            } else {
+                ui.label(quests.join(", "));
+            }
+        });
+
+        let mut list: Vec<&crate::goals::Goal> =
+            goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
+        list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
+        section(ui, &format!("갈 곳 ({})", list.len()), |ui| {
+            ui.label(
+                RichText::new("아직 얻지 않은 사실·태그를 주는 곳입니다. 눌러서 안내를 시작합니다").color(DIM).small(),
+            );
+            egui::ScrollArea::vertical().max_height(220.0).show(ui, |ui| {
+                for g in list {
+                    let [r, gg, b] = g.tier.rgb();
+                    let chosen = state.target == Some(g.id);
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
+                        let text = format!("{}  ({})", g.label, crate::raster::distance(dist(g)));
+                        if ui.selectable_label(chosen, text).on_hover_text(&g.detail).clicked() {
+                            state.target = Some(g.id);
+                        }
+                    });
+                }
+            });
+        });
+
+        let changed = (state.compass, state.compass_key, state.cycle_key, state.guide_auto, state.goal_tiers)
+            != (before.compass, before.compass_key, before.cycle_key, before.guide_auto, before.goal_tiers);
         if changed {
             state.dirty = true;
         }
@@ -672,10 +784,10 @@ impl eframe::App for Panel {
     }
 }
 
-/// A function key, F1–F12 — not F8 (the panel's) and not the one the other picker holds.
-fn key_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, other: u8) {
+/// A function key, F1–F12 — not F8 (the panel's) and none the other pickers hold.
+fn key_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
     egui::ComboBox::from_id_salt(id).width(72.0).selected_text(format!("F{key}")).show_ui(ui, |ui| {
-        for k in (1..=12u8).filter(|&k| crate::minimap::usable_key(k) && k != other) {
+        for k in (1..=12u8).filter(|&k| crate::minimap::usable_key(k) && !taken.contains(&k)) {
             ui.selectable_value(key, k, format!("F{k}"));
         }
     });

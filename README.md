@@ -44,6 +44,18 @@ hiumod pose            # where the hero stands and faces (the minimap's input)
 hiumod restore         # if a hold was killed rather than stopped
 ```
 
+## Compass and guide
+
+A compass strip sits at the top centre of the game window (**F10**). The game has no
+quest markers by design, so the guide works the places out from the game's own state.
+It reads which facts and tags the hero already knows from the save state, and which
+ones each interactable in the world would hand out. A place that still holds something
+new is a goal: a **quest goal** if it serves an open investigation, a **secret**
+(mysteries, good deeds, timeloops), or a **clue**. The compass and the minimap point
+to the chosen goal and show its distance. **F11** moves on to the next goal. The
+panel's 안내 tab lists every goal by distance; with auto on, the guide takes the
+nearest quest goal. See `.spec/GUIDE.md`.
+
 ## How it finds its way in
 
 The tool stores no offsets. Each time it attaches, it does the following:

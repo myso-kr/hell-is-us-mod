@@ -307,7 +307,7 @@ struct Tracked {
 }
 
 /// The actor's property holding an object of class `want` (or one below it).
-fn component(m: &dyn Memory, n: &Names, actor: u64, want: &str) -> Option<u64> {
+pub(crate) fn component(m: &dyn Memory, n: &Names, actor: u64, want: &str) -> Option<u64> {
     let class = mem::read_u64(m, actor + CLASS)?;
     n.lineage(m, class).into_iter().find_map(|c| {
         n.properties(m, c).into_iter().filter(|p| p.size == 8).find_map(|p| {

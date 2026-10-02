@@ -117,6 +117,34 @@ fn doctor(opt: &Options) -> R {
         Err(e) => log!("FAIL minimap things: {e}"),
     }
 
+    let started = std::time::Instant::now();
+    match a.goals() {
+        Ok((g, k)) => {
+            let count = |t: hiumod::goals::Tier| g.iter().filter(|x| x.tier == t).count();
+            log!(
+                "ok   guide: knows {} facts, {} tags; open: {} — {} places in {} ms (quest {}, secret {}, clue {})",
+                k.facts.len(),
+                k.tags.len(),
+                k.quest_names.join(", "),
+                g.len(),
+                started.elapsed().as_millis(),
+                count(hiumod::goals::Tier::Quest),
+                count(hiumod::goals::Tier::Secret),
+                count(hiumod::goals::Tier::Clue)
+            );
+            let (p, _) = a.pose().unwrap_or(([0.0; 3], 0.0));
+            let mut near: Vec<_> = g
+                .iter()
+                .map(|x| (((x.at[0] as f64 - p[0]).powi(2) + (x.at[1] as f64 - p[1]).powi(2)).sqrt() / 100.0, x))
+                .collect();
+            near.sort_by(|a, b| a.0.total_cmp(&b.0));
+            for (d, x) in near.iter().take(12) {
+                println!("        {:>6.0} m  {:<10} {:<44} {}", d, x.tier.label(), x.label, x.detail);
+            }
+        }
+        Err(e) => log!("FAIL guide: {e}"),
+    }
+
     let s = match a.session() {
         Ok(s) => s,
         Err(e) => {

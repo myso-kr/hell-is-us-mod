@@ -40,6 +40,18 @@ pub struct MapState {
     pub icon_px: u8,
     /// Whether the level's walls and floors are drawn under everything else.
     pub terrain: bool,
+    /// The compass strip at the top of the game window, and its key.
+    pub compass: bool,
+    pub compass_key: u8,
+    /// The key that moves the guide to the next place.
+    pub cycle_key: u8,
+    /// Guide to the nearest quest goal whenever nothing is chosen.
+    pub guide_auto: bool,
+    /// Which tiers of goal are shown, one bit per `goals::Tier`.
+    pub goal_tiers: u8,
+    /// The goal being guided to, by actor — chosen in the panel or with the cycle key.
+    /// Not kept across runs: actors are new each time.
+    pub target: Option<u64>,
     /// Per world: the trail, with `None` where it breaks.
     pub trails: BTreeMap<String, Vec<Option<Point>>>,
     pub markers: BTreeMap<String, Vec<Point>>,
@@ -59,6 +71,12 @@ impl Default for MapState {
             hidden: BTreeSet::new(),
             icon_px: 16,
             terrain: true,
+            compass: true,
+            compass_key: 10,
+            cycle_key: 11,
+            guide_auto: true,
+            goal_tiers: 0b111,
+            target: None,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
             dirty: false,
@@ -118,7 +136,7 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\n",
+            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\n",
             self.show,
             self.heading_up,
             self.radius_m,
@@ -126,7 +144,12 @@ impl MapState {
             self.marker_key,
             self.layers,
             self.icon_px,
-            self.terrain
+            self.terrain,
+            self.compass,
+            self.compass_key,
+            self.cycle_key,
+            self.guide_auto,
+            self.goal_tiers
         );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
@@ -166,6 +189,23 @@ impl MapState {
                     }
                 }
                 ["terrain", v] => s.terrain = v == "true",
+                ["compass", v] => s.compass = v == "true",
+                ["guide_auto", v] => s.guide_auto = v == "true",
+                ["goal_tiers", v] => {
+                    if let Ok(b) = v.parse::<u8>() {
+                        s.goal_tiers = b & 0b111;
+                    }
+                }
+                ["compass_key", v] => {
+                    if let Some(k) = v.parse().ok().filter(|k| usable_key(*k)) {
+                        s.compass_key = k;
+                    }
+                }
+                ["cycle_key", v] => {
+                    if let Some(k) = v.parse().ok().filter(|k| usable_key(*k)) {
+                        s.cycle_key = k;
+                    }
+                }
                 ["icon_px", v] => {
                     if let Some(px) = v.parse::<u8>().ok().filter(|p| ICON_PX.contains(p)) {
                         s.icon_px = px;
@@ -210,8 +250,10 @@ impl MapState {
         if layers_version < 2 {
             s.layers |= crate::actors::Kind::Save.bit();
         }
-        if s.toggle_key == s.marker_key {
-            (s.toggle_key, s.marker_key) = (9, 6);
+        // Four keys, four different keys — or all back to their defaults.
+        let keys = [s.toggle_key, s.marker_key, s.compass_key, s.cycle_key];
+        if (0..4).any(|i| keys[i + 1..].contains(&keys[i])) {
+            (s.toggle_key, s.marker_key, s.compass_key, s.cycle_key) = (9, 6, 10, 11);
         }
         s
     }
@@ -339,6 +381,11 @@ mod tests {
             layers: 0b101,
             icon_px: 22,
             terrain: false,
+            compass: false,
+            compass_key: 2,
+            cycle_key: 3,
+            guide_auto: false,
+            goal_tiers: 0b101,
             hidden: [Sub::Lore, Sub::Door].into_iter().collect(),
             ..MapState::default()
         };
@@ -351,12 +398,14 @@ mod tests {
         assert_eq!(old.layers, ALL_LAYERS, "a file from before save points turns them on");
         let off = MapState::parse("layers 31\nlayers_version 2\n");
         assert_eq!(off.layers, 31, "a file that knows of them keeps them off");
-        let k = MapState::parse("toggle_key 10\nmarker_key 5\n");
-        assert_eq!((k.toggle_key, k.marker_key), (10, 5));
+        let k = MapState::parse("toggle_key 12\nmarker_key 5\n");
+        assert_eq!((k.toggle_key, k.marker_key), (12, 5));
         let k = MapState::parse("toggle_key 8\nmarker_key 13\n");
         assert_eq!((k.toggle_key, k.marker_key), (9, 6), "F8 is the panel's; F13 is no key");
         let k = MapState::parse("toggle_key 6\n");
         assert_eq!((k.toggle_key, k.marker_key), (9, 6), "one key cannot do both");
+        let k = MapState::parse("compass_key 6\n");
+        assert_eq!((k.marker_key, k.compass_key), (6, 10), "nor can the compass take the marker's");
         let t = MapState::parse("radius 99999\nmarker W 1 2\ntrail W a b c\nshow false\n???\n");
         assert_eq!(t.radius_m, 60.0);
         assert!(t.markers.is_empty() && t.trails.is_empty());

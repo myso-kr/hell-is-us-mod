@@ -9,7 +9,10 @@ use crate::cheats::{self, Active};
 use crate::game::locate;
 use crate::game::process::Game;
 use crate::geometry::{Footprint, Geometry};
+use crate::goals::{Goal, Goals};
+use crate::gobjects::{self, Objects};
 use crate::hold::{self, Originals};
+use crate::knowledge::{self, Knowledge};
 use crate::player::{self, Chain};
 use std::cell::RefCell;
 use std::sync::Arc;
@@ -26,7 +29,24 @@ pub struct Attached {
     scanner: RefCell<Scanner>,
     /// The minimap's background: static meshes seen from above.
     geometry: RefCell<Geometry>,
+    /// The guide: what the hero knows (from the save state) and where there is more.
+    guide: RefCell<Guide>,
 }
+
+/// GUObjectArray, the save slots found through it, the knowledge last read, and the
+/// interactables' payloads — each refreshed on its own clock.
+#[derive(Default)]
+struct Guide {
+    objects: Option<Objects>,
+    saves: Vec<u64>,
+    saves_read: Option<Instant>,
+    knowledge: Option<Knowledge>,
+    knowledge_read: Option<Instant>,
+    goals: Goals,
+}
+
+const SAVES_EVERY: Duration = Duration::from_secs(60);
+const KNOWLEDGE_EVERY: Duration = Duration::from_secs(2);
 
 pub fn attach() -> Result<Attached, String> {
     let game = Game::find()?.ok_or("the game is not running")?;
@@ -38,6 +58,7 @@ pub fn attach() -> Result<Attached, String> {
         version,
         chain: RefCell::new(None),
         scanner: RefCell::default(),
+        guide: RefCell::default(),
         geometry: RefCell::default(),
     })
 }
@@ -100,6 +121,31 @@ impl Attached {
         Ok(s.positions(&self.game, chain.location))
     }
 
+    /// Places where the hero can still learn something, and what the hero knows —
+    /// for the compass and the guide.
+    pub fn goals(&self) -> Result<(Vec<Goal>, Knowledge), String> {
+        let chain = self.chain()?;
+        let hero = chain.hero(&self.game, &self.anchors)?;
+        let (m, n) = (&self.game, &self.anchors.names);
+        let mut g = self.guide.borrow_mut();
+        if g.objects.is_none() {
+            g.objects = Some(gobjects::discover(m, self.game.base)?);
+        }
+        if g.saves.is_empty() || g.saves_read.is_none_or(|t| t.elapsed() >= SAVES_EVERY) {
+            g.saves = g.objects.as_ref().unwrap().of_class(m, n, "CharlieSaveGame");
+            g.saves_read = Some(Instant::now());
+        }
+        if g.knowledge.is_none() || g.knowledge_read.is_none_or(|t| t.elapsed() >= KNOWLEDGE_EVERY) {
+            let save = knowledge::current(n, m, &g.saves).ok_or("no save state found")?;
+            g.knowledge = Some(knowledge::read(n, m, save).ok_or("the save state could not be read")?);
+            g.knowledge_read = Some(Instant::now());
+        }
+        let actors = self.scanner.borrow().actors_offset().ok_or("actors not scanned yet")?;
+        g.goals.refresh(m, n, hero, chain.root, actors);
+        let k = g.knowledge.clone().unwrap();
+        Ok((g.goals.evaluate(m, &k, chain.location), k))
+    }
+
     /// The footprints found so far (shared, not copied).
     pub fn footprints(&self) -> Arc<Vec<Footprint>> {
         self.geometry.borrow().footprints.clone()
@@ -130,6 +176,10 @@ pub struct Snapshot {
     pub things: Vec<Thing>,
     /// The minimap's background.
     pub footprints: Arc<Vec<Footprint>>,
+    /// Places with something new to learn.
+    pub goals: Vec<Goal>,
+    /// Open investigations, by name.
+    pub quests: Vec<String>,
 }
 
 impl Snapshot {
@@ -207,6 +257,8 @@ impl Engine {
             world: None,
             things: Vec::new(),
             footprints: Arc::default(),
+            goals: Vec::new(),
+            quests: Vec::new(),
         };
         if let Err(e) = self.refresh() {
             snap.game = Err(e.clone());
@@ -224,6 +276,13 @@ impl Engine {
                     Ok(t) => {
                         snap.things = t;
                         snap.footprints = a.footprints();
+                    }
+                    Err(e) => snap.notice = Some(format!("minimap: {e}")),
+                }
+                match a.goals() {
+                    Ok((g, k)) => {
+                        snap.goals = g;
+                        snap.quests = k.quest_names;
                     }
                     Err(e) => snap.notice = Some(format!("minimap: {e}")),
                 }

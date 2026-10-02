@@ -72,6 +72,9 @@ src/
                   다 쓴 것 거르기(Done: 적 체력 0, InteractionActionComponent.bHasBeenActivated),
                   그룹 Kind 6개(적·아이템·전리품·NPC·문·퍼즐·저장), 세부 종류 Sub 23종 (적: 계열명, 아이템: 클래스 이름 접두사·단어, 문·퍼즐: 계보) — Kind 는 Sub 에서
   icons.rs        assets/icons/*.svg 를 include_str! 로 넣고 resvg 로 래스터화 (미리 곱한 ARGB)
+  gobjects.rs     GUObjectArray 찾기·객체 목록·클래스로 찾기
+  knowledge.rs    현재 저장 상태 → 아는 사실·태그·진행 중 조사
+  goals.rs        안내 목표: 페이로드가 새 사실·태그를 주는 상호작용 오브젝트, 퀘스트/비밀/단서
   geometry.rs     미니맵 배경: 정적 메시 → 위에서 본 사각형(Footprint), 액터별 캐시, 3초마다 갱신
   minimap.rs      미니맵 상태(경로·마커·설정·레이어, 월드별), 투영(View), minimap.txt 형식
   raster.rs       미리 곱한 알파 픽셀 버퍼에 원·고리·선·삼각형·N, draw_map (한 프레임)
@@ -86,7 +89,8 @@ src/
     locate.rs     Steam 라이브러리에서 설치 찾기, buildid 읽기
     launch.rs     steam://rungameid/1620730
     process.rs    프로세스 찾기·열기, ReadProcessMemory/WriteProcessMemory, Ctrl+C
-  ui/             dungeons2-mod 와 같은 F8 패널 (worker·hotkey·eframe) + minimap 스레드:
+  ui/             dungeons2-mod 와 같은 F8 패널 (worker·hotkey·eframe) + 오버레이 스레드:
+                  ui/layered.rs — 레이어드 창 공용, ui/minimap.rs — 미니맵·나침반·안내 대상,
                   ui/minimap.rs — 레이어드 창, UpdateLayeredWindow, 표시·마커 키 폴링 (패널에서 고름), 10초마다 저장
 ```
 
