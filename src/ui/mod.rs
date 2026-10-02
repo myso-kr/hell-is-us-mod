@@ -17,9 +17,9 @@
 
 mod hotkey;
 mod layered;
-mod layout;
 mod minimap;
 mod panel;
+mod tw;
 
 use crate::cheats::Active;
 use crate::engine::{Engine, Snapshot};

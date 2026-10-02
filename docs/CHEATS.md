@@ -22,7 +22,7 @@ and then the row's `verified` is set to `true`.
 | `enemy_time` | 전투 | every live enemy's `CustomTimeDilation` (extras.rs; put back per enemy) | slider 0.05–1 | 1 | **works** (2026-10-03) |
 | `frail` | 전투 | every live enemy's `HealthAttributeSet.Health` held at 1 (put back per enemy) | toggle | 680–1130 (Tier 1) | **works** (2026-10-03) |
 | `stock` | 아이템 | inventory stacks of `CharlieInventoryUseable*`: count (item `ItemData`+8, native) kept ≥ first seen, ≥ 2 | toggle | — | **works** (2026-10-03) — held from the count when switched on, never below 2; the game's own number may lag until the inventory is reopened |
-| `shards` | 아이템 | inventory stacks of `CharlieInventoryShardItem`: count written once, ≤ `QuantityMax` (999) | set (button) | — | **works** (2026-10-03) |
+| `shards` | 아이템 | inventory stacks of `CharlieInventoryShardItem`: count written once, up to 990 (default 900) — at the game's own 999 a stack takes no more, so pickups stop and no acquired notice shows | set (button) | — | **works** (2026-10-03) |
 | `weapon_xp` | 아이템 | weapon items (native, 24045435): total `+0x13C` and within-level `+0x140` each grow by what the game grants × (multiplier − 1); level `+0x130`, cap `+0x138`, next `+0x148` checked first; levelling left to the game | slider 1–10 | 1 | **works** (2026-10-03) — ×3 on a sword kill: total 265 → 580 (105 granted, 315 added), levelling on the next kill |
 | position slots | 이동 | hero root `RelativeLocation` + `ComponentToWorld` translation, `Velocity` 0 (5 slots, same area only) | action | — | **works** (2026-10-03) |
 

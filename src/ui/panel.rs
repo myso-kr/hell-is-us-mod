@@ -2,7 +2,7 @@
 //! read off the cheat table; the panel reads the worker's last snapshot and never
 //! touches the game itself.
 
-use super::layout::{choices, field, grid, note, switch};
+use super::tw::{self, block, card, choices, field, note, switch, text, w};
 use super::{hotkey, Request, Shared};
 use crate::actors::{Kind as ThingKind, Sub};
 use crate::cheats::{self, Active, Cheat, Effect, Group, Kind, CHEATS};
@@ -10,6 +10,7 @@ use crate::engine::Snapshot;
 use crate::settings::{self, Settings};
 use crate::verify;
 use eframe::egui::{self, Color32, RichText};
+use egui_taffy::{tui, Tui, TuiBuilderLogic};
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
 use std::collections::HashMap;
 use std::sync::atomic::Ordering;
@@ -22,11 +23,24 @@ const BAD: Color32 = Color32::from_rgb(0xF0, 0x82, 0x78);
 const WAIT: Color32 = Color32::from_rgb(0xE8, 0xC0, 0x6A);
 const DIM: Color32 = Color32::from_gray(150);
 
+/// The window's width before its first page is measured (px).
 pub const WIDTH: f32 = 960.0;
-/// The sidebar: status, then the pages.
+/// What a page's width is wrapped in: the window frame's margins and the page's
+/// scrollbar (px).
+const FRAME: f32 = 16.0;
+const SCROLLBAR: f32 = 14.0;
+/// The debug page's single card is this wide (px): its tables scroll sideways past it.
+const DEBUG_PAGE: f32 = 620.0;
+/// The sidebar's width, and the gap between it and the page with the divider in its
+/// middle (px).
 const NAV: f32 = 172.0;
-/// The gap between sidebar and page, with the divider in its middle.
 const DIVIDER: f32 = 14.0;
+/// The window is never taller than this share of the monitor; the page scrolls
+/// inside it instead.
+const MAX_SHARE: f32 = 0.85;
+/// Room under the page for its footer, and for the title bar and margins (px).
+const FOOTER: f32 = 92.0;
+const CHROME: f32 = 56.0;
 
 /// egui's own fonts have no Hangul. Malgun Gothic ships with Windows, so it is
 /// borrowed from the system rather than bundled; without it the panel still works,
@@ -88,8 +102,9 @@ pub struct Panel {
     /// up, the checkboxes are not overwritten from it.
     sent: Option<Instant>,
     reply: Option<(bool, String, Instant)>,
-    /// The height last asked of the window, so it is asked once per change.
+    /// The size last asked of the window, so it is asked once per change.
     height: f32,
+    width: f32,
     /// What the player turned on — not what is on right now. The game exiting or the
     /// gate closing switches cheats off; that must not become the saved choice, or
     /// nothing would come back next time.
@@ -141,6 +156,7 @@ impl Panel {
             sent: None,
             reply: None,
             height: 0.0,
+            width: 0.0,
         }
     }
 
@@ -235,7 +251,7 @@ impl Panel {
             ui.label(RichText::new("Hell Is Us Mod").strong());
             ui.label(RichText::new("F8").color(DIM));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button(" ✕ ").on_hover_text("닫기 — 원래 값으로 되돌리고 종료").clicked() {
+                if ui.button(" × ").on_hover_text("닫기 — 원래 값으로 되돌리고 종료").clicked() {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
                 if ui.button(" — ").on_hover_text("숨기기 (F8로 다시 열기)").clicked() {
@@ -302,428 +318,337 @@ impl Panel {
         }
     }
 
-    /// The page chosen in the sidebar.
-    fn page(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+    /// The page chosen in the sidebar: cards on an auto-fit grid (tw.rs) — side by
+    /// side while each can be `CARD_MIN` wide, stacked when not.
+    fn page(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         match self.tab {
-            _ if self.map => self.map_tab(ui, snap),
-            _ if self.debug => self.debug_tab(ui, snap),
-            g => {
-                grid(ui, 2, |cols| {
-                    let (left, right) = cols.split_at_mut(1);
-                    section(&mut left[0], g.label(), |ui| self.held(ui, g, snap));
+            _ if self.map => self.map_tab(t, snap),
+            _ if self.debug => block(t, |ui| self.debug_tab(ui, snap)),
+            g => t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| {
+                t.style(tw::col(tw::GAP)).add(|t| {
+                    card(t, g.label(), |t| self.held(t, g, snap));
                     if g == Group::Movement {
-                        self.positions(&mut left[0], snap);
+                        self.positions(t, snap);
                     }
-                    self.summary(&mut right[0], snap);
                 });
-            }
+                t.style(tw::col(tw::GAP)).add(|t| self.summary(t, snap));
+            }),
         }
     }
 
     /// Saved positions: save where the hero stands, go back to it.
-    fn positions(&self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
-        section(ui, "위치 저장 · 이동", |ui| {
+    fn positions(&self, t: &mut Tui, snap: Option<&Snapshot>) {
+        card(t, "위치 저장 · 이동", |t| {
             let world = snap.and_then(|s| s.world.clone());
             for i in 0..crate::engine::SLOTS {
                 let slot = snap.and_then(|s| s.slots[i].clone());
-                field(ui, format!("슬롯 {}", i + 1), |ui| {
-                    if ui.button("저장").clicked() {
+                let here = slot.as_ref().is_some_and(|(w, _)| Some(w) == world.as_ref());
+                field(t, format!("슬롯 {}", i + 1), |t| {
+                    if w(t, |ui| ui.button("저장")).clicked() {
                         let _ = self.tx.send(Request::SavePosition(i));
                     }
-                    let here = slot.as_ref().is_some_and(|(w, _)| Some(w) == world.as_ref());
-                    if ui.add_enabled(here, egui::Button::new("이동")).clicked() {
+                    if w(t, |ui| ui.add_enabled(here, egui::Button::new("이동"))).clicked() {
                         let _ = self.tx.send(Request::LoadPosition(i));
                     }
-                    let text = match &slot {
-                        Some((w, p)) if here => format!("{:.0}, {:.0}, {:.0}", p[0], p[1], p[2]),
+                    let place = match &slot {
+                        Some((_, p)) if here => format!("{:.0}, {:.0}, {:.0}", p[0], p[1], p[2]),
                         Some((w, _)) => format!("다른 지역 ({w})"),
                         None => "비어 있음".into(),
                     };
-                    ui.add(egui::Label::new(RichText::new(text).color(DIM).small()).truncate());
+                    note(t, place);
                 });
             }
-            note(
-                ui,
-                "저장한 지역 안에서만 이동합니다 · 바닥에 끼지 않게 50 cm 위에 놓습니다 · 패널을 닫으면 비워집니다",
-            );
+            note(t, "저장한 지역 안에서만 이동합니다");
         });
     }
 
     /// Every cheat that is on, across the groups, with its value.
-    fn summary(&self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+    fn summary(&self, t: &mut Tui, snap: Option<&Snapshot>) {
         let on: Vec<&Cheat> = CHEATS.iter().filter(|c| self.on.get(c.id).copied().unwrap_or(false)).collect();
-        section(ui, &format!("켜진 치트 ({})", on.len()), |ui| {
+        card(t, &format!("켜진 치트 ({})", on.len()), |t| {
             if on.is_empty() {
-                ui.label(RichText::new("켜진 치트가 없습니다").color(DIM));
+                text(t, RichText::new("켜진 치트가 없습니다").color(DIM));
             }
             for c in on {
-                field(ui, c.label, |ui| {
-                    match c.kind {
+                field(t, c.label, |t| {
+                    let value = match c.kind {
                         Kind::Slider { .. } => {
                             let v = self.value.get(c.id).copied().unwrap_or(0.0);
-                            let now = chosen(c).and_then(|a| snap.and_then(|s| s.value(a)));
-                            let text = match now {
+                            match chosen(c).and_then(|a| snap.and_then(|s| s.value(a))) {
                                 Some(n) => format!("{v:.2} (게임 {n:.2})"),
                                 None => format!("{v:.2}"),
-                            };
-                            ui.label(RichText::new(text).color(OK));
+                            }
                         }
-                        _ => {
-                            ui.label(RichText::new("켜짐").color(OK));
-                        }
-                    }
-                    ui.label(RichText::new(c.group.label()).color(DIM).small());
+                        _ => "켜짐".to_string(),
+                    };
+                    w(t, |ui| ui.label(RichText::new(value).color(OK)));
+                    w(t, |ui| ui.label(RichText::new(c.group.label()).color(DIM).small()));
                 });
-            }
-        });
-        section(ui, "알아둘 것", |ui| {
-            for t in [
-                "주인공을 조작하는 동안만 값을 씁니다",
-                "패널을 닫으면 원래 값으로 되돌립니다 (✕)",
-                "숨기기(—) 후 F8로 다시 엽니다",
-                "‘미검증’ 표시는 아직 게임에서 확인하지 않은 치트입니다",
-            ] {
-                note(ui, format!("· {t}"));
             }
         });
     }
 
-    /// The map & guide page, in two columns. Left: the minimap, the big map, what is
+    /// The map & guide page. Left column: the minimap, the land, the big map, what is
     /// shown, this area. Right: compass and north, the guide and where to go, every
     /// key, the game's menus.
-    fn map_tab(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+    fn map_tab(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         let shared = self.shared.clone();
         let mut guard = shared.map.lock().unwrap();
         let before = guard.clone();
-        grid(ui, 2, |cols| {
-            let (left, right) = cols.split_at_mut(1);
-            self.map_column(&mut left[0], &mut guard, snap);
-            self.guide_column(&mut right[0], &mut guard, snap);
+        t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| {
+            t.style(tw::col(tw::GAP)).add(|t| self.map_column(t, &mut guard, snap));
+            t.style(tw::col(tw::GAP)).add(|t| self.guide_column(t, &mut guard, snap));
         });
         if *guard != before {
             guard.dirty = true;
         }
     }
 
-    fn map_column(&mut self, ui: &mut egui::Ui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+    fn map_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let world = snap.and_then(|s| s.world.clone());
         let near = snap.map(|s| s.things.clone()).unwrap_or_default();
-        section(ui, "미니맵", |ui| {
-            field(ui, "표시 방식", |ui| {
+        card(t, "미니맵", |t| {
+            field(t, "표시 방식", |t| {
                 for d in crate::minimap::Display::ALL {
-                    ui.selectable_value(&mut state.display, d, d.label());
+                    w(t, |ui| ui.selectable_value(&mut state.display, d, d.label()));
                 }
             });
-            field(ui, format!("F{} 순환", state.toggle_key), |ui| {
-                for d in crate::minimap::Display::ALL {
-                    let on = state.cycle & d.bit() != 0;
-                    let last = on && state.cycle.count_ones() == 1;
-                    if ui.add_enabled(!last, chip(d.label(), on, OK)).clicked() {
-                        state.cycle ^= d.bit();
-                    }
-                }
+            field(t, "위쪽", |t| {
+                w(t, |ui| ui.selectable_value(&mut state.heading_up, false, "북쪽(N)"));
+                w(t, |ui| ui.selectable_value(&mut state.heading_up, true, "카메라 방향"));
             });
-            note(ui, format!("F{} 를 누를 때마다 미니맵 → 큰 지도 → 끔 순서로, 고른 것만 돕니다", state.toggle_key));
-            field(ui, "위쪽", |ui| {
-                ui.selectable_value(&mut state.heading_up, false, "북쪽(N)");
-                ui.selectable_value(&mut state.heading_up, true, "카메라 방향");
+            field(t, "반경", |t| tw::slider(t, &mut state.radius_m, 20.0..=300.0, 10.0, " m"));
+            field(t, "스타일", |t| {
+                w(t, |ui| ui.selectable_value(&mut state.mini_outline, true, "윤곽선"));
+                w(t, |ui| ui.selectable_value(&mut state.mini_outline, false, "채움"));
             });
-            field(ui, "반경", |ui| {
-                ui.add(egui::Slider::new(&mut state.radius_m, 20.0..=300.0).step_by(10.0).suffix(" m"))
-            });
-            field(ui, "스타일", |ui| {
-                ui.selectable_value(&mut state.mini_outline, true, "윤곽선");
-                ui.selectable_value(&mut state.mini_outline, false, "채움");
-            });
-            field(ui, "아이콘 크기", |ui| {
-                ui.add(egui::Slider::new(&mut state.icon_px, crate::minimap::ICON_PX).suffix(" px"))
-            });
+            field(t, "아이콘 크기", |t| tw::slider(t, &mut state.icon_px, crate::minimap::ICON_PX, 1.0, " px"));
+            switch(t, &mut state.hide_in_menus, "인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
         });
 
-        section(ui, "지형", |ui| {
-            field(ui, "지형 표시", |ui| {
+        card(t, "지형", |t| {
+            field(t, "지형 표시", |t| {
                 for m in crate::minimap::ReliefMode::ALL {
-                    ui.selectable_value(&mut state.relief, m, m.label());
+                    w(t, |ui| ui.selectable_value(&mut state.relief, m, m.label()));
                 }
             });
-            if state.relief != crate::minimap::ReliefMode::Off {
-                note(ui, "음영: 나보다 낮은 곳은 푸르게, 높은 곳은 황토색 · 등고선: 2 m (굵게 10 m) · 물은 파랑");
-            }
-            let n = snap.map_or(0, |s| s.footprints.len());
-            field(ui, "벽·바닥 윤곽", |ui| {
-                toggle(ui, &mut state.terrain);
-                ui.label(RichText::new(format!("구조물 ({n})")).color(DIM).small());
-            });
+            field(t, "벽·바닥 윤곽", |t| w(t, |ui| toggle(ui, &mut state.terrain)));
             if state.terrain {
-                choices(ui, |ui| {
+                choices(t, |t| {
                     for b in crate::raster::Band::ALL {
-                        let (fill, edge) = b.colours();
-                        let swatch =
-                            Color32::from_rgb(fill.0.max(edge.0 / 2), fill.1.max(edge.1 / 2), fill.2.max(edge.2 / 2));
-                        let (r, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
-                        ui.painter().rect_filled(r, 2.0, swatch);
-                        ui.painter().rect_stroke(
-                            r,
-                            2.0,
-                            egui::Stroke::new(1.0, Color32::from_rgb(edge.0, edge.1, edge.2)),
-                            egui::StrokeKind::Inside,
-                        );
-                        ui.label(RichText::new(b.label()).small());
+                        w(t, |ui| {
+                            ui.horizontal(|ui| {
+                                let (fill, edge) = b.colours();
+                                let swatch = Color32::from_rgb(
+                                    fill.0.max(edge.0 / 2),
+                                    fill.1.max(edge.1 / 2),
+                                    fill.2.max(edge.2 / 2),
+                                );
+                                let (r, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                                ui.painter().rect_filled(r, 2.0, swatch);
+                                ui.painter().rect_stroke(
+                                    r,
+                                    2.0,
+                                    egui::Stroke::new(1.0, Color32::from_rgb(edge.0, edge.1, edge.2)),
+                                    egui::StrokeKind::Inside,
+                                );
+                                ui.label(RichText::new(b.label()).small());
+                            });
+                        });
                     }
                 });
             }
         });
 
-        section(ui, "큰 지도", |ui| {
-            field(ui, "반경", |ui| {
-                ui.add(egui::Slider::new(&mut state.big_radius_m, 50.0..=1000.0).step_by(25.0).suffix(" m"))
+        card(t, "큰 지도", |t| {
+            field(t, "반경", |t| tw::slider(t, &mut state.big_radius_m, 50.0..=1000.0, 25.0, " m"));
+            field(t, "스타일", |t| {
+                w(t, |ui| ui.selectable_value(&mut state.big_outline, true, "윤곽선"));
+                w(t, |ui| ui.selectable_value(&mut state.big_outline, false, "채움"));
             });
-            field(ui, "스타일", |ui| {
-                ui.selectable_value(&mut state.big_outline, true, "윤곽선");
-                ui.selectable_value(&mut state.big_outline, false, "채움");
-            });
-            field(ui, "불투명도", |ui| ui.add(egui::Slider::new(&mut state.big_alpha, 20..=100).suffix(" %")));
-            if state.big_outline {
-                note(ui, "윤곽선: 배경 없이 벽·등고선·물가를 선으로만 (디아블로식) — 게임 화면이 그대로 보입니다");
-            }
-            note(ui, "표시 방식이 ‘큰 지도’일 때 화면 가운데에 펼칩니다 · 불투명도를 낮출수록 게임이 비쳐 보입니다");
+            field(t, "불투명도", |t| tw::slider(t, &mut state.big_alpha, 20..=100, 1.0, " %"));
         });
 
-        section(ui, "표시할 것", |ui| {
-            note(ui, "괄호 안 숫자는 지금 불러온 범위에 남아 있는 개수입니다");
-            ui.add_space(2.0);
+        card(t, "표시할 것", |t| {
             for (i, k) in ThingKind::ALL.into_iter().enumerate() {
                 let [r, g, b] = k.rgb();
                 let colour = Color32::from_rgb(r, g, b);
-                let total = near.iter().filter(|t| t.kind() == k).count();
+                let total = near.iter().filter(|x| x.kind() == k).count();
+                let subs = Sub::ALL.iter().filter(|x| x.kind() == k).count();
                 let mut on = state.layers & k.bit() != 0;
-                ui.horizontal(|ui| {
-                    if toggle(ui, &mut on).changed() {
+                t.style(tw::row(8.0)).add(|t| {
+                    if w(t, |ui| toggle(ui, &mut on)).changed() {
                         state.layers ^= k.bit();
                     }
-                    let (dot, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
-                    ui.painter().circle_filled(dot.center(), 6.0, if on { colour } else { colour.gamma_multiply(0.3) });
-                    let name = RichText::new(k.label()).strong().color(if on { Color32::WHITE } else { DIM });
-                    ui.label(name);
-                    ui.label(RichText::new(format!("({total})")).color(DIM));
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        let subs = Sub::ALL.iter().filter(|x| x.kind() == k).count();
-                        if subs > 1 {
-                            let hidden = Sub::ALL.iter().filter(|x| x.kind() == k && state.hidden.contains(x)).count();
-                            let text = match (self.unfolded[i], hidden) {
-                                (true, _) => "세부 ▲".to_string(),
-                                (false, 0) => "세부 ▼".to_string(),
-                                (false, h) => format!("세부 ▼ ({h}개 숨김)"),
-                            };
-                            if ui.add(egui::Button::new(RichText::new(text).small()).frame(false)).clicked() {
-                                self.unfolded[i] = !self.unfolded[i];
+                    w(t, |ui| {
+                        let (dot, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                        ui.painter().circle_filled(
+                            dot.center(),
+                            6.0,
+                            if on { colour } else { colour.gamma_multiply(0.3) },
+                        );
+                    });
+                    t.style(tw::grow(tw::row(6.0))).add(|t| {
+                        w(t, |ui| {
+                            ui.label(RichText::new(k.label()).strong().color(if on { Color32::WHITE } else { DIM }))
+                        });
+                        w(t, |ui| ui.label(RichText::new(format!("({total})")).color(DIM)));
+                    });
+                    if subs > 1 {
+                        let hidden = Sub::ALL.iter().filter(|x| x.kind() == k && state.hidden.contains(x)).count();
+                        let label = match (self.unfolded[i], hidden) {
+                            (true, _) => "세부 ▲".to_string(),
+                            (false, 0) => "세부 ▼".to_string(),
+                            (false, h) => format!("세부 ▼ ({h}개 숨김)"),
+                        };
+                        if w(t, |ui| ui.add(egui::Button::new(RichText::new(label).small()).frame(false))).clicked() {
+                            self.unfolded[i] = !self.unfolded[i];
+                        }
+                    }
+                });
+                if self.unfolded[i] && subs > 1 {
+                    choices(t, |t| {
+                        for sub in Sub::ALL.into_iter().filter(|x| x.kind() == k) {
+                            let n = near.iter().filter(|x| x.sub == sub).count();
+                            let shown = !state.hidden.contains(&sub);
+                            if w(t, |ui| ui.add_enabled(on, chip(&format!("{} ({n})", sub.label()), shown, colour)))
+                                .clicked()
+                            {
+                                if shown {
+                                    state.hidden.insert(sub);
+                                } else {
+                                    state.hidden.remove(&sub);
+                                }
                             }
                         }
                     });
-                });
-                if self.unfolded[i] && Sub::ALL.iter().filter(|x| x.kind() == k).count() > 1 {
-                    ui.indent(("subs", i), |ui| {
-                        ui.horizontal_wrapped(|ui| {
-                            ui.spacing_mut().item_spacing = egui::vec2(6.0, 6.0);
-                            for sub in Sub::ALL.into_iter().filter(|x| x.kind() == k) {
-                                let n = near.iter().filter(|t| t.sub == sub).count();
-                                let shown = !state.hidden.contains(&sub);
-                                if ui.add_enabled(on, chip(&format!("{} ({n})", sub.label()), shown, colour)).clicked()
-                                {
-                                    if shown {
-                                        state.hidden.insert(sub);
-                                    } else {
-                                        state.hidden.remove(&sub);
-                                    }
-                                }
-                            }
-                        });
-                    });
-                    ui.add_space(4.0);
                 }
             }
         });
 
-        section(ui, "이 지역", |ui| match (&world, snap.and_then(|s| s.pose)) {
-            (Some(w), Some((p, yaw))) => {
-                let trail = state.trails.get(w).map_or(0, |t| t.iter().flatten().count());
-                let markers = state.markers.get(w).map_or(0, Vec::len);
-                field(ui, "지역", |ui| ui.add(egui::Label::new(RichText::new(w).color(DIM)).truncate()));
-                field(ui, "위치", |ui| {
-                    ui.add(
-                        egui::Label::new(
-                            RichText::new(format!("{:.0}, {:.0}, {:.0} · {yaw:.0}°", p[0], p[1], p[2])).color(DIM),
-                        )
-                        .truncate(),
-                    )
-                });
-                field(ui, "기록", |ui| ui.label(format!("길 {trail}점 · 마커 {markers}개")));
-                ui.horizontal(|ui| {
-                    if ui.button("경로 지우기").clicked() {
-                        state.clear_trail(w);
+        card(t, "지나온 길 · 마커", |t| match &world {
+            Some(wd) => {
+                let trail = state.trails.get(wd).map_or(0, |x| x.iter().flatten().count());
+                let markers = state.markers.get(wd).map_or(0, Vec::len);
+                field(t, "이 지역", |t| text(t, format!("길 {trail}점 · 마커 {markers}개")));
+                choices(t, |t| {
+                    if w(t, |ui| ui.button("경로 지우기")).clicked() {
+                        state.clear_trail(wd);
                     }
-                    if ui.button("마커 지우기").clicked() {
-                        state.clear_markers(w);
+                    if w(t, |ui| ui.button("마커 지우기")).clicked() {
+                        state.clear_markers(wd);
                     }
                 });
             }
-            _ => {
-                ui.label(RichText::new("주인공을 조작할 수 있을 때 표시됩니다").color(DIM));
-            }
+            _ => text(t, RichText::new("주인공을 조작할 수 있을 때 표시됩니다").color(DIM)),
         });
     }
 
-    fn guide_column(&mut self, ui: &mut egui::Ui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+    fn guide_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         let dist = |g: &crate::goals::Goal| {
             here.map_or(f32::MAX, |h| ((g.at[0] - h[0]).powi(2) + (g.at[1] - h[1]).powi(2)).sqrt() / 100.0)
         };
 
-        section(ui, "나침반 · 방향", |ui| {
-            field(ui, format!("나침반 (F{})", state.compass_key), |ui| {
-                toggle(ui, &mut state.compass);
-                ui.label(RichText::new("화면 위 가운데").color(DIM).small());
+        card(t, "나침반 · 방향", |t| {
+            field(t, format!("나침반 (F{})", state.compass_key), |t| {
+                w(t, |ui| toggle(ui, &mut state.compass));
+                w(t, |ui| ui.label(RichText::new("화면 위 가운데").color(DIM).small()));
             });
-            field(ui, "북쪽 보정", |ui| {
-                egui::ComboBox::from_id_salt("north")
-                    .width(ui.available_width().min(160.0))
-                    .selected_text(match state.north_yaw as i32 {
-                        0 => "+X",
-                        90 => "+Y",
-                        180 => "−X",
-                        _ => "기본 (−Y)",
-                    })
-                    .show_ui(ui, |ui| {
-                        for (deg, name) in [(270.0, "기본 (−Y)"), (0.0, "+X"), (90.0, "+Y"), (180.0, "−X")] {
-                            ui.selectable_value(&mut state.north_yaw, deg, name);
-                        }
-                    });
-            });
-            note(ui, "게임 나침반 아이템의 북쪽과 다르면 바꾸세요 — 미니맵·큰 지도·나침반 모두에 적용");
         });
 
-        section(ui, "안내", |ui| {
-            switch(ui, &mut state.guide_auto, "자동 — 고른 곳이 없으면 가장 가까운 퀘스트 목표로");
+        card(t, "안내", |t| {
+            switch(t, &mut state.guide_auto, "자동 — 고른 곳이 없으면 가장 가까운 퀘스트 목표로");
             switch(
-                ui,
+                t,
                 &mut state.route,
                 "실제 이동 경로 (A*) — 지형·물·벽을 돌아가는 길, 나침반이 다음 꺾이는 곳을 가리킴",
             );
-            choices(ui, |ui| {
-                for t in crate::goals::Tier::ALL {
-                    let [r, g, b] = t.rgb();
-                    let n = goals.iter().filter(|x| x.tier == t).count();
-                    let on = state.goal_tiers & (1 << t as u8) != 0;
-                    if ui.add(chip(&format!("{} ({n})", t.label()), on, Color32::from_rgb(r, g, b))).clicked() {
-                        state.goal_tiers ^= 1 << t as u8;
+            choices(t, |t| {
+                for tier in crate::goals::Tier::ALL {
+                    let [r, g, b] = tier.rgb();
+                    let n = goals.iter().filter(|x| x.tier == tier).count();
+                    let on = state.goal_tiers & (1 << tier as u8) != 0;
+                    if w(t, |ui| ui.add(chip(&format!("{} ({n})", tier.label()), on, Color32::from_rgb(r, g, b))))
+                        .clicked()
+                    {
+                        state.goal_tiers ^= 1 << tier as u8;
                     }
                 }
             });
-            match state.target.and_then(|t| goals.iter().find(|g| g.id == t)) {
+            match state.target.and_then(|id| goals.iter().find(|g| g.id == id)) {
                 Some(g) => {
                     let [r, gg, b] = g.tier.rgb();
-                    ui.horizontal(|ui| {
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            if ui.button("안내 끄기").clicked() {
-                                state.target = None;
-                                state.guide_auto = false;
-                            }
-                            ui.label(RichText::new(crate::raster::distance(dist(g))).color(DIM));
-                            ui.with_layout(egui::Layout::left_to_right(egui::Align::Center), |ui| {
-                                ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
-                                ui.add(egui::Label::new(RichText::new(&g.label).strong()).truncate());
-                            });
-                        });
+                    t.style(tw::row(8.0)).add(|t| {
+                        w(t, |ui| ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b))));
+                        text(t, RichText::new(&g.label).strong());
+                        w(t, |ui| ui.label(RichText::new(crate::raster::distance(dist(g))).color(DIM)));
+                        if w(t, |ui| ui.button("안내 끄기")).clicked() {
+                            state.target = None;
+                            state.guide_auto = false;
+                        }
                     });
-                    note(ui, g.detail.clone());
+                    note(t, g.detail.clone());
                     if state.route && *self.shared.route_uncertain.lock().unwrap() {
-                        ui.add(
-                            egui::Label::new(
-                                RichText::new(
-                                    "⚠ 들어가는 길을 찾지 못해 장애물을 넘는 추정 구간이 있습니다 (지도에 노란 점선)",
-                                )
-                                .color(WAIT)
-                                .small(),
+                        text(
+                            t,
+                            RichText::new(
+                                "⚠ 들어가는 길을 찾지 못해 장애물을 넘는 추정 구간이 있습니다 (지도에 노란 점선)",
                             )
-                            .wrap(),
+                            .color(WAIT)
+                            .small(),
                         );
                     }
                 }
-                None => {
-                    ui.label(RichText::new("안내 중인 곳이 없습니다").color(DIM));
-                }
-            }
-        });
-
-        let quests = snap.map(|s| s.quests.clone()).unwrap_or_default();
-        section(ui, "진행 중인 조사", |ui| {
-            if quests.is_empty() {
-                ui.label(RichText::new("없음 (또는 아직 읽지 못함)").color(DIM));
-            } else {
-                ui.add(egui::Label::new(quests.join(", ")).wrap());
+                None => text(t, RichText::new("안내 중인 곳이 없습니다").color(DIM)),
             }
         });
 
         let mut list: Vec<&crate::goals::Goal> =
             goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
         list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
-        section(ui, &format!("갈 곳 ({})", list.len()), |ui| {
-            note(ui, "아직 얻지 않은 사실·태그를 주는 곳입니다. 눌러서 안내를 시작합니다");
-            egui::ScrollArea::vertical().max_height(220.0).show(ui, |ui| {
-                for g in list {
-                    let [r, gg, b] = g.tier.rgb();
-                    let chosen = state.target == Some(g.id);
-                    ui.horizontal(|ui| {
-                        ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
-                        let text = format!("{}  ({})", g.label, crate::raster::distance(dist(g)));
-                        let button = egui::Button::selectable(chosen, text).truncate();
-                        if ui.add(button).on_hover_text(&g.detail).clicked() {
-                            state.target = Some(g.id);
-                        }
-                    });
-                }
+        card(t, &format!("갈 곳 ({})", list.len()), |t| {
+            block(t, |ui| {
+                egui::ScrollArea::vertical().max_height(220.0).show(ui, |ui| {
+                    for g in list {
+                        let [r, gg, b] = g.tier.rgb();
+                        let chosen = state.target == Some(g.id);
+                        ui.horizontal(|ui| {
+                            ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b)));
+                            let label = format!("{}  ({})", g.label, crate::raster::distance(dist(g)));
+                            let button = egui::Button::selectable(chosen, label).truncate();
+                            if ui.add(button).on_hover_text(&g.detail).clicked() {
+                                state.target = Some(g.id);
+                            }
+                        });
+                    }
+                });
             });
         });
 
-        section(ui, "단축키", |ui| {
-            {
-                for (label, id) in [
-                    ("지도 표시 방식 전환", "toggle_key"),
-                    ("마커 찍기/지우기", "marker_key"),
-                    ("나침반 표시/숨김", "compass_key"),
-                    ("다음 목표로 안내", "cycle_key"),
-                ] {
-                    let mine = match id {
-                        "toggle_key" => state.toggle_key,
-                        "marker_key" => state.marker_key,
-                        "compass_key" => state.compass_key,
-                        _ => state.cycle_key,
-                    };
-                    let taken = others(state, mine);
-                    let key = match id {
-                        "toggle_key" => &mut state.toggle_key,
-                        "marker_key" => &mut state.marker_key,
-                        "compass_key" => &mut state.compass_key,
-                        _ => &mut state.cycle_key,
-                    };
-                    field(ui, label, |ui| key_picker(ui, id, key, &taken));
-                }
+        card(t, "단축키", |t| {
+            for (label, id) in [
+                ("지도 표시 방식 전환", "toggle_key"),
+                ("마커 찍기/지우기", "marker_key"),
+                ("나침반 표시/숨김", "compass_key"),
+                ("다음 목표로 안내", "cycle_key"),
+            ] {
+                let mine = match id {
+                    "toggle_key" => state.toggle_key,
+                    "marker_key" => state.marker_key,
+                    "compass_key" => state.compass_key,
+                    _ => state.cycle_key,
+                };
+                let taken = others(state, mine);
+                let key = match id {
+                    "toggle_key" => &mut state.toggle_key,
+                    "marker_key" => &mut state.marker_key,
+                    "compass_key" => &mut state.compass_key,
+                    _ => &mut state.cycle_key,
+                };
+                field(t, label, |t| w(t, |ui| key_picker(ui, id, key, &taken)));
             }
-            note(ui, "마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다 · F8 은 패널");
-        });
-
-        let (cursor, paused) = *self.shared.menu.lock().unwrap();
-        section(ui, "게임 메뉴", |ui| {
-            switch(ui, &mut state.hide_in_menus, "인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
-            let sig =
-                |on: bool| if on { RichText::new("켜짐").color(WAIT) } else { RichText::new("꺼짐").color(DIM) };
-            ui.horizontal(|ui| {
-                ui.label(RichText::new("감지 — 게임 커서").color(DIM).small());
-                ui.label(sig(cursor).small());
-                ui.label(RichText::new("· 일시정지").color(DIM).small());
-                ui.label(sig(paused).small());
-            });
         });
     }
 
@@ -738,46 +663,50 @@ impl Panel {
         if active.is_empty() {
             ui.label(RichText::new("켜진 치트가 없습니다").color(DIM));
         } else if let Some(snap) = snap {
-            egui::Grid::new("debug").num_columns(4).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
-                for a in &active {
-                    let Some(c) = cheats::find(a.cheat) else { continue };
-                    for e in c.effects() {
-                        let (target, want) = match *e {
-                            Effect::Fixed(t, v) => (t, Some(v)),
-                            Effect::Chosen(t) => (t, Some(a.value)),
-                            Effect::Fill(t, max) => (t, snap.value(max)),
-                            // Past the hero: many targets, not one value to compare.
-                            Effect::EnemyTime
-                            | Effect::EnemyFrail
-                            | Effect::Stock(_)
-                            | Effect::WeaponXp
-                            | Effect::Ghost
-                            | Effect::Untouchable => {
-                                ui.label(c.label);
-                                ui.label(RichText::new("적·인벤토리 대상").color(DIM).small());
-                                ui.label("");
-                                ui.label(RichText::new("매 틱 적용").color(OK));
-                                ui.end_row();
-                                continue;
-                            }
-                        };
-                        let now = snap.value(target);
-                        let was = snap.originals.iter().find(|(x, _)| *x == target).map(|(_, (_, c))| *c);
-                        ui.label(c.label);
-                        ui.label(RichText::new(target.name).color(DIM).small());
-                        ui.label(format!("{} → {}", fmt(was), fmt(want)));
-                        match (want, now) {
-                            (Some(w), Some(n)) if (w - n).abs() <= 0.01 + w.abs() * 0.01 => {
-                                ui.label(RichText::new(format!("적용 중 {n:.2}")).color(OK))
-                            }
-                            (Some(_), Some(n)) => ui
-                                .label(RichText::new(format!("게임이 바꿈 {n:.2}")).color(BAD))
-                                .on_hover_text("넣은 값과 다릅니다. 게임이 매 순간 다시 계산하는 값일 수 있습니다."),
-                            _ => ui.label(RichText::new("읽을 수 없음").color(BAD)),
-                        };
-                        ui.end_row();
+            egui::ScrollArea::horizontal().id_salt("debug-scroll").show(ui, |ui| {
+                egui::Grid::new("debug").num_columns(4).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
+                    for a in &active {
+                        let Some(c) = cheats::find(a.cheat) else { continue };
+                        for e in c.effects() {
+                            let (target, want) = match *e {
+                                Effect::Fixed(t, v) => (t, Some(v)),
+                                Effect::Chosen(t) => (t, Some(a.value)),
+                                Effect::Fill(t, max) => (t, snap.value(max)),
+                                // Past the hero: many targets, not one value to compare.
+                                Effect::EnemyTime
+                                | Effect::EnemyFrail
+                                | Effect::Stock(_)
+                                | Effect::WeaponXp
+                                | Effect::Ghost
+                                | Effect::Untouchable => {
+                                    ui.label(c.label);
+                                    ui.label(RichText::new("적·인벤토리 대상").color(DIM).small());
+                                    ui.label("");
+                                    ui.label(RichText::new("매 틱 적용").color(OK));
+                                    ui.end_row();
+                                    continue;
+                                }
+                            };
+                            let now = snap.value(target);
+                            let was = snap.originals.iter().find(|(x, _)| *x == target).map(|(_, (_, c))| *c);
+                            ui.label(c.label);
+                            ui.label(RichText::new(target.name).color(DIM).small());
+                            ui.label(format!("{} → {}", fmt(was), fmt(want)));
+                            match (want, now) {
+                                (Some(w), Some(n)) if (w - n).abs() <= 0.01 + w.abs() * 0.01 => {
+                                    ui.label(RichText::new(format!("적용 중 {n:.2}")).color(OK))
+                                }
+                                (Some(_), Some(n)) => {
+                                    ui.label(RichText::new(format!("게임이 바꿈 {n:.2}")).color(BAD)).on_hover_text(
+                                        "넣은 값과 다릅니다. 게임이 매 순간 다시 계산하는 값일 수 있습니다.",
+                                    )
+                                }
+                                _ => ui.label(RichText::new("읽을 수 없음").color(BAD)),
+                            };
+                            ui.end_row();
+                        }
                     }
-                }
+                });
             });
         }
 
@@ -786,27 +715,29 @@ impl Panel {
         ui.label(RichText::new("게임에서 해 보고 눌러 주세요. verify.txt에 저장됩니다.").color(DIM).small());
         let mut changed = false;
         egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
-            egui::Grid::new("marks").num_columns(3).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
-                for c in CHEATS {
-                    ui.label(c.label);
-                    let mark = self.marks.get(c.id).copied();
-                    ui.horizontal(|ui| {
-                        if ui.selectable_label(mark == Some(true), "됨 ✓").clicked() {
-                            self.marks.insert(c.id.to_string(), true);
-                            changed = true;
-                        }
-                        if ui.selectable_label(mark == Some(false), "안 됨 ✗").clicked() {
-                            self.marks.insert(c.id.to_string(), false);
-                            changed = true;
-                        }
-                    });
-                    ui.label(
-                        RichText::new(if c.verified { "확인됨" } else { "미검증" })
-                            .color(if c.verified { OK } else { WAIT })
-                            .small(),
-                    );
-                    ui.end_row();
-                }
+            egui::ScrollArea::horizontal().id_salt("marks-scroll").show(ui, |ui| {
+                egui::Grid::new("marks").num_columns(3).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
+                    for c in CHEATS {
+                        ui.label(c.label);
+                        let mark = self.marks.get(c.id).copied();
+                        ui.horizontal(|ui| {
+                            if ui.selectable_label(mark == Some(true), "됨 ✓").clicked() {
+                                self.marks.insert(c.id.to_string(), true);
+                                changed = true;
+                            }
+                            if ui.selectable_label(mark == Some(false), "안 됨 ✗").clicked() {
+                                self.marks.insert(c.id.to_string(), false);
+                                changed = true;
+                            }
+                        });
+                        ui.label(
+                            RichText::new(if c.verified { "확인됨" } else { "미검증" })
+                                .color(if c.verified { OK } else { WAIT })
+                                .small(),
+                        );
+                        ui.end_row();
+                    }
+                });
             });
         });
         if changed {
@@ -836,53 +767,52 @@ impl Panel {
         }
     }
 
-    fn held(&mut self, ui: &mut egui::Ui, group: Group, snap: Option<&Snapshot>) {
+    /// A group's cheats as form rows: the name on the left, wrapping if it must; the
+    /// switch, slider (track and value box measured apart), button and badge on the
+    /// right, wrapping onto a second line rather than overflowing.
+    fn held(&mut self, t: &mut Tui, group: Group, snap: Option<&Snapshot>) {
         let mut changed = false;
-        ui.spacing_mut().slider_width = (ui.available_width() - 230.0).max(80.0);
-        egui::Grid::new(group.label()).num_columns(3).spacing([8.0, 6.0]).show(ui, |ui| {
-            for c in CHEATS.iter().filter(|c| c.group == group) {
-                let mut on = self.on.get(c.id).copied().unwrap_or(false);
-                match c.kind {
-                    Kind::Toggle(_) => {
-                        changed |= ui.checkbox(&mut on, c.label).changed();
-                        ui.label("");
+        for c in CHEATS.iter().filter(|c| c.group == group) {
+            let mut on = self.on.get(c.id).copied().unwrap_or(false);
+            match c.kind {
+                Kind::Toggle(_) => field(t, c.label, |t| {
+                    changed |= w(t, |ui| toggle(ui, &mut on)).changed();
+                    w(t, |ui| Self::badge(ui, c));
+                }),
+                Kind::Slider { min, max, .. } => field(t, c.label, |t| {
+                    changed |= w(t, |ui| toggle(ui, &mut on)).changed();
+                    let step = if max - min > 50.0 { 10.0 } else { 0.05 };
+                    let v = self.value.entry(c.id).or_insert(min);
+                    let mut slider = tw::slider(t, v, min..=max, step, "");
+                    if let Some(now) = chosen(c).and_then(|a| snap.and_then(|s| s.value(a))) {
+                        slider = slider.on_hover_text(format!("게임의 현재 값: {now:.2}"));
                     }
-                    Kind::Slider { min, max, .. } => {
-                        changed |= ui.checkbox(&mut on, c.label).changed();
-                        let v = self.value.entry(c.id).or_insert(min);
-                        let step = if max - min > 50.0 { 10.0 } else { 0.05 };
-                        let mut slider = ui.add(egui::Slider::new(v, min..=max).max_decimals(2).step_by(step));
-                        if let Some(now) = chosen(c).and_then(|a| snap.and_then(|s| s.value(a))) {
-                            slider = slider.on_hover_text(format!("게임의 현재 값: {now:.2}"));
-                        }
-                        // Live while dragging, at most every 150 ms — and always on release.
-                        let due = self.slid.get(c.id).is_none_or(|t| t.elapsed() >= Duration::from_millis(150));
-                        if on && ((slider.changed() && due) || slider.drag_stopped()) {
-                            self.slid.insert(c.id, Instant::now());
-                            changed = true;
-                        }
+                    // Live while dragging, at most every 150 ms — and always on release.
+                    let due = self.slid.get(c.id).is_none_or(|x| x.elapsed() >= Duration::from_millis(150));
+                    if on && ((slider.changed() && due) || slider.drag_stopped()) {
+                        self.slid.insert(c.id, Instant::now());
+                        changed = true;
                     }
-                    Kind::SetStock { max, default, .. } => {
-                        // Written once, on the button — not held.
-                        ui.label(c.label);
+                    w(t, |ui| Self::badge(ui, c));
+                }),
+                Kind::SetStock { max, default, .. } => {
+                    // Written once, on the button — not held.
+                    let tx = self.tx.clone();
+                    field(t, c.label, |t| {
                         let v = self.value.entry(c.id).or_insert(default);
-                        ui.horizontal(|ui| {
-                            ui.add(egui::Slider::new(v, 1.0..=max).step_by(1.0).max_decimals(0));
-                            if ui.button("적용").clicked() {
-                                let _ = self.tx.send(Request::Set(c.id, *v));
-                            }
-                        });
-                        Self::badge(ui, c);
-                        ui.end_row();
-                        continue;
-                    }
-                    Kind::Set { .. } => continue,
+                        tw::slider(t, v, 1.0..=max, 1.0, "");
+                        let v = *v;
+                        if w(t, |ui| ui.button("적용")).clicked() {
+                            let _ = tx.send(Request::Set(c.id, v));
+                        }
+                        w(t, |ui| Self::badge(ui, c));
+                    });
+                    continue;
                 }
-                Self::badge(ui, c);
-                self.on.insert(c.id, on);
-                ui.end_row();
+                Kind::Set { .. } => continue,
             }
-        });
+            self.on.insert(c.id, on);
+        }
         if changed {
             self.send_active();
         }
@@ -904,23 +834,38 @@ impl Panel {
         });
         let attached = snap.is_some_and(|s| s.game.is_ok());
         if let Some(n) = snap.and_then(|s| s.notice.clone()) {
-            ui.label(RichText::new(n).color(if attached { WAIT } else { DIM }).small());
+            ui.add(egui::Label::new(RichText::new(n).color(if attached { WAIT } else { DIM }).small()).wrap());
         }
         if let Some((ok, text, at)) = &self.reply {
             if at.elapsed() < Duration::from_secs(5) {
-                ui.label(RichText::new(text).color(if *ok { OK } else { BAD }).small());
+                ui.add(egui::Label::new(RichText::new(text).color(if *ok { OK } else { BAD }).small()).wrap());
             }
         }
         ui.add_space(4.0);
-        ui.label(RichText::new("주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다").color(DIM).small());
+        ui.add(
+            egui::Label::new(
+                RichText::new("주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다").color(DIM).small(),
+            )
+            .wrap(),
+        );
     }
 
     /// The window is exactly as tall as what is in it: nothing clipped, nothing empty.
-    fn fit(&mut self, ui: &egui::Ui, height: f32) {
-        let height = height.ceil();
-        if (height - self.height).abs() > 1.0 {
-            self.height = height;
-            ui.ctx().send_viewport_cmd(egui::ViewportCommand::InnerSize(egui::vec2(WIDTH, height)));
+    fn fit(&mut self, ui: &egui::Ui, width: f32, height: f32) {
+        let (width, height) = (width.ceil(), height.ceil());
+        if (height - self.height).abs() > 1.0 || (width - self.width).abs() > 1.0 {
+            (self.width, self.height) = (width, height);
+            ui.ctx().send_viewport_cmd(egui::ViewportCommand::InnerSize(egui::vec2(width, height)));
+        }
+    }
+
+    /// How wide the chosen page is: as many cards side by side as it has columns of
+    /// them — two for the cheat groups and the map, one wide one for debugging.
+    fn page_width(&self) -> f32 {
+        if self.debug {
+            DEBUG_PAGE
+        } else {
+            tw::cards_width(2)
         }
     }
 }
@@ -942,39 +887,56 @@ impl eframe::App for Panel {
         }
         let open = snap.as_ref().is_some_and(|s| s.gate.is_ok());
 
+        // As tall as what it shows, up to a share of the monitor; past that the page
+        // scrolls and the sidebar and footer stay put.
+        let monitor = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1080.0, |m| m.y);
+        let max_height = (monitor * MAX_SHARE).max(480.0);
+        let page_height = (max_height - CHROME - FOOTER).max(240.0);
+        // As wide as the page's cards side by side, plus the sidebar — never wider than
+        // the monitor.
+        let monitor_w = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1920.0, |m| m.x);
+        let width = (FRAME + NAV + DIVIDER + self.page_width() + SCROLLBAR).min(monitor_w * 0.9);
         let used = egui::Frame::central_panel(ui.style())
             .show(ui, |ui| {
-                ui.set_width(WIDTH - 16.0);
+                ui.set_width(width - FRAME);
+                ui.set_max_width(width - FRAME);
                 self.title_bar(ui);
-                // The divider between sidebar and page is painted afterwards, as tall as
-                // the taller of the two: a separator laid out between them would take
-                // all the height the window has — so the window could grow but never
-                // shrink back when a shorter page is chosen.
-                let row = ui.horizontal_top(|ui| {
-                    let side = ui
-                        .vertical(|ui| {
-                            ui.set_width(NAV);
-                            self.status(ui, snap.as_ref());
-                            ui.separator();
-                            self.nav(ui);
-                        })
-                        .response
-                        .rect;
-                    ui.add_space(DIVIDER);
-                    ui.vertical(|ui| {
-                        ui.add_enabled_ui(open, |ui| self.page(ui, snap.as_ref()));
+                // `grid grid-cols-[172px_1fr]`: the sidebar, then the page — which
+                // scrolls inside the window past `page_height`, over its own grid of
+                // cards, with the footer under it.
+                let left = ui.cursor().min.x;
+                let top = ui.cursor().min.y;
+                let shell = tw::full(tw::sidebar(NAV, DIVIDER));
+                tui(ui, ui.id().with("shell")).reserve_available_width().style(shell).show(|t| {
+                    block(t, |ui| {
+                        self.status(ui, snap.as_ref());
+                        ui.separator();
+                        self.nav(ui);
+                    });
+                    block(t, |ui| {
+                        egui::ScrollArea::vertical()
+                            .id_salt("page")
+                            .max_height(page_height)
+                            .auto_shrink([false, true])
+                            .show(ui, |ui| {
+                                ui.add_enabled_ui(open, |ui| {
+                                    tui(ui, ui.id().with("page"))
+                                        .reserve_available_width()
+                                        .style(tw::full(tw::col(tw::GAP)))
+                                        .show(|t| self.page(t, snap.as_ref()));
+                                });
+                            });
                         ui.separator();
                         self.footer(ui, snap.as_ref());
                     });
-                    side.right()
                 });
-                let x = row.inner + DIVIDER / 2.0;
+                let x = left + NAV + DIVIDER / 2.0;
                 let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
-                ui.painter().vline(x, row.response.rect.y_range(), stroke);
+                ui.painter().vline(x, top..=ui.min_rect().bottom(), stroke);
             })
             .response
             .rect;
-        self.fit(ui, used.height());
+        self.fit(ui, width, used.height().min(max_height));
         self.persist(false);
     }
 
@@ -994,17 +956,6 @@ fn key_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
         for k in (1..=12u8).filter(|&k| crate::minimap::usable_key(k) && !taken.contains(&k)) {
             ui.selectable_value(key, k, format!("F{k}"));
         }
-    });
-}
-
-/// A titled box with room inside it.
-fn section(ui: &mut egui::Ui, title: &str, body: impl FnOnce(&mut egui::Ui)) {
-    ui.add_space(4.0);
-    egui::Frame::group(ui.style()).inner_margin(egui::Margin::same(9)).show(ui, |ui| {
-        ui.set_width(ui.available_width());
-        ui.label(RichText::new(title).strong().size(15.0));
-        ui.add_space(4.0);
-        body(ui);
     });
 }
 

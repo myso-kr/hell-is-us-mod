@@ -14,6 +14,8 @@ path = "src/main.rs"
 [target.'cfg(windows)'.dependencies]
 # The overlay. glow rather than wgpu: one small OpenGL context is all a panel needs.
 eframe = { version = "0.36", default-features = false, features = ["glow", "default_fonts"] }
+# CSS Flexbox and Grid for the panel (taffy, via egui): MIT.
+egui_taffy = "0.14"
 raw-window-handle = "0.6"
 windows-sys = { version = "0.59", features = [
     "Win32_Foundation",

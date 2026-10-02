@@ -47,6 +47,15 @@ been verified in play yet.
   hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
   from each mesh's bounds and transform. The game ships no map of the area it could
   use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- The overlays show only while the game window has focus — not while the panel
+  does.
+- The panel is laid out with CSS Flexbox and Grid (taffy): cards sit side by side
+  while there is room and stack when there is not, every widget is measured rather
+  than guessed, and the window is sized to its page's cards. Settings that are
+  best left at their defaults are no longer shown (the F9 cycle, north correction),
+  and the panel's notes and debug details are trimmed.
+- Setting shards now stops at 990 (900 by default). At the game's own maximum of
+  999 a stack takes no more, so pickups stop and no acquired notice shows.
 - Ghost (survival tab): the hero joins the enemies' side, so they ignore it — and
   its own blows do not land while it is on, so it is for getting past, not for
   fighting. A cheat to ignore hits was tried two ways and dropped: the game's

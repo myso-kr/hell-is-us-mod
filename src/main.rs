@@ -376,11 +376,15 @@ fn target(a: &hiumod::engine::Attached, objects: &hiumod::gobjects::Objects, wha
             mem::plausible(at).then_some(vec![at]).ok_or_else(|| format!("{what} is not a plausible address"))
         }
         class => {
-            let all: Vec<u64> = objects
-                .of_class(m, n, class)
-                .into_iter()
-                .filter(|&o| !n.object(m, o).unwrap_or_default().starts_with("Default__"))
-                .collect();
+            let live = |all: Vec<u64>| -> Vec<u64> {
+                all.into_iter().filter(|&o| !n.object(m, o).unwrap_or_default().starts_with("Default__")).collect()
+            };
+            let mut all = live(objects.of_class(m, n, class));
+            if all.is_empty() {
+                // A blueprint's instances are of its generated class (…_C): take any
+                // object whose class descends from the one named.
+                all = live(objects.all(m).into_iter().filter(|&o| n.is_a(m, o, class)).collect());
+            }
             if all.is_empty() {
                 return Err(format!("no live {class} — targets: hero, controller, asc, sets, inventory, items, save, world, enemy[:N], 0xADDRESS, or a class name"));
             }

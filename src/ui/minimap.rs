@@ -181,7 +181,8 @@ pub fn run(shared: Arc<Shared>) {
         let game = shared.game_pid.load(Ordering::SeqCst);
         let focus = pid_of(unsafe { GetForegroundWindow() });
         let in_game = game != 0 && focus == game;
-        let focused = in_game || (game != 0 && focus == std::process::id());
+        // Only while the game itself has focus: not while the panel does, nor anything else.
+        let focused = in_game;
         let (pose, world, things, footprints, goals, paused, obstacles) = match shared.snap.lock().unwrap().as_ref() {
             Some(s) => (
                 s.pose,

@@ -19,3 +19,10 @@ every attribute by name at run time.
 The minimap's SVG icons are rasterised with resvg and usvg (Apache-2.0 OR MIT,
 https://github.com/linebender/resvg) and tiny-skia (BSD-3-Clause,
 https://github.com/linebender/tiny-skia), linked into the binary from crates.io.
+
+## egui_taffy, taffy
+
+- egui_taffy 0.14 — https://github.com/PPakalns/egui_taffy — MIT
+- taffy 0.9 — https://github.com/DioxusLabs/taffy — MIT
+
+The panel's Flexbox and Grid layout. Linked as crates; nothing vendored.

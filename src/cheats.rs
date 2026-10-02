@@ -184,8 +184,10 @@ pub const CHEATS: &[Cheat] = &[
     Cheat {
         id: "shards",
         group: Group::Items,
-        label: "가진 샤드 수량",
-        kind: Kind::SetStock { class: "Shard", max: 999.0, default: 999.0 },
+        // Below the game's own 999: a full stack takes no more, so pickups stop and
+        // no "acquired" notice shows (seen in play).
+        label: "가진 샤드 수량 (999=최대면 줍기·알림 막힘)",
+        kind: Kind::SetStock { class: "Shard", max: 990.0, default: 900.0 },
         verified: true,
     },
 ];
