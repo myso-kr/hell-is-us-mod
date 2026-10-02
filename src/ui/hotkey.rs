@@ -1,8 +1,8 @@
-//! F8: show or hide the panel.
+//! ` (~, VK_OEM_3): show or hide the panel — the key games open their console with.
 //!
-//! Polled rather than registered. `RegisterHotKey` would take F8 from every other
-//! program for as long as the panel runs; polling only acts while the game or the
-//! panel has focus, and leaves F8 alone everywhere else.
+//! Polled rather than registered. `RegisterHotKey` would take the key from every
+//! other program for as long as the panel runs; polling only acts while the game or
+//! the panel has focus, and leaves it alone everywhere else.
 //!
 //! Showing and hiding go straight to the window with Win32 calls. eframe stops
 //! running its frame loop while its window is hidden, so a request routed through
@@ -15,9 +15,9 @@ use std::sync::Arc;
 use std::time::Duration;
 use windows_sys::Win32::Foundation::{BOOL, HWND, LPARAM, RECT};
 use windows_sys::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F8};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_OEM_3};
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    BringWindowToTop, EnumWindows, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId, IsWindowVisible,
+    BringWindowToTop, EnumWindows, FindWindowW, SW_SHOWNOACTIVATE, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId, IsWindowVisible,
     SetForegroundWindow, SetWindowPos, ShowWindow, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE,
     SWP_SHOWWINDOW, SW_HIDE,
 };
@@ -50,12 +50,34 @@ pub(super) fn game_window(pid: u32) -> Option<(HWND, RECT)> {
     s.best
 }
 
+/// The console's own window (panel.rs `console_window`), found by its title. It is an
+/// egui viewport, so it goes and comes back with the panel here: eframe draws no frames
+/// while the panel is hidden, and would leave it up.
+fn console_window() -> HWND {
+    let title: Vec<u16> = "Hell Is Us Mod — console".encode_utf16().chain([0]).collect();
+    unsafe { FindWindowW(std::ptr::null(), title.as_ptr()) }
+}
+
+/// Put the console right under the panel. Both are topmost; left alone, the console
+/// came up over the panel whenever it took the keyboard, and the panel went back over it
+/// at the next re-assertion — the panel blinked behind and in front.
+pub(super) fn console_under(panel: HWND) {
+    let console = console_window();
+    if !console.is_null() && !panel.is_null() {
+        unsafe { SetWindowPos(console, panel, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE) };
+    }
+}
+
 pub fn hide(shared: &Shared) {
     let hwnd = shared.hwnd.load(Ordering::SeqCst) as HWND;
     if hwnd.is_null() {
         return;
     }
     unsafe { ShowWindow(hwnd, SW_HIDE) };
+    let console = console_window();
+    if !console.is_null() {
+        unsafe { ShowWindow(console, SW_HIDE) };
+    }
     shared.visible.store(false, Ordering::SeqCst);
     // Hand the keyboard back, so the next keypress goes to the game.
     if let Some((game, _)) = game_window(shared.game_pid.load(Ordering::SeqCst)) {
@@ -71,7 +93,7 @@ fn over_game(pid: u32) -> Option<(i32, i32)> {
 }
 
 /// Take focus from the game. Windows refuses `SetForegroundWindow` to a process that
-/// did not receive the last input — and the game did, F8 included. Sharing the
+/// did not receive the last input — and the game did, the panel's key included. Sharing the
 /// game's input state for the length of the call lifts that; without it the panel
 /// would show but the game would keep the mouse, so nothing on it could be clicked.
 fn take_focus(hwnd: HWND) {
@@ -95,6 +117,10 @@ fn show(shared: &Shared, ctx: &egui::Context) {
     let saved = *shared.pos.lock().unwrap();
     let (x, y) = saved.or_else(|| over_game(shared.game_pid.load(Ordering::SeqCst))).unwrap_or((40, 40));
     unsafe { SetWindowPos(hwnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW) };
+    let console = console_window();
+    if !console.is_null() {
+        unsafe { ShowWindow(console, SW_SHOWNOACTIVATE) };
+    }
     take_focus(hwnd);
     shared.visible.store(true, Ordering::SeqCst);
     ctx.request_repaint();
@@ -132,6 +158,7 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
                 }
             } else if tick % ON_TOP_EVERY == 0 {
                 unsafe { SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE) };
+                console_under(hwnd);
                 // Once placed, wherever the panel is now is where the player wants it.
                 let mut r: RECT = unsafe { std::mem::zeroed() };
                 if placed != 0 && unsafe { GetWindowRect(hwnd, &mut r) } != 0 && saved != Some((r.left, r.top)) {
@@ -140,7 +167,7 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
             }
         }
 
-        let down = unsafe { GetAsyncKeyState(VK_F8 as i32) } as u16 & 0x8000 != 0;
+        let down = unsafe { GetAsyncKeyState(VK_OEM_3 as i32) } as u16 & 0x8000 != 0;
         if down && !was_down {
             let focus = pid_of(unsafe { GetForegroundWindow() });
             if focus == std::process::id() || (game != 0 && focus == game) {

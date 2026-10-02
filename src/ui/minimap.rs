@@ -2,10 +2,10 @@
 //! compass strip at its top centre, both click-through layered windows
 //! (ui/layered.rs) drawn by raster.rs — and the guide that picks what they point to.
 //!
-//! Not eframe viewports: eframe stops running frames while the panel is hidden (F8),
+//! Not eframe viewports: eframe stops running frames while the panel is hidden (`),
 //! and these have to keep drawing then.
 //!
-//! Keys, polled like F8 and only while the game or the panel has focus, chosen in the
+//! Keys, polled like the panel's ` and only while the game or the panel has focus, chosen in the
 //! panel: show/hide the map (F9), drop or remove a marker (F6), show/hide the compass
 //! (F10), move the guide to the next place (F11), the big map in the middle (F3).
 //! Only the worker's snapshot is read here — never the game's memory.
@@ -179,13 +179,14 @@ pub fn settle_target(
         return;
     }
     let near = |a: &&Goal, b: &&Goal| flat(a.at, here).total_cmp(&flat(b.at, here));
-    let wanted_all: Vec<&Goal> = goals.iter().filter(|g| wanted(g, goals, followed, journal)).collect();
+    let wanted_all: Vec<&Goal> =
+        goals.iter().filter(|g| !state.skipped.contains(&g.id) && wanted(g, goals, followed, journal)).collect();
     let open = wanted_all.iter().copied().filter(|g| !blocked.contains(&g.id)).min_by(near);
     let pick = open.or_else(|| {
         let stuck = wanted_all.iter().copied().min_by(near)?;
         let helper = goals
             .iter()
-            .filter(|g| g.id != stuck.id && !blocked.contains(&g.id) && g.gate == Gate::Open)
+            .filter(|g| g.id != stuck.id && !blocked.contains(&g.id) && g.gate == Gate::Open && !state.skipped.contains(&g.id))
             .filter(|g| flat(g.at, stuck.at) <= HELPER)
             .filter(|g| reachable(g, journal))
             .min_by(|a, b| flat(a.at, stuck.at).total_cmp(&flat(b.at, stuck.at)));

@@ -304,7 +304,7 @@ impl Attached {
         let g = &mut *g;
         let survey = g.survey.get_or_insert_with(|| crate::survey::Survey::load(&crate::paths::data_dir().join("survey")));
         if let Ok(world) = chain.world(m, &self.anchors) {
-            let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved };
+            let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
             goals.extend(survey.goals(crate::survey::Survey::world_of(&world), &known, &g.goals.loaded, &g.fact_keys));
         }
         Ok((goals, k))
@@ -338,7 +338,7 @@ impl Attached {
     pub fn needs(&self, journal: &[crate::quests::Quest]) -> Vec<(String, Vec<crate::survey::Need>)> {
         let g = self.guide.borrow();
         let Some(survey) = g.survey.as_ref().filter(|s| !s.is_empty()) else { return Vec::new() };
-        let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved };
+        let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
         journal
             .iter()
             .filter(|q| q.active())

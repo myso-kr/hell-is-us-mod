@@ -161,15 +161,33 @@ pub fn text(tui: &mut Tui, text: impl Into<RichText>) {
 
 /// A titled card: `flex flex-col gap-1.5 p-2.5 border rounded`.
 pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> T {
+    // A raised panel with rounded corners and an accent bar down its left edge.
+    fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
+        let rect = container.full_container();
+        let p = ui.painter();
+        p.rect(
+            rect,
+            8.0,
+            Color32::from_rgb(0x1C, 0x21, 0x29),
+            egui::Stroke::new(1.0, Color32::from_rgb(0x2E, 0x35, 0x40)),
+            egui::StrokeKind::Inside,
+        );
+        let bar = egui::Rect::from_min_size(rect.min + egui::vec2(1.0, 10.0), egui::vec2(3.0, 16.0));
+        p.rect_filled(bar, 1.5, ACCENT);
+    }
     tui.style(Style {
-        padding: taffy::Rect { left: length(10.0), right: length(10.0), top: length(8.0), bottom: length(10.0) },
-        ..col(6.0)
+        padding: taffy::Rect { left: length(12.0), right: length(10.0), top: length(8.0), bottom: length(10.0) },
+        ..col(5.0)
     })
-    .add_with_border(|tui| {
-        w(tui, |ui| ui.label(RichText::new(title).strong().size(15.0)));
+    .add_with_background_ui(background, |tui, _| {
+        w(tui, |ui| ui.label(RichText::new(title).strong().size(13.5).color(Color32::from_rgb(0xD8, 0xE4, 0xF2))));
         body(tui)
     })
+    .main
 }
+
+/// The cards' accent: a muted steel blue.
+pub const ACCENT: Color32 = Color32::from_rgb(0x5A, 0x9C, 0xE6);
 
 /// A form row: the label in a third of the row (72–150 px, wrapping), then the
 /// controls in what is left, wrapping onto a second line rather than overflowing.

@@ -879,7 +879,14 @@ pub fn draw_map(
     }
 
     if let Some(trail) = state.trails.get(world) {
-        for pair in trail.windows(2) {
+        // Newest last: the recent way bright, the old way fading out, so a long walk
+        // does not cover the map in lines.
+        let n = trail.len().max(2) as f32;
+        for (i, pair) in trail.windows(2).enumerate() {
+            let age = 1.0 - (i as f32 + 1.0) / (n - 1.0);
+            let fresh = (1.0 - age).powf(1.6);
+            let colour = Rgba(TRAIL.0, TRAIL.1, TRAIL.2, (TRAIL.3 as f32 * (0.08 + 0.92 * fresh)) as u8);
+            let width = 1.2 + 1.0 * fresh;
             if let [Some(a), Some(b)] = pair {
                 let (pa, pb) = (view.project(*a), view.project(*b));
                 if inside(pa) || inside(pb) {
@@ -893,7 +900,7 @@ pub fn draw_map(
                         }
                     };
                     let (pa, pb) = (clip(pa), clip(pb));
-                    cv.line((cx + pa.0, cy + pa.1), (cx + pb.0, cy + pb.1), 2.0, TRAIL);
+                    cv.line((cx + pa.0, cy + pa.1), (cx + pb.0, cy + pb.1), width, colour);
                 }
             }
         }
@@ -930,7 +937,7 @@ pub fn draw_map(
         let alpha = floor_alpha(dz);
         match icons {
             Some(icons) => {
-                let i = icons.get(*k);
+                let i = icons.get(t.sub);
                 cv.blit_alpha(cx + p.0, cy + p.1, i.size, &i.px, alpha);
                 floor_arrow(cv, cx + p.0 + i.size as f32 / 2.0, cy + p.1 - i.size as f32 / 2.0 + 3.0, dz);
             }

@@ -1,10 +1,10 @@
-//! The overlay: a small always-on-top panel over the game, shown and hidden with F8.
+//! The overlay: a small always-on-top panel over the game, shown and hidden with ` (~).
 //!
 //! Three threads, one job each:
 //!
 //! ```text
 //! worker   owns the Engine. Steps it ten times a second and runs what the panel asks
-//! hotkey   watches F8 while the game or the panel has focus; shows and hides the window
+//! hotkey   watches ` (~) while the game or the panel has focus; shows and hides the window
 //! minimap  the map window: F9 shows/hides it, F6 drops a marker (both changeable); reads snapshots only
 //! ui       eframe. Draws the last snapshot and sends requests — never touches the game
 //! ```
@@ -15,6 +15,7 @@
 //! Closing the panel stops every toggle and puts the originals back. Killing the
 //! process skips that, as it does for `hold`; `hiumod restore` covers it the same way.
 
+mod console;
 mod hotkey;
 mod layered;
 mod minimap;

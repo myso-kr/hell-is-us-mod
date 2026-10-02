@@ -186,3 +186,31 @@ been verified in play yet.
 - The quest journal is ready in about 3.5 s instead of 15–20 s. Its pass over every
   object now runs on a time budget: 120 ms a step until the journal is first built,
   25 ms after that.
+- After a conversation that teaches something, auto guiding moves on from that NPC.
+  It returns once a new topic opens elsewhere. Talked-to NPCs are kept in
+  `Mods	alked.txt`. The guide card has a 건너뛰기 (skip) button for goals finished out
+  of sight.
+- The panel opens with ` (~) instead of F8, and F8 can now be picked for the map.
+  The panel has a console at its foot. It runs the CLI's commands (`pose`,
+  `doctor survey` …) in the background and streams their output. `help` and
+  `clear` are built in, ↑/↓ recall commands and Esc stops one.
+- The console drops down from the top of the game window across its width,
+  see-through as in Half-Life, while the panel is open. It no longer sits at the
+  panel's foot.
+- The panel is more compact and easier to scan. Text is a size smaller, and cards
+  are raised panels with rounded corners and an accent bar. The selected sidebar
+  item is outlined. Segoe UI Symbol is a fallback font, so arrows and shapes
+  (▾ ▸ ↑ ↓) render instead of boxes.
+- The travel trail on the map fades with age: the recent way is bright and wide,
+  the old way thin and faint.
+- Map icons per sort, 23 of them instead of 6. Enemies are skulls coloured by type:
+  Feral red, Primeval violet, Negator orange, Protector teal. Items are coloured
+  badges with a glyph for medicine, food, consumables, weapons, gear, skills, drone
+  modules, research, lore, quest items and stashes. Loot and NPCs are circles,
+  doors, locks and translations diamonds, and save points a drop.
+- The console starts closed. Open it with the 콘솔 button in the panel's header.
+- Clearer guide controls. One 자동 안내 switch replaces 자동 plus 안내 끄기. The
+  target row has 다음 목표 ▶ to move on. A hand-picked target shows that it is kept,
+  with a 자동으로 button. With no target, the card says why: auto off, nothing near,
+  the quest's goals are in another region, or all were skipped. Skipped goals can
+  be brought back.

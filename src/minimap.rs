@@ -62,6 +62,9 @@ pub struct MapState {
     /// The target was picked by hand (the goal list, the cycle key): auto guiding
     /// leaves it until it is used up. Not kept across runs.
     pub chosen: bool,
+    /// Goals the player skipped (done in a way the guide could not see): auto guiding
+    /// passes them by this run.
+    pub skipped: std::collections::HashSet<u64>,
     /// The world yaw the game calls north (degrees): 270 in Hell Is Us, found by
     /// comparing with the game's compass item. Kept, in case an area differs.
     pub north_yaw: f32,
@@ -109,6 +112,7 @@ impl Default for MapState {
             quest: None,
             tracker: true,
             chosen: false,
+            skipped: Default::default(),
             target: None,
             north_yaw: 270.0,
             big_radius_m: 250.0,
@@ -386,9 +390,9 @@ pub const ALL_LAYERS: u8 = 0b11_1111;
 /// The layer bits as of this version; files without it predate the save-point kind.
 const LAYERS_VERSION: u8 = 2;
 
-/// F1–F12, except F8: that one is the panel's.
+/// F1–F12 (the panel's key is ` now, so F8 is free too).
 pub fn usable_key(k: u8) -> bool {
-    (1..=12).contains(&k) && k != 8
+    (1..=12).contains(&k)
 }
 
 /// Which map is up.
@@ -667,7 +671,7 @@ mod tests {
         let k = MapState::parse("toggle_key 12\nmarker_key 5\n");
         assert_eq!((k.toggle_key, k.marker_key), (12, 5));
         let k = MapState::parse("toggle_key 8\nmarker_key 13\n");
-        assert_eq!((k.toggle_key, k.marker_key), (9, 6), "F8 is the panel's; F13 is no key");
+        assert_eq!((k.toggle_key, k.marker_key), (8, 6), "F8 is free now; F13 is no key");
         let k = MapState::parse("toggle_key 6\n");
         assert_eq!((k.toggle_key, k.marker_key), (9, 6), "one key cannot do both");
         let k = MapState::parse("compass_key 6\n");

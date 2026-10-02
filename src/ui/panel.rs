@@ -42,20 +42,21 @@ const MAX_SHARE: f32 = 0.85;
 const FOOTER: f32 = 92.0;
 const CHROME: f32 = 56.0;
 
-/// egui's own fonts have no Hangul. Malgun Gothic ships with Windows, so it is
-/// borrowed from the system rather than bundled; without it the panel still works,
-/// with boxes where the Korean would be.
-/// Room to breathe: bigger hit targets and wider gaps than egui's compact default.
+/// A compact console look: text a size smaller than before, gaps to match.
 pub fn install_style(ctx: &egui::Context) {
     ctx.all_styles_mut(|s| {
-        s.spacing.item_spacing = egui::vec2(8.0, 6.0);
-        s.spacing.button_padding = egui::vec2(8.0, 4.0);
-        s.spacing.interact_size.y = 23.0;
-        s.spacing.slider_width = 180.0;
-        s.spacing.combo_width = 72.0;
-        for (style, size) in
-            [(egui::TextStyle::Body, 14.0), (egui::TextStyle::Button, 14.0), (egui::TextStyle::Small, 12.0)]
-        {
+        s.spacing.item_spacing = egui::vec2(7.0, 5.0);
+        s.spacing.button_padding = egui::vec2(7.0, 3.0);
+        s.spacing.interact_size.y = 21.0;
+        s.spacing.slider_width = 170.0;
+        s.spacing.combo_width = 68.0;
+        for (style, size) in [
+            (egui::TextStyle::Body, 12.5),
+            (egui::TextStyle::Button, 12.5),
+            (egui::TextStyle::Small, 11.0),
+            (egui::TextStyle::Monospace, 12.0),
+            (egui::TextStyle::Heading, 15.0),
+        ] {
             if let Some(f) = s.text_styles.get_mut(&style) {
                 f.size = size;
             }
@@ -63,12 +64,18 @@ pub fn install_style(ctx: &egui::Context) {
     });
 }
 
+/// egui's own fonts have no Hangul, and neither they nor Malgun Gothic have arrows
+/// and shapes like ▾ ▸ ↑ ↓. Malgun Gothic and Segoe UI Symbol ship with Windows, so
+/// they are borrowed from the system rather than bundled — fallbacks, in that order;
+/// without them the panel still works, with boxes for what is missing.
 pub fn install_fonts(ctx: &egui::Context) {
-    let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\malgun.ttf") else { return };
     let mut fonts = egui::FontDefinitions::default();
-    fonts.font_data.insert("malgun".into(), Arc::new(egui::FontData::from_owned(bytes)));
-    for family in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
-        fonts.families.entry(family).or_default().push("malgun".into());
+    for (name, file) in [("malgun", r"C:\Windows\Fonts\malgun.ttf"), ("symbol", r"C:\Windows\Fonts\seguisym.ttf")] {
+        let Ok(bytes) = std::fs::read(file) else { continue };
+        fonts.font_data.insert(name.into(), Arc::new(egui::FontData::from_owned(bytes)));
+        for family in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
+            fonts.families.entry(family).or_default().push(name.into());
+        }
     }
     ctx.set_fonts(fonts);
 }
@@ -102,6 +109,10 @@ pub struct Panel {
     /// up, the checkboxes are not overwritten from it.
     sent: Option<Instant>,
     reply: Option<(bool, String, Instant)>,
+    /// The console at the foot of the window, and whether the window was showing on
+    /// the last frame (to put the cursor in the console as it opens).
+    console: super::console::Console,
+    was_visible: bool,
     /// The size last asked of the window, so it is asked once per change.
     height: f32,
     width: f32,
@@ -155,6 +166,8 @@ impl Panel {
             slid: HashMap::new(),
             sent: None,
             reply: None,
+            console: Default::default(),
+            was_visible: false,
             height: 0.0,
             width: 0.0,
         }
@@ -249,13 +262,20 @@ impl Panel {
         let row = egui::UiBuilder::new().max_rect(rect).layout(egui::Layout::left_to_right(egui::Align::Center));
         ui.scope_builder(row, |ui| {
             ui.label(RichText::new("Hell Is Us Mod").strong());
-            ui.label(RichText::new("F8").color(DIM));
+            ui.label(RichText::new("`").color(DIM));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button(" × ").on_hover_text("닫기 — 원래 값으로 되돌리고 종료").clicked() {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
-                if ui.button(" — ").on_hover_text("숨기기 (F8로 다시 열기)").clicked() {
+                if ui.button(" — ").on_hover_text("숨기기 (` 키로 다시 열기)").clicked() {
                     hotkey::hide(&self.shared);
+                }
+                let label = if self.console.open { "콘솔 ▾" } else { "콘솔 ▸" };
+                if ui.selectable_label(self.console.open, label).on_hover_text("CLI 명령 콘솔").clicked() {
+                    self.console.open = !self.console.open;
+                    if self.console.open {
+                        self.console.focus();
+                    }
                 }
             });
         });
@@ -291,12 +311,12 @@ impl Panel {
     /// guide, then debugging.
     fn nav(&mut self, ui: &mut egui::Ui) {
         let item = |ui: &mut egui::Ui, on: bool, text: String| {
-            let label = RichText::new(text).size(14.5).color(if on { Color32::WHITE } else { Color32::from_gray(190) });
+            let label = RichText::new(text).size(13.0).color(if on { Color32::WHITE } else { Color32::from_gray(185) });
             let button = egui::Button::new(label)
-                .fill(if on { Color32::from_rgb(0x2E, 0x3B, 0x4E) } else { Color32::TRANSPARENT })
-                .stroke(egui::Stroke::NONE)
+                .fill(if on { Color32::from_rgb(0x2A, 0x3A, 0x52) } else { Color32::TRANSPARENT })
+                .stroke(if on { egui::Stroke::new(1.0, Color32::from_rgb(0x4A, 0x7A, 0xB8)) } else { egui::Stroke::NONE })
                 .corner_radius(6.0)
-                .min_size(egui::vec2(ui.available_width(), 30.0));
+                .min_size(egui::vec2(ui.available_width(), 26.0));
             ui.add(button).clicked()
         };
         ui.label(RichText::new("치트").color(DIM).small());
@@ -645,8 +665,18 @@ impl Panel {
             });
         });
 
+        // Why nothing is being guided to, when nothing is.
+        let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
+        let followed = crate::quests::followed(&journal, state.quest.as_deref()).cloned();
+        let elsewhere: usize = snap
+            .and_then(|s| followed.as_ref().and_then(|q| s.needs.iter().find(|(k, _)| *k == q.key)))
+            .map(|(_, list)| {
+                let here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+                list.iter().filter(|x| !x.done && Some(&x.world) != here.as_ref()).count()
+            })
+            .unwrap_or(0);
         card(t, "안내", |t| {
-            switch(t, &mut state.guide_auto, "자동 — 고른 곳이 없으면 따라가는 퀘스트의 가장 가까운 목표로");
+            switch(t, &mut state.guide_auto, "자동 안내 — 따라가는 퀘스트의 다음 목표로 계속 안내");
             switch(
                 t,
                 &mut state.route,
@@ -671,11 +701,26 @@ impl Panel {
                         w(t, |ui| ui.label(RichText::new("◆").color(Color32::from_rgb(r, gg, b))));
                         text(t, RichText::new(&g.label).strong());
                         w(t, |ui| ui.label(RichText::new(crate::raster::distance(dist(g))).color(DIM)));
-                        if w(t, |ui| ui.button("안내 끄기")).clicked() {
+                        if w(t, |ui| ui.button("다음 목표 ▶"))
+                            .on_hover_text("이 목표는 끝났거나 지금 갈 수 없음 — 넘기고 다음 목표로 (이번 실행 동안)")
+                            .clicked()
+                        {
+                            state.skipped.insert(g.id);
                             state.target = None;
-                            state.guide_auto = false;
+                            state.chosen = false;
+                            state.guide_auto = true;
                         }
                     });
+                    if state.chosen {
+                        t.style(tw::row(8.0)).add(|t| {
+                            text(t, RichText::new("직접 고른 목표 — 끝날 때까지 유지").color(DIM).small());
+                            if w(t, |ui| ui.small_button("자동으로")).clicked() {
+                                state.chosen = false;
+                                state.target = None;
+                                state.guide_auto = true;
+                            }
+                        });
+                    }
                     note(t, g.detail.clone());
                     if state.route && *self.shared.route_uncertain.lock().unwrap() {
                         text(
@@ -688,7 +733,29 @@ impl Panel {
                         );
                     }
                 }
-                None => text(t, RichText::new("안내 중인 곳이 없습니다").color(DIM)),
+                None => {
+                    let why = if !state.guide_auto {
+                        "자동 안내가 꺼져 있습니다 — 위 스위치를 켜거나 '갈 곳' 에서 고르세요".to_string()
+                    } else if goals.is_empty() {
+                        "이 근처에서 새로 얻을 것이 있는 곳을 찾지 못했습니다".to_string()
+                    } else if elsewhere > 0 {
+                        format!("이 지역엔 따라가는 퀘스트의 목표가 없습니다 — 다른 지역에 {elsewhere}곳 (장갑차로 이동)")
+                    } else if !state.skipped.is_empty() {
+                        "남은 목표를 모두 건너뛰었습니다".to_string()
+                    } else {
+                        "따라가는 퀘스트의 목표가 이 근처에 없습니다 — '갈 곳' 에서 직접 고를 수 있습니다".to_string()
+                    };
+                    text(t, RichText::new(why).color(DIM));
+                }
+            }
+            if !state.skipped.is_empty() {
+                t.style(tw::row(8.0)).add(|t| {
+                    text(t, RichText::new(format!("건너뛴 목표 {}개", state.skipped.len())).color(DIM).small());
+                    if w(t, |ui| ui.small_button("되돌리기")).clicked() {
+                        state.skipped.clear();
+                        state.target = None;
+                    }
+                });
             }
         });
 
@@ -960,6 +1027,41 @@ impl Panel {
     }
 }
 
+impl Panel {
+    /// The console, dropped down from the top of the game window across its width and
+    /// see-through, as in Half-Life: its own window (an egui viewport), shown while the
+    /// panel is and the console is open.
+    fn console_window(&mut self, ctx: &egui::Context) {
+        let game = self.shared.game_pid.load(std::sync::atomic::Ordering::SeqCst);
+        let Some((_, r)) = (self.console.open && game != 0).then(|| hotkey::game_window(game)).flatten() else { return };
+        let ppp = ctx.pixels_per_point();
+        let (w, h) = ((r.right - r.left) as f32 / ppp, (r.bottom - r.top) as f32 / ppp);
+        let size = egui::vec2(w, (h * super::console::SHARE).max(180.0));
+        let builder = egui::ViewportBuilder::default()
+            .with_title("Hell Is Us Mod — console")
+            .with_decorations(false)
+            .with_transparent(true)
+            .with_always_on_top()
+            .with_taskbar(false)
+            .with_resizable(false)
+            .with_position(egui::pos2(r.left as f32 / ppp, r.top as f32 / ppp))
+            .with_inner_size(size);
+        let console = &mut self.console;
+        ctx.show_viewport_immediate(egui::ViewportId::from_hash_of("hiumod-console"), builder, |ctx, _| {
+            let frame = egui::Frame::NONE
+                .fill(egui::Color32::from_rgba_unmultiplied(8, 10, 14, 200))
+                .inner_margin(egui::Margin::symmetric(12, 8))
+                .stroke(egui::Stroke::new(1.0, egui::Color32::from_rgba_unmultiplied(120, 160, 200, 120)));
+            egui::CentralPanel::default().frame(frame).show(ctx, |ui| console.ui(ui));
+            if console.wants_focus() {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Focus);
+            }
+        });
+        // Under the panel, always — taking the keyboard raised it over the panel.
+        hotkey::console_under(self.shared.hwnd.load(std::sync::atomic::Ordering::SeqCst) as _);
+    }
+}
+
 impl eframe::App for Panel {
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
         if self.shared.hwnd.load(Ordering::SeqCst) == 0 {
@@ -982,6 +1084,12 @@ impl eframe::App for Panel {
         let monitor = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1080.0, |m| m.y);
         let max_height = (monitor * MAX_SHARE).max(480.0);
         let page_height = (max_height - CHROME - FOOTER).max(240.0);
+        // Opening the window puts the cursor in the console.
+        let visible = self.shared.visible.load(std::sync::atomic::Ordering::SeqCst);
+        if visible && !self.was_visible && self.console.open {
+            self.console.focus();
+        }
+        self.was_visible = visible;
         // As wide as the page's cards side by side, plus the sidebar — never wider than
         // the monitor.
         let monitor_w = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1920.0, |m| m.x);
@@ -1022,11 +1130,14 @@ impl eframe::App for Panel {
                 });
                 let x = left + NAV + DIVIDER / 2.0;
                 let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
-                ui.painter().vline(x, top..=ui.min_rect().bottom(), stroke);
+                let bottom = ui.min_rect().bottom();
+                ui.painter().vline(x, top..=bottom, stroke);
+
             })
             .response
             .rect;
         self.fit(ui, width, used.height().min(max_height));
+        self.console_window(ui.ctx());
         self.persist(false);
     }
 
@@ -1040,7 +1151,7 @@ fn others(state: &crate::minimap::MapState, mine: u8) -> Vec<u8> {
     state.keys().into_iter().filter(|&k| k != mine).collect()
 }
 
-/// A function key, F1–F12 — not F8 (the panel's) and none the other pickers hold.
+/// A function key, F1–F12 — none the other pickers hold.
 fn key_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
     egui::ComboBox::from_id_salt(id).width(72.0).selected_text(format!("F{key}")).show_ui(ui, |ui| {
         for k in (1..=12u8).filter(|&k| crate::minimap::usable_key(k) && !taken.contains(&k)) {

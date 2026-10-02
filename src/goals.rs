@@ -126,6 +126,29 @@ struct Payload {
     /// What to say instead of the first new tag (an NPC's hand-over).
     note: Option<String>,
     gate: Gate,
+    /// An NPC: what it gives comes from every branch of its conversations, and some
+    /// stay closed until a topic opens elsewhere.
+    npc: bool,
+}
+
+fn talked_path() -> std::path::PathBuf {
+    crate::paths::data_dir().join("talked.txt")
+}
+
+/// `talked.txt`: an NPC's name, a tab, the topic unlocks known when the talk was had.
+fn load_talked() -> HashMap<String, usize> {
+    std::fs::read_to_string(talked_path())
+        .unwrap_or_default()
+        .lines()
+        .filter_map(|l| l.split_once('\t'))
+        .filter_map(|(name, n)| Some((name.to_string(), n.parse().ok()?)))
+        .collect()
+}
+
+fn save_talked(talked: &HashMap<String, usize>) {
+    let mut lines: Vec<String> = talked.iter().map(|(name, n)| format!("{name}\t{n}")).collect();
+    lines.sort();
+    let _ = std::fs::write(talked_path(), lines.join("\n") + "\n");
 }
 
 /// A PayloadData's facts (asset addresses), tags (name indices) and the items it
@@ -174,6 +197,15 @@ pub struct Goals {
     payloads: HashMap<u64, (u64, Option<Payload>)>,
     /// Whether a class is an NPC, by class.
     npc: HashMap<u64, bool>,
+    /// NPCs talked to: how much of what they give was known when last seen, and how
+    /// many topic unlocks the hero knew when the talk gave something — the NPC is done
+    /// until another topic opens somewhere (a new `Conversation.` tag).
+    heard: HashMap<u64, usize>,
+    /// By the NPC's name, kept in `Mods\talked.txt` across runs.
+    talked: HashMap<String, usize>,
+    talked_loaded: bool,
+    /// The NPCs done with for now (talked to, no topic opened since), by name.
+    pub done_npcs: std::collections::HashSet<String>,
     /// The names of the interactables and NPCs loaded now: the survey leaves these to
     /// the live goals.
     pub loaded: std::collections::HashSet<String>,
@@ -287,7 +319,7 @@ impl Goals {
         let used = crate::actors::component(m, n, actor, "InteractionActionComponent")
             .and_then(|c| n.field(m, c, "bHasBeenActivated").filter(|p| p.size == 1).map(|p| c + p.offset as u64));
         let class = n.class(m, actor).unwrap_or_default();
-        Some(Payload { facts, tags, used, root: rc, label: pretty(&class), items, keys, note: None, gate: gate_of(&class) })
+        Some(Payload { facts, tags, used, root: rc, label: pretty(&class), items, keys, note: None, gate: gate_of(&class), npc: false })
     }
 
     /// What an NPC hands out: every payload in its conversations (following topic
@@ -362,7 +394,7 @@ impl Goals {
         }
         let rc = mem::read_u64(m, actor + root).filter(|&p| mem::plausible(p))?;
         let label = format!("대화: {}", pretty(&n.class(m, actor).unwrap_or_default()));
-        Some(Payload { facts, tags, used: None, root: rc, label, items: Vec::new(), keys: Vec::new(), note, gate: Gate::Open })
+        Some(Payload { facts, tags, used: None, root: rc, label, items: Vec::new(), keys: Vec::new(), note, gate: Gate::Open, npc: true })
     }
 
     /// Read what the loaded interactables hand out, when a scan is due.
@@ -417,12 +449,32 @@ impl Goals {
     }
 
     /// Every place that still holds something new, and what kind, against `k`.
-    pub fn evaluate(&self, m: &dyn Memory, k: &Knowledge, location: u64) -> Vec<Goal> {
+    pub fn evaluate(&mut self, m: &dyn Memory, k: &Knowledge, location: u64) -> Vec<Goal> {
         let mut out = Vec::new();
+        if !self.talked_loaded {
+            self.talked_loaded = true;
+            self.talked = load_talked();
+        }
+        // Topic unlocks known: a new one may open more talk with someone already talked to.
+        let topics = k.tags.iter().filter(|t| self.tag_names.get(t).is_some_and(|n| n.starts_with("Conversation."))).count();
+        self.done_npcs = self.talked.iter().filter(|(_, &at)| topics <= at).map(|(n, _)| n.clone()).collect();
         for (&actor, (class, p)) in &self.payloads {
             let Some(p) = p else { continue };
             if mem::read_u64(m, actor + CLASS) != Some(*class) {
                 continue;
+            }
+            if p.npc {
+                // A talk that taught something of this NPC's: done with it for now.
+                let known = p.facts.iter().filter(|(f, _)| k.facts.contains(f)).count()
+                    + p.tags.iter().filter(|t| k.tags.contains(t)).count();
+                let name = self.names.get(&actor).cloned().unwrap_or_default();
+                if self.heard.insert(actor, known).is_some_and(|before| known > before) && !name.is_empty() {
+                    self.talked.insert(name.clone(), topics);
+                    save_talked(&self.talked);
+                }
+                if self.talked.get(&name).is_some_and(|&at| topics <= at) {
+                    continue;
+                }
             }
             if p.used.is_some_and(|at| {
                 let mut b = [0u8];

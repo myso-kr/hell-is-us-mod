@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-  <!-- 전리품: 상자 -->
-  <path d="M3.5 9.5a4 4 0 0 1 4-4h9a4 4 0 0 1 4 4v1h-17z" fill="#ffa028" stroke="#160c02" stroke-width="1.6" stroke-linejoin="round"/>
-  <rect x="3.5" y="10.5" width="17" height="9" rx="1.2" fill="#e08418" stroke="#160c02" stroke-width="1.6"/>
-  <rect x="10.3" y="9" width="3.4" height="4.4" rx="0.8" fill="#ffe08a" stroke="#160c02" stroke-width="1.2"/>
+<g fill="#e0902c" stroke="#0e1116" stroke-width="1.6" stroke-linejoin="round">
+<circle cx="12" cy="12" r="9.6"/>
+</g>
+<g fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+<path d="M9.5 7h5l-1 1.8c2.6.9 4.3 3.3 4.3 5.9 0 1.8-2.2 2.8-5.8 2.8s-5.8-1-5.8-2.8c0-2.6 1.7-5 4.3-5.9z"/>
+</g>
 </svg>

@@ -52,6 +52,8 @@ pub struct Known<'a> {
     pub held: &'a HashSet<String>,
     /// The GUIDs of placed things the save keeps a state for: taken, opened, used.
     pub saved: &'a HashSet<String>,
+    /// NPCs done with for now, by name (goals.rs).
+    pub talked: &'a HashSet<String>,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -117,6 +119,9 @@ impl Entry {
     /// picked up have none). Not for NPCs: having talked once says nothing of the rest.
     pub fn left(&self, k: &Known) -> Left {
         if !self.npc && self.guid.as_ref().is_some_and(|g| k.saved.contains(g)) {
+            return Left::default();
+        }
+        if self.npc && k.talked.contains(&self.name) {
             return Left::default();
         }
         let facts = self.facts.iter().filter(|f| !k.facts.contains(*f)).count();
@@ -329,7 +334,8 @@ mod tests {
     fn what_is_left_follows_knowledge_and_the_inventory() {
         let (facts, tags, held) = (HashSet::from(["F1".to_string()]), HashSet::new(), HashSet::from(["Key_Item_DA".to_string()]));
         let saved = HashSet::from(["G".to_string()]);
-        let k = Known { facts: &facts, tags: &tags, held: &held, saved: &saved };
+        let talked = HashSet::new();
+        let k = Known { facts: &facts, tags: &tags, held: &held, saved: &saved, talked: &talked };
         let taken = Entry { guid: Some("G".into()), ..entry(&["Photo_Item_DA"], &["F9"], &[]) };
         assert!(taken.left(&k).is_empty(), "the save keeps its state: taken");
         assert!(!Entry { npc: true, ..taken.clone() }.left(&k).is_empty(), "an NPC talked to once is not done");

@@ -6,7 +6,7 @@ pub const USAGE: &str = "\
 hiumod — single-player cheats and a minimap for Hell Is Us (Steam)
 
 USAGE
-  hiumod                        start the game if needed, then the panel — F8 shows/hides it;
+  hiumod                        start the game if needed, then the panel — ` (~) shows/hides it;
                                 the panel closes when the game does
   hiumod ui                     the panel only; does not start the game
   hiumod doctor                 check everything; writes nothing
