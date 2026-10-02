@@ -15,12 +15,51 @@
 //!   never below 2 — a stack that reaches 0 is removed from the inventory before it
 //!   could be put back.
 //! - Set stock: a class's stacks written once, up to the item's `QuantityMax`.
+//! - Weapon XP: when the game grants a weapon experience, as much again times the
+//!   multiplier less one is added — to the total and to the experience within the
+//!   level. Levelling is left to the game: it levels on its next grant.
+//!
+//! - Ghost: the hero's `TeamID` and `Faction` (CharlieCharacter, reflected) set to an
+//!   enemy's — 1 against 2 on 24045435. Tried in play: with both, enemies ignore the
+//!   hero and the hero's blows do not land; with TeamID alone, enemies still attack.
+//!   Faction decides both, so a ghost is for getting past, not for fighting.
+//! - Untouchable (no row in the table): neither `bCanBeDamaged` nor clearing the
+//!   hero's `bGenerateOverlapEvents` stopped a blow — the game's hits go through
+//!   tags and traces data writes do not reach (.spec/CHEATS-RESEARCH.md §6).
+//!
+//! A weapon item's experience is native, past its reflected fields (found with
+//! `doctor watch` on 24045435 — a kill with the sword took the total 90 → 265,
+//! within-level 90 → 5, next threshold 260 → 520, level 0 → 1, cap 3). Every read is
+//! checked for that shape before anything is written.
 
 use crate::cheats::{Active, Effect};
 use crate::engine::Attached;
 use crate::mem::{self, Memory};
 use crate::names::{Names, CLASS};
 use std::collections::HashMap;
+
+/// A weapon item's experience, past its reflected fields (24045435): level, the
+/// grade's level cap, total experience, experience within the level, and the total
+/// the next level needs (0 at the cap).
+const W_LEVEL: u64 = 0x130;
+const W_CAP: u64 = 0x138;
+const W_TOTAL: u64 = 0x13C;
+const W_WITHIN: u64 = 0x140;
+const W_NEXT: u64 = 0x148;
+
+/// A weapon's (total, within-level) experience — if the bytes have the shape the
+/// layout above promises: a level below its cap, a next threshold (0 means capped),
+/// within-level no more than the total.
+fn weapon_xp(m: &dyn Memory, item: u64) -> Option<(u32, u32)> {
+    let mut b = [0u8; (W_NEXT - W_LEVEL + 4) as usize];
+    m.read(item + W_LEVEL, &mut b).then_some(())?;
+    let at = |o: u64| u32::from_le_bytes(b[(o - W_LEVEL) as usize..(o - W_LEVEL + 4) as usize].try_into().unwrap());
+    let (level, cap, total, within, next) = (at(W_LEVEL), at(W_CAP), at(W_TOTAL), at(W_WITHIN), at(W_NEXT));
+    // Past the next threshold is fine: the bonus lands between the game's grants, and
+    // the game levels on its next one. At the cap the next threshold is 0.
+    let sane = (1..=20).contains(&cap) && level < cap && next > 0 && within <= total;
+    sane.then_some((total, within))
+}
 
 /// A stack held by `Stock` never drops below this.
 const STOCK_FLOOR: u32 = 2;
@@ -35,6 +74,39 @@ pub struct Extras {
     frail: HashMap<u64, (u64, f32, f32)>,
     /// Inventory stack → the least it is held at.
     stock: HashMap<u64, u32>,
+    /// Weapon item → its total experience as last seen (after any bonus).
+    weapon_xp: HashMap<u64, u32>,
+    /// The hero → its (TeamID, Faction) before the ghost cheat.
+    team: Option<(u64, u8, u8)>,
+    /// The hero, and its primitive components' overlap bits before the untouchable
+    /// cheat: (byte address, mask, byte as it was).
+    overlaps: Option<(u64, Vec<Bit>)>,
+}
+
+/// A bitfield bool to put back: (byte address, mask, byte as it was).
+type Bit = (u64, u8, u8);
+
+/// An actor's team and faction: CharlieCharacter.TeamID (GenericTeamId, one byte) and
+/// Faction — their addresses.
+fn team_at(m: &dyn Memory, n: &Names, actor: u64) -> Option<(u64, u64)> {
+    let t = n.field(m, actor, "TeamID")?;
+    let f = n.field(m, actor, "Faction")?;
+    (t.size == 1 && f.size == 1).then(|| (actor + t.offset as u64, actor + f.offset as u64))
+}
+
+/// A bitfield bool's byte and mask: FBoolProperty keeps FieldSize, ByteOffset,
+/// ByteMask, FieldMask just past the FProperty base (0x70 on 5.5).
+fn bool_bit(m: &dyn Memory, n: &Names, obj: u64, name: &str) -> Option<(u64, u8)> {
+    let p = n.field(m, obj, name)?;
+    let mut b = [0u8; 4];
+    m.read(p.field + 0x70, &mut b).then_some(())?;
+    let (size, offset, mask) = (b[0], b[1], b[2]);
+    (size == 1 && mask.count_ones() == 1).then(|| (obj + p.offset as u64 + offset as u64, mask))
+}
+
+fn byte(m: &dyn Memory, at: u64) -> Option<u8> {
+    let mut b = [0u8; 1];
+    m.read(at, &mut b).then_some(b[0])
 }
 
 /// One inventory stack: where its count is, the count, and its class's name.
@@ -136,6 +208,87 @@ impl Extras {
             }
         }
 
+        if let Some(t) = wants(|e| matches!(e, Effect::WeaponXp)) {
+            match a.inventory() {
+                Ok(inv) => {
+                    for s in stacks(m, n, inv).into_iter().filter(|s| s.class.contains("WeaponItem")) {
+                        let Some((total, within)) = weapon_xp(m, s.item) else {
+                            self.weapon_xp.remove(&s.item);
+                            continue;
+                        };
+                        let last = *self.weapon_xp.entry(s.item).or_insert(total);
+                        if total > last {
+                            let bonus = ((total - last) as f32 * (t.value - 1.0)).round().max(0.0) as u32;
+                            let mut b = [0u8; 8];
+                            b[..4].copy_from_slice(&(total + bonus).to_le_bytes());
+                            b[4..].copy_from_slice(&(within + bonus).to_le_bytes());
+                            if bonus > 0 && !m.write(s.item + W_TOTAL, &b) {
+                                errors.push("weapon xp: write failed".into());
+                            }
+                            self.weapon_xp.insert(s.item, total + bonus);
+                        } else {
+                            self.weapon_xp.insert(s.item, total);
+                        }
+                    }
+                }
+                Err(e) => errors.push(format!("inventory: {e}")),
+            }
+        }
+
+        if wants(|e| matches!(e, Effect::Ghost)).is_some() {
+            match (a.chain().and_then(|c| c.hero(m, &a.anchors)), a.enemies().first().copied()) {
+                (Ok(hero), enemy) => {
+                    if let Some((t, f)) = team_at(m, n, hero) {
+                        if self.team.is_none_or(|(h, ..)| h != hero) {
+                            if let (Some(ot), Some(of)) = (byte(m, t), byte(m, f)) {
+                                self.team = Some((hero, ot, of));
+                            }
+                        }
+                        // The enemies' team as they hold it; 2 on 24045435 when none is near.
+                        let theirs = enemy
+                            .and_then(|e| team_at(m, n, e))
+                            .and_then(|(et, ef)| Some((byte(m, et)?, byte(m, ef)?)))
+                            .unwrap_or((2, 2));
+                        if !m.write(t, &[theirs.0]) || !m.write(f, &[theirs.1]) {
+                            errors.push("ghost: write failed".into());
+                        }
+                    }
+                }
+                (Err(e), _) => errors.push(format!("ghost: {e}")),
+            }
+        }
+
+        if wants(|e| matches!(e, Effect::Untouchable)).is_some() {
+            if let Ok(hero) = a.chain().and_then(|c| c.hero(m, &a.anchors)) {
+                // The hero's primitive components, found once per hero.
+                if self.overlaps.as_ref().is_none_or(|(h, _)| *h != hero) {
+                    match crate::gobjects::discover(m, a.game.base) {
+                        Ok(objects) => {
+                            let bits = objects
+                                .all(m)
+                                .into_iter()
+                                .filter(|&o| mem::read_u64(m, o + crate::names::OUTER) == Some(hero))
+                                .filter(|&o| n.is_a(m, o, "PrimitiveComponent"))
+                                .filter_map(|o| bool_bit(m, n, o, "bGenerateOverlapEvents"))
+                                .filter_map(|(at, mask)| Some((at, mask, byte(m, at)?)))
+                                .collect();
+                            self.overlaps = Some((hero, bits));
+                        }
+                        Err(e) => errors.push(format!("untouchable: {e}")),
+                    }
+                }
+                if let Some((_, bits)) = &self.overlaps {
+                    for &(at, mask, _) in bits {
+                        if let Some(now) = byte(m, at) {
+                            if now & mask != 0 && !m.write(at, &[now & !mask]) {
+                                errors.push("untouchable: write failed".into());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         let classes: Vec<&str> = active
             .iter()
             .flat_map(|t| t.effects().iter())
@@ -186,6 +339,31 @@ impl Extras {
         if !kept(|e| matches!(e, Effect::Stock(_))) {
             self.stock.clear();
         }
+        if !kept(|e| matches!(e, Effect::WeaponXp)) {
+            self.weapon_xp.clear();
+        }
+        let hero = a.chain().and_then(|c| c.hero(m, &a.anchors)).ok();
+        if !kept(|e| matches!(e, Effect::Ghost)) {
+            if let Some((h, t, f)) = self.team.take() {
+                if Some(h) == hero {
+                    if let Some((ta, fa)) = team_at(m, n, h) {
+                        m.write(ta, &[t]);
+                        m.write(fa, &[f]);
+                    }
+                }
+            }
+        }
+        if !kept(|e| matches!(e, Effect::Untouchable)) {
+            if let Some((h, bits)) = self.overlaps.take() {
+                if Some(h) == hero {
+                    for (at, mask, was) in bits {
+                        if let Some(now) = byte(m, at) {
+                            m.write(at, &[(now & !mask) | (was & mask)]);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /// The game went away: every target with it.
@@ -193,6 +371,9 @@ impl Extras {
         self.time.clear();
         self.frail.clear();
         self.stock.clear();
+        self.weapon_xp.clear();
+        self.team = None;
+        self.overlaps = None;
     }
 
     /// Write every stack of a class to `v`, each up to its own maximum. How many.
@@ -212,5 +393,52 @@ impl Extras {
             return Err(format!("no {class} in the inventory — pick one up first"));
         }
         Ok(done)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::cell::RefCell;
+
+    /// Plain bytes from address 0x1000.
+    struct Bytes(RefCell<Vec<u8>>);
+    impl Memory for Bytes {
+        fn read(&self, at: u64, buf: &mut [u8]) -> bool {
+            let b = self.0.borrow();
+            let i = (at - 0x1000) as usize;
+            if i + buf.len() > b.len() {
+                return false;
+            }
+            buf.copy_from_slice(&b[i..i + buf.len()]);
+            true
+        }
+        fn write(&self, at: u64, data: &[u8]) -> bool {
+            let i = (at - 0x1000) as usize;
+            self.0.borrow_mut()[i..i + data.len()].copy_from_slice(data);
+            true
+        }
+    }
+
+    fn weapon(level: u32, cap: u32, total: u32, within: u32, next: u32) -> Bytes {
+        let mut b = vec![0u8; 0x170];
+        for (o, v) in [(W_LEVEL, level), (W_CAP, cap), (W_TOTAL, total), (W_WITHIN, within), (W_NEXT, next)] {
+            b[o as usize..o as usize + 4].copy_from_slice(&v.to_le_bytes());
+        }
+        Bytes(RefCell::new(b))
+    }
+
+    #[test]
+    fn the_sword_as_seen_reads_and_a_capped_weapon_does_not() {
+        // The sword before and after the kill, as `doctor watch` saw them.
+        assert_eq!(weapon_xp(&weapon(0, 3, 90, 90, 260), 0x1000), Some((90, 90)));
+        assert_eq!(weapon_xp(&weapon(1, 3, 265, 5, 520), 0x1000), Some((265, 5)));
+        // After a ×3 kill, as seen in play: past the next threshold until the game's
+        // next grant levels it — still read, so the next kill is multiplied too.
+        assert_eq!(weapon_xp(&weapon(1, 3, 580, 320, 520), 0x1000), Some((580, 320)));
+        // The twin axes at their grade's cap: next is 0 — nothing to grow.
+        assert_eq!(weapon_xp(&weapon(3, 3, 1560, 0, 0), 0x1000), None);
+        // A layout that moved: no cap where one should be.
+        assert_eq!(weapon_xp(&weapon(0, 0, 90, 90, 260), 0x1000), None);
     }
 }

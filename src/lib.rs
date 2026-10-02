@@ -24,6 +24,7 @@ pub mod obstacles;
 pub mod pathfind;
 pub mod paths;
 pub mod player;
+pub mod probe;
 pub mod raster;
 pub mod relief;
 pub mod settings;

@@ -348,7 +348,7 @@ pub struct Scanner {
 }
 
 /// A `TArray` of object pointers, read in one go; empty if it does not look like one.
-pub(crate) fn array(m: &dyn Memory, at: u64, cap: u32) -> Vec<u64> {
+pub fn array(m: &dyn Memory, at: u64, cap: u32) -> Vec<u64> {
     let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { return Vec::new() };
     if !mem::plausible(data) || num == 0 || num > cap {
         return Vec::new();

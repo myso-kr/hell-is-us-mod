@@ -10,6 +10,23 @@ USAGE
                                 the panel closes when the game does
   hiumod ui                     the panel only; does not start the game
   hiumod doctor                 check everything; writes nothing
+  hiumod doctor inspect <target> [depth] [gaps]
+                                every reflected field of a live object, by name and
+                                value; pointers followed `depth` levels (default 0);
+                                `gaps` also shows the native bytes between fields
+  hiumod doctor find <text>     every class or struct property whose name holds text
+  hiumod doctor dump [prefix]...
+                                an SDK-like listing of the classes and structs whose
+                                names start with a prefix (default Charlie, Story)
+  hiumod doctor watch <target> [seconds]
+                                what changes in an object, named or native, as it does
+  hiumod doctor scan <target> <value>
+  hiumod doctor scan next <value>
+                                where in an object a value sits; then, after it
+                                changes in game, which of those places changed with it
+                                targets: hero, controller, asc, sets, inventory, items,
+                                save, world, enemy[:N], 0xADDRESS, or a class name[:N]
+                                — results are also written to Mods\\doctor
   hiumod list                   every attribute of every set, read live
   hiumod get <attribute>...     some of them, as Name or Set.Name
   hiumod pose                   where the hero stands and faces, read live until Ctrl+C
@@ -29,6 +46,8 @@ pub enum Command {
     /// The panel; `true` starts the game first if it is not running.
     Ui(bool),
     Doctor,
+    /// `doctor <inspect|find|dump|watch|scan> …`
+    Probe(Vec<String>),
     List,
     Get(Vec<String>),
     Set(String, f32),
@@ -64,6 +83,7 @@ pub fn parse(args: impl IntoIterator<Item = String>) -> Result<Parsed, String> {
     let command = match words.first().map(String::as_str) {
         None => Command::Ui(true),
         Some("ui") => Command::Ui(false),
+        Some("doctor") if words.len() > 1 => Command::Probe(rest(1)),
         Some("doctor") => Command::Doctor,
         Some("list") => Command::List,
         Some("restore") => Command::Restore,

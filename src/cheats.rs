@@ -90,6 +90,12 @@ pub enum Effect {
     EnemyFrail,
     /// Inventory stacks whose class name holds this, kept from going down.
     Stock(&'static str),
+    /// Weapon experience the game grants, multiplied by the slider's value.
+    WeaponXp,
+    /// The hero on the enemies' team: their senses take it for one of their own.
+    Ghost,
+    /// The hero's own components generate no overlaps: enemy blows find nothing.
+    Untouchable,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -152,6 +158,10 @@ pub const CHEATS: &[Cheat] = &[
     // 생존
     toggle("god", Group::Survival, "체력 유지 (상한을 최대로)", &[Fill(a::ENDURANCE_CAP, a::ENDURANCE_MAX)], true),
     toggle("stamina", Group::Survival, "스태미나 무한", &[Fill(a::ENDURANCE, a::ENDURANCE_CAP)], true),
+    // Experiments (.spec/CHEATS-RESEARCH.md §6): whether the game's own systems heed these.
+    // Faction decides both who the enemies notice and whose blows land, so a ghost
+    // is ignored and cannot strike — for getting past, not for fighting.
+    toggle("ghost", Group::Survival, "고스트 (탐험용 — 켜는 동안 공격도 막힘)", &[Effect::Ghost], true),
     // 전투
     toggle("lymbic", Group::Combat, "림빅 에너지 무한", &[Fill(a::LYMBIC, a::LYMBIC_MAX)], false),
     // Coefficients like these held in memory but did nothing for every one tried in
@@ -170,6 +180,7 @@ pub const CHEATS: &[Cheat] = &[
     toggle("frail", Group::Combat, "약한 적 (한 방에 처치)", &[Effect::EnemyFrail], true),
     // Items: the stack counts in the inventory (extras.rs).
     toggle("stock", Group::Items, "소모품 줄지 않음", &[Effect::Stock("Useable")], true),
+    slider("weapon_xp", Group::Items, "무기 경험치 배수 (기본 1)", &[Effect::WeaponXp], 1.0, 10.0, 3.0, true),
     Cheat {
         id: "shards",
         group: Group::Items,
@@ -268,7 +279,12 @@ impl Active {
                 Chosen(a) => s.put(a, self.value)?,
                 Fill(a, max) => s.put(a, s.current(max)?)?,
                 // extras.rs, each tick after the hero's
-                Effect::EnemyTime | Effect::EnemyFrail | Effect::Stock(_) => {}
+                Effect::EnemyTime
+                | Effect::EnemyFrail
+                | Effect::Stock(_)
+                | Effect::WeaponXp
+                | Effect::Ghost
+                | Effect::Untouchable => {}
             }
         }
         Ok(())
@@ -315,7 +331,7 @@ mod tests {
             if let Kind::Slider { min, max, default, effects } = c.kind {
                 assert!(min < max && (min..=max).contains(&default), "{}", c.id);
                 assert!(
-                    effects.iter().any(|e| matches!(e, Chosen(_) | Effect::EnemyTime)),
+                    effects.iter().any(|e| matches!(e, Chosen(_) | Effect::EnemyTime | Effect::WeaponXp)),
                     "{} has a slider that moves nothing",
                     c.id
                 );

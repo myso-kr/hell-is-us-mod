@@ -29,6 +29,7 @@ fn main() -> ExitCode {
     let result = match &opt.command {
         Command::Ui(launch) => hiumod::ui::run(*launch),
         Command::Doctor => doctor(&opt),
+        Command::Probe(args) => probe(args),
         Command::List => read(&[]),
         Command::Get(names) => read(names),
         Command::Set(name, v) => set(name, *v),
@@ -194,6 +195,198 @@ fn doctor(opt: &Options) -> R {
         println!("        {:<16} {:<10} {:<22} {} [{}]", c.id, state, tried, c.label, sets.join(", "));
     }
     Ok(())
+}
+
+/// `doctor inspect|find|dump|watch|scan` (probe.rs): reads only.
+fn probe(args: &[String]) -> R {
+    use hiumod::mem::{self, Memory};
+    use hiumod::probe;
+    let a = attach()?;
+    let (m, n) = (&a.game, &a.anchors.names);
+    let objects = hiumod::gobjects::discover(m, a.game.base)?;
+    let dir = hiumod::paths::data_dir().join("doctor");
+    std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    let save = |file: &str, text: &str| -> R {
+        let path = dir.join(file);
+        std::fs::write(&path, text).map_err(|e| format!("{}: {e}", path.display()))?;
+        log!("written to {}", path.display());
+        Ok(())
+    };
+    let arg = |i: usize| args.get(i).map(String::as_str);
+    match arg(0) {
+        Some("inspect") => {
+            let what = arg(1).ok_or("inspect what? e.g. `doctor inspect hero`")?;
+            let depth = arg(2).and_then(|d| d.parse().ok()).unwrap_or(0);
+            let gaps = args.iter().any(|x| x == "gaps");
+            let mut out = String::new();
+            for obj in target(&a, &objects, what)? {
+                let mut i = probe::Inspect::new(n, m, depth, gaps);
+                i.object(obj, 0, depth);
+                out.push_str(&i.out);
+                out.push('\n');
+            }
+            print!("{out}");
+            save(&format!("inspect-{}.txt", what.replace([':', '\\', '/'], "_")), &out)
+        }
+        Some("find") => {
+            let text = arg(1).ok_or("find what? e.g. `doctor find Quantity`")?;
+            let structs = probe::structs(n, m, &objects.all(m), &[]);
+            let rows = probe::find(n, m, &structs, text);
+            for r in &rows {
+                println!("{r}");
+            }
+            log!("{} properties in {} classes and structs", rows.len(), structs.len());
+            save(&format!("find-{text}.txt"), &rows.join("\n"))
+        }
+        Some("dump") => {
+            let mut prefixes: Vec<String> = args[1..].to_vec();
+            if prefixes.is_empty() {
+                prefixes = vec!["Charlie".into(), "Story".into()];
+            }
+            let structs = probe::structs(n, m, &objects.all(m), &prefixes);
+            let text = probe::dump(n, m, &structs);
+            log!("{} classes and structs starting with {}", structs.len(), prefixes.join(", "));
+            save("sdk.txt", &text)
+        }
+        Some("watch") => {
+            let what = arg(1).ok_or("watch what? e.g. `doctor watch inventory`")?;
+            let secs: u64 = arg(2).and_then(|s| s.parse().ok()).unwrap_or(60);
+            let objs = target(&a, &objects, what)?;
+            let read = |o: u64, len: u64| {
+                let mut b = vec![0u8; len as usize];
+                m.read(o, &mut b).then_some(b)
+            };
+            let mut last: Vec<(u64, u64, Vec<u8>)> = objs
+                .iter()
+                .filter_map(|&o| {
+                    let len = probe::extent(n, m, o);
+                    read(o, len).map(|b| (o, len, b))
+                })
+                .collect();
+            log!("watching {} object(s) for {secs} s — Ctrl+C stops", last.len());
+            process::catch_ctrl_c();
+            let start = std::time::Instant::now();
+            let mut log_text = String::new();
+            while start.elapsed().as_secs() < secs && !process::STOP.load(Ordering::SeqCst) {
+                std::thread::sleep(Duration::from_millis(100));
+                for (o, len, before) in last.iter_mut() {
+                    let Some(now) = read(*o, *len) else { continue };
+                    for line in probe::diff(n, m, *o, before, &now) {
+                        let row = format!("{:>7.1}s {o:#x} {line}", start.elapsed().as_secs_f32());
+                        println!("{row}");
+                        log_text.push_str(&row);
+                        log_text.push('\n');
+                    }
+                    *before = now;
+                }
+            }
+            save(&format!("watch-{}.txt", what.replace([':', '\\', '/'], "_")), &log_text)
+        }
+        Some("scan") if arg(1) == Some("next") => {
+            let v: f64 = arg(2).and_then(|s| s.parse().ok()).ok_or("scan next <value>")?;
+            let path = dir.join("scan.txt");
+            let text =
+                std::fs::read_to_string(&path).map_err(|_| "no scan yet — `doctor scan <target> <value>` first")?;
+            let kept: Vec<String> = text
+                .lines()
+                .filter(|l| {
+                    let f: Vec<&str> = l.split_whitespace().collect();
+                    let (Some(at), Some(kind)) =
+                        (f.first().and_then(|s| u64::from_str_radix(s.trim_start_matches("0x"), 16).ok()), f.get(1))
+                    else {
+                        return false;
+                    };
+                    probe::read_as(m, at, kind).is_some_and(|x| (x - v).abs() <= 1e-3 * v.abs().max(1.0))
+                })
+                .map(String::from)
+                .collect();
+            for k in &kept {
+                println!("{k}");
+            }
+            log!("{} of {} places now hold {v}", kept.len(), text.lines().count());
+            save("scan.txt", &kept.join("\n"))
+        }
+        Some("scan") => {
+            let what = arg(1).ok_or("scan what? e.g. `doctor scan items 3`")?;
+            let v: f64 = arg(2).and_then(|s| s.parse().ok()).ok_or("scan <target> <value>")?;
+            let mut rows = Vec::new();
+            for o in target(&a, &objects, what)? {
+                let len = probe::extent(n, m, o).max(0x400);
+                let mut b = vec![0u8; len as usize];
+                if !m.read(o, &mut b) {
+                    continue;
+                }
+                let name = n.object(m, o).unwrap_or_default();
+                for (off, kind) in probe::matches(&b, v) {
+                    rows.push(format!("{:#x} {kind} +{off:#x} in {name} @{o:#x}", o + off as u64));
+                }
+            }
+            for r in &rows {
+                println!("{r}");
+            }
+            log!("{} places hold {v} — change it in game, then `doctor scan next <new value>`", rows.len());
+            let _ = mem::read_u32; // (reads above go through Memory)
+            save("scan.txt", &rows.join("\n"))
+        }
+        _ => Err("doctor takes: inspect, find, dump, watch, scan — see `hiumod help`".into()),
+    }
+}
+
+/// What a probe target names: live objects.
+fn target(a: &hiumod::engine::Attached, objects: &hiumod::gobjects::Objects, what: &str) -> Result<Vec<u64>, String> {
+    use hiumod::mem;
+    let (m, n) = (&a.game, &a.anchors.names);
+    let (what, index) = match what.split_once(':') {
+        Some((w, i)) => (w, i.parse::<usize>().ok()),
+        None => (what, None),
+    };
+    let pick = |all: Vec<u64>| -> Result<Vec<u64>, String> {
+        match index {
+            Some(i) => all.get(i).map(|&o| vec![o]).ok_or_else(|| format!("only {} of those", all.len())),
+            None => Ok(all),
+        }
+    };
+    let chain = || a.chain();
+    let hero = || chain()?.hero(m, &a.anchors);
+    match what {
+        "hero" => Ok(vec![hero()?]),
+        "controller" => Ok(vec![chain()?.controller(m, &a.anchors)?]),
+        "asc" => Ok(vec![hiumod::player::find_asc(n, m, hero()?)?.1]),
+        "sets" => {
+            let arr = chain()?.attribute_sets(m, &a.anchors)?;
+            pick(hiumod::actors::array(m, arr, 64))
+        }
+        "inventory" => Ok(vec![a.inventory()?]),
+        "items" => {
+            let inv = a.inventory()?;
+            let f = n.field(m, inv, "Items").ok_or("inventory without Items")?;
+            pick(hiumod::actors::array(m, inv + f.offset as u64, 4096))
+        }
+        "save" => {
+            let saves = objects.of_class(m, n, "CharlieSaveGame");
+            Ok(vec![hiumod::knowledge::current(n, m, &saves).ok_or("no save state")?])
+        }
+        "world" => Ok(vec![a.world_settings()?]),
+        "enemy" => {
+            a.things()?;
+            pick(a.enemies())
+        }
+        _ if what.starts_with("0x") => {
+            let at = u64::from_str_radix(&what[2..], 16).map_err(|_| format!("{what} is not an address"))?;
+            mem::plausible(at).then_some(vec![at]).ok_or_else(|| format!("{what} is not a plausible address"))
+        }
+        class => {
+            let all: Vec<u64> = objects
+                .of_class(m, n, class)
+                .into_iter()
+                .filter(|&o| !n.object(m, o).unwrap_or_default().starts_with("Default__"))
+                .collect();
+            if all.is_empty() {
+                return Err(format!("no live {class} — targets: hero, controller, asc, sets, inventory, items, save, world, enemy[:N], 0xADDRESS, or a class name"));
+            }
+            pick(if index.is_none() { all.into_iter().take(1).collect() } else { all })
+        }
+    }
 }
 
 /// Where the hero is, twice a second until Ctrl+C — what the minimap will draw.

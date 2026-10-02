@@ -47,6 +47,17 @@ been verified in play yet.
   hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
   from each mesh's bounds and transform. The game ships no map of the area it could
   use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- Ghost (survival tab): the hero joins the enemies' side, so they ignore it — and
+  its own blows do not land while it is on, so it is for getting past, not for
+  fighting. A cheat to ignore hits was tried two ways and dropped: the game's
+  hits do not go through anything a data write reaches.
+- A weapon experience multiplier (1–10×), not yet tried in play: whatever a kill
+  gives a weapon, it gets that again times the multiplier less one. Weapons at
+  their grade's level cap are left alone.
+- `hiumod doctor` can look inside the running game, writing nothing: `inspect` a
+  live object's fields (and the native bytes between them), `find` a property by
+  name, `dump` an SDK-like listing, `watch` what changes, and `scan` for a value
+  then narrow it as it changes. Results are also saved under Mods\doctor.
 - The overlays no longer flash over the panel. Both were topmost windows and took
   turns putting themselves first; while the panel shows, the overlays now stay
   just under it.

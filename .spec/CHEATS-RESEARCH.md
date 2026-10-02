@@ -96,3 +96,37 @@ GAS 가 **다시 계산하는 값**(`*Coefficient`, 무기 공격력)은 메모�
    위에서 되고, 실패해도 값만 되돌리면 된다.
 2. 피해·방어·XP 배수는 **C 단계(UE4SS + GameplayEffect)** 가 정공법. 원하면 doctor 확장(덤프·검증)부터 작은 단계로.
 3. B(코드 패치)는 A·C 로 안 되는 것만, 패턴 검증·자동 복원과 함께.
+
+## 6. 고스트 · 피격 무시 조사 (2026-10-03)
+
+요청: "적에게 발견되지 않는 고스트, 피격판정 무시 God 를 추가할 수 있는지." doctor find/inspect 로 조사.
+
+### 고스트 — 팀
+- `CharlieCharacter.TeamID`(GenericTeamId, +0x67C) / `Faction`(+0x67D): **주인공 1/1, 적(HollowWalker 계열) 2/2**.
+  `HazeGhost`, `CharlieActorGAS` 도 같은 필드. UE AI 지각은 감지 대상의 팀 관계(적대/중립/우호)로 거른다
+  (`AISenseConfig_Sight/Hearing.DetectionByAffiliation`). 주인공을 적의 팀으로 두면 "아군"으로 넘길 가능성.
+- 다른 갈래(나중): `HearingStimuliEmitterRuneComponent`·`FootstepEmitterRuneComponent`(소음), `CharlieCombatStateHandler.AggroedEntities`
+  (이미 어그로된 적), `LymbicEntitySensesParameters.AggroRangeSightRatio`.
+- 구현 `ghost`(실험): 켜면 주인공 TeamID/Faction 을 근처 적의 값(없으면 2/2)으로, 끄면 원래 값. 위험: 이미 싸우는 적은 계속
+  싸울 수 있음, 같은 팀이라 내 공격이 안 먹힐 수 있음, 패널이 강제 종료되면 다시 불러올 때까지 남음.
+
+### 피격 무시
+- 이 게임의 무적은 **게임플레이 태그** 판정 (`DamageDealerThrowableComponent.bIgnoreInvincibilityTags`, `GameplayEffect.GrantedApplicationImmunityTags`).
+  태그를 붙이려면 ASC 의 태그 카운트 맵·컨테이너에 원소를 넣어야 해 게임 안 메모리 할당이 필요 — 데이터 쓰기로는 하지 않음.
+- `DamageDefinition.bShouldTriggerHitReaction` 은 데이터 에셋 쪽(적 공격 정의) — 바꾸면 모든 피격 반응이 함께 바뀜.
+- 구현 `untouchable`(실험): 엔진 표준 `AActor.bCanBeDamaged`(+0x5A, 비트 0x04 — FBoolProperty 의 ByteMask 를 읽어 확인) 를 끔.
+  게임의 GAS·DamageDealer 경로가 이 값을 보지 않으면 효과 없음 — 그것을 보는 실험.
+- 기존 `god`(체력 상한 채우기)는 피해는 받되 죽지 않는 방식. 피격 경직·넘어짐은 남는다.
+
+### 결과와 v2 (2026-10-03)
+- ghost v1 (TeamID + Faction): 적이 공격하지 않음, **나도 못 때림**. → v2: TeamID 만 (감지는 팀, 피해는 Faction 으로 따로 볼 가능성).
+- untouchable v1 (`bCanBeDamaged`): **효과 없음** — 게임의 피해는 이 값을 보지 않음. → v2: 적 공격은
+  `DamageDealerBox/Capsule/SphereComponent`(도형 컴포넌트) — 겹침은 양쪽 모두 `bGenerateOverlapEvents` 일 때만 생기므로
+  주인공 소유 PrimitiveComponent 전부(+0x25B 비트)를 끔. 부작용: 그동안 주인공의 겹침 트리거(문·줍기 범위·죽는 물) 반응 없음.
+
+### 최종 (2026-10-03)
+- ghost v2 (TeamID 만): **적이 여전히 공격** → 감지·피해 모두 `Faction` 판정, 대칭. 비대칭(적은 못 보고 나는 때림)은 데이터 쓰기로 불가.
+  → v1 으로 되돌려 **"탐험용 고스트 — 켜는 동안 공격도 막힘"** 으로 남김(검증됨: 적이 무시).
+- untouchable v2 (겹침 끄기): **효과 없음**. 적 타격은 겹침이 아님(트레이스/태그). 피격 무시는 태그(게임 안 할당) 또는 코드
+  패치(B 단계)가 필요 → 토글 제거, docs/CHEATS.md "What does not work" 에 기록.
+

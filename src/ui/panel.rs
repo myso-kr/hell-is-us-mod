@@ -747,7 +747,12 @@ impl Panel {
                             Effect::Chosen(t) => (t, Some(a.value)),
                             Effect::Fill(t, max) => (t, snap.value(max)),
                             // Past the hero: many targets, not one value to compare.
-                            Effect::EnemyTime | Effect::EnemyFrail | Effect::Stock(_) => {
+                            Effect::EnemyTime
+                            | Effect::EnemyFrail
+                            | Effect::Stock(_)
+                            | Effect::WeaponXp
+                            | Effect::Ghost
+                            | Effect::Untouchable => {
                                 ui.label(c.label);
                                 ui.label(RichText::new("적·인벤토리 대상").color(DIM).small());
                                 ui.label("");

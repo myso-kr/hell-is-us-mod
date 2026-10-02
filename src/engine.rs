@@ -109,7 +109,7 @@ impl Attached {
     }
 
     /// The persistent level's WorldSettings: hero → level → world → PersistentLevel.
-    fn world_settings(&self) -> Result<u64, String> {
+    pub fn world_settings(&self) -> Result<u64, String> {
         let (m, n) = (&self.game, &self.anchors.names);
         let hero = self.chain()?.hero(m, &self.anchors)?;
         let level = mem_ptr(m, hero + crate::names::OUTER)?;

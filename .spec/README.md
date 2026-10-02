@@ -14,6 +14,7 @@
 | 부록 | [RESEARCH.md](RESEARCH.md) | 시작 전 조사: 게임·엔진·기존 모드·도구·미니맵 사례 (출처 포함) |
 | 부록 | [GUIDE.md](GUIDE.md) | 나침반 HUD·퀘스트 목표 안내: 웹·메모리 조사(퀘스트=사실 그래프, 저장 상태, 페이로드), 설계, 구현 기록 |
 | 부록 | [CHEATS-RESEARCH.md](CHEATS-RESEARCH.md) | 치트 확장 조사: 기존 트레이너·테이블, 메모리 프로브(인벤토리 수량 +0x48), 계수 치트가 안 된 이유(D12), 데이터 / 코드 패치 / UE4SS 단계 제안 |
+| 부록 | [DOCTOR.md](DOCTOR.md) | doctor 확장: inspect·find·dump·watch·scan — 반사 기반 조회와 네이티브 필드 찾기 (UE4SS 대신 바깥에서) |
 | 부록 | [MAP.md](MAP.md) | 미니맵 3단계: 게임 에셋 조사(AES·retoc·월드맵 텍스처), 결론, 월드에서 지도 만들기 진행 기록 |
 
 `docs/` 와의 차이: `docs/` 는 저장소를 보는 사람에게 설명하는 문서(영어)이고,
