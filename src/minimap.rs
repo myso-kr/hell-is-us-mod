@@ -54,6 +54,14 @@ pub struct MapState {
     pub guide_auto: bool,
     /// Which tiers of goal are shown, one bit per `goals::Tier`.
     pub goal_tiers: u8,
+    /// The quest the guide follows, by its journal key — `None` follows the main
+    /// story (quests.rs `followed`).
+    pub quest: Option<String>,
+    /// The quest tracker at the right of the screen.
+    pub tracker: bool,
+    /// The target was picked by hand (the goal list, the cycle key): auto guiding
+    /// leaves it until it is used up. Not kept across runs.
+    pub chosen: bool,
     /// The world yaw the game calls north (degrees): 270 in Hell Is Us, found by
     /// comparing with the game's compass item. Kept, in case an area differs.
     pub north_yaw: f32,
@@ -98,6 +106,9 @@ impl Default for MapState {
             cycle_key: 11,
             guide_auto: true,
             goal_tiers: 0b111,
+            quest: None,
+            tracker: true,
+            chosen: false,
             target: None,
             north_yaw: 270.0,
             big_radius_m: 250.0,
@@ -165,7 +176,7 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\n",
+            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\ntracker {}\n",
             self.display.key(),
             self.cycle,
             self.heading_up,
@@ -187,8 +198,12 @@ impl MapState {
             self.mini_outline,
             self.hide_in_menus,
             self.route,
-            self.north_yaw
+            self.north_yaw,
+            self.tracker
         );
+        if let Some(q) = &self.quest {
+            out += &format!("quest {q}\n");
+        }
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
         }
@@ -268,6 +283,8 @@ impl MapState {
                     }
                 }
                 ["guide_auto", v] => s.guide_auto = v == "true",
+                ["tracker", v] => s.tracker = v == "true",
+                ["quest", v] => s.quest = Some(v.to_string()),
                 ["goal_tiers", v] => {
                     if let Ok(b) = v.parse::<u8>() {
                         s.goal_tiers = b & 0b111;
@@ -633,6 +650,8 @@ mod tests {
             north_yaw: 90.0,
             hide_in_menus: false,
             route: false,
+            quest: Some("Quest03".into()),
+            tracker: false,
             hidden: [Sub::Lore, Sub::Door].into_iter().collect(),
             ..MapState::default()
         };

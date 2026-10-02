@@ -317,6 +317,22 @@ pub(crate) fn component(m: &dyn Memory, n: &Names, actor: u64, want: &str) -> Op
     })
 }
 
+/// Every one of the actor's properties holding an object of class `want` (or below).
+pub(crate) fn components(m: &dyn Memory, n: &Names, actor: u64, want: &str) -> Vec<u64> {
+    let Some(class) = mem::read_u64(m, actor + CLASS) else { return Vec::new() };
+    let mut out: Vec<u64> = n
+        .lineage(m, class)
+        .into_iter()
+        .flat_map(|c| n.properties(m, c))
+        .filter(|p| p.size == 8)
+        .filter_map(|p| mem::read_u64(m, actor + p.offset as u64).filter(|&v| mem::plausible(v)))
+        .filter(|&v| n.is_a(m, v, want))
+        .collect();
+    out.sort_unstable();
+    out.dedup();
+    out
+}
+
 /// Where this actor says it is spent, if it says so anywhere this knows.
 fn find_done(m: &dyn Memory, n: &Names, actor: u64, kind: Kind, sets: u64) -> Option<Done> {
     if kind == Kind::Enemy {

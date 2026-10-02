@@ -20,6 +20,9 @@ use super::hotkey::{game_window, pid_of};
 use super::layered::{pump, Layered};
 use super::Shared;
 use crate::goals::{Goal, Tier};
+use super::pen::Pen;
+use super::tracker;
+use crate::quests::Quest;
 use crate::minimap::{Display, MapState, ReliefMode, View};
 use crate::raster::{draw_compass, draw_map, Canvas, Pin};
 use std::sync::atomic::Ordering;
@@ -117,14 +120,35 @@ fn bearing(from: [f32; 3], to: [f32; 3]) -> f32 {
 
 /// Keep the guide's target sensible: drop it when its place is gone (used up,
 /// streamed out); with auto on, take the nearest quest goal when there is none.
-pub fn settle_target(state: &mut MapState, goals: &[Goal], here: [f32; 3]) {
+/// Whether `g` is what auto guiding wants: a place that moves the followed quest
+/// along — or, following the main story with none of its places loaded, any quest goal.
+fn wanted(g: &Goal, goals: &[Goal], followed: Option<&Quest>) -> bool {
+    match followed {
+        Some(q) if goals.iter().any(|g| g.serves(q)) => g.serves(q),
+        Some(q) if !matches!(q.kind, crate::quests::Kind::Main(_)) => false,
+        _ => g.tier == Tier::Quest,
+    }
+}
+
+/// Auto guiding follows the quest: the nearest place that moves it along, kept until
+/// it is used up, then the next — and a target it no longer wants (the quest was
+/// changed, or one of its places came into range) gives way. A target picked by hand
+/// is left alone until it is used up.
+pub fn settle_target(state: &mut MapState, goals: &[Goal], here: [f32; 3], followed: Option<&Quest>) {
     if state.target.is_some_and(|t| !goals.iter().any(|g| g.id == t)) {
         state.target = None;
+        state.chosen = false;
     }
-    if state.target.is_none() && state.guide_auto {
+    if !state.guide_auto || state.chosen {
+        return;
+    }
+    if state.target.is_some_and(|t| goals.iter().any(|g| g.id == t && !wanted(g, goals, followed))) {
+        state.target = None;
+    }
+    if state.target.is_none() {
         state.target = goals
             .iter()
-            .filter(|g| g.tier == Tier::Quest)
+            .filter(|g| wanted(g, goals, followed))
             .min_by(|a, b| flat(a.at, here).total_cmp(&flat(b.at, here)))
             .map(|g| g.id);
     }
@@ -139,6 +163,7 @@ fn cycle(state: &mut MapState, goals: &[Goal], here: [f32; 3]) {
         None => shown.first(),
     };
     state.target = next.map(|g| g.id);
+    state.chosen = state.target.is_some();
 }
 
 pub fn run(shared: Arc<Shared>) {
@@ -149,6 +174,12 @@ pub fn run(shared: Arc<Shared>) {
         crate::journal::line("overlay: could not create its windows");
         return;
     };
+    // The quest tracker: drawn again only when what it shows changes.
+    let mut tracker_window = Layered::new("hiumod-tracker", "Hell Is Us Quests", tracker::W, tracker::H);
+    let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
+    let mut pen = Pen::new(tracker::W, tracker::H);
+    let mut tracked: Option<(Vec<Quest>, Option<String>, bool)> = None;
+    let mut tracker_used = 0;
     // The big map's window is made at the game window's size, and again if that changes.
     let mut big_window: Option<Layered> = None;
     let mut big_cv = Canvas::new(1, 1);
@@ -183,7 +214,7 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
-        let (pose, world, things, footprints, goals, paused, obstacles) = match shared.snap.lock().unwrap().as_ref() {
+        let (pose, world, things, footprints, goals, paused, obstacles, journal) = match shared.snap.lock().unwrap().as_ref() {
             Some(s) => (
                 s.pose,
                 s.world.clone(),
@@ -192,8 +223,9 @@ pub fn run(shared: Arc<Shared>) {
                 s.goals.clone(),
                 s.paused,
                 s.obstacles.clone(),
+                s.journal.clone(),
             ),
-            None => (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default()),
+            None => (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Vec::new()),
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
 
@@ -236,7 +268,8 @@ pub fn run(shared: Arc<Shared>) {
                         p[2]
                     ));
                 }
-                settle_target(&mut state, &goals, p);
+                let chosen = state.quest.clone();
+                settle_target(&mut state, &goals, p, crate::quests::followed(&journal, chosen.as_deref()));
                 if cycle_now {
                     cycle(&mut state, &goals, p);
                 }
@@ -413,6 +446,25 @@ pub fn run(shared: Arc<Shared>) {
                 } else {
                     compass_window.hide();
                 }
+                if let (Some(w), Some(pen), true) = (tracker_window.as_mut(), pen.as_mut(), state.tracker) {
+                    let followed = crate::quests::followed(&journal, state.quest.as_deref());
+                    // Whether any place that moves the followed quest along is loaded.
+                    let near = followed.is_none_or(|q| goals.iter().any(|g| g.serves(q)));
+                    let now = (journal.clone(), followed.map(|q| q.key.clone()), near);
+                    if tracked.as_ref() != Some(&now) {
+                        tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near);
+                        tracked = Some(now);
+                    }
+                    if tracker_used > 0 {
+                        // At the right, centred on the screen's middle.
+                        let y = r.top + (r.bottom - r.top - tracker_used) / 2;
+                        w.present(&tracker_cv, r.right - tracker::W - MARGIN, y);
+                    } else {
+                        w.hide();
+                    }
+                } else if let Some(w) = tracker_window.as_mut() {
+                    w.hide();
+                }
                 if tick % 20 == 0 {
                     // Under the panel while it shows, so the two never trade places.
                     let panel = shared
@@ -421,6 +473,9 @@ pub fn run(shared: Arc<Shared>) {
                         .then(|| shared.hwnd.load(Ordering::SeqCst) as windows_sys::Win32::Foundation::HWND);
                     map_window.keep_on_top(panel);
                     compass_window.keep_on_top(panel);
+                    if let Some(w) = tracker_window.as_ref() {
+                        w.keep_on_top(panel);
+                    }
                     if let Some(w) = big_window.as_ref() {
                         w.keep_on_top(panel);
                     }
@@ -429,6 +484,9 @@ pub fn run(shared: Arc<Shared>) {
             _ => {
                 map_window.hide();
                 compass_window.hide();
+                if let Some(w) = tracker_window.as_mut() {
+                    w.hide();
+                }
                 if let Some(w) = big_window.as_mut() {
                     w.hide();
                 }
@@ -447,20 +505,49 @@ mod tests {
     use super::*;
 
     fn goal(id: u64, tier: Tier, x: f32) -> Goal {
-        Goal { tier, id, label: String::new(), detail: String::new(), at: [x, 0.0, 0.0] }
+        Goal { tier, id, label: String::new(), detail: String::new(), at: [x, 0.0, 0.0], quests: vec![], tags: vec![], keys: vec![] }
     }
 
     #[test]
     fn auto_guides_to_the_nearest_quest_goal_and_lets_go_of_a_vanished_one() {
         let mut s = MapState::default();
         let goals = [goal(1, Tier::Clue, 100.0), goal(2, Tier::Quest, 5000.0), goal(3, Tier::Quest, 900.0)];
-        settle_target(&mut s, &goals, [0.0; 3]);
+        settle_target(&mut s, &goals, [0.0; 3], None);
         assert_eq!(s.target, Some(3));
-        settle_target(&mut s, &goals[..2], [0.0; 3]);
+        settle_target(&mut s, &goals[..2], [0.0; 3], None);
         assert_eq!(s.target, Some(2), "3 used up: the next quest goal");
         s.guide_auto = false;
-        settle_target(&mut s, &goals[..1], [0.0; 3]);
+        settle_target(&mut s, &goals[..1], [0.0; 3], None);
         assert_eq!(s.target, None, "auto off: nothing chosen for the player");
+    }
+
+    #[test]
+    fn auto_follows_the_followed_quest_and_leaves_a_hand_picked_target() {
+        let deed = Quest {
+            key: "d".into(),
+            kind: crate::quests::Kind::GoodDeed,
+            name: String::new(),
+            detail: String::new(),
+            status: crate::quests::Status::Started,
+            progress: None,
+            leads: vec![],
+            quest: None,
+            tags: Some("Secrets.Facts.GoldenWatch".into()),
+        };
+        let mut hand_over = goal(4, Tier::Secret, 3000.0);
+        hand_over.tags = vec!["Secrets.Facts.GoldenWatchCompleted".into()];
+        let goals = [goal(3, Tier::Quest, 900.0), hand_over];
+        let mut s = MapState::default();
+        settle_target(&mut s, &goals, [0.0; 3], None);
+        assert_eq!(s.target, Some(3), "the main story: the nearest quest goal");
+        settle_target(&mut s, &goals, [0.0; 3], Some(&deed));
+        assert_eq!(s.target, Some(4), "following the deed: its hand-over, though farther");
+        settle_target(&mut s, &goals[..1], [0.0; 3], Some(&deed));
+        assert_eq!(s.target, None, "nothing of the deed loaded: no stand-in");
+        s.target = Some(3);
+        s.chosen = true;
+        settle_target(&mut s, &goals, [0.0; 3], Some(&deed));
+        assert_eq!(s.target, Some(3), "picked by hand: kept");
     }
 
     #[test]

@@ -132,3 +132,17 @@ been verified in play yet.
 - The panel has more room: it is wider and uses larger spacing and text. The map tab
   is split into four boxes. Kinds are on/off switches with their map colour, finer
   sorts are coloured chips under 'details', and counts are in parentheses.
+- Quest journal and tracker. The main quests (Quest01–06) and good deeds (the
+  game's side quests) are read with their in-game names and descriptions; `FText`
+  is decoded. A tracker at the right middle of the game window lists the quests
+  under way. The followed one is expanded with its description, clues found, and
+  open leads. The map tab's 퀘스트 card picks the quest to follow. The default is
+  "메인 스토리 자동", and auto guiding prefers goals that advance the followed
+  quest. Good deeds come from the always-loaded `SecretsSubsystem`. Titles the game
+  has shown are in Korean; the rest use the English source from the `UI_Secrets_ST`
+  string table until then. Korean titles are kept in `Mods\quests.txt`.
+- Following a quest turns route guidance on. The guide keeps to the nearest place
+  that advances that quest and moves to the next when it is done; a target picked
+  by hand is kept. NPCs are now goals: conversation payloads, including topic
+  subgraphs, and item hand-overs that complete good deeds. Pickups that hold quest
+  items are goals until taken.

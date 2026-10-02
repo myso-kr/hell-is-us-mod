@@ -19,6 +19,8 @@ mod hotkey;
 mod layered;
 mod minimap;
 mod panel;
+mod pen;
+mod tracker;
 mod tw;
 
 use crate::cheats::Active;

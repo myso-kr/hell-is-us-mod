@@ -48,6 +48,10 @@ struct Guide {
     knowledge: Option<Knowledge>,
     knowledge_read: Option<Instant>,
     goals: Goals,
+    /// The quest journal, rebuilt a slice at a time.
+    quests: crate::quests::Quests,
+    /// The save state the knowledge was read from.
+    save: u64,
     /// What stands in the way: collision shapes, collected a slice per step.
     obstacles: Obstacles,
 }
@@ -227,18 +231,36 @@ impl Attached {
         }
         if g.knowledge.is_none() || g.knowledge_read.is_none_or(|t| t.elapsed() >= KNOWLEDGE_EVERY) {
             let save = knowledge::current(n, m, &g.saves).ok_or("no save state found")?;
+            g.save = save;
             g.knowledge = Some(knowledge::read(n, m, save).ok_or("the save state could not be read")?);
             g.knowledge_read = Some(Instant::now());
         }
         let actors = self.scanner.borrow().actors_offset().ok_or("actors not scanned yet")?;
-        g.goals.refresh(m, n, hero, chain.root, actors);
+        {
+            let g = &mut *g;
+            g.goals.refresh(m, n, hero, chain.root, actors, g.quests.flows());
+        }
         if let Ok((p, _)) = chain.pose(m, &self.anchors) {
             let objects = g.objects.take().unwrap();
             g.obstacles.step(m, n, &objects, p);
             g.objects = Some(objects);
         }
+        {
+            let g = &mut *g;
+            let objects = g.objects.as_ref().unwrap();
+            g.quests.step(m, n, || objects.all(m));
+        }
         let k = g.knowledge.clone().unwrap();
         Ok((g.goals.evaluate(m, &k, chain.location), k))
+    }
+
+    /// The quest journal against what the hero knows now — empty until its first pass.
+    pub fn journal(&self) -> Vec<crate::quests::Quest> {
+        let g = self.guide.borrow();
+        match (&g.knowledge, g.quests.ready()) {
+            (Some(k), true) => g.quests.journal(k, &crate::quests::deed_states(&self.game, &self.anchors.names, g.save)),
+            _ => Vec::new(),
+        }
     }
 
     /// The obstacles and ground of the last complete pass (shared, not copied).
@@ -278,8 +300,8 @@ pub struct Snapshot {
     pub footprints: Arc<Vec<Footprint>>,
     /// Places with something new to learn.
     pub goals: Vec<Goal>,
-    /// Open investigations, by name.
-    pub quests: Vec<String>,
+    /// The quest journal: main quests and good deeds, with their state.
+    pub journal: Vec<crate::quests::Quest>,
     /// The game is paused (a menu that stops it is open).
     pub paused: bool,
     /// What stands in the way, and the ground, for the route.
@@ -376,7 +398,7 @@ impl Engine {
             things: Vec::new(),
             footprints: Arc::default(),
             goals: Vec::new(),
-            quests: Vec::new(),
+            journal: Vec::new(),
             paused: false,
             obstacles: Arc::default(),
             slots: self.slots.clone(),
@@ -402,9 +424,9 @@ impl Engine {
                     Err(e) => snap.notice = Some(format!("minimap: {e}")),
                 }
                 match a.goals() {
-                    Ok((g, k)) => {
+                    Ok((g, _)) => {
                         snap.goals = g;
-                        snap.quests = k.quest_names;
+                        snap.journal = a.journal();
                         snap.obstacles = a.obstacles();
                     }
                     Err(e) => snap.notice = Some(format!("minimap: {e}")),

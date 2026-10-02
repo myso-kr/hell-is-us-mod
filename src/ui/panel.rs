@@ -544,6 +544,55 @@ impl Panel {
         });
     }
 
+    /// The quest journal: which quest the guide and the tracker follow.
+    fn quests_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        use crate::quests::{Kind, Status};
+        let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
+        card(t, "퀘스트", |t| {
+            switch(t, &mut state.tracker, "퀘스트 추적기 — 화면 오른쪽 가운데");
+            if journal.is_empty() {
+                note(t, "퀘스트를 읽는 중입니다 — 게임을 불러오고 몇 초 뒤에 나옵니다");
+                return;
+            }
+            let followed = crate::quests::followed(&journal, state.quest.as_deref()).map(|q| q.key.clone());
+            let mut pick: Option<Option<String>> = None;
+            let auto = match journal.iter().find(|q| Some(&q.key) == followed.as_ref()) {
+                Some(q) if state.quest.is_none() => format!("메인 스토리 자동 — {}", q.name),
+                _ => "메인 스토리 자동".to_string(),
+            };
+            if tw::pick(t, state.quest.is_none(), auto) {
+                pick = Some(None);
+            }
+            for q in journal.iter().filter(|q| q.active()) {
+                let tag = match q.kind {
+                    Kind::Main(n) => format!("메인 {n}"),
+                    Kind::GoodDeed => "선행".into(),
+                };
+                let mut label = format!("[{tag}] {}", q.name);
+                if let Some((got, all)) = q.progress.filter(|(_, all)| *all > 0) {
+                    label += &format!(" · 단서 {got}/{all}");
+                }
+                let on = state.quest.as_deref() == Some(q.key.as_str());
+                if tw::pick(t, on, label) {
+                    pick = Some(Some(q.key.clone()));
+                }
+            }
+            let done = journal.iter().filter(|q| q.status == Status::Completed).count();
+            let failed = journal.iter().filter(|q| q.status == Status::Failed).count();
+            note(t, format!("완료 {done}개 · 실패 {failed}개"));
+            note(t, "영어로 나오는 선행 이름은 게임이 아직 보여 주지 않은 것 — 데이터패드의 탐험 → 선행에서 보면 한국어로 바뀝니다");
+            if let Some(p) = pick {
+                state.quest = p;
+                // Guide anew, to the newly followed quest.
+                state.target = None;
+                state.chosen = false;
+                state.guide_auto = true;
+                state.route = true;
+                state.dirty = true;
+            }
+        });
+    }
+
     fn guide_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
@@ -559,7 +608,7 @@ impl Panel {
         });
 
         card(t, "안내", |t| {
-            switch(t, &mut state.guide_auto, "자동 — 고른 곳이 없으면 가장 가까운 퀘스트 목표로");
+            switch(t, &mut state.guide_auto, "자동 — 고른 곳이 없으면 따라가는 퀘스트의 가장 가까운 목표로");
             switch(
                 t,
                 &mut state.route,
@@ -605,6 +654,8 @@ impl Panel {
             }
         });
 
+        self.quests_card(t, state, snap);
+
         let mut list: Vec<&crate::goals::Goal> =
             goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
         list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
@@ -620,6 +671,7 @@ impl Panel {
                             let button = egui::Button::selectable(chosen, label).truncate();
                             if ui.add(button).on_hover_text(&g.detail).clicked() {
                                 state.target = Some(g.id);
+                                state.chosen = true;
                             }
                         });
                     }

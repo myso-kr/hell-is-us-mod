@@ -137,6 +137,12 @@ pub fn w<T>(tui: &mut Tui, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
     tui.style(Style { flex_shrink: 0.0, ..Default::default() }).wrap_mode(egui::TextWrapMode::Extend).ui(f)
 }
 
+/// One choice of a list: a selectable row that wraps to the width it is given.
+pub fn pick(tui: &mut Tui, on: bool, text: impl Into<RichText>) -> bool {
+    let text = text.into();
+    block(tui, |ui| ui.add(egui::Button::selectable(on, text).wrap_mode(egui::TextWrapMode::Wrap)).clicked())
+}
+
 /// A small, dim note that wraps to the width it is given.
 pub fn note(tui: &mut Tui, text: impl Into<String>) {
     let text = text.into();

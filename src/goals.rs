@@ -9,8 +9,20 @@
 //! - **secret** — a new `Secrets.` tag (mysteries, good deeds, timeloops)
 //! - **clue** — anything else new
 //!
-//! What each actor hands out does not change, so it is read once per actor; whether
-//! it is still new is decided every step against the knowledge of the moment.
+//! NPCs hand things out by talking: their `FlowComponent`s run a conversation
+//! (`RootFlow`, a FlowAsset) whose `FlowNode_Payload` nodes carry the same
+//! PayloadData, some inside topic subgraphs (other FlowAssets, named softly — found
+//! by name among the loaded ones). An NPC that wants an item (`TradeGiveItemRune`
+//! `ValidTrades`: the item, and the payload it gives back) is a goal for what it
+//! gives back — that is how a good deed's hand-over is found. Topic-unlock tags
+//! (`Conversation.`) alone do not make a goal.
+//!
+//! Pickups that hand out a quest item (`/Items/Quests/`, `/Items/Secrets/`) are goals
+//! too, until taken; a `QuestNN_` item belongs to that main quest.
+//!
+//! What each interactable hands out does not change, so it is read once per actor;
+//! NPCs are read again on every scan, as their topics stream in. Whether it is still
+//! new is decided every step against the knowledge of the moment.
 
 use crate::knowledge::Knowledge;
 use crate::mem::{self, Memory};
@@ -55,6 +67,21 @@ pub struct Goal {
     /// What is new there: the first new fact or tag, by name.
     pub detail: String,
     pub at: [f32; 3],
+    /// The main quests (QuestData name indices) its new facts belong to, and its new
+    /// tags by name — what ties it to a quest in the journal.
+    pub quests: Vec<u32>,
+    pub tags: Vec<String>,
+    /// Journal keys it belongs to directly (`Quest01` for a quest item).
+    pub keys: Vec<String>,
+}
+
+impl Goal {
+    /// Whether it moves `q` along.
+    pub fn serves(&self, q: &crate::quests::Quest) -> bool {
+        q.quest.is_some_and(|i| self.quests.contains(&i))
+            || self.keys.contains(&q.key)
+            || q.tags.as_ref().is_some_and(|p| self.tags.iter().any(|t| t.starts_with(p.as_str())))
+    }
 }
 
 /// What an actor hands out, as name indices.
@@ -67,6 +94,49 @@ struct Payload {
     used: Option<u64>,
     root: u64,
     label: String,
+    /// Quest items it hands out, by name — a goal while it is not used.
+    items: Vec<String>,
+    /// Journal keys it belongs to directly.
+    keys: Vec<String>,
+    /// What to say instead of the first new tag (an NPC's hand-over).
+    note: Option<String>,
+}
+
+/// A PayloadData's facts (asset addresses), tags (name indices) and the items it
+/// adds (addresses): ContainedFacts +0x18 (a set), TagFacts +0x68, ItemsToAdd +0x88.
+fn payload_data(m: &dyn Memory, at: u64) -> (Vec<u64>, Vec<u32>, Vec<u64>) {
+    let facts = pointer_set(m, at + 0x18);
+    let tags = tag_array(m, at + 0x68);
+    let items = pointer_array(m, at + 0x88);
+    (facts, tags, items)
+}
+
+/// A GameplayTagContainer's tags, as name indices.
+fn tag_array(m: &dyn Memory, at: u64) -> Vec<u32> {
+    let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { return Vec::new() };
+    if num == 0 || num > 256 || !mem::plausible(data) {
+        return Vec::new();
+    }
+    (0..num as u64).filter_map(|i| mem::read_u32(m, data + i * 8)).collect()
+}
+
+/// An item a quest needs: under `/Items/Quests/` or `/Items/Secrets/`. With the main
+/// quest it belongs to, when its name starts `QuestNN_`.
+fn quest_item(m: &dyn Memory, n: &Names, item: u64) -> Option<(String, Option<String>)> {
+    let pkg = mem::read_u64(m, item + OUTER).filter(|&p| mem::plausible(p)).and_then(|p| n.object(m, p))?;
+    if !pkg.contains("/Items/Quests/") && !pkg.contains("/Items/Secrets/") {
+        return None;
+    }
+    let name = n.object(m, item)?;
+    let key = name.get(..7).filter(|k| k.starts_with("Quest") && k[5..].chars().all(|c| c.is_ascii_digit()));
+    Some((item_label(&name), key.map(str::to_string)))
+}
+
+/// `Caddell_GoldenWatch_Item_DA` → `Caddell GoldenWatch`.
+fn item_label(name: &str) -> String {
+    let lower = name.to_lowercase();
+    let cut = lower.find("_item").unwrap_or(name.len());
+    name[..cut].replace('_', " ")
 }
 
 const RESCAN: Duration = Duration::from_secs(2);
@@ -76,6 +146,8 @@ pub struct Goals {
     levels: Option<u64>,
     interactable: HashMap<u64, bool>,
     payloads: HashMap<u64, (u64, Option<Payload>)>,
+    /// Whether a class is an NPC, by class.
+    npc: HashMap<u64, bool>,
     /// A fact asset's investigation, by the fact's address.
     fact_quest: HashMap<u64, Option<u32>>,
     /// Tag names, by index — for the tier rules and for the detail line.
@@ -118,6 +190,22 @@ fn pointer_set(m: &dyn Memory, at: u64) -> Vec<u64> {
         .collect()
 }
 
+/// A FlowAsset's nodes: `Nodes` (+0x50) is a TMap<FGuid, UFlowNode*> — elements of
+/// 32 bytes, the node at +0x10.
+fn flow_nodes(m: &dyn Memory, asset: u64) -> Vec<u64> {
+    let (Some(data), Some(num)) = (mem::read_u64(m, asset + 0x50), mem::read_u32(m, asset + 0x58)) else {
+        return Vec::new();
+    };
+    if !mem::plausible(data) || num > 4096 {
+        return Vec::new();
+    }
+    let mut buf = vec![0u8; num as usize * 32];
+    if !m.read(data, &mut buf) {
+        return Vec::new();
+    }
+    buf.chunks_exact(32).map(|e| u64::from_le_bytes(e[16..24].try_into().unwrap())).filter(|&p| mem::plausible(p)).collect()
+}
+
 fn pointer_array(m: &dyn Memory, at: u64) -> Vec<u64> {
     crate::actors::array(m, at, 4096)
 }
@@ -154,17 +242,101 @@ impl Goals {
         for &t in &tags {
             self.tag_names.entry(t).or_insert_with(|| n.get(m, t).unwrap_or_default());
         }
-        if facts.is_empty() && tags.is_empty() {
+        let mut items = Vec::new();
+        let mut keys = Vec::new();
+        if let Some((at, _)) = n.path(m, comp, &["Rune", "PayloadData", "ItemsToAdd"]) {
+            for (label, key) in pointer_array(m, at).into_iter().filter_map(|i| quest_item(m, n, i)) {
+                items.push(label);
+                keys.extend(key);
+            }
+        }
+        if facts.is_empty() && tags.is_empty() && items.is_empty() {
             return None;
         }
         let rc = mem::read_u64(m, actor + root).filter(|&p| mem::plausible(p))?;
         let used = crate::actors::component(m, n, actor, "InteractionActionComponent")
             .and_then(|c| n.field(m, c, "bHasBeenActivated").filter(|p| p.size == 1).map(|p| c + p.offset as u64));
-        Some(Payload { facts, tags, used, root: rc, label: pretty(&n.class(m, actor).unwrap_or_default()) })
+        let label = pretty(&n.class(m, actor).unwrap_or_default());
+        Some(Payload { facts, tags, used, root: rc, label, items, keys, note: None })
+    }
+
+    /// What an NPC hands out: every payload in its conversations (following topic
+    /// subgraphs two deep), and what it gives back for an item it wants.
+    fn read_npc(&mut self, m: &dyn Memory, n: &Names, actor: u64, root: u64, flows: &HashMap<u32, u64>) -> Option<Payload> {
+        let mut facts: Vec<u64> = Vec::new();
+        let mut tags: Vec<u32> = Vec::new();
+        let mut assets: Vec<(u64, u32)> = crate::actors::components(m, n, actor, "FlowComponent")
+            .into_iter()
+            .filter_map(|c| mem::read_u64(m, c + 0x198).filter(|&p| mem::plausible(p)))
+            .map(|a| (a, 0))
+            .collect();
+        let mut seen: Vec<u64> = Vec::new();
+        while let Some((asset, depth)) = assets.pop() {
+            if seen.contains(&asset) || seen.len() > 64 {
+                continue;
+            }
+            seen.push(asset);
+            for node in flow_nodes(m, asset) {
+                let Some(class) = n.class(m, node) else { continue };
+                match class.as_str() {
+                    "FlowNode_Payload" => {
+                        let (f, t, _) = payload_data(m, node + 0x1d0);
+                        facts.extend(f);
+                        tags.extend(t);
+                    }
+                    // A topic (or a plain subgraph): its asset, named softly — the
+                    // FSoftObjectPath's AssetName is 0x10 into the soft pointer.
+                    "FlowNode_TopicSubGraph" | "FlowNode_SubGraph" | "FlowNode_SubGraphInstanced" if depth < 2 => {
+                        let soft = if class == "FlowNode_TopicSubGraph" { 0x218 } else { 0x1d0 };
+                        if let Some(&a) = mem::read_u32(m, node + soft + 0x10).and_then(|i| flows.get(&i)) {
+                            assets.push((a, depth + 1));
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        // A hand-over: the item it wants, and what it gives back.
+        let mut note = None;
+        for comp in crate::actors::components(m, n, actor, "TradeGiveItemRuneComponent") {
+            let Some((at, p)) = n.path(m, comp, &["Rune", "ValidTrades"]) else { continue };
+            let size = n.inner_of(m, p.field).and_then(|i| mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
+            let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { continue };
+            if size < 0xF0 || !mem::plausible(data) || num > 64 {
+                continue;
+            }
+            for i in 0..num as u64 {
+                let e = data + i * size;
+                let (f, t, _) = payload_data(m, e + 0x18);
+                if f.is_empty() && t.is_empty() {
+                    continue;
+                }
+                facts.extend(f);
+                tags.extend(t);
+                if let Some(item) = mem::read_u64(m, e).filter(|&p| mem::plausible(p)).and_then(|p| n.object(m, p)) {
+                    note.get_or_insert(format!("전달: {}", item_label(&item)));
+                }
+            }
+        }
+        facts.sort_unstable();
+        facts.dedup();
+        tags.sort_unstable();
+        tags.dedup();
+        let facts: Vec<(u32, Option<u32>)> =
+            facts.into_iter().filter_map(|f| Some((mem::read_u32(m, f + NAME)?, self.quest_of(m, n, f)))).collect();
+        for &t in &tags {
+            self.tag_names.entry(t).or_insert_with(|| n.get(m, t).unwrap_or_default());
+        }
+        if facts.is_empty() && tags.is_empty() {
+            return None;
+        }
+        let rc = mem::read_u64(m, actor + root).filter(|&p| mem::plausible(p))?;
+        let label = format!("대화: {}", pretty(&n.class(m, actor).unwrap_or_default()));
+        Some(Payload { facts, tags, used: None, root: rc, label, items: Vec::new(), keys: Vec::new(), note })
     }
 
     /// Read what the loaded interactables hand out, when a scan is due.
-    pub fn refresh(&mut self, m: &dyn Memory, n: &Names, hero: u64, root: u64, actors: u64) {
+    pub fn refresh(&mut self, m: &dyn Memory, n: &Names, hero: u64, root: u64, actors: u64, flows: &HashMap<u32, u64>) {
         if self.scanned.is_some_and(|t| t.elapsed() < RESCAN) {
             return;
         }
@@ -187,6 +359,13 @@ impl Goals {
                 let interactable = *self.interactable.entry(class).or_insert_with(|| {
                     n.lineage(m, class).into_iter().any(|c| n.object(m, c).as_deref() == Some("InteractableActor"))
                 });
+                let npc = *self.npc.entry(class).or_insert_with(|| {
+                    n.lineage(m, class).into_iter().any(|c| n.object(m, c).as_deref() == Some("NpcActor"))
+                });
+                if npc {
+                    now.insert(actor, (class, self.read_npc(m, n, actor, root, flows)));
+                    continue;
+                }
                 if !interactable {
                     continue;
                 }
@@ -217,11 +396,16 @@ impl Goals {
             let new_facts: Vec<&(u32, Option<u32>)> = p.facts.iter().filter(|(f, _)| !k.facts.contains(f)).collect();
             let new_tags: Vec<&u32> = p.tags.iter().filter(|t| !k.tags.contains(t)).collect();
             let tag = |t: &u32| self.tag_names.get(t).cloned().unwrap_or_default();
+            // Topic unlocks only open more talk: not a reason to go.
+            let new_tags: Vec<&u32> = new_tags.into_iter().filter(|t| !tag(t).starts_with("Conversation.")).collect();
+            // A quest item still lying there counts as new until it is taken.
+            let items_left = !p.items.is_empty() && p.used.is_some();
             let tier = if new_facts.iter().any(|(_, q)| q.is_some_and(|q| k.quests.contains(&q)))
+                || !p.keys.is_empty() && items_left
                 || new_tags.iter().any(|t| tag(t).starts_with("Quest."))
             {
                 Tier::Quest
-            } else if new_tags.iter().any(|t| tag(t).starts_with("Secrets.")) {
+            } else if items_left || new_tags.iter().any(|t| tag(t).starts_with("Secrets.")) {
                 Tier::Secret
             } else if !new_facts.is_empty()
                 || new_tags.iter().any(|t| !tag(t).starts_with("Tutorial.") && !tag(t).starts_with("DLC."))
@@ -239,8 +423,14 @@ impl Goals {
             if !at.iter().all(|v| v.is_finite()) {
                 continue;
             }
-            let detail = new_tags.first().map(|t| tag(t)).unwrap_or_else(|| format!("새 사실 {}개", new_facts.len()));
-            out.push(Goal { tier, id: actor, label: p.label.clone(), detail, at });
+            let detail = p.note.clone().or_else(|| items_left.then(|| format!("아이템: {}", p.items.join(", ")))).unwrap_or_else(|| {
+                new_tags.first().map(|t| tag(t)).unwrap_or_else(|| format!("새 사실 {}개", new_facts.len()))
+            });
+            let mut quests: Vec<u32> = new_facts.iter().filter_map(|(_, q)| *q).collect();
+            quests.sort_unstable();
+            quests.dedup();
+            let tags = new_tags.iter().map(|t| tag(t)).collect();
+            out.push(Goal { tier, id: actor, label: p.label.clone(), detail, at, quests, tags, keys: p.keys.clone() });
         }
         out
     }

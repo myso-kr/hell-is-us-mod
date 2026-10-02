@@ -31,8 +31,17 @@ impl Canvas {
         self.px.fill(0);
     }
 
+    /// A filled rectangle, pixel-aligned.
+    pub fn rect(&mut self, x0: i32, y0: i32, x1: i32, y1: i32, c: Rgba) {
+        for y in y0.max(0)..y1.min(self.h as i32) {
+            for x in x0.max(0)..x1.min(self.w as i32) {
+                self.blend(x, y, c, 1.0);
+            }
+        }
+    }
+
     /// Source-over, `c` at `coverage` (0..=1).
-    fn blend(&mut self, x: i32, y: i32, c: Rgba, coverage: f32) {
+    pub fn blend(&mut self, x: i32, y: i32, c: Rgba, coverage: f32) {
         if x < 0 || y < 0 || x as usize >= self.w || y as usize >= self.h || coverage <= 0.0 {
             return;
         }
