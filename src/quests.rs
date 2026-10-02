@@ -135,8 +135,11 @@ enum Role {
     Other,
 }
 
-/// Objects looked at per step: a pass is ~55 steps (~350k objects).
-const SLICE: usize = 4000;
+/// How long a step may walk objects: long until the journal is first put together (a
+/// whole pass is about a second of work — 4,000 objects a step made it ~90 steps, 15–20 s
+/// at the engine's pace), short after that, when it only keeps the journal fresh.
+const FIRST: std::time::Duration = std::time::Duration::from_millis(120);
+const LATER: std::time::Duration = std::time::Duration::from_millis(25);
 
 #[derive(Default)]
 pub struct Quests {
@@ -246,6 +249,11 @@ impl Quests {
         let _ = std::fs::write(path, render(&self.deeds, &self.seen));
     }
 
+    /// Each main quest fact's quest, by the fact's asset name (`Quest01`).
+    pub fn fact_keys(&self) -> HashMap<String, String> {
+        self.mains.iter().flat_map(|q| q.facts.iter().map(|f| (f.object.clone(), q.key.clone()))).collect()
+    }
+
     /// The loaded flow assets (conversations, topics) by name index, as of the last
     /// complete pass — how a topic a conversation names softly is found.
     pub fn flows(&self) -> &HashMap<u32, u64> {
@@ -274,9 +282,15 @@ impl Quests {
             self.pending = objects();
             self.cursor = 0;
         }
-        let end = (self.cursor + SLICE).min(self.pending.len());
-        for i in self.cursor..end {
+        let budget = if self.ready() { LATER } else { FIRST };
+        let started = std::time::Instant::now();
+        let mut i = self.cursor;
+        while i < self.pending.len() {
+            if i % 512 == 0 && started.elapsed() >= budget {
+                break;
+            }
             let o = self.pending[i];
+            i += 1;
             let Some(class) = mem::read_u64(m, o + CLASS).filter(|&c| mem::plausible(c)) else { continue };
             let role = *self.roles.entry(class).or_insert_with(|| match n.object(m, class).as_deref() {
                 Some("QuestData") => Role::Quest,
@@ -317,7 +331,7 @@ impl Quests {
                 }
             }
         }
-        self.cursor = end;
+        self.cursor = i;
     }
 
     fn fact(&mut self, m: &dyn Memory, n: &Names, o: u64) {

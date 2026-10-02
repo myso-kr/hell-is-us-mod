@@ -35,7 +35,16 @@ fn kind_label(q: &Quest) -> String {
 
 /// Draw the tracker into `cv` (cleared first); the height used, 0 when there is
 /// nothing to show.
-pub fn draw(cv: &mut Canvas, pen: &mut Pen, journal: &[Quest], followed: Option<&Quest>, near: bool, stuck: bool) -> i32 {
+#[allow(clippy::too_many_arguments)]
+pub fn draw(
+    cv: &mut Canvas,
+    pen: &mut Pen,
+    journal: &[Quest],
+    followed: Option<&Quest>,
+    near: bool,
+    stuck: bool,
+    needs: &str,
+) -> i32 {
     cv.clear();
     let mut list: Vec<&Quest> = Vec::new();
     if let Some(f) = followed {
@@ -70,6 +79,9 @@ pub fn draw(cv: &mut Canvas, pen: &mut Pen, journal: &[Quest], followed: Option<
                     Kind::GoodDeed => "이 지역엔 이 선행의 목표가 없음 — 다른 지역에서 진행",
                 };
                 y += pen.write(cv, x, y, width, why, 12, true, Rgba(255, 190, 90, 255), 2) + 2;
+            }
+            if !needs.is_empty() {
+                y += pen.write(cv, x, y, width, needs, 12, true, Rgba(150, 220, 255, 255), 2) + 2;
             }
             if near && stuck {
                 let why = "닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저";

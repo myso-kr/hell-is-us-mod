@@ -103,6 +103,10 @@ struct Baking {
 const RELIEF_MOVED: f32 = 10_000.0;
 const RELIEF_SPARE: f32 = 15_000.0;
 
+/// What the tracker last drew: the journal, the followed quest, whether its places are
+/// near, whether the guided goal is blocked, and the needs line.
+type Tracked = (Vec<Quest>, Option<String>, bool, bool, String);
+
 #[derive(Default)]
 struct Route {
     path: crate::pathfind::Path,
@@ -222,7 +226,7 @@ pub fn run(shared: Arc<Shared>) {
     let mut tracker_window = Layered::new("hiumod-tracker", "Hell Is Us Quests", tracker::W, tracker::H);
     let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
     let mut pen = Pen::new(tracker::W, tracker::H);
-    let mut tracked: Option<(Vec<Quest>, Option<String>, bool, bool)> = None;
+    let mut tracked: Option<Tracked> = None;
     let mut tracker_used = 0;
     // The big map's window is made at the game window's size, and again if that changes.
     let mut big_window: Option<Layered> = None;
@@ -258,7 +262,7 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
-        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav) = match shared.snap.lock().unwrap().as_ref() {
+        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs) = match shared.snap.lock().unwrap().as_ref() {
             Some(s) => (
                 s.pose,
                 s.world.clone(),
@@ -269,9 +273,10 @@ pub fn run(shared: Arc<Shared>) {
                 s.obstacles.clone(),
                 s.journal.clone(),
                 s.nav.clone(),
+                s.needs.clone(),
             ),
             None => {
-                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Vec::new(), Default::default())
+                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Vec::new(), Default::default(), Vec::new())
             }
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
@@ -523,9 +528,24 @@ pub fn run(shared: Arc<Shared>) {
                     let near = followed.is_none_or(|q| goals.iter().any(|g| g.serves(q)));
                     // The goal being guided to can only be reached through something.
                     let stuck = state.target.is_some_and(|t| route.blocked.contains(&t));
-                    let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck);
+                    // What it still needs: here, and elsewhere (the survey).
+                    let line = followed
+                        .and_then(|q| needs.iter().find(|(k, _)| *k == q.key))
+                        .map(|(_, list)| {
+                            let w = crate::survey::Survey::world_of(world);
+                            let here = list.iter().filter(|x| !x.done && x.world == w).count();
+                            let away = list.iter().filter(|x| !x.done && x.world != w).count();
+                            match (here, away) {
+                                (0, 0) => String::new(),
+                                (h, 0) => format!("필요한 것: 이 지역 {h}곳"),
+                                (0, a) => format!("필요한 것: 다른 지역 {a}곳 — 장갑차로 이동"),
+                                (h, a) => format!("필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳"),
+                            }
+                        })
+                        .unwrap_or_default();
+                    let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone());
                     if tracked.as_ref() != Some(&now) {
-                        tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck);
+                        tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck, &line);
                         tracked = Some(now);
                     }
                     if tracker_used > 0 {

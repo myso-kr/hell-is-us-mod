@@ -18,6 +18,10 @@ USAGE
   hiumod doctor dump [prefix]...
                                 an SDK-like listing of the classes and structs whose
                                 names start with a prefix (default Charlie, Story)
+  hiumod doctor usmap           the loaded classes, structs and enums as a .usmap
+                                mappings file, for tools/survey
+  hiumod doctor survey [world]  mappings, then tools/survey over the game's maps:
+                                what every world hands out, to Mods\\survey
   hiumod doctor watch <target> [seconds]
                                 what changes in an object, named or native, as it does
   hiumod doctor scan <target> <value>

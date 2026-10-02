@@ -376,6 +376,15 @@ pub fn array(m: &dyn Memory, at: u64, cap: u32) -> Vec<u64> {
     buf.chunks_exact(8).map(|c| u64::from_le_bytes(c.try_into().unwrap())).filter(|&p| mem::plausible(p)).collect()
 }
 
+/// A TArray of inline structs at `at`: each element's address, `size` bytes apart.
+pub fn array_of(m: &dyn Memory, at: u64, size: u64, cap: u32) -> Vec<u64> {
+    let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { return Vec::new() };
+    if !mem::plausible(data) || num == 0 || num > cap || size == 0 {
+        return Vec::new();
+    }
+    (0..num as u64).map(|i| data + i * size).collect()
+}
+
 /// The offset of `ULevel::Actors`: the one array in the hero's level holding the hero.
 fn find_actors(m: &dyn Memory, level: u64, hero: u64) -> Option<u64> {
     let hits: Vec<u64> =

@@ -92,7 +92,7 @@ pub enum Gate {
 }
 
 /// What a `_PayloadInactive_` actor's class says about how it pays out.
-fn gate_of(class: &str) -> Gate {
+pub fn gate_of(class: &str) -> Gate {
     match class.split_once("_PayloadInactive_") {
         None => Gate::Open,
         Some((stem, _)) if ["Visited", "Proximity", "Met"].iter().any(|w| stem.ends_with(w)) => Gate::Visit,
@@ -159,7 +159,7 @@ fn quest_item(m: &dyn Memory, n: &Names, item: u64) -> Option<(String, Option<St
 }
 
 /// `Caddell_GoldenWatch_Item_DA` → `Caddell GoldenWatch`.
-fn item_label(name: &str) -> String {
+pub fn item_label(name: &str) -> String {
     let lower = name.to_lowercase();
     let cut = lower.find("_item").unwrap_or(name.len());
     name[..cut].replace('_', " ")
@@ -174,6 +174,10 @@ pub struct Goals {
     payloads: HashMap<u64, (u64, Option<Payload>)>,
     /// Whether a class is an NPC, by class.
     npc: HashMap<u64, bool>,
+    /// The names of the interactables and NPCs loaded now: the survey leaves these to
+    /// the live goals.
+    pub loaded: std::collections::HashSet<String>,
+    names: HashMap<u64, String>,
     /// A fact asset's investigation, by the fact's address.
     fact_quest: HashMap<u64, Option<u32>>,
     /// Tag names, by index — for the tier rules and for the detail line.
@@ -379,6 +383,8 @@ impl Goals {
         }
         let Some(levels) = self.levels else { return };
         let mut now = HashMap::with_capacity(self.payloads.len());
+        let mut loaded = std::collections::HashSet::new();
+        let mut names = HashMap::new();
         for lv in crate::actors::array(m, world + levels, 4096) {
             for actor in crate::actors::array(m, lv + actors, 500_000) {
                 let Some(class) = mem::read_u64(m, actor + CLASS).filter(|&c| mem::plausible(c)) else { continue };
@@ -388,11 +394,14 @@ impl Goals {
                 let npc = *self.npc.entry(class).or_insert_with(|| {
                     n.lineage(m, class).into_iter().any(|c| n.object(m, c).as_deref() == Some("NpcActor"))
                 });
-                if npc {
-                    now.insert(actor, (class, self.read_npc(m, n, actor, root, flows)));
+                if !npc && !interactable {
                     continue;
                 }
-                if !interactable {
+                let name = self.names.remove(&actor).or_else(|| n.object(m, actor)).unwrap_or_default();
+                loaded.insert(name.clone());
+                names.insert(actor, name);
+                if npc {
+                    now.insert(actor, (class, self.read_npc(m, n, actor, root, flows)));
                     continue;
                 }
                 let entry = match self.payloads.remove(&actor) {
@@ -403,6 +412,8 @@ impl Goals {
             }
         }
         self.payloads = now;
+        self.loaded = loaded;
+        self.names = names;
     }
 
     /// Every place that still holds something new, and what kind, against `k`.

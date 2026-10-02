@@ -197,7 +197,20 @@ fn doctor(opt: &Options) -> R {
     Ok(())
 }
 
-/// `doctor inspect|find|dump|watch|scan` (probe.rs): reads only.
+/// The built survey tool: beside the executable (`survey\survey.dll`), or in the source
+/// tree when running from `target\release`.
+fn survey_tool() -> Option<std::path::PathBuf> {
+    let exe = std::env::current_exe().ok()?;
+    let dir = exe.parent()?;
+    [
+        dir.join("survey").join("survey.dll"),
+        dir.join("..").join("..").join("tools").join("survey").join("bin").join("Release").join("net8.0").join("survey.dll"),
+    ]
+    .into_iter()
+    .find(|p| p.exists())
+}
+
+/// `doctor inspect|find|dump|watch|scan|usmap|survey` (probe.rs): reads only.
 fn probe(args: &[String]) -> R {
     use hiumod::mem::{self, Memory};
     use hiumod::probe;
@@ -247,6 +260,36 @@ fn probe(args: &[String]) -> R {
             let text = probe::dump(n, m, &structs);
             log!("{} classes and structs starting with {}", structs.len(), prefixes.join(", "));
             save("sdk.txt", &text)
+        }
+        Some("survey") => {
+            // Mappings first, then the survey tool over the game's maps (.spec/ITEMS.md).
+            let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
+            std::fs::write(dir.join("HellIsUs.usmap"), &bytes).map_err(|e| e.to_string())?;
+            log!("mappings: {structs} structs and classes, {enums} enums");
+            let tool = survey_tool().ok_or(
+                "tools/survey is not built: run `dotnet build -c Release` in tools/survey (needs the .NET 8 SDK)",
+            )?;
+            let game = hiumod::paths::data_dir().parent().ok_or("no game folder")?.to_path_buf();
+            let mut cmd = std::process::Command::new("dotnet");
+            cmd.arg(&tool).arg("--game").arg(&game);
+            if let Some(w) = arg(1) {
+                cmd.arg("--world").arg(w);
+            }
+            log!("running {}", tool.display());
+            let status = cmd.status().map_err(|e| format!("dotnet: {e}"))?;
+            if !status.success() {
+                return Err(format!("the survey tool failed ({status})"));
+            }
+            log!("survey written to {}", hiumod::paths::data_dir().join("survey").display());
+            Ok(())
+        }
+        Some("usmap") => {
+            // The survey tool's mappings (.spec/ITEMS.md §3.1).
+            let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
+            let path = dir.join("HellIsUs.usmap");
+            std::fs::write(&path, &bytes).map_err(|e| format!("{}: {e}", path.display()))?;
+            log!("{structs} structs and classes, {enums} enums — {} KB, written to {}", bytes.len() / 1024, path.display());
+            Ok(())
         }
         Some("watch") => {
             let what = arg(1).ok_or("watch what? e.g. `doctor watch inventory`")?;
@@ -328,7 +371,7 @@ fn probe(args: &[String]) -> R {
             let _ = mem::read_u32; // (reads above go through Memory)
             save("scan.txt", &rows.join("\n"))
         }
-        _ => Err("doctor takes: inspect, find, dump, watch, scan — see `hiumod help`".into()),
+        _ => Err("doctor takes: inspect, find, dump, watch, scan, usmap, survey — see `hiumod help`".into()),
     }
 }
 

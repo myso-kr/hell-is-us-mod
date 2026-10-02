@@ -19,6 +19,7 @@ use crate::obstacles::{Obstacles, Scene};
 use crate::player::{self, Chain};
 use std::cell::RefCell;
 use std::sync::Arc;
+use std::collections::{HashMap, HashSet};
 use std::time::{Duration, Instant};
 
 pub struct Attached {
@@ -52,6 +53,15 @@ struct Guide {
     quests: crate::quests::Quests,
     /// The game's navmesh, read a little at a time.
     nav: crate::navmesh::Nav,
+    /// The survey of every world (Mods\survey), read once; and what the hero knows and
+    /// holds by name, to judge it with — renewed with the knowledge.
+    survey: Option<crate::survey::Survey>,
+    known_facts: HashSet<String>,
+    known_tags: HashSet<String>,
+    held: HashSet<String>,
+    saved: HashSet<String>,
+    name_cache: HashMap<u32, String>,
+    fact_keys: HashMap<String, String>,
     /// The save state the knowledge was read from.
     save: u64,
     /// What stands in the way: collision shapes, collected a slice per step.
@@ -63,6 +73,32 @@ const KNOWLEDGE_EVERY: Duration = Duration::from_secs(2);
 
 fn mem_ptr(m: &dyn crate::mem::Memory, at: u64) -> Result<u64, String> {
     crate::mem::read_u64(m, at).filter(|&p| crate::mem::plausible(p)).ok_or_else(|| "pointer unreadable".into())
+}
+
+/// The GUIDs of the placed things the save keeps a state for, in every region
+/// (`World.RegionStates[].ElementStates[].Identifier`), as `XXXXXXXX-XXXXXXXX-…` like the
+/// survey's.
+fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u64) -> HashSet<String> {
+    let mut out = HashSet::new();
+    let Some((at, p)) = n.path(m, save, &["World", "RegionStates"]) else { return out };
+    let size = |field: u64| n.inner_of(m, field).and_then(|i| crate::mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
+    let region_size = size(p.field);
+    let Some(region_struct) = n.inner_of(m, p.field).and_then(|i| n.struct_of(m, i)) else { return out };
+    let Some(states) = n.find(m, region_struct, "ElementStates") else { return out };
+    let element_size = size(states.field);
+    if region_size == 0 || element_size < 16 {
+        return out;
+    }
+    for region in crate::actors::array_of(m, at, region_size, 64) {
+        for e in crate::actors::array_of(m, region + states.offset as u64, element_size, 100_000) {
+            let mut g = [0u8; 16];
+            if m.read(e, &mut g) {
+                let part = |i: usize| u32::from_le_bytes(g[i * 4..i * 4 + 4].try_into().unwrap());
+                out.insert(format!("{:08X}-{:08X}-{:08X}-{:08X}", part(0), part(1), part(2), part(3)));
+            }
+        }
+    }
+    out
 }
 
 pub fn attach() -> Result<Attached, String> {
@@ -236,6 +272,15 @@ impl Attached {
             g.save = save;
             g.knowledge = Some(knowledge::read(n, m, save).ok_or("the save state could not be read")?);
             g.knowledge_read = Some(Instant::now());
+            // The same by name, for the survey.
+            let g = &mut *g;
+            let k = g.knowledge.as_ref().unwrap();
+            let mut name = |i: u32| g.name_cache.entry(i).or_insert_with(|| n.get(m, i).unwrap_or_default()).clone();
+            g.known_facts = k.facts.iter().map(|&i| name(i)).collect();
+            g.known_tags = k.tags.iter().map(|&i| name(i)).collect();
+            g.held = self.held_items();
+            g.saved = saved_guids(m, n, save);
+            g.fact_keys = g.quests.fact_keys();
         }
         let actors = self.scanner.borrow().actors_offset().ok_or("actors not scanned yet")?;
         {
@@ -254,7 +299,15 @@ impl Attached {
             g.nav.step(m, n, g.quests.nav_actors());
         }
         let k = g.knowledge.clone().unwrap();
-        Ok((g.goals.evaluate(m, &k, chain.location), k))
+        let mut goals = g.goals.evaluate(m, &k, chain.location);
+        // What the survey knows of this world beyond what is loaded.
+        let g = &mut *g;
+        let survey = g.survey.get_or_insert_with(|| crate::survey::Survey::load(&crate::paths::data_dir().join("survey")));
+        if let Ok(world) = chain.world(m, &self.anchors) {
+            let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved };
+            goals.extend(survey.goals(crate::survey::Survey::world_of(&world), &known, &g.goals.loaded, &g.fact_keys));
+        }
+        Ok((goals, k))
     }
 
     /// The quest journal against what the hero knows now — empty until its first pass.
@@ -264,6 +317,33 @@ impl Attached {
             (Some(k), true) => g.quests.journal(k, &crate::quests::deed_states(&self.game, &self.anchors.names, g.save)),
             _ => Vec::new(),
         }
+    }
+
+    /// The item assets the hero holds, by name.
+    fn held_items(&self) -> HashSet<String> {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let Ok(inv) = self.inventory() else { return HashSet::new() };
+        let Some(items) = n.field(m, inv, "Items") else { return HashSet::new() };
+        crate::actors::array(m, inv + items.offset as u64, 4096)
+            .into_iter()
+            .filter_map(|item| {
+                let data = n.field(m, item, "ItemData")?;
+                let def = crate::mem::read_u64(m, item + data.offset as u64).filter(|&p| crate::mem::plausible(p))?;
+                n.object(m, def)
+            })
+            .collect()
+    }
+
+    /// For each quest under way, the places it needs in every world (from the survey).
+    pub fn needs(&self, journal: &[crate::quests::Quest]) -> Vec<(String, Vec<crate::survey::Need>)> {
+        let g = self.guide.borrow();
+        let Some(survey) = g.survey.as_ref().filter(|s| !s.is_empty()) else { return Vec::new() };
+        let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved };
+        journal
+            .iter()
+            .filter(|q| q.active())
+            .map(|q| (q.key.clone(), survey.needs(&q.key, q.tags.as_deref(), &known, &g.fact_keys)))
+            .collect()
     }
 
     /// The navmesh as last read (shared, not copied).
@@ -316,6 +396,8 @@ pub struct Snapshot {
     pub obstacles: Arc<Scene>,
     /// The game's navmesh: the route's first choice.
     pub nav: Arc<crate::navmesh::NavMesh>,
+    /// For each quest under way, what it needs in every world (the survey).
+    pub needs: Vec<(String, Vec<crate::survey::Need>)>,
     /// Saved positions: (world, where).
     pub slots: [Option<(String, [f64; 3])>; SLOTS],
 }
@@ -408,6 +490,7 @@ impl Engine {
             things: Vec::new(),
             footprints: Arc::default(),
             goals: Vec::new(),
+            needs: Vec::new(),
             nav: Default::default(),
             journal: Vec::new(),
             paused: false,
@@ -438,6 +521,7 @@ impl Engine {
                     Ok((g, _)) => {
                         snap.goals = g;
                         snap.journal = a.journal();
+                        snap.needs = a.needs(&snap.journal);
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }

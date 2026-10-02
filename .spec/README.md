@@ -16,6 +16,7 @@
 | 부록 | [CHEATS-RESEARCH.md](CHEATS-RESEARCH.md) | 치트 확장 조사: 기존 트레이너·테이블, 메모리 프로브(인벤토리 수량 +0x48), 계수 치트가 안 된 이유(D12), 데이터 / 코드 패치 / UE4SS 단계 제안 |
 | 부록 | [DOCTOR.md](DOCTOR.md) | doctor 확장: inspect·find·dump·watch·scan — 반사 기반 조회와 네이티브 필드 찾기 (UE4SS 대신 바깥에서) |
 | 부록 | [QUESTS.md](QUESTS.md) | 메인 스토리 길안내 조사 + §4 구현: FText 읽기, 선행(서브퀘스트), 퀘스트 저널·추적기·따라가기 |
+| 부록 | [ITEMS.md](ITEMS.md) | 퀘스트 아이템 전수조사 설계: pak 의 WP 셀 → 오프라인 DB, 세이브 Guid 로 상태 판정, 런타임 합치기 |
 | 부록 | [MAP.md](MAP.md) | 미니맵 3단계: 게임 에셋 조사(AES·retoc·월드맵 텍스처), 결론, 월드에서 지도 만들기 진행 기록 |
 
 `docs/` 와의 차이: `docs/` 는 저장소를 보는 사람에게 설명하는 문서(영어)이고,

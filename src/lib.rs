@@ -27,6 +27,8 @@ pub mod paths;
 pub mod player;
 pub mod probe;
 pub mod quests;
+pub mod survey;
+pub mod usmap;
 pub mod raster;
 pub mod relief;
 pub mod settings;

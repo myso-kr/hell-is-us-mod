@@ -581,6 +581,44 @@ impl Panel {
             let failed = journal.iter().filter(|q| q.status == Status::Failed).count();
             note(t, format!("완료 {done}개 · 실패 {failed}개"));
             note(t, "영어로 나오는 선행 이름은 게임이 아직 보여 주지 않은 것 — 데이터패드의 탐험 → 선행에서 보면 한국어로 바뀝니다");
+            // What the followed quest needs, from the survey of every world.
+            let needs = snap
+                .and_then(|s| s.needs.iter().find(|(k, _)| Some(k) == followed.as_ref()))
+                .map(|(_, n)| n.clone())
+                .unwrap_or_default();
+            let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+            let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+            let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+            if needs.is_empty() {
+                note(t, "필요한 것: 조사 DB 없음 — `hiumod doctor survey` 를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다");
+            } else {
+                let left = needs.iter().filter(|x| !x.done).count();
+                text(t, RichText::new(format!("필요한 것 — 남은 {left} / {}", needs.len())).strong());
+                // This world's, nearest first: press to guide there.
+                let mut mine: Vec<&crate::survey::Need> =
+                    needs.iter().filter(|x| !x.done && Some(&x.world) == here_world.as_ref()).collect();
+                let d = |x: &crate::survey::Need| here.map_or(0.0, |h| (x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0);
+                mine.sort_by(|a, b| d(a).total_cmp(&d(b)));
+                for x in mine.iter().take(8) {
+                    let label = format!("{} — {} ({})", x.what, x.label, crate::raster::distance(d(x)));
+                    if tw::pick(t, state.target == Some(x.id), label) {
+                        // The loaded one if it is loaded (live goals have their own ids).
+                        let live = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0).map(|g| g.id);
+                        state.target = Some(live.unwrap_or(x.id));
+                        state.chosen = true;
+                        state.route = true;
+                    }
+                }
+                // Other worlds: how many, where.
+                let mut elsewhere: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
+                for x in needs.iter().filter(|x| !x.done && Some(&x.world) != here_world.as_ref()) {
+                    *elsewhere.entry(x.world.as_str()).or_default() += 1;
+                }
+                if !elsewhere.is_empty() {
+                    let list: Vec<String> = elsewhere.iter().map(|(w, n)| format!("{w} {n}")).collect();
+                    note(t, format!("다른 지역 (장갑차로 이동): {}", list.join(" · ")));
+                }
+            }
             if let Some(p) = pick {
                 state.quest = p;
                 // Guide anew, to the newly followed quest.

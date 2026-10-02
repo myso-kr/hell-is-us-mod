@@ -170,3 +170,19 @@ been verified in play yet.
   a locked door or a puzzle) gets a route to the nearest reachable point and a
   dashed last leg. Auto guiding then goes first to something reachable near it
   (a note, a key, a lever).
+- `hiumod doctor usmap` writes a .usmap of the live reflection. The new
+  `tools/survey` (C# with CUE4Parse) reads every World Partition map of the game and
+  writes what hands something out (pickups, devices, markers, NPC conversations,
+  hand-overs) with world positions and save GUIDs to `Mods\survey`. That is 1,174
+  actors in 11 worlds, including every main-quest item.
+- The survey is in the game. `hiumod doctor survey` builds the mappings and runs
+  the tool, which now finds the AES key itself. Places from the survey that are not
+  loaded become goals. The panel's quest card lists what the followed quest needs
+  in every world: what's left, nearest first, click to guide; other worlds by count.
+  The tracker sums it up ("필요한 것: 이 지역 n곳 · 다른 지역 m곳").
+- What has been taken is read from the save. A placed thing's GUID under the save's
+  region element states means it was picked up or used (verified by picking up a
+  photo). The survey's needs and goals use that before facts, tags and inventory.
+- The quest journal is ready in about 3.5 s instead of 15–20 s. Its pass over every
+  object now runs on a time budget: 120 ms a step until the journal is first built,
+  25 ms after that.

@@ -26,3 +26,14 @@ https://github.com/linebender/tiny-skia), linked into the binary from crates.io.
 - taffy 0.9 — https://github.com/DioxusLabs/taffy — MIT
 
 The panel's Flexbox and Grid layout. Linked as crates; nothing vendored.
+
+## serde_json
+
+`serde_json` (MIT OR Apache-2.0) reads the survey's JSON (`src/survey.rs`).
+
+## CUE4Parse (tools/survey)
+
+`tools/survey` uses CUE4Parse 1.2.2 (Apache-2.0, https://github.com/FabianFG/CUE4Parse) from
+NuGet to read the game's cooked assets. It is a separate tool, not linked into
+`hiumod`. It decompresses with Oodle (`oo2core_9_win64.dll`), which is downloaded to
+the player's own `Mods\tools` and never redistributed.
