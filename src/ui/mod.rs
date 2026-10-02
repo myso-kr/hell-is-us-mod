@@ -68,6 +68,19 @@ pub struct Shared {
     pub quit: AtomicBool,
 }
 
+/// Back the saves up after each write the game makes (backup.rs), until the panel quits.
+fn backups(shared: Arc<Shared>) {
+    let mut watch = crate::backup::Watch::default();
+    while !shared.quit.load(Ordering::SeqCst) {
+        std::thread::sleep(Duration::from_secs(2));
+        match watch.poll() {
+            Some(Ok(to)) => crate::journal::line(&format!("save backed up to {}", to.display())),
+            Some(Err(e)) => crate::journal::line(&format!("save backup failed: {e}")),
+            None => {}
+        }
+    }
+}
+
 /// Ten readings a second: the minimap turns with the camera from these, and at four
 /// a second it visibly stepped.
 const STEP: Duration = Duration::from_millis(100);
@@ -229,6 +242,8 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
                 threads.push(std::thread::spawn(move || hotkey::watch(s, c)));
                 let s = shared.clone();
                 threads.push(std::thread::spawn(move || minimap::run(s)));
+                let s = shared.clone();
+                threads.push(std::thread::spawn(move || backups(s)));
                 Ok(Box::new(panel::Panel::new(shared, tx)))
             }),
         )

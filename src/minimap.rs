@@ -21,6 +21,199 @@ const NEAR: f32 = 500.0;
 
 pub type Point = [f32; 3];
 
+/// What a map pin marks — the player's own note to come back to. Each kind has its
+/// icon in `assets/pins/<word>.svg`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum PinKind {
+    LockedDoor,
+    LockedChest,
+    LymbicLock,
+    Puzzle,
+    Code,
+    KeyNeeded,
+    ItemLater,
+    Merchant,
+    Npc,
+    Quest,
+    Danger,
+    Boss,
+    Timeloop,
+    Save,
+    Shortcut,
+    Ladder,
+    DeadEnd,
+    Water,
+    View,
+    Treasure,
+    Note,
+    Home,
+    Question,
+    #[default]
+    Mark,
+}
+
+impl PinKind {
+    pub const ALL: [PinKind; 24] = [
+        PinKind::LockedDoor,
+        PinKind::LockedChest,
+        PinKind::LymbicLock,
+        PinKind::Puzzle,
+        PinKind::Code,
+        PinKind::KeyNeeded,
+        PinKind::ItemLater,
+        PinKind::Merchant,
+        PinKind::Npc,
+        PinKind::Quest,
+        PinKind::Danger,
+        PinKind::Boss,
+        PinKind::Timeloop,
+        PinKind::Save,
+        PinKind::Shortcut,
+        PinKind::Ladder,
+        PinKind::DeadEnd,
+        PinKind::Water,
+        PinKind::View,
+        PinKind::Treasure,
+        PinKind::Note,
+        PinKind::Home,
+        PinKind::Question,
+        PinKind::Mark,
+    ];
+
+    /// Its word in `minimap.txt`, and its icon's file name.
+    pub fn word(self) -> &'static str {
+        match self {
+            PinKind::LockedDoor => "locked_door",
+            PinKind::LockedChest => "locked_chest",
+            PinKind::LymbicLock => "lymbic_lock",
+            PinKind::Puzzle => "puzzle",
+            PinKind::Code => "code",
+            PinKind::KeyNeeded => "key_needed",
+            PinKind::ItemLater => "item_later",
+            PinKind::Merchant => "merchant",
+            PinKind::Npc => "npc",
+            PinKind::Quest => "quest",
+            PinKind::Danger => "danger",
+            PinKind::Boss => "boss",
+            PinKind::Timeloop => "timeloop",
+            PinKind::Save => "save",
+            PinKind::Shortcut => "shortcut",
+            PinKind::Ladder => "ladder",
+            PinKind::DeadEnd => "dead_end",
+            PinKind::Water => "water",
+            PinKind::View => "view",
+            PinKind::Treasure => "treasure",
+            PinKind::Note => "note",
+            PinKind::Home => "home",
+            PinKind::Question => "question",
+            PinKind::Mark => "mark",
+        }
+    }
+
+    /// A word from the file; the first pins' words (`locked`, `later`) still read.
+    pub fn parse(w: &str) -> Option<PinKind> {
+        match w {
+            "locked" => Some(PinKind::LockedDoor),
+            "later" => Some(PinKind::ItemLater),
+            _ => PinKind::ALL.into_iter().find(|k| k.word() == w),
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            PinKind::LockedDoor => "잠긴 문",
+            PinKind::LockedChest => "잠긴 상자",
+            PinKind::LymbicLock => "림빅 잠금",
+            PinKind::Puzzle => "퍼즐",
+            PinKind::Code => "코드·암호",
+            PinKind::KeyNeeded => "열쇠 필요",
+            PinKind::ItemLater => "나중에 주울 것",
+            PinKind::Merchant => "상인",
+            PinKind::Npc => "만날 사람",
+            PinKind::Quest => "퀘스트 단서",
+            PinKind::Danger => "위험",
+            PinKind::Boss => "강적",
+            PinKind::Timeloop => "타임루프",
+            PinKind::Save => "저장 지점",
+            PinKind::Shortcut => "지름길",
+            PinKind::Ladder => "오를 곳",
+            PinKind::DeadEnd => "막다른 길",
+            PinKind::Water => "물·건널 곳",
+            PinKind::View => "둘러볼 곳",
+            PinKind::Treasure => "보물",
+            PinKind::Note => "메모",
+            PinKind::Home => "거점",
+            PinKind::Question => "모르는 것",
+            PinKind::Mark => "표시",
+        }
+    }
+
+    /// Its icon's colour, for the compass and lists.
+    pub fn rgb(self) -> [u8; 3] {
+        match self {
+            PinKind::LockedDoor => [217, 73, 61],
+            PinKind::LockedChest => [192, 96, 58],
+            PinKind::LymbicLock => [138, 79, 216],
+            PinKind::Puzzle => [166, 91, 232],
+            PinKind::Code => [106, 111, 224],
+            PinKind::KeyNeeded => [217, 139, 43],
+            PinKind::ItemLater => [232, 194, 58],
+            PinKind::Merchant => [63, 174, 106],
+            PinKind::Npc => [62, 143, 224],
+            PinKind::Quest => [232, 79, 180],
+            PinKind::Danger => [224, 112, 42],
+            PinKind::Boss => [184, 50, 58],
+            PinKind::Timeloop => [125, 95, 224],
+            PinKind::Save => [232, 162, 58],
+            PinKind::Shortcut => [47, 184, 176],
+            PinKind::Ladder => [91, 122, 166],
+            PinKind::DeadEnd => [125, 135, 150],
+            PinKind::Water => [47, 134, 200],
+            PinKind::View => [63, 168, 160],
+            PinKind::Treasure => [212, 167, 44],
+            PinKind::Note => [168, 135, 92],
+            PinKind::Home => [79, 154, 98],
+            PinKind::Question => [122, 138, 160],
+            PinKind::Mark => [110, 205, 255],
+        }
+    }
+}
+
+/// A pin on the map: where, what kind, and the player's note.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Marker {
+    pub at: Point,
+    pub kind: PinKind,
+    pub note: String,
+}
+
+/// Map pins guided to as goals carry ids with bit 62 set (and 63 clear: the survey's).
+pub const PIN_BIT: u64 = 1 << 62;
+
+pub fn is_pin(id: u64) -> bool {
+    id & (3 << 62) == PIN_BIT
+}
+
+impl Marker {
+    /// A stable id: the world and the spot, hashed — kept while the pin stays put.
+    pub fn id(&self, world: &str) -> u64 {
+        let mut h: u64 = 0xcbf2_9ce4_8422_2325;
+        for b in world.bytes().chain(format!("{:.0},{:.0},{:.0}", self.at[0], self.at[1], self.at[2]).bytes()) {
+            h = (h ^ b as u64).wrapping_mul(0x0100_0000_01b3);
+        }
+        (h & !(3 << 62)) | PIN_BIT
+    }
+
+    /// What the guide calls it.
+    pub fn title(&self) -> String {
+        if self.note.trim().is_empty() {
+            format!("핀: {}", self.kind.label())
+        } else {
+            format!("핀: {}", self.note.trim())
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct MapState {
     /// Which map is up: none, the minimap, or the big map — and which of those the
@@ -62,6 +255,9 @@ pub struct MapState {
     /// The target was picked by hand (the goal list, the cycle key): auto guiding
     /// leaves it until it is used up. Not kept across runs.
     pub chosen: bool,
+    /// A place picked in the panel that is no goal of the moment (a collectible, an NPC
+    /// out of range): (world, id, where, label). The overlay guides to it as to a goal.
+    pub adhoc: Option<(String, u64, Point, String)>,
     /// Goals the player skipped (done in a way the guide could not see): auto guiding
     /// passes them by this run.
     pub skipped: std::collections::HashSet<u64>,
@@ -85,7 +281,9 @@ pub struct MapState {
     pub target: Option<u64>,
     /// Per world: the trail, with `None` where it breaks.
     pub trails: BTreeMap<String, Vec<Option<Point>>>,
-    pub markers: BTreeMap<String, Vec<Point>>,
+    pub markers: BTreeMap<String, Vec<Marker>>,
+    /// The kind the marker key's next pin gets.
+    pub pin_kind: PinKind,
     /// Changed since last saved.
     pub dirty: bool,
 }
@@ -113,6 +311,7 @@ impl Default for MapState {
             tracker: true,
             chosen: false,
             skipped: Default::default(),
+            adhoc: None,
             target: None,
             north_yaw: 270.0,
             big_radius_m: 250.0,
@@ -123,6 +322,7 @@ impl Default for MapState {
             route: true,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
+            pin_kind: PinKind::Mark,
             dirty: false,
         }
     }
@@ -158,11 +358,11 @@ impl MapState {
     pub fn toggle_marker(&mut self, world: &str, p: Point) -> bool {
         let list = self.markers.entry(world.to_string()).or_default();
         self.dirty = true;
-        if let Some(i) = list.iter().position(|m| dist(*m, p) < NEAR) {
+        if let Some(i) = list.iter().position(|m| dist(m.at, p) < NEAR) {
             list.remove(i);
             false
         } else {
-            list.push(p);
+            list.push(Marker { at: p, kind: self.pin_kind, note: String::new() });
             true
         }
     }
@@ -211,9 +411,11 @@ impl MapState {
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
         }
+        out += &format!("pin_kind {}\n", self.pin_kind.word());
         for (world, list) in &self.markers {
             for m in list {
-                out += &format!("marker {world} {} {} {}\n", m[0], m[1], m[2]);
+                let note = m.note.replace(['\n', '\r'], " ");
+                out += &format!("marker {world} {} {} {} {} {note}\n", m.at[0], m.at[1], m.at[2], m.kind.word());
             }
         }
         for (world, trail) in &self.trails {
@@ -330,9 +532,13 @@ impl MapState {
                         s.marker_key = k;
                     }
                 }
-                ["marker", w, ..] if f.len() == 5 => {
-                    if let Some(p) = point(&f[2..]) {
-                        s.markers.entry(w.to_string()).or_default().push(p);
+                ["pin_kind", v] => s.pin_kind = PinKind::parse(v).unwrap_or_default(),
+                // `marker <world> x y z [kind [note words…]]` — older files stop at z.
+                ["marker", w, ..] if f.len() >= 5 => {
+                    if let Some(p) = point(&f[2..5]) {
+                        let kind = f.get(5).and_then(|k| PinKind::parse(k)).unwrap_or_default();
+                        let note = f.get(6..).map(|n| n.join(" ")).unwrap_or_default();
+                        s.markers.entry(w.to_string()).or_default().push(Marker { at: p, kind, note });
                     }
                 }
                 ["trail", w, ..] if f.len() == 5 => {
@@ -623,12 +829,21 @@ mod tests {
     }
 
     #[test]
+    fn old_marker_lines_still_read() {
+        let s = MapState::parse("marker W 1 2 3\n");
+        assert_eq!(s.markers["W"], [Marker { at: [1.0, 2.0, 3.0], kind: PinKind::Mark, note: String::new() }]);
+        let m = &MapState::parse("marker W 1 2 3 locked vault door B\n").markers["W"][0];
+        assert_eq!((m.kind, m.note.as_str()), (PinKind::LockedDoor, "vault door B"));
+        assert!(is_pin(m.id("W")) && !is_pin(m.id("W") | 1 << 63));
+    }
+
+    #[test]
     fn f6_beside_a_marker_removes_it() {
         let mut s = MapState::default();
         assert!(s.toggle_marker("W", [0.0, 0.0, 0.0]));
         assert!(s.toggle_marker("W", [1000.0, 0.0, 0.0]));
         assert!(!s.toggle_marker("W", [100.0, 100.0, 0.0]));
-        assert_eq!(s.markers["W"], [[1000.0, 0.0, 0.0]]);
+        assert_eq!(s.markers["W"].iter().map(|m| m.at).collect::<Vec<_>>(), [[1000.0, 0.0, 0.0]]);
     }
 
     #[test]
@@ -660,6 +875,7 @@ mod tests {
             ..MapState::default()
         };
         s.toggle_marker("Map_A", [1.5, -2.0, 3.0]);
+        s.markers.get_mut("Map_A").unwrap()[0] = Marker { at: [1.5, -2.0, 3.0], kind: PinKind::Puzzle, note: "pillar order".into() };
         s.observe("Map_A", [0.0, 0.0, 0.0]);
         s.observe("Map_A", [90_000.0, 0.0, 0.0]);
         s.dirty = false;

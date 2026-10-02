@@ -7,6 +7,7 @@
 //! format — so drawing one is a blend per pixel and nothing more.
 
 use crate::actors::{Kind, Sub};
+use crate::minimap::PinKind;
 
 /// A rasterised icon, `size` px square.
 pub struct Icon {
@@ -44,6 +45,36 @@ fn source(s: Sub) -> &'static str {
     }
 }
 
+/// A map pin's SVG (`assets/pins/<word>.svg`).
+fn pin_source(k: PinKind) -> &'static str {
+    match k {
+        PinKind::LockedDoor => include_str!("../assets/pins/locked_door.svg"),
+        PinKind::LockedChest => include_str!("../assets/pins/locked_chest.svg"),
+        PinKind::LymbicLock => include_str!("../assets/pins/lymbic_lock.svg"),
+        PinKind::Puzzle => include_str!("../assets/pins/puzzle.svg"),
+        PinKind::Code => include_str!("../assets/pins/code.svg"),
+        PinKind::KeyNeeded => include_str!("../assets/pins/key_needed.svg"),
+        PinKind::ItemLater => include_str!("../assets/pins/item_later.svg"),
+        PinKind::Merchant => include_str!("../assets/pins/merchant.svg"),
+        PinKind::Npc => include_str!("../assets/pins/npc.svg"),
+        PinKind::Quest => include_str!("../assets/pins/quest.svg"),
+        PinKind::Danger => include_str!("../assets/pins/danger.svg"),
+        PinKind::Boss => include_str!("../assets/pins/boss.svg"),
+        PinKind::Timeloop => include_str!("../assets/pins/timeloop.svg"),
+        PinKind::Save => include_str!("../assets/pins/save.svg"),
+        PinKind::Shortcut => include_str!("../assets/pins/shortcut.svg"),
+        PinKind::Ladder => include_str!("../assets/pins/ladder.svg"),
+        PinKind::DeadEnd => include_str!("../assets/pins/dead_end.svg"),
+        PinKind::Water => include_str!("../assets/pins/water.svg"),
+        PinKind::View => include_str!("../assets/pins/view.svg"),
+        PinKind::Treasure => include_str!("../assets/pins/treasure.svg"),
+        PinKind::Note => include_str!("../assets/pins/note.svg"),
+        PinKind::Home => include_str!("../assets/pins/home.svg"),
+        PinKind::Question => include_str!("../assets/pins/question.svg"),
+        PinKind::Mark => include_str!("../assets/pins/mark.svg"),
+    }
+}
+
 pub fn render(svg: &str, size: usize) -> Result<Icon, String> {
     use resvg::{tiny_skia, usvg};
     let tree = usvg::Tree::from_str(svg, &usvg::Options::default()).map_err(|e| format!("icon: {e}"))?;
@@ -60,16 +91,23 @@ pub fn render(svg: &str, size: usize) -> Result<Icon, String> {
     Ok(Icon { size, px })
 }
 
-/// One icon per sort, in `Sub::ALL` order.
-pub struct Icons(pub Vec<Icon>);
+/// One icon per sort, in `Sub::ALL` order; and one per map pin kind, a little larger.
+pub struct Icons(pub Vec<Icon>, pub Vec<Icon>);
 
 impl Icons {
     pub fn new(size: usize) -> Result<Icons, String> {
-        Sub::ALL.iter().map(|&s| render(source(s), size)).collect::<Result<_, _>>().map(Icons)
+        let sorts = Sub::ALL.iter().map(|&s| render(source(s), size)).collect::<Result<_, _>>()?;
+        let pin = size + size / 4;
+        let pins = PinKind::ALL.iter().map(|&k| render(pin_source(k), pin)).collect::<Result<_, _>>()?;
+        Ok(Icons(sorts, pins))
     }
 
     pub fn get(&self, s: Sub) -> &Icon {
         &self.0[Sub::ALL.iter().position(|&x| x == s).unwrap()]
+    }
+
+    pub fn pin(&self, k: PinKind) -> &Icon {
+        &self.1[PinKind::ALL.iter().position(|&x| x == k).unwrap()]
     }
 
     /// A kind's usual icon (its first sort's), for where only the kind is known.
@@ -93,5 +131,9 @@ mod tests {
             assert_eq!(i.px[0] >> 24, 0, "{s:?}: corner should be clear");
         }
         assert_eq!(icons.of_kind(Kind::Enemy).px, icons.get(Sub::Feral).px);
+        for k in PinKind::ALL {
+            let i = icons.pin(k);
+            assert!(i.px.iter().any(|p| p >> 24 > 200), "{k:?}: drawn");
+        }
     }
 }

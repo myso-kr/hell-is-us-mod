@@ -26,6 +26,11 @@ fn now() -> String {
     String::new()
 }
 
+/// The local time for a file or folder name: `2026-10-03_07-43-09`.
+pub fn stamp() -> String {
+    now().replace(' ', "_").replace(':', "-")
+}
+
 /// Append one line. Never fails loudly: a log that cannot be written must not stop
 /// the thing it was logging.
 pub fn line(text: &str) {

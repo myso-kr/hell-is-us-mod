@@ -61,6 +61,36 @@ pub enum Kind {
     /// The main story's investigation, by its number (1–6).
     Main(u32),
     GoodDeed,
+    /// A mystery: a puzzle, a locked chest or door, a hidden treasure.
+    Mystery,
+    /// A timeloop: an area to close by defeating what holds it.
+    Timeloop,
+}
+
+impl Kind {
+    /// The datapad's three lists of secrets, as `SecretsSubsystem` and the save's
+    /// `SecretsState` name their arrays.
+    pub const SECRETS: [(Kind, &'static str); 3] =
+        [(Kind::GoodDeed, "GoodDeeds"), (Kind::Mystery, "Mysteries"), (Kind::Timeloop, "Timeloops")];
+
+    /// What the panel and the tracker call it.
+    pub fn label(self) -> String {
+        match self {
+            Kind::Main(n) => format!("메인 {n}"),
+            Kind::GoodDeed => "선행".into(),
+            Kind::Mystery => "미스터리".into(),
+            Kind::Timeloop => "타임루프".into(),
+        }
+    }
+
+    /// Its word in `quests.txt`.
+    fn word(self) -> &'static str {
+        match self {
+            Kind::Mystery => "mystery",
+            Kind::Timeloop => "timeloop",
+            _ => "deed",
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -107,9 +137,10 @@ struct Main {
     facts: Vec<Fact>,
 }
 
-/// A good deed as the data table gives it.
+/// A good deed, a mystery or a timeloop, as `SecretsSubsystem` gives it.
 #[derive(Clone, Debug, PartialEq)]
 struct Deed {
+    kind: Kind,
     title: String,
     tags: String,
     /// Where it happens: its `LocationNameFact`'s text.
@@ -184,7 +215,14 @@ fn unhex(s: &str) -> Option<[u8; 16]> {
 fn render(deeds: &BTreeMap<[u8; 16], Deed>, seen: &HashMap<String, (String, String)>) -> String {
     let mut out = String::new();
     for (g, d) in deeds {
-        out += &format!("deed\t{}\t{}\t{}\t{}\n", hex(g), d.tags, d.title.replace(['\t', '\n'], " "), d.place.replace(['\t', '\n'], " "));
+        out += &format!(
+            "{}\t{}\t{}\t{}\t{}\n",
+            d.kind.word(),
+            hex(g),
+            d.tags,
+            d.title.replace(['\t', '\n'], " "),
+            d.place.replace(['\t', '\n'], " ")
+        );
     }
     let mut mains: Vec<_> = seen.iter().collect();
     mains.sort();
@@ -202,10 +240,15 @@ fn parse(text: &str) -> Cache {
     for line in text.lines() {
         let f: Vec<&str> = line.split('\t').collect();
         match f[..] {
-            ["deed", g, tags, title, ref place @ ..] => {
+            [word @ ("deed" | "mystery" | "timeloop"), g, tags, title, ref place @ ..] => {
                 if let Some(g) = unhex(g) {
                     let place = place.first().unwrap_or(&"").to_string();
-                    deeds.insert(g, Deed { title: title.to_string(), tags: tags.to_string(), place });
+                    let kind = match word {
+                        "mystery" => Kind::Mystery,
+                        "timeloop" => Kind::Timeloop,
+                        _ => Kind::GoodDeed,
+                    };
+                    deeds.insert(g, Deed { kind, title: title.to_string(), tags: tags.to_string(), place });
                 }
             }
             ["main", k, name, desc] => {
@@ -263,6 +306,11 @@ impl Quests {
     /// The loaded NavigationDataChunkActors, as of the last complete pass.
     pub fn nav_actors(&self) -> &[u64] {
         &self.nav
+    }
+
+    /// Every secret of a kind the game has, begun or not: (journal key, title, tag stem).
+    pub fn secrets(&self, kind: Kind) -> Vec<(String, String, String)> {
+        self.deeds.iter().filter(|(_, d)| d.kind == kind).map(|(g, d)| (hex(g), d.title.clone(), d.tags.clone())).collect()
     }
 
     /// Whether the journal has been put together at least once.
@@ -394,7 +442,16 @@ impl Quests {
     /// itself (localised); one it has not is looked up in `UI_Secrets_ST` (English),
     /// and never replaces a localised one already kept. Whether anything changed.
     fn read_deeds(&mut self, m: &dyn Memory, n: &Names, secrets: u64) -> bool {
-        let Some((at, p)) = n.path(m, secrets, &["GoodDeeds"]) else { return false };
+        let mut changed = false;
+        for (kind, array) in Kind::SECRETS {
+            changed |= self.read_secrets(m, n, secrets, kind, array);
+        }
+        changed
+    }
+
+    /// One of the three lists — mysteries and timeloops are laid out as good deeds are.
+    fn read_secrets(&mut self, m: &dyn Memory, n: &Names, secrets: u64, kind: Kind, array: &str) -> bool {
+        let Some((at, p)) = n.path(m, secrets, &[array]) else { return false };
         let size = n.inner_of(m, p.field).and_then(|i| mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
         let inner = n.inner_of(m, p.field).and_then(|inner| n.struct_of(m, inner));
         let title_at = inner.and_then(|st| n.find(m, st, "Title")).map(|f| f.offset as u64);
@@ -433,7 +490,7 @@ impl Quests {
                 .unwrap_or_default();
             let old = self.deeds.get(&g);
             let place = if place.is_empty() { old.map(|d| d.place.clone()).unwrap_or_default() } else { place };
-            let deed = Deed { title, tags, place };
+            let deed = Deed { kind, title, tags, place };
             let keep = old.is_some_and(|d| d == &deed || (!local && d.tags == deed.tags && !d.place.is_empty()));
             if !keep {
                 self.deeds.insert(g, deed);
@@ -495,10 +552,11 @@ impl Quests {
                 _ => continue,
             };
             let deed = self.deeds.get(guid);
+            let kind = deed.map_or(Kind::GoodDeed, |d| d.kind);
             out.push(Quest {
                 key: hex(guid),
-                kind: Kind::GoodDeed,
-                name: deed.map_or_else(|| format!("선행 {}", &hex(guid)[..4]), |d| d.title.clone()),
+                kind,
+                name: deed.map_or_else(|| format!("{} {}", kind.label(), &hex(guid)[..4]), |d| d.title.clone()),
                 detail: deed.filter(|d| !d.place.is_empty()).map(|d| format!("장소: {}", d.place)).unwrap_or_default(),
                 status,
                 progress: None,
@@ -540,20 +598,24 @@ fn string_table(m: &dyn Memory, table: u64) -> HashMap<u32, String> {
     out
 }
 
-/// The save's good deeds: (GUID, state) — CharlieSaveGame.Player.SecretsState.GoodDeeds.
+/// The save's good deeds, mysteries and timeloops: (GUID, state) —
+/// CharlieSaveGame.Player.SecretsState.{GoodDeeds, Mysteries, Timeloops}. GUIDs are
+/// unique across the three.
 pub fn deed_states(m: &dyn Memory, n: &Names, save: u64) -> Vec<([u8; 16], u8)> {
-    let Some((at, p)) = n.path(m, save, &["Player", "SecretsState", "GoodDeeds"]) else { return Vec::new() };
-    let size = n.inner_of(m, p.field).and_then(|i| mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
-    let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { return Vec::new() };
-    if size < 0x12 || !mem::plausible(data) || num > 500 {
-        return Vec::new();
-    }
-    (0..num as u64)
-        .filter_map(|i| {
+    let mut out = Vec::new();
+    for (_, array) in Kind::SECRETS {
+        let Some((at, p)) = n.path(m, save, &["Player", "SecretsState", array]) else { continue };
+        let size = n.inner_of(m, p.field).and_then(|i| mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
+        let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { continue };
+        if size < 0x12 || !mem::plausible(data) || num > 500 {
+            continue;
+        }
+        out.extend((0..num as u64).filter_map(|i| {
             let mut b = [0u8; 0x12];
             m.read(data + i * size, &mut b).then(|| (b[..16].try_into().unwrap(), b[0x11]))
-        })
-        .collect()
+        }));
+    }
+    out
 }
 
 /// The quest the guide follows: the one chosen, if it is still under way — else the
@@ -565,7 +627,7 @@ pub fn followed<'a>(journal: &'a [Quest], chosen: Option<&str>) -> Option<&'a Qu
     let mut mains: Vec<&Quest> = journal.iter().filter(|q| matches!(q.kind, Kind::Main(_))).collect();
     mains.sort_by_key(|q| match q.kind {
         Kind::Main(n) => n,
-        Kind::GoodDeed => u32::MAX,
+        _ => u32::MAX,
     });
     mains.iter().find(|q| q.active()).or_else(|| mains.iter().find(|q| q.status == Status::NotStarted)).copied()
 }
@@ -611,7 +673,8 @@ mod tests {
     #[test]
     fn the_cache_round_trips() {
         let mut deeds = BTreeMap::new();
-        deeds.insert([7u8; 16], Deed { title: "헛간 구조".into(), tags: "Secrets.GoodDeeds.BarnRescue".into(), place: "하데아".into() });
+        deeds.insert([7u8; 16], Deed { kind: Kind::GoodDeed, title: "헛간 구조".into(), tags: "Secrets.GoodDeeds.BarnRescue".into(), place: "하데아".into() });
+        deeds.insert([8u8; 16], Deed { kind: Kind::Mystery, title: "Caddell".into(), tags: "Secrets.Mystery.X".into(), place: String::new() });
         let mut seen = HashMap::new();
         seen.insert("Quest01".to_string(), ("가족 재회".to_string(), "부모에 대한 단서".to_string()));
         let (d, s) = parse(&render(&deeds, &seen));

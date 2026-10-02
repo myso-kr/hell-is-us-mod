@@ -4,6 +4,7 @@ pub mod actors;
 pub mod anchors;
 pub mod attr;
 pub mod cheats;
+pub mod backup;
 pub mod cli;
 #[cfg(windows)]
 pub mod engine;
@@ -19,6 +20,7 @@ pub mod knowledge;
 pub mod log;
 pub mod mem;
 pub mod minimap;
+pub mod missables;
 pub mod names;
 pub mod navmesh;
 pub mod obstacles;

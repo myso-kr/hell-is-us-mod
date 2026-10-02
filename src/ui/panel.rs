@@ -90,14 +90,80 @@ fn chosen(c: &Cheat) -> Option<crate::attr::Attr> {
     }
 }
 
+/// A pin kind picker: its colour dot and name, the list of every kind. Whether it changed.
+fn pin_picker(ui: &mut egui::Ui, id: &str, kind: &mut crate::minimap::PinKind) -> bool {
+    let before = *kind;
+    let dot = |k: crate::minimap::PinKind| {
+        let [r, g, b] = k.rgb();
+        RichText::new(format!("● {}", k.label())).color(Color32::from_rgb(r, g, b))
+    };
+    egui::ComboBox::from_id_salt(id).width(118.0).selected_text(dot(*kind)).show_ui(ui, |ui| {
+        for k in crate::minimap::PinKind::ALL {
+            ui.selectable_value(kind, k, dot(k));
+        }
+    });
+    *kind != before
+}
+
+/// Guide to a place the survey names: the live goal there if it is loaded, else the
+/// place itself (the overlay adds it as a goal).
+fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], x: &crate::survey::Need) {
+    let live = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0).map(|g| g.id);
+    match live {
+        Some(id) => state.target = Some(id),
+        None => {
+            state.adhoc = Some((x.world.clone(), x.id, x.at, format!("{} {}", x.what, x.label).trim().to_string()));
+            state.target = Some(x.id);
+        }
+    }
+    state.chosen = true;
+    state.route = true;
+}
+
+/// The tool pages in the sidebar, under the cheat groups.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Tool {
+    Map,
+    Guide,
+    Quests,
+    Collect,
+    Saves,
+    Debug,
+}
+
+impl Tool {
+    const ALL: [Tool; 6] = [Tool::Map, Tool::Guide, Tool::Quests, Tool::Collect, Tool::Saves, Tool::Debug];
+
+    /// Its name in settings.txt.
+    fn id(self) -> &'static str {
+        match self {
+            Tool::Map => "map",
+            Tool::Guide => "guide",
+            Tool::Quests => "quests",
+            Tool::Collect => "collect",
+            Tool::Saves => "saves",
+            Tool::Debug => "debug",
+        }
+    }
+
+    fn label(self) -> &'static str {
+        match self {
+            Tool::Map => "지도",
+            Tool::Guide => "안내",
+            Tool::Quests => "퀘스트",
+            Tool::Collect => "수집",
+            Tool::Saves => "세이브",
+            Tool::Debug => "디버그",
+        }
+    }
+}
+
 pub struct Panel {
     shared: Arc<Shared>,
     tx: Sender<Request>,
     tab: Group,
-    /// The debug tab, which is not a group of cheats.
-    debug: bool,
-    /// The map & guide page: minimap, big map, compass, north, where to go.
-    map: bool,
+    /// A tool page instead of a group of cheats, when one is chosen.
+    tool: Option<Tool>,
     /// Which kinds' finer sorts are unfolded in the map tab.
     unfolded: [bool; 6],
     marks: verify::Marks,
@@ -113,6 +179,11 @@ pub struct Panel {
     /// the last frame (to put the cursor in the console as it opens).
     console: super::console::Console,
     was_visible: bool,
+    /// The collectible sort unfolded in the collect tab.
+    unfolded_collect: Option<&'static str>,
+    /// The save backups, as last listed.
+    backups: Vec<(String, std::path::PathBuf)>,
+    backups_read: Option<Instant>,
     /// The size last asked of the window, so it is asked once per change.
     height: f32,
     width: f32,
@@ -153,8 +224,7 @@ impl Panel {
             shared,
             tx,
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
-            debug: tab == Some("debug"),
-            map: tab == Some("map") || tab == Some("guide"),
+            tool: Tool::ALL.into_iter().find(|t| Some(t.id()) == tab),
             unfolded: [false; 6],
             wanted: resume.clone(),
             keep: saved.keep,
@@ -168,6 +238,9 @@ impl Panel {
             reply: None,
             console: Default::default(),
             was_visible: false,
+            unfolded_collect: None,
+            backups: Vec::new(),
+            backups_read: None,
             height: 0.0,
             width: 0.0,
         }
@@ -196,14 +269,7 @@ impl Panel {
         Settings {
             keep: self.keep,
             tab: Some(
-                if self.debug {
-                    "debug"
-                } else if self.map {
-                    "map"
-                } else {
-                    self.tab.id()
-                }
-                .to_string(),
+                self.tool.map_or(self.tab.id(), Tool::id).to_string(),
             ),
             pos: *self.shared.pos.lock().unwrap(),
             on: self.wanted.iter().map(|a| (a.cheat.to_string(), a.value)).collect(),
@@ -323,18 +389,17 @@ impl Panel {
         for g in Group::ALL {
             let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
             let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
-            if item(ui, !self.debug && !self.map && self.tab == g, text) {
+            if item(ui, self.tool.is_none() && self.tab == g, text) {
                 self.tab = g;
-                (self.debug, self.map) = (false, false);
+                self.tool = None;
             }
         }
         ui.add_space(6.0);
         ui.label(RichText::new("도구").color(DIM).small());
-        if item(ui, self.map, "지도 · 안내".to_string()) {
-            (self.debug, self.map) = (false, true);
-        }
-        if item(ui, self.debug, "디버그".to_string()) {
-            (self.debug, self.map) = (true, false);
+        for tool in Tool::ALL {
+            if item(ui, self.tool == Some(tool), tool.label().to_string()) {
+                self.tool = Some(tool);
+            }
         }
     }
 
@@ -342,8 +407,14 @@ impl Panel {
     /// side while each can be `CARD_MIN` wide, stacked when not.
     fn page(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         match self.tab {
-            _ if self.map => self.map_tab(t, snap),
-            _ if self.debug => block(t, |ui| self.debug_tab(ui, snap)),
+            _ if self.tool == Some(Tool::Debug) => block(t, |ui| self.debug_tab(ui, snap)),
+            _ if self.tool == Some(Tool::Saves) => {
+                t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| {
+                    t.style(tw::col(tw::GAP)).add(|t| self.backups_card(t));
+                    t.style(tw::col(tw::GAP)).add(|t| self.slots_card(t));
+                });
+            }
+            _ if self.tool.is_some() => self.map_tab(t, snap),
             g => t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| {
                 t.style(tw::col(tw::GAP)).add(|t| {
                     card(t, g.label(), |t| self.held(t, g, snap));
@@ -415,18 +486,40 @@ impl Panel {
         let shared = self.shared.clone();
         let mut guard = shared.map.lock().unwrap();
         let before = guard.clone();
-        t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| {
-            t.style(tw::col(tw::GAP)).add(|t| self.map_column(t, &mut guard, snap));
-            t.style(tw::col(tw::GAP)).add(|t| self.guide_column(t, &mut guard, snap));
+        // Two columns of cards per page.
+        t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| match self.tool {
+            Some(Tool::Guide) => {
+                t.style(tw::col(tw::GAP)).add(|t| self.guide_column(t, &mut guard, snap));
+                t.style(tw::col(tw::GAP)).add(|t| self.goals_card(t, &mut guard, snap));
+            }
+            Some(Tool::Collect) => {
+                t.style(tw::col(tw::GAP)).add(|t| self.collection_card(t, &mut guard, snap));
+                t.style(tw::col(tw::GAP)).add(|t| {
+                    self.secrets_card(t, snap);
+                    self.stories_card(t, &mut guard, snap);
+                });
+            }
+            Some(Tool::Quests) => {
+                t.style(tw::col(tw::GAP)).add(|t| self.quests_card(t, &mut guard, snap));
+                t.style(tw::col(tw::GAP)).add(|t| {
+                    self.deadlines_card(t, &mut guard, snap);
+                    self.handovers_card(t, &mut guard, snap);
+                });
+            }
+            _ => {
+                t.style(tw::col(tw::GAP)).add(|t| {
+                    self.map_column(t, &mut guard);
+                    self.keys_card(t, &mut guard);
+                });
+                t.style(tw::col(tw::GAP)).add(|t| self.marks_column(t, &mut guard, snap));
+            }
         });
         if *guard != before {
             guard.dirty = true;
         }
     }
 
-    fn map_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
-        let world = snap.and_then(|s| s.world.clone());
-        let near = snap.map(|s| s.things.clone()).unwrap_or_default();
+    fn map_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
         card(t, "미니맵", |t| {
             field(t, "표시 방식", |t| {
                 for d in crate::minimap::Display::ALL {
@@ -489,6 +582,12 @@ impl Panel {
             field(t, "불투명도", |t| tw::slider(t, &mut state.big_alpha, 20..=100, 1.0, " %"));
         });
 
+    }
+
+    /// What the map shows, and the pins: the map page's second column.
+    fn marks_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let world = snap.and_then(|s| s.world.clone());
+        let near = snap.map(|s| s.things.clone()).unwrap_or_default();
         card(t, "표시할 것", |t| {
             for (i, k) in ThingKind::ALL.into_iter().enumerate() {
                 let [r, g, b] = k.rgb();
@@ -546,16 +645,68 @@ impl Panel {
             }
         });
 
-        card(t, "지나온 길 · 마커", |t| match &world {
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        card(t, "지도 핀 · 지나온 길", |t| match &world {
             Some(wd) => {
+                // The kind the marker key gives the next pin.
+                field(t, format!("새 핀 (F{})", state.marker_key), |t| {
+                    w(t, |ui| {
+                        if pin_picker(ui, "new-pin", &mut state.pin_kind) {
+                            state.dirty = true;
+                        }
+                    });
+                });
+                let count = state.markers.get(wd).map_or(0, Vec::len);
+                if count == 0 {
+                    note(t, format!("이 지역에 핀이 없습니다 — 잠긴 문·퍼즐 앞에서 F{} 를 누르면 꽂힙니다", state.marker_key));
+                }
+                // Nearest first; each: its kind (press to change), a note, guide, remove.
+                let mut order: Vec<usize> = (0..count).collect();
+                if let (Some(h), Some(list)) = (here, state.markers.get(wd)) {
+                    let d = |i: &usize| (list[*i].at[0] - h[0]).hypot(list[*i].at[1] - h[1]);
+                    order.sort_by(|a, b| d(a).total_cmp(&d(b)));
+                }
+                let mut remove = None;
+                for i in order {
+                    let Some(m) = state.markers.get(wd).and_then(|l| l.get(i)).cloned() else { continue };
+                    let id = m.id(wd);
+                    let far = here.map_or(String::new(), |h| crate::raster::distance((m.at[0] - h[0]).hypot(m.at[1] - h[1]) / 100.0));
+                    let mut note_text = m.note.clone();
+                    let mut kind = m.kind;
+                    t.style(tw::row(6.0)).add(|t| {
+                        w(t, |ui| pin_picker(ui, &format!("pin-{i}"), &mut kind));
+                        block(t, |ui| ui.add(egui::TextEdit::singleline(&mut note_text).hint_text("메모").desired_width(f32::INFINITY)));
+                        w(t, |ui| ui.label(RichText::new(far).color(DIM).small()));
+                        if w(t, |ui| ui.selectable_label(state.target == Some(id), "안내")).clicked() {
+                            state.target = Some(id);
+                            state.chosen = true;
+                            state.route = true;
+                        }
+                        if w(t, |ui| ui.small_button("×")).on_hover_text("이 핀 지우기").clicked() {
+                            remove = Some(i);
+                        }
+                    });
+                    if kind != m.kind || note_text != m.note {
+                        if let Some(p) = state.markers.get_mut(wd).and_then(|l| l.get_mut(i)) {
+                            p.kind = kind;
+                            p.note = note_text;
+                        }
+                        state.dirty = true;
+                    }
+                }
+                if let Some(i) = remove {
+                    if let Some(l) = state.markers.get_mut(wd) {
+                        l.remove(i);
+                    }
+                    state.dirty = true;
+                }
                 let trail = state.trails.get(wd).map_or(0, |x| x.iter().flatten().count());
-                let markers = state.markers.get(wd).map_or(0, Vec::len);
-                field(t, "이 지역", |t| text(t, format!("길 {trail}점 · 마커 {markers}개")));
+                field(t, "이 지역", |t| text(t, RichText::new(format!("지나온 길 {trail}점 · 핀 {count}개")).color(DIM)));
                 choices(t, |t| {
                     if w(t, |ui| ui.button("경로 지우기")).clicked() {
                         state.clear_trail(wd);
                     }
-                    if w(t, |ui| ui.button("마커 지우기")).clicked() {
+                    if w(t, |ui| ui.button("핀 모두 지우기")).clicked() {
                         state.clear_markers(wd);
                     }
                 });
@@ -564,9 +715,231 @@ impl Panel {
         });
     }
 
+    /// The game's own save files and when each was last written.
+    fn slots_card(&mut self, t: &mut Tui) {
+        card(t, "세이브 파일", |t| {
+            let Some(dir) = crate::backup::saves() else {
+                note(t, "게임의 세이브 폴더를 찾지 못했습니다");
+                return;
+            };
+            let mut files: Vec<(String, std::time::SystemTime, u64)> = std::fs::read_dir(&dir)
+                .into_iter()
+                .flatten()
+                .flatten()
+                .filter(|e| e.path().extension().is_some_and(|x| x.eq_ignore_ascii_case("sav")))
+                .filter_map(|e| {
+                    let m = e.metadata().ok()?;
+                    Some((e.file_name().to_string_lossy().to_string(), m.modified().ok()?, m.len()))
+                })
+                .collect();
+            files.sort_by_key(|f| std::cmp::Reverse(f.1));
+            for (name, at, len) in files {
+                let ago = at.elapsed().map_or(0, |d| d.as_secs());
+                let when = match ago {
+                    0..60 => "방금".to_string(),
+                    60..3600 => format!("{}분 전", ago / 60),
+                    3600..86400 => format!("{}시간 전", ago / 3600),
+                    _ => format!("{}일 전", ago / 86400),
+                };
+                field(t, name.trim_end_matches(".sav"), |t| text(t, RichText::new(format!("{when} · {} KB", len / 1024)).color(DIM)));
+            }
+            note(t, dir.display().to_string());
+        });
+    }
+
+    /// The save backups (backup.rs): the newest, a backup now, the folder.
+    fn backups_card(&mut self, t: &mut Tui) {
+        // Listed once a second at most: it reads the folder.
+        if self.backups_read.is_none_or(|at| at.elapsed() >= Duration::from_secs(1)) {
+            self.backups = crate::backup::list();
+            self.backups_read = Some(Instant::now());
+        }
+        card(t, "세이브 백업", |t| {
+            note(t, format!("게임이 저장할 때마다 세이브 파일을 복사해 둡니다 (최근 {}개)", crate::backup::KEEP));
+            for (name, _) in self.backups.iter().take(3) {
+                text(t, RichText::new(name.replace('_', " ")).color(DIM).small());
+            }
+            if self.backups.is_empty() {
+                text(t, RichText::new("아직 백업이 없습니다").color(DIM).small());
+            }
+            choices(t, |t| {
+                if w(t, |ui| ui.button("지금 백업")).clicked() {
+                    self.reply = Some(match crate::backup::make("manual") {
+                        Ok(to) => (true, format!("백업함: {}", to.file_name().unwrap_or_default().to_string_lossy()), Instant::now()),
+                        Err(e) => (false, format!("백업 실패: {e}"), Instant::now()),
+                    });
+                    self.backups_read = None;
+                }
+                if w(t, |ui| ui.button("폴더 열기")).clicked() {
+                    let dir = crate::backup::dir();
+                    let _ = std::fs::create_dir_all(&dir);
+                    let _ = std::process::Command::new("explorer").arg(&dir).spawn();
+                }
+            });
+            note(t, r"되돌리려면 게임을 끈 뒤 백업 폴더의 .sav 파일을 세이브 폴더(%LOCALAPPDATA%\HellIsUs\Saved\SaveGames)에 덮어쓰세요");
+        });
+    }
+
+    /// Collectibles placed in the worlds: taken here and everywhere, and the nearest
+    /// left here, per sort (survey.rs `collection`).
+    fn collection_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let list = snap.map(|s| s.collection.clone()).unwrap_or_default();
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        card(t, "수집 진행도", |t| {
+            if list.is_empty() {
+                note(t, "조사 DB 가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요");
+                return;
+            }
+            note(t, "월드에 놓인 것만 셉니다 (NPC 보상·상점은 제외) · 이 지역 / 전체");
+            for c in &list {
+                let open = self.unfolded_collect == Some(c.label);
+                t.style(tw::row(8.0)).add(|t| {
+                    let label = format!("{}  {}/{} · 전체 {}/{}", c.label, c.here.0, c.here.1, c.all.0, c.all.1);
+                    let done = c.here.0 == c.here.1;
+                    if tw::pick(t, open, RichText::new(label).color(if done { DIM } else { Color32::from_gray(225) })) {
+                        self.unfolded_collect = if open { None } else { Some(c.label) };
+                    }
+                });
+                if open {
+                    let mut left = c.left_here.clone();
+                    if let Some(h) = here {
+                        left.sort_by(|a, b| (a.at[0] - h[0]).hypot(a.at[1] - h[1]).total_cmp(&(b.at[0] - h[0]).hypot(b.at[1] - h[1])));
+                    }
+                    for x in left.iter().take(8) {
+                        let far = here.map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0));
+                        if tw::pick(t, state.target == Some(x.id), format!("    {} ({far})", x.label)) {
+                            guide_to(state, &goals, x);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    /// Good deeds, mysteries and timeloops: done of all.
+    fn secrets_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+        use crate::quests::{Kind, Status};
+        let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
+        let totals = snap.map_or([0; 3], |s| s.secret_totals);
+        card(t, "선행 · 미스터리 · 타임루프", |t| {
+            for (i, (kind, _)) in Kind::SECRETS.iter().enumerate() {
+                let of = |s: Status| journal.iter().filter(|q| q.kind == *kind && q.status == s).count();
+                field(t, kind.label(), |t| {
+                    text(t, format!("완료 {} / {} · 진행 중 {} · 실패 {}", of(Status::Completed), totals[i], of(Status::Started), of(Status::Failed)))
+                });
+            }
+        });
+    }
+
+    /// NPCs whose talk still holds something new: here nearest first, elsewhere by count.
+    fn stories_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let list = snap.map(|s| s.stories.clone()).unwrap_or_default();
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        card(t, &format!("들을 이야기가 남은 NPC ({})", list.len()), |t| {
+            note(t, "대화에서 아직 모르는 사실·단서를 줄 수 있는 사람 (갈래가 잠긴 대화도 포함)");
+            let mut mine: Vec<&crate::survey::Need> = list.iter().filter(|x| Some(&x.world) == here_world.as_ref()).collect();
+            if let Some(h) = here {
+                mine.sort_by(|a, b| (a.at[0] - h[0]).hypot(a.at[1] - h[1]).total_cmp(&(b.at[0] - h[0]).hypot(b.at[1] - h[1])));
+            }
+            for x in mine.iter().take(10) {
+                let far = here.map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0));
+                if tw::pick(t, state.target == Some(x.id), format!("{} ({far})", x.label.trim_start_matches("대화: "))) {
+                    guide_to(state, &goals, x);
+                }
+            }
+            let mut elsewhere: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
+            for x in list.iter().filter(|x| Some(&x.world) != here_world.as_ref()) {
+                *elsewhere.entry(x.world.as_str()).or_default() += 1;
+            }
+            if !elsewhere.is_empty() {
+                note(t, format!("다른 지역: {}", elsewhere.iter().map(|(w, n)| format!("{w} {n}")).collect::<Vec<_>>().join(" · ")));
+            }
+        });
+    }
+
+    /// Missable good deeds and their deadlines; in act 2, the keystones left and what is
+    /// due before the next (missables.rs).
+    fn deadlines_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        use crate::missables::When;
+        let list = snap.map(|s| s.deadlines.clone()).unwrap_or_default();
+        let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
+        card(t, "놓치기 쉬운 선행", |t| {
+            if list.is_empty() {
+                note(t, "마감이 있는 선행은 모두 끝났거나 지났습니다");
+            }
+            for d in list.iter().filter(|d| d.when != When::Passed) {
+                let (mark, colour) = match d.when {
+                    When::Now => ("임박", BAD),
+                    _ => ("나중", DIM),
+                };
+                t.style(tw::row(8.0)).add(|t| {
+                    w(t, |ui| ui.label(RichText::new(mark).color(colour).small().strong()));
+                    let label = format!("{}{}", d.title, if d.started { "" } else { " (시작 전)" });
+                    if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
+                        state.quest = Some(d.key.clone());
+                        state.target = None;
+                        state.chosen = false;
+                        state.guide_auto = true;
+                        state.route = true;
+                    }
+                });
+                note(t, format!("{} — {}", d.due.label(), d.what));
+            }
+            let passed = list.iter().filter(|d| d.when == When::Passed).count();
+            if passed > 0 {
+                note(t, format!("이미 지난 마감 {passed}개 — 그 선행은 실패했을 가능성이 큽니다"));
+            }
+        });
+        if let Some((left, before)) = crate::missables::keystone_advice(&journal, &list) {
+            card(t, "키스톤 순서", |t| {
+                note(t, "권장 순서 (공포 먼저: 일부 아이템이 Talju 에만 있음) — 키스톤마다 시간이 흘러 선행이 끝날 수 있습니다");
+                for (i, l) in left.iter().enumerate() {
+                    text(t, format!("{}. {l}", i + 1));
+                }
+                if !before.is_empty() {
+                    text(t, RichText::new(format!("다음 키스톤 전에: {}", before.join(" · "))).color(BAD));
+                }
+            });
+        }
+    }
+
+    /// Items the hero holds that someone wants: who, where — press to guide there.
+    fn handovers_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let list = snap.map(|s| s.handovers.clone()).unwrap_or_default();
+        if list.is_empty() {
+            card(t, "건네줄 수 있는 것", |t| note(t, "지금 가진 아이템을 원하는 사람이 없습니다"));
+            return;
+        }
+        let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        card(t, &format!("건네줄 수 있는 것 ({})", list.len()), |t| {
+            note(t, "가진 아이템을 원하는 사람 — 대화의 \"거래\" 로 건넵니다");
+            for x in &list {
+                let same = Some(&x.world) == here_world.as_ref();
+                let place = if same {
+                    here.map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0))
+                } else {
+                    format!("{} — 장갑차로 이동", x.world)
+                };
+                let label = format!("{} → {} ({place})", x.what, x.label.trim_start_matches("대화: "));
+                if same {
+                    if tw::pick(t, state.target == Some(x.id), label) {
+                        guide_to(state, &goals, x);
+                    }
+                } else {
+                    text(t, RichText::new(label).color(DIM));
+                }
+            }
+        });
+    }
+
     /// The quest journal: which quest the guide and the tracker follow.
     fn quests_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
-        use crate::quests::{Kind, Status};
+        use crate::quests::Status;
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
         card(t, "퀘스트", |t| {
             switch(t, &mut state.tracker, "퀘스트 추적기 — 화면 오른쪽 가운데");
@@ -584,10 +957,7 @@ impl Panel {
                 pick = Some(None);
             }
             for q in journal.iter().filter(|q| q.active()) {
-                let tag = match q.kind {
-                    Kind::Main(n) => format!("메인 {n}"),
-                    Kind::GoodDeed => "선행".into(),
-                };
+                let tag = q.kind.label();
                 let mut label = format!("[{tag}] {}", q.name);
                 if let Some((got, all)) = q.progress.filter(|(_, all)| *all > 0) {
                     label += &format!(" · 단서 {got}/{all}");
@@ -622,11 +992,7 @@ impl Panel {
                 for x in mine.iter().take(8) {
                     let label = format!("{} — {} ({})", x.what, x.label, crate::raster::distance(d(x)));
                     if tw::pick(t, state.target == Some(x.id), label) {
-                        // The loaded one if it is loaded (live goals have their own ids).
-                        let live = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0).map(|g| g.id);
-                        state.target = Some(live.unwrap_or(x.id));
-                        state.chosen = true;
-                        state.route = true;
+                        guide_to(state, &goals, x);
                     }
                 }
                 // Other worlds: how many, where.
@@ -759,8 +1125,15 @@ impl Panel {
             }
         });
 
-        self.quests_card(t, state, snap);
+    }
 
+    /// Every place with something new, nearest first: press to guide there.
+    fn goals_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let dist = |g: &crate::goals::Goal| {
+            here.map_or(f32::MAX, |h| ((g.at[0] - h[0]).powi(2) + (g.at[1] - h[1]).powi(2)).sqrt() / 100.0)
+        };
         let mut list: Vec<&crate::goals::Goal> =
             goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
         list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
@@ -784,6 +1157,10 @@ impl Panel {
             });
         });
 
+    }
+
+    /// The overlay's keys.
+    fn keys_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
         card(t, "단축키", |t| {
             for (label, id) in [
                 ("지도 표시 방식 전환", "toggle_key"),
@@ -1019,7 +1396,7 @@ impl Panel {
     /// How wide the chosen page is: as many cards side by side as it has columns of
     /// them — two for the cheat groups and the map, one wide one for debugging.
     fn page_width(&self) -> f32 {
-        if self.debug {
+        if self.tool == Some(Tool::Debug) {
             DEBUG_PAGE
         } else {
             tw::cards_width(2)

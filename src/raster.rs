@@ -470,7 +470,6 @@ pub fn distance(m: f32) -> String {
 const BACKGROUND: Rgba = Rgba(16, 18, 22, 170);
 const EDGE: Rgba = Rgba(200, 200, 190, 200);
 const TRAIL: Rgba = Rgba(150, 200, 255, 210);
-const MARKER: Rgba = Rgba(255, 200, 60, 240);
 const HERO: Rgba = Rgba(255, 255, 255, 255);
 const NORTH: Rgba = Rgba(255, 110, 90, 255);
 const OUTLINE: Rgba = Rgba(0, 0, 0, 200);
@@ -908,17 +907,29 @@ pub fn draw_map(
 
     if let Some(markers) = state.markers.get(world) {
         for m in markers {
-            let p = view.project(*m);
+            let p = view.project(m.at);
             let d = (p.0 * p.0 + p.1 * p.1).sqrt();
+            let [pr, pg, pb] = m.kind.rgb();
+            let colour = Rgba(pr, pg, pb, 255);
             if d <= r - 5.0 {
-                cv.disc(cx + p.0, cy + p.1, 5.0, MARKER);
+                match icons {
+                    // Its kind's icon, the pin's point on the spot.
+                    Some(icons) => {
+                        let i = icons.pin(m.kind);
+                        cv.blit(cx + p.0, cy + p.1 - i.size as f32 * 0.42, i.size, &i.px);
+                    }
+                    None => {
+                        cv.disc(cx + p.0, cy + p.1, 6.5, OUTLINE);
+                        cv.disc(cx + p.0, cy + p.1, 5.0, colour);
+                    }
+                }
             } else {
                 // Off the map: a small arrow on the rim, pointing at it.
                 let (ux, uy) = (p.0 / d, p.1 / d);
                 let tip = (cx + ux * (r - 2.0), cy + uy * (r - 2.0));
                 let base = (cx + ux * (r - 12.0), cy + uy * (r - 12.0));
                 let (nx, ny) = (-uy * 5.0, ux * 5.0);
-                cv.triangle([tip, (base.0 + nx, base.1 + ny), (base.0 - nx, base.1 - ny)], MARKER);
+                cv.triangle([tip, (base.0 + nx, base.1 + ny), (base.0 - nx, base.1 - ny)], colour);
             }
         }
     }
@@ -954,6 +965,8 @@ pub fn draw_map(
     // Goals: diamonds in their tier's colour; the guide's target larger, with a line
     // from the hero to it — or an arrow on the rim when it is off the map.
     for g in goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || Some(g.id) == state.target) {
+        // A map pin guided to: its route is drawn here, the pin itself above.
+        let pin = crate::minimap::is_pin(g.id);
         let target = Some(g.id) == state.target;
         let [cr, cg, cb] = g.tier.rgb();
         let colour = Rgba(cr, cg, cb, 255);
@@ -1015,7 +1028,7 @@ pub fn draw_map(
                 t += 10.0;
             }
         }
-        if d <= r - 6.0 {
+        if d <= r - 6.0 && !pin {
             let s = if target { 7.0 } else { 4.5 };
             let (x, y) = (cx + p.0, cy + p.1);
             // Another floor: faint (the target less so), with an arrow up or down.

@@ -397,3 +397,33 @@
   높이 38%(최소 180 px), 배경 (8, 10, 14, α200). 패널이 보일 때만 그려짐 — eframe 은 숨은 동안 프레임을 안 그리므로
   ` 로 숨기거나 보일 때 hotkey.rs 가 제목으로 찾아 같이 숨기고 보임. 열리면 그 창이 키보드를 가져감.
 
+
+## 23. 1단계 기능 (2026-10-03, 설계 문서의 F2·F3·F5·F9)
+- **F9 세이브 백업**(`backup.rs`): `%LOCALAPPDATA%\HellIsUs\Saved\SaveGames\*.sav` 의 수정 시각을 2초마다 보고, 바뀐 뒤 3초
+  잠잠하면 `Mods\backups\<시각>\` 로 전부 복사, 최근 20개. 패널 "세이브" 탭: 최근 3개, 지금 백업, 폴더 열기.
+- **F5 미스터리·타임루프**: `SecretsSubsystem.Mysteries`(MysteryData 0x70, 43개)·`Timeloops`(TimeloopSecretData 0x78, 14개)
+  가 선행과 같은 배치(Guid +0x18, 시작 태그 +0x28, 완료 +0x30, Title +0x38). 세이브 `SecretsState.Mysteries/Timeloops`
+  도 같은 원소. `quests::Kind::{Mystery, Timeloop}`, 캐시 줄 `mystery`/`timeloop`. 실측: 미스터리 5·타임루프 2 진행 중.
+- **F2 전달 안내**: 조사 DB 의 NPC 마다 거래 전부(`Entry.trades`: 원하는 아이템, 돌려주는 사실·태그) — 처음엔 첫 거래만
+  기억해 허브상(빈 젖병, 금시계)의 금시계를 놓쳤음. 가진 아이템이고 보상이 아직 새것이면 "건네줄 수 있는 것". 실측:
+  금시계 → Senedra 허브상, 악보 2 → Acasa 바이올리니스트.
+- **F3 지도 핀**: `minimap::Marker {at, kind: PinKind(잠긴 문·퍼즐·나중에·표시), note}`, `marker W x y z kind 메모…`
+  (옛 줄은 표시로). 핀 id 는 비트 62(조사 DB 는 63) — 오버레이가 이 지역 핀을 목표로 끼워 안내·경로가 되고, 지도에선
+  다이아몬드 대신 핀으로. 패널: 새 핀 종류, 가까운 순 목록(종류 바꾸기·메모·안내·지우기).
+- **탭 분리**(사용자: "너무 많은 요소가 한 패널에 집중되지 않도록"): 지도 / 안내 / 퀘스트 / 세이브 / 디버그.
+
+## 24. 2단계 기능 · 핀 24종 · 그리드 균형 (2026-10-03)
+- **F1 놓치기 쉬운 선행**(`missables.rs` + `assets/missables.tsv`): 마감은 게임 데이터에 없음 → 공략의 놓치는 것 표(Game8·
+  PowerPyx)를 데이터 파일로. 마감 지점(1막 끝·Quest03·Talju 트럭·문화부·세 번째 키스톤)을 메인 퀘스트 상태로 판정:
+  임박/나중/지남. 같은 줄기의 선행 여러 개(A Light in the Dark 1–4)는 모두. 퀘스트 탭 카드 + 추적기 경고 줄.
+  실측: 1막 중 — Land of Milk and Honey 임박.
+- **F11 키스톤 순서**: 2막(Quest02 완료, 키스톤 3개 미완)에서 남은 키스톤을 권장 순서(공포→분노→환희)로, 다음 키스톤 전
+  임박 선행.
+- **F4 수집 진행도**: 조사 DB 아이템 경로의 폴더(Relics, LoreItems, Research, Cosmetic, Drone, WeaponModules, Weapons,
+  DefensiveGears, Lymbic, CraftingTomes)로 분류, 세이브 GUID 로 획득. 수집품만 주는 배치물이 조사 DB 를 읽을 때 빠지던
+  버그 수정. 월드에 놓인 것만(NPC 보상·상점 제외) — 놓인 곳 수는 게임 집계보다 많을 수 있음(같은 아이템 여러 곳).
+- **F10 들을 이야기가 남은 NPC**: NPC 엔 세이브 ID 가 없어(227명 모두) "대화했는지" 는 못 앎 → 대화 그래프가 아직 모르는
+  사실·태그를 주는 NPC. 수집 탭.
+- **안내 도우미** `guide_to` + `MapState.adhoc`: 로드 안 된 조사 DB 장소(수집품·NPC)도 오버레이가 목표로 끼워 안내.
+- **핀 24종**: `assets/pins/<word>.svg`(핀 모양 + 흰 기호), `PinKind` 24, 옛 단어(locked, later) 이어받음, 패널은 드롭다운.
+- **그리드 균형**: 지도 탭 = [미니맵·지형·큰 지도·단축키] / [표시할 것·지도 핀], 세이브 탭 = [백업] / [세이브 파일].

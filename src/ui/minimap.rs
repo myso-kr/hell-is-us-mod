@@ -263,7 +263,7 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
-        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs) = match shared.snap.lock().unwrap().as_ref() {
+        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines) = match shared.snap.lock().unwrap().as_ref() {
             Some(s) => (
                 s.pose,
                 s.world.clone(),
@@ -275,9 +275,10 @@ pub fn run(shared: Arc<Shared>) {
                 s.journal.clone(),
                 s.nav.clone(),
                 s.needs.clone(),
+                s.deadlines.clone(),
             ),
             None => {
-                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Vec::new(), Default::default(), Vec::new())
+                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Vec::new(), Default::default(), Vec::new(), Vec::new())
             }
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
@@ -320,6 +321,36 @@ pub fn run(shared: Arc<Shared>) {
                         p[1],
                         p[2]
                     ));
+                }
+                // The map pins of this world, as goals the guide can be sent to.
+                let mut goals = goals.clone();
+                for m in state.markers.get(world).into_iter().flatten() {
+                    goals.push(Goal {
+                        tier: Tier::Clue,
+                        id: m.id(world),
+                        label: m.title(),
+                        detail: "지도 핀".into(),
+                        at: m.at,
+                        quests: vec![],
+                        tags: vec![],
+                        keys: vec![],
+                        gate: Gate::Open,
+                    });
+                }
+                if let Some((w, id, at, label)) = state.adhoc.clone() {
+                    if crate::survey::Survey::world_of(world) == w && !goals.iter().any(|g| g.id == id) {
+                        goals.push(Goal {
+                            tier: Tier::Clue,
+                            id,
+                            label,
+                            detail: "패널에서 고른 곳".into(),
+                            at,
+                            quests: vec![],
+                            tags: vec![],
+                            keys: vec![],
+                            gate: Gate::Open,
+                        });
+                    }
                 }
                 let chosen = state.quest.clone();
                 settle_target(&mut state, &goals, p, crate::quests::followed(&journal, chosen.as_deref()), &journal, &route.blocked);
@@ -488,6 +519,7 @@ pub fn run(shared: Arc<Shared>) {
                     let mut pins: Vec<Pin> = goals
                         .iter()
                         .filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || Some(g.id) == state.target)
+                        .filter(|g| !crate::minimap::is_pin(g.id) || Some(g.id) == state.target)
                         .map(|g| {
                             let target = Some(g.id) == state.target;
                             // The target is pointed at along its route, and its distance is the route's.
@@ -509,12 +541,12 @@ pub fn run(shared: Arc<Shared>) {
                         })
                         .collect();
                     if let Some(markers) = state.markers.get(world) {
-                        pins.extend(markers.iter().map(|m| Pin {
-                            bearing: bearing(p, *m) - state.north_yaw,
-                            rgb: [255, 200, 60],
+                        pins.extend(markers.iter().filter(|m| state.target != Some(m.id(world))).map(|m| Pin {
+                            bearing: bearing(p, m.at) - state.north_yaw,
+                            rgb: m.kind.rgb(),
                             target: false,
-                            distance_m: flat(p, *m) / 100.0,
-                            dz_m: (m[2] - p[2]) / 100.0,
+                            distance_m: flat(p, m.at) / 100.0,
+                            dz_m: (m.at[2] - p[2]) / 100.0,
                         }));
                     }
                     draw_compass(&mut compass_cv, yaw - state.north_yaw, &pins);
@@ -529,7 +561,8 @@ pub fn run(shared: Arc<Shared>) {
                     let near = followed.is_none_or(|q| goals.iter().any(|g| g.serves(q)));
                     // The goal being guided to can only be reached through something.
                     let stuck = state.target.is_some_and(|t| route.blocked.contains(&t));
-                    // What it still needs: here, and elsewhere (the survey).
+                    // A deadline due now comes first; then what it still needs.
+                    let alert = crate::missables::alert(&deadlines);
                     let line = followed
                         .and_then(|q| needs.iter().find(|(k, _)| *k == q.key))
                         .map(|(_, list)| {
@@ -544,6 +577,12 @@ pub fn run(shared: Arc<Shared>) {
                             }
                         })
                         .unwrap_or_default();
+                    let line = match alert {
+                        Some(a) if line.is_empty() => a,
+                        Some(a) => format!("{a}
+{line}"),
+                        None => line,
+                    };
                     let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone());
                     if tracked.as_ref() != Some(&now) {
                         tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck, &line);

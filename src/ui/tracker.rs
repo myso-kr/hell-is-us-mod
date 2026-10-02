@@ -18,19 +18,21 @@ const DEED: Rgba = Rgba(120, 220, 150, 255);
 const TEXT: Rgba = Rgba(235, 235, 235, 255);
 const DIM: Rgba = Rgba(185, 185, 185, 255);
 
+const MYSTERY: Rgba = Rgba(150, 190, 255, 255);
+const TIMELOOP: Rgba = Rgba(190, 150, 255, 255);
+
 fn accent(q: &Quest, followed: bool) -> Rgba {
     match (followed, q.kind) {
         (true, _) => FOLLOWED,
         (_, Kind::Main(_)) => MAIN,
         (_, Kind::GoodDeed) => DEED,
+        (_, Kind::Mystery) => MYSTERY,
+        (_, Kind::Timeloop) => TIMELOOP,
     }
 }
 
 fn kind_label(q: &Quest) -> String {
-    match q.kind {
-        Kind::Main(n) => format!("메인 {n}"),
-        Kind::GoodDeed => "선행".into(),
-    }
+    q.kind.label()
 }
 
 /// Draw the tracker into `cv` (cleared first); the height used, 0 when there is
@@ -76,7 +78,7 @@ pub fn draw(
             if !near {
                 let why = match q.kind {
                     Kind::Main(_) => "이 지역엔 이 퀘스트의 목표가 없음 — 가까운 다른 퀘스트 목표로 안내",
-                    Kind::GoodDeed => "이 지역엔 이 선행의 목표가 없음 — 다른 지역에서 진행",
+                    _ => "이 지역엔 이 항목의 목표가 없음 — 다른 지역에서 진행",
                 };
                 y += pen.write(cv, x, y, width, why, 12, true, Rgba(255, 190, 90, 255), 2) + 2;
             }

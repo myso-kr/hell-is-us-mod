@@ -214,3 +214,39 @@ been verified in play yet.
   with a 자동으로 button. With no target, the card says why: auto off, nothing near,
   the quest's goals are in another region, or all were skipped. Skipped goals can
   be brought back.
+- Save backups (F9). Each time the game writes a save, every save file is copied
+  to `Modsackups\<time>\`, once the write has settled. The newest 20 are kept.
+- Mysteries and timeloops in the journal (F5), beside main quests and good deeds,
+  with their names from the game. They can be followed like good deeds, and their
+  places come from the survey.
+- Hand-over guidance (F2). The panel lists NPCs who want an item you hold and have
+  not been given it yet ("Caddell GoldenWatch → Herbalist, Senedra"). Every trade an
+  NPC takes is checked, not just the first. In this world a press guides there.
+- Labelled map pins (F3). The marker key places a pin of the chosen kind: locked
+  door or chest, puzzle, later, or mark. Pins are coloured on the map and compass,
+  and can take a note. The panel lists them nearest first, to change their kind,
+  edit the note, guide to them, or remove them. Old marker lines still load.
+- The panel's tools have their own tabs: 지도 (maps, pins, keys), 안내 (compass,
+  guide, where to go), 퀘스트 (journal, needs, hand-overs), 세이브 (backups) and
+  디버그, instead of one crowded map page. The save backups card has
+  지금 백업 and 폴더 열기.
+- Missable deed warnings (F1) and keystone order advice (F11). Deadlines come from a
+  table in `assets/missables.tsv` (from the guides). They are judged against the
+  journal's main-quest progress as due now, later or past. The quest tab lists them
+  soonest first, and the tracker warns when one is due now. In act 2 a card lists
+  the keystones left in the suggested order (Terror first) and what is due before
+  the next one.
+- Collection progress (F4) and NPCs with more to tell (F10) in a new 수집 tab. It
+  shows per collectible sort (relics, lore, research, caps, drone modules, skills,
+  weapons, gear, Lymbic rods, crafting tomes) how many placed pickups are taken,
+  here and everywhere, from the survey and the save's states. You can guide to the
+  nearest left. It also counts good deeds, mysteries and timeloops done, and lists
+  the NPCs whose talk still holds something new.
+- Map pins come in 24 kinds, each drawn from its own SVG in `assets/pins/`: locked
+  door, locked chest, Lymbic lock, puzzle, code, key needed, for later, merchant,
+  person, quest lead, danger, strong enemy, timeloop, save point, shortcut, climb,
+  dead end, water, lookout, treasure, note, base, unknown and mark. A dropdown picks
+  the kind. Pins from before keep their kind.
+- Panel pages are balanced. The map page splits into the map settings with keys,
+  and what the map shows with pins. The save page gains a card listing the game's
+  own save files and when each was written.

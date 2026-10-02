@@ -334,6 +334,34 @@ impl Attached {
             .collect()
     }
 
+    /// The collectibles' counts here and everywhere, and the NPCs with more to tell.
+    pub fn collection(&self, world: &str) -> (Vec<crate::survey::Collect>, Vec<crate::survey::Need>) {
+        let g = self.guide.borrow();
+        let Some(survey) = g.survey.as_ref() else { return Default::default() };
+        let known =
+            crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
+        (survey.collection(crate::survey::Survey::world_of(world), &known), survey.stories(&known))
+    }
+
+    /// Every secret of a kind: how many the game has.
+    pub fn secret_total(&self, kind: crate::quests::Kind) -> usize {
+        self.guide.borrow().quests.secrets(kind).len()
+    }
+
+    /// Every good deed the game has: (journal key, title, tag stem).
+    pub fn deeds(&self) -> Vec<(String, String, String)> {
+        self.guide.borrow().quests.secrets(crate::quests::Kind::GoodDeed)
+    }
+
+    /// NPCs that want an item the hero holds (the survey's trades).
+    pub fn handovers(&self) -> Vec<crate::survey::Need> {
+        let g = self.guide.borrow();
+        let Some(survey) = g.survey.as_ref() else { return Vec::new() };
+        let known =
+            crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
+        survey.handovers(&known)
+    }
+
     /// For each quest under way, the places it needs in every world (from the survey).
     pub fn needs(&self, journal: &[crate::quests::Quest]) -> Vec<(String, Vec<crate::survey::Need>)> {
         let g = self.guide.borrow();
@@ -398,6 +426,15 @@ pub struct Snapshot {
     pub nav: Arc<crate::navmesh::NavMesh>,
     /// For each quest under way, what it needs in every world (the survey).
     pub needs: Vec<(String, Vec<crate::survey::Need>)>,
+    /// NPCs that want an item the hero holds.
+    pub handovers: Vec<crate::survey::Need>,
+    /// Missable good deeds not done yet, and their deadlines.
+    pub deadlines: Vec<crate::missables::Deadline>,
+    /// Collectibles placed and taken, per sort (the survey); NPCs with more to tell.
+    pub collection: Vec<crate::survey::Collect>,
+    pub stories: Vec<crate::survey::Need>,
+    /// How many good deeds, mysteries and timeloops the game has.
+    pub secret_totals: [usize; 3],
     /// Saved positions: (world, where).
     pub slots: [Option<(String, [f64; 3])>; SLOTS],
 }
@@ -490,6 +527,11 @@ impl Engine {
             things: Vec::new(),
             footprints: Arc::default(),
             goals: Vec::new(),
+            collection: Vec::new(),
+            stories: Vec::new(),
+            secret_totals: [0; 3],
+            deadlines: Vec::new(),
+            handovers: Vec::new(),
             needs: Vec::new(),
             nav: Default::default(),
             journal: Vec::new(),
@@ -522,6 +564,12 @@ impl Engine {
                         snap.goals = g;
                         snap.journal = a.journal();
                         snap.needs = a.needs(&snap.journal);
+                        snap.handovers = a.handovers();
+                        snap.deadlines = crate::missables::deadlines(&snap.journal, &a.deeds());
+                        if let Some(w) = snap.world.as_deref() {
+                            (snap.collection, snap.stories) = a.collection(w);
+                        }
+                        snap.secret_totals = crate::quests::Kind::SECRETS.map(|(k, _)| a.secret_total(k));
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }

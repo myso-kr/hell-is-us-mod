@@ -1,0 +1,16 @@
+# Good deeds that fail if a story point passes first (.spec/ITEMS.md, F1).
+# Sources: Game8 missables (https://game8.co/games/Hell-is-Us/archives/546099) and
+# PowerPyx (https://www.powerpyx.com/hell-is-us-missables-guide/), checked 2026-10-03.
+#
+# tag	deadline	what has to be done before it
+# tag      = the deed's tag stem (Secrets.Facts.<tag>Started)
+# deadline = act1_end | quest03 | talju | ministry | third_keystone
+SabinianBaby	act1_end	1막 끝(림빅 대장간) 전에 Judith Karry 의 아기에게 젖병을 — 아니면 아기가 죽음
+GrievingFather	act1_end	1막 끝 전
+HeartMedication	act1_end	1막 끝 전, Diana 가 트럭으로 떠나기 전에 약을 — 아니면 Diana 가 죽음
+ClassroomPicture	quest03	Quest03 에서 Jova 의 상황이 바뀌기 전 — 아니면 Halie 가 죽음
+SabinianClassics	quest03	Quest03 전 — 아니면 Vaas 대위가 바이올리니스트를 죽임
+TaljuSurvivors	talju	Talju 대피 트럭이 떠나기 전
+SavingDisguise	ministry	문화부(Lethe)를 처음 떠나기 전
+StrandedONPeacekeeper	third_keystone	세 번째 키스톤을 놓기 전
+SmugglersSafehouse	third_keystone	세 번째 키스톤을 놓기 전

@@ -24,9 +24,13 @@ pub struct Entry {
     pub keys: Vec<String>,
     pub facts: Vec<String>,
     pub tags: Vec<String>,
-    /// The item it wants, for a hand-over.
+    /// The item it wants, for a hand-over (the first, for the goal's line).
     pub wants: Option<String>,
-    /// Its save GUID (`8FA90DE2-403A1096-AE25CC81-1571DE3F`).
+    /// Every hand-over it takes: the item, and the facts and tags it gives back.
+    pub trades: Vec<(String, Vec<String>, Vec<String>)>,
+    /// The collectible sorts of what it hands out (`COLLECT`), for the progress count.
+    pub cats: Vec<&'static str>,
+    /// Its save GUID, as the survey gives it — what tells taken from not.
     pub guid: Option<String>,
     pub npc: bool,
 }
@@ -83,12 +87,38 @@ fn runtime_name(cooked: &str) -> String {
 }
 
 /// Whether an item is one a quest needs: a quest's or a secret's own.
+/// The collectibles counted, by their folder under `/Game/Items/`, and what the panel
+/// calls them.
+pub const COLLECT: [(&str, &str); 10] = [
+    ("Relics", "유물"),
+    ("LoreItems", "기록물"),
+    ("Research", "연구 자료"),
+    ("Cosmetic", "모자"),
+    ("Drone", "드론 모듈"),
+    ("WeaponModules", "림빅 스킬"),
+    ("Weapons", "무기"),
+    ("DefensiveGears", "방어구"),
+    ("Lymbic", "림빅 막대"),
+    ("CraftingTomes", "제작서"),
+];
+
+/// An item's collectible sort, if it is one.
+fn category(path: &str) -> Option<&'static str> {
+    let folder = path.split("/Items/").nth(1)?.split('/').next()?;
+    COLLECT.iter().find(|(f, _)| *f == folder).map(|(_, label)| *label)
+}
+
 fn wanted_item(path: &str) -> bool {
     path.contains("/Items/Quests/") || path.contains("/Items/Secrets/")
 }
 
 impl Entry {
     fn add_payload(&mut self, p: &Value) {
+        for c in names(&p["items"]).iter().filter_map(|i| category(i)) {
+            if !self.cats.contains(&c) {
+                self.cats.push(c);
+            }
+        }
         for path in names(&p["items"]).iter().filter(|p| wanted_item(p)) {
             let (name, key) = item(path);
             if !self.items.contains(&name) {
@@ -201,10 +231,12 @@ impl Survey {
                 for t in a["trades"].as_array().into_iter().flatten() {
                     e.add_payload(&t["payload"]);
                     if let Some(w) = t["item"].as_str() {
-                        e.wants.get_or_insert(item(w).0);
+                        let want = item(w).0;
+                        e.wants.get_or_insert(want.clone());
+                        e.trades.push((want, names(&t["payload"]["facts"]), names(&t["payload"]["tags"])));
                     }
                 }
-                if !(e.items.is_empty() && e.facts.is_empty() && e.tags.is_empty()) {
+                if !(e.items.is_empty() && e.facts.is_empty() && e.tags.is_empty() && e.cats.is_empty()) {
                     list.push(e);
                 }
             }
@@ -301,6 +333,96 @@ impl Survey {
             }
         }
         out.sort_by(|a, b| a.world.cmp(&b.world).then(a.done.cmp(&b.done)));
+        out
+    }
+}
+
+/// One collectible sort's count: in the world the hero is in, and everywhere — (got,
+/// placed) — and the nearest not taken here, to guide to.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Collect {
+    pub label: &'static str,
+    pub here: (usize, usize),
+    pub all: (usize, usize),
+    pub left_here: Vec<Need>,
+}
+
+impl Survey {
+    /// What is placed in the worlds to collect, and how much is taken (the save keeps
+    /// a state for each taken pickup). NPC rewards are not placed, so not counted.
+    pub fn collection(&self, world: &str, k: &Known) -> Vec<Collect> {
+        COLLECT
+            .iter()
+            .map(|&(_, label)| {
+                let mut c = Collect { label, here: (0, 0), all: (0, 0), left_here: Vec::new() };
+                for (w, list) in &self.worlds {
+                    for e in list.iter().filter(|e| !e.npc && e.cats.contains(&label)) {
+                        let got = e.guid.as_ref().is_some_and(|g| k.saved.contains(g));
+                        c.all.1 += 1;
+                        c.all.0 += got as usize;
+                        if w == world {
+                            c.here.1 += 1;
+                            c.here.0 += got as usize;
+                            if !got {
+                                c.left_here.push(Need {
+                                    world: w.clone(),
+                                    id: e.id(),
+                                    label: e.label(),
+                                    what: label.to_string(),
+                                    at: e.at,
+                                    done: false,
+                                });
+                            }
+                        }
+                    }
+                }
+                c
+            })
+            .filter(|c| c.all.1 > 0)
+            .collect()
+    }
+
+    /// NPCs whose talk still holds something the hero does not know, in every world.
+    pub fn stories(&self, k: &Known) -> Vec<Need> {
+        let mut out = Vec::new();
+        for (world, list) in &self.worlds {
+            for e in list.iter().filter(|e| e.npc) {
+                if e.left(k).is_empty() {
+                    continue;
+                }
+                out.push(Need { world: world.clone(), id: e.id(), label: e.label(), what: String::new(), at: e.at, done: false });
+            }
+        }
+        out
+    }
+
+    /// Hand-overs the hero can make now: NPCs in every world that want an item the
+    /// hero holds, and have not been given it (what they give back is still new).
+    pub fn handovers(&self, k: &Known) -> Vec<Need> {
+        let mut out = Vec::new();
+        for (world, list) in &self.worlds {
+            for e in list {
+                for (want, facts, tags) in &e.trades {
+                    // Held, and what it gives back not known yet — a reward of nothing
+                    // but topic unlocks is no reason to go.
+                    let new = facts.iter().any(|f| !k.facts.contains(f))
+                        || tags.iter().any(|t| !t.starts_with("Conversation.") && !k.tags.contains(t));
+                    if !k.held.contains(want) || !new {
+                        continue;
+                    }
+                    out.push(Need {
+                        world: world.clone(),
+                        id: e.id(),
+                        label: e.label(),
+                        what: crate::goals::item_label(want),
+                        at: e.at,
+                        done: false,
+                    });
+                }
+            }
+        }
+        out.sort_by(|a, b| a.world.cmp(&b.world).then(a.what.cmp(&b.what)));
+        out.dedup_by(|a, b| a.id == b.id && a.what == b.what);
         out
     }
 }
