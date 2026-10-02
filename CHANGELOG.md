@@ -47,6 +47,12 @@ been verified in play yet.
   hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
   from each mesh's bounds and transform. The game ships no map of the area it could
   use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- The overlays no longer flash over the panel. Both were topmost windows and took
+  turns putting themselves first; while the panel shows, the overlays now stay
+  just under it.
+- New cheats, not yet tried in play: game speed (the world's own clock), enemy
+  speed, frail enemies (one blow kills), consumables that do not run out, setting
+  the count of shards you hold, and five saved positions to go back to.
 - The panel shrinks back when a shorter page is chosen. The divider between the
   sidebar and the page used to take all the window's height, so it could only grow.
 - The big map is drawn as outlines on a clear background by default, in the

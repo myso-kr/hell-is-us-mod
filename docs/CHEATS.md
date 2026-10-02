@@ -17,6 +17,12 @@ and then the row's `verified` is set to `true`.
 | `skill_cooldown` | 전투 | Player.`AbilityCooldownModifierCoefficient` = 0.05 | fixed | 1 | not yet tried (likely fails) |
 | `speed` | 이동 | movement component `MaxWalkSpeed` (a field) | slider 300–2000 | 450 | **works** |
 | `hero_time` | 이동 | hero `CustomTimeDilation` (a field) | slider 1–3 | 1 | **works** |
+| `game_speed` | 이동 | WorldSettings `TimeDilation` (a field) | slider 0.2–3 | 1 | **works** (2026-10-03) |
+| `enemy_time` | 전투 | every live enemy's `CustomTimeDilation` (extras.rs; put back per enemy) | slider 0.05–1 | 1 | **works** (2026-10-03) |
+| `frail` | 전투 | every live enemy's `HealthAttributeSet.Health` held at 1 (put back per enemy) | toggle | 680–1130 (Tier 1) | **works** (2026-10-03) |
+| `stock` | 아이템 | inventory stacks of `CharlieInventoryUseable*`: count (item `ItemData`+8, native) kept ≥ first seen, ≥ 2 | toggle | — | **works** (2026-10-03) — held from the count when switched on, never below 2; the game's own number may lag until the inventory is reopened |
+| `shards` | 아이템 | inventory stacks of `CharlieInventoryShardItem`: count written once, ≤ `QuantityMax` (999) | set (button) | — | **works** (2026-10-03) |
+| position slots | 이동 | hero root `RelativeLocation` + `ComponentToWorld` translation, `Velocity` 0 (5 slots, same area only) | action | — | **works** (2026-10-03) |
 
 ## What does not work from outside, and why
 

@@ -425,6 +425,17 @@ impl Scanner {
 
     /// Where every tracked actor is now (cm). `location` is
     /// `SceneComponent.RelativeLocation`'s offset.
+    /// The actors of a kind still in play (not spent — an enemy not dead), as last
+    /// scanned: what the enemy cheats write to.
+    pub fn actors_of(&self, m: &dyn Memory, kind: Kind) -> Vec<u64> {
+        self.tracked
+            .iter()
+            .filter(|t| t.sub.kind() == kind && mem::read_u64(m, t.actor + CLASS) == Some(t.class))
+            .filter(|t| !t.done.is_some_and(|d| d.spent(m)))
+            .map(|t| t.actor)
+            .collect()
+    }
+
     pub fn positions(&mut self, m: &dyn Memory, location: u64) -> Vec<Thing> {
         let mut out = Vec::with_capacity(self.tracked.len());
         self.tracked.retain(|t| {

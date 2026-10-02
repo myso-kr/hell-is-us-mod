@@ -76,6 +76,7 @@ src/
   knowledge.rs    현재 저장 상태 → 아는 사실·태그·진행 중 조사
   relief.rs       지도용 지형: 주인공 주변을 높이·음영·물 격자로 굽기(별도 스레드), bilinear 조회
   terrain.rs      지형: 충돌 컴포넌트 → HeightfieldRef(CookedPhysicalMaterials 뒤) → Chaos FHeightField 높이, 경사
+  extras.rs       주인공 밖 대상 치트: 적 시간 배속·체력 1, 인벤토리 스택 수량(유지·지정) — 원래 값은 대상별 메모리
   obstacles.rs    장애물: (+ 죽는 물 상자·지형으로 물 구간) 메시 충돌 형상(AggGeom) × 인스턴스 행렬 × ComponentToWorld(+0x1D0) → 2D 껍질+높이, GUObjectArray 조금씩
   pathfind.rs     A*: 장애물(주인공 높이) 완전 차단 + 지나온 길 싼 길, 안 되면 비싼 통과, 줄 당기기, 다음 지점
   goals.rs        안내 목표: 페이로드가 새 사실·태그를 주는 상호작용 오브젝트, 퀘스트/비밀/단서

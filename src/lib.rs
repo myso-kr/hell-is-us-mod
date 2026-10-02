@@ -7,6 +7,7 @@ pub mod cheats;
 pub mod cli;
 #[cfg(windows)]
 pub mod engine;
+pub mod extras;
 pub mod game;
 pub mod geometry;
 pub mod goals;

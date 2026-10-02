@@ -413,10 +413,15 @@ pub fn run(shared: Arc<Shared>) {
                     compass_window.hide();
                 }
                 if tick % 20 == 0 {
-                    map_window.keep_on_top();
-                    compass_window.keep_on_top();
+                    // Under the panel while it shows, so the two never trade places.
+                    let panel = shared
+                        .visible
+                        .load(Ordering::SeqCst)
+                        .then(|| shared.hwnd.load(Ordering::SeqCst) as windows_sys::Win32::Foundation::HWND);
+                    map_window.keep_on_top(panel);
+                    compass_window.keep_on_top(panel);
                     if let Some(w) = big_window.as_ref() {
-                        w.keep_on_top();
+                        w.keep_on_top(panel);
                     }
                 }
             }

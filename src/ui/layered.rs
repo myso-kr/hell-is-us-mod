@@ -122,10 +122,14 @@ impl Layered {
         }
     }
 
-    /// A borderless game re-asserts its z-order when it takes focus; stay above it.
-    pub fn keep_on_top(&self) {
+    /// A borderless game re-asserts its z-order when it takes focus; stay above it —
+    /// but under `below` when given (the panel, while it shows). Both are topmost
+    /// windows: each putting itself first in turn swapped their order every second,
+    /// and the panel flashed as it was uncovered and redrawn.
+    pub fn keep_on_top(&self, below: Option<HWND>) {
         if self.shown {
-            unsafe { SetWindowPos(self.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE) };
+            let after = below.filter(|h| !h.is_null()).unwrap_or(HWND_TOPMOST);
+            unsafe { SetWindowPos(self.hwnd, after, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE) };
         }
     }
 }

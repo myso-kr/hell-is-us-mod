@@ -5,7 +5,8 @@
 use crate::actors::{Scanner, Thing};
 use crate::anchors::{self, Anchors};
 use crate::attr::{Attr, Session};
-use crate::cheats::{self, Active};
+use crate::cheats::{self, Active, Kind};
+use crate::extras::Extras;
 use crate::game::locate;
 use crate::game::process::Game;
 use crate::geometry::{Footprint, Geometry};
@@ -13,6 +14,7 @@ use crate::goals::{Goal, Goals};
 use crate::gobjects::{self, Objects};
 use crate::hold::{self, Originals};
 use crate::knowledge::{self, Knowledge};
+use crate::mem::Memory;
 use crate::obstacles::{Obstacles, Scene};
 use crate::player::{self, Chain};
 use std::cell::RefCell;
@@ -30,6 +32,8 @@ pub struct Attached {
     scanner: RefCell<Scanner>,
     /// The minimap's background: static meshes seen from above.
     geometry: RefCell<Geometry>,
+    /// The hero's inventory, once found (checked on every use).
+    inventory: RefCell<Option<u64>>,
     /// The guide: what the hero knows (from the save state) and where there is more.
     guide: RefCell<Guide>,
 }
@@ -67,6 +71,7 @@ pub fn attach() -> Result<Attached, String> {
         scanner: RefCell::default(),
         guide: RefCell::default(),
         geometry: RefCell::default(),
+        inventory: RefCell::default(),
     })
 }
 
@@ -95,7 +100,47 @@ impl Attached {
                 s.add_fields(n, cheats::MOVEMENT, mc, cheats::MOVEMENT_FIELDS);
             }
         }
+        if let Ok(ws) = self.world_settings() {
+            if n.is_a(&self.game, ws, "WorldSettings") {
+                s.add_fields(n, cheats::WORLD, ws, cheats::WORLD_FIELDS);
+            }
+        }
         Ok(s)
+    }
+
+    /// The persistent level's WorldSettings: hero → level → world → PersistentLevel.
+    fn world_settings(&self) -> Result<u64, String> {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let hero = self.chain()?.hero(m, &self.anchors)?;
+        let level = mem_ptr(m, hero + crate::names::OUTER)?;
+        let world = mem_ptr(m, level + crate::names::OUTER)?;
+        let persistent = n.follow(m, world, "PersistentLevel")?;
+        n.follow(m, persistent, "WorldSettings")
+    }
+
+    /// The hero's CharlieInventory — under CharlieInventoryLoadoutSubsystem, owned by
+    /// the hero. Found once through GUObjectArray, then checked on every use: still a
+    /// CharlieInventory, still the hero's.
+    pub fn inventory(&self) -> Result<u64, String> {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let hero = self.chain()?.hero(m, &self.anchors)?;
+        let ok = |inv: u64| {
+            n.is_a(m, inv, "CharlieInventory")
+                && n.field(m, inv, "Owner").and_then(|p| crate::mem::read_u64(m, inv + p.offset as u64)) == Some(hero)
+        };
+        if let Some(inv) = *self.inventory.borrow() {
+            if ok(inv) {
+                return Ok(inv);
+            }
+        }
+        let objects = gobjects::discover(m, self.game.base)?;
+        let inv = objects
+            .of_class(m, n, "CharlieInventory")
+            .into_iter()
+            .find(|&o| ok(o))
+            .ok_or("the hero's inventory was not found")?;
+        *self.inventory.borrow_mut() = Some(inv);
+        Ok(inv)
     }
 
     /// Open while the player controls the hero. Closed is not an error to act on —
@@ -126,6 +171,31 @@ impl Attached {
             );
         }
         Ok(s.positions(&self.game, chain.location))
+    }
+
+    /// Put the hero at `p` (cm), standing still: the root component's RelativeLocation
+    /// and its ComponentToWorld (what movement reads), and the movement's Velocity.
+    pub fn teleport(&self, p: [f64; 3]) -> Result<(), String> {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let chain = self.chain()?;
+        let hero = chain.hero(m, &self.anchors)?;
+        let root = mem_ptr(m, hero + chain.root)?;
+        let bytes: Vec<u8> = p.iter().flat_map(|v| v.to_le_bytes()).collect();
+        let c2w = root + crate::obstacles::COMPONENT_TO_WORLD + 0x20;
+        if !m.write(root + chain.location, &bytes) || !m.write(c2w, &bytes) {
+            return Err("could not write the hero's position".into());
+        }
+        if let Ok(mc) = n.follow(m, hero, "CharacterMovement") {
+            if let Some(v) = n.field(m, mc, "Velocity") {
+                m.write(mc + v.offset as u64, &[0u8; 24]);
+            }
+        }
+        Ok(())
+    }
+
+    /// Enemies still alive in the loaded levels, as the minimap last scanned them.
+    pub fn enemies(&self) -> Vec<u64> {
+        self.scanner.borrow().actors_of(&self.game, crate::actors::Kind::Enemy)
     }
 
     /// Whether the game is paused: the world's `WorldSettings.Pauser` is set. Menus
@@ -214,7 +284,15 @@ pub struct Snapshot {
     pub paused: bool,
     /// What stands in the way, and the ground, for the route.
     pub obstacles: Arc<Scene>,
+    /// Saved positions: (world, where).
+    pub slots: [Option<(String, [f64; 3])>; SLOTS],
 }
+
+/// How many positions can be saved.
+pub const SLOTS: usize = 5;
+/// A teleport lands this far above the saved spot (cm), so it does not start in the
+/// ground.
+const LIFT: f64 = 50.0;
 
 impl Snapshot {
     pub fn value(&self, a: Attr) -> Option<f32> {
@@ -226,8 +304,11 @@ pub struct Engine {
     attached: Option<Attached>,
     checked: Option<Instant>,
     originals: Originals,
+    /// What the cheats past the hero overwrote (extras.rs).
+    extras: Extras,
     active: Vec<Active>,
     notice: Option<String>,
+    slots: [Option<(String, [f64; 3])>; SLOTS],
 }
 
 /// How often to look for the game, or check it is still the same process. Listing
@@ -240,6 +321,8 @@ impl Engine {
             attached: None,
             checked: None,
             originals: Originals::load(&hold::default_path())?,
+            extras: Extras::default(),
+            slots: Default::default(),
             active: Vec::new(),
             notice: None,
         })
@@ -267,6 +350,7 @@ impl Engine {
                 self.active.clear();
                 self.notice = Some("the game exited — toggles off".into());
             }
+            self.extras.forget();
             self.originals.forget()?;
         }
         self.attached = Some(attach()?);
@@ -295,6 +379,7 @@ impl Engine {
             quests: Vec::new(),
             paused: false,
             obstacles: Arc::default(),
+            slots: self.slots.clone(),
         };
         if let Err(e) = self.refresh() {
             snap.game = Err(e.clone());
@@ -338,6 +423,10 @@ impl Engine {
                         snap.values = cheats::attributes().into_iter().map(|a| (a, s.current(a).ok())).collect();
                     }
                 }
+                let errors = self.extras.tick(a, &self.active);
+                if !errors.is_empty() && snap.notice.is_none() {
+                    snap.notice = Some(errors.join("; "));
+                }
             }
         }
         snap.active = self.active.clone();
@@ -348,9 +437,39 @@ impl Engine {
     }
 
     pub fn set(&mut self, name: &str, v: f32) -> Result<(), String> {
-        let a = self.attached()?;
+        self.refresh()?;
+        let a = self.attached.as_ref().unwrap();
         a.gate()?;
+        if let Some(Kind::SetStock { class, max, .. }) = cheats::find(name).map(|c| c.kind) {
+            if !(1.0..=max).contains(&v) {
+                return Err(format!("{name} takes 1..={max}"));
+            }
+            return self.extras.set_stock(a, class, v as u32).map(drop);
+        }
         cheats::set_value(&a.session()?, name, v)
+    }
+
+    /// Remember where the hero stands, in slot `i`.
+    pub fn save_position(&mut self, i: usize) -> Result<[f64; 3], String> {
+        self.refresh()?;
+        let a = self.attached.as_ref().unwrap();
+        a.gate()?;
+        let (p, _) = a.pose()?;
+        let world = a.chain()?.world(&a.game, &a.anchors)?;
+        *self.slots.get_mut(i).ok_or("no such slot")? = Some((world, p));
+        Ok(p)
+    }
+
+    /// Back to slot `i` — only in the world it was saved in.
+    pub fn load_position(&mut self, i: usize) -> Result<(), String> {
+        self.refresh()?;
+        let a = self.attached.as_ref().unwrap();
+        a.gate()?;
+        let (world, p) = self.slots.get(i).cloned().flatten().ok_or("nothing saved in that slot")?;
+        if a.chain()?.world(&a.game, &a.anchors)? != world {
+            return Err(format!("saved in another area ({world})"));
+        }
+        a.teleport([p[0], p[1], p[2] + LIFT])
     }
 
     /// Replace the active toggles. Turning anything on needs the gate; whatever a
@@ -363,10 +482,11 @@ impl Engine {
         let keep: Vec<Attr> = toggles.iter().flat_map(|t| t.restores()).collect();
         let drop: Vec<Attr> = self.active.iter().flat_map(|t| t.restores()).filter(|x| !keep.contains(x)).collect();
         self.active = toggles;
+        let a = self.attached.as_ref().unwrap();
+        self.extras.release(a, &self.active);
         if drop.is_empty() {
             return Ok(());
         }
-        let a = self.attached.as_ref().unwrap();
         let failed = self.originals.restore_only(&a.session()?, &drop);
         if failed.is_empty() {
             Ok(())
@@ -379,6 +499,9 @@ impl Engine {
     /// hero is in play: the record names attributes, and only the hero's are ours.
     pub fn stop(&mut self) -> Result<(), String> {
         self.active.clear();
+        if let Some(a) = self.attached.as_ref() {
+            self.extras.release(a, &[]);
+        }
         if self.originals.is_empty() {
             return Ok(());
         }

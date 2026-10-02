@@ -184,6 +184,7 @@ fn doctor(opt: &Options) -> R {
             .flat_map(|e| match *e {
                 cheats::Effect::Fixed(x, _) | cheats::Effect::Chosen(x) => vec![x],
                 cheats::Effect::Fill(x, y) => vec![x, y],
+                _ => vec![],
             })
             .map(|x| match (x.set == ANY).then(|| s.set_of(x)).flatten() {
                 Some(set) => format!("{set}.{}", x.name),

@@ -147,7 +147,10 @@ impl Panel {
     fn active(&self) -> Vec<Active> {
         CHEATS
             .iter()
-            .filter(|c| !matches!(c.kind, Kind::Set { .. }) && self.on.get(c.id).copied().unwrap_or(false))
+            .filter(|c| {
+                !matches!(c.kind, Kind::Set { .. } | Kind::SetStock { .. })
+                    && self.on.get(c.id).copied().unwrap_or(false)
+            })
             .map(|c| Active { cheat: c.id, value: self.value.get(c.id).copied().unwrap_or(0.0) })
             .collect()
     }
@@ -308,10 +311,42 @@ impl Panel {
                 grid(ui, 2, |cols| {
                     let (left, right) = cols.split_at_mut(1);
                     section(&mut left[0], g.label(), |ui| self.held(ui, g, snap));
+                    if g == Group::Movement {
+                        self.positions(&mut left[0], snap);
+                    }
                     self.summary(&mut right[0], snap);
                 });
             }
         }
+    }
+
+    /// Saved positions: save where the hero stands, go back to it.
+    fn positions(&self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+        section(ui, "위치 저장 · 이동", |ui| {
+            let world = snap.and_then(|s| s.world.clone());
+            for i in 0..crate::engine::SLOTS {
+                let slot = snap.and_then(|s| s.slots[i].clone());
+                field(ui, format!("슬롯 {}", i + 1), |ui| {
+                    if ui.button("저장").clicked() {
+                        let _ = self.tx.send(Request::SavePosition(i));
+                    }
+                    let here = slot.as_ref().is_some_and(|(w, _)| Some(w) == world.as_ref());
+                    if ui.add_enabled(here, egui::Button::new("이동")).clicked() {
+                        let _ = self.tx.send(Request::LoadPosition(i));
+                    }
+                    let text = match &slot {
+                        Some((w, p)) if here => format!("{:.0}, {:.0}, {:.0}", p[0], p[1], p[2]),
+                        Some((w, _)) => format!("다른 지역 ({w})"),
+                        None => "비어 있음".into(),
+                    };
+                    ui.add(egui::Label::new(RichText::new(text).color(DIM).small()).truncate());
+                });
+            }
+            note(
+                ui,
+                "저장한 지역 안에서만 이동합니다 · 바닥에 끼지 않게 50 cm 위에 놓습니다 · 패널을 닫으면 비워집니다",
+            );
+        });
     }
 
     /// Every cheat that is on, across the groups, with its value.
@@ -711,6 +746,15 @@ impl Panel {
                             Effect::Fixed(t, v) => (t, Some(v)),
                             Effect::Chosen(t) => (t, Some(a.value)),
                             Effect::Fill(t, max) => (t, snap.value(max)),
+                            // Past the hero: many targets, not one value to compare.
+                            Effect::EnemyTime | Effect::EnemyFrail | Effect::Stock(_) => {
+                                ui.label(c.label);
+                                ui.label(RichText::new("적·인벤토리 대상").color(DIM).small());
+                                ui.label("");
+                                ui.label(RichText::new("매 틱 적용").color(OK));
+                                ui.end_row();
+                                continue;
+                            }
                         };
                         let now = snap.value(target);
                         let was = snap.originals.iter().find(|(x, _)| *x == target).map(|(_, (_, c))| *c);
@@ -812,6 +856,20 @@ impl Panel {
                             self.slid.insert(c.id, Instant::now());
                             changed = true;
                         }
+                    }
+                    Kind::SetStock { max, default, .. } => {
+                        // Written once, on the button — not held.
+                        ui.label(c.label);
+                        let v = self.value.entry(c.id).or_insert(default);
+                        ui.horizontal(|ui| {
+                            ui.add(egui::Slider::new(v, 1.0..=max).step_by(1.0).max_decimals(0));
+                            if ui.button("적용").clicked() {
+                                let _ = self.tx.send(Request::Set(c.id, *v));
+                            }
+                        });
+                        Self::badge(ui, c);
+                        ui.end_row();
+                        continue;
                     }
                     Kind::Set { .. } => continue,
                 }

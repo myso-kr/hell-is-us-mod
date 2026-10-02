@@ -30,24 +30,30 @@ mod a {
     // straight (engine.rs adds them to the session once their owner's class checks).
     pub const WALK_SPEED: Attr = attr(super::MOVEMENT, "MaxWalkSpeed");
     pub const TIME: Attr = attr(super::HERO, "CustomTimeDilation");
+    // The world's time dilation — the game's `slomo`.
+    pub const WORLD_TIME: Attr = attr(super::WORLD, "TimeDilation");
 }
 
 /// Labels for the plain-field owners, in place of an attribute set's name.
 pub const HERO: &str = "Hero";
 pub const MOVEMENT: &str = "Movement";
+pub const WORLD: &str = "World";
 /// The plain fields read off each owner.
 pub const HERO_FIELDS: &[&str] = &["CustomTimeDilation"];
 pub const MOVEMENT_FIELDS: &[&str] = &["MaxWalkSpeed"];
+/// Read off the persistent level's WorldSettings.
+pub const WORLD_FIELDS: &[&str] = &["TimeDilation"];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Group {
     Survival,
     Combat,
     Movement,
+    Items,
 }
 
 impl Group {
-    pub const ALL: [Group; 3] = [Group::Survival, Group::Combat, Group::Movement];
+    pub const ALL: [Group; 4] = [Group::Survival, Group::Combat, Group::Movement, Group::Items];
 
     /// How settings.txt names it.
     pub fn id(self) -> &'static str {
@@ -55,6 +61,7 @@ impl Group {
             Group::Survival => "survival",
             Group::Combat => "combat",
             Group::Movement => "movement",
+            Group::Items => "items",
         }
     }
 
@@ -63,6 +70,7 @@ impl Group {
             Group::Survival => "생존",
             Group::Combat => "전투",
             Group::Movement => "이동",
+            Group::Items => "아이템",
         }
     }
 }
@@ -75,6 +83,13 @@ pub enum Effect {
     Chosen(Attr),
     /// Refill to the current value of the second — health to its maximum.
     Fill(Attr, Attr),
+    // Past the hero (extras.rs): what these overwrite is remembered per target.
+    /// Every enemy's time dilation at the slider's value.
+    EnemyTime,
+    /// Every enemy's health held at 1.
+    EnemyFrail,
+    /// Inventory stacks whose class name holds this, kept from going down.
+    Stock(&'static str),
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -86,6 +101,8 @@ pub enum Kind {
     Toggle(&'static [Effect]),
     /// Held while on, at a chosen value.
     Slider { effects: &'static [Effect], min: f32, max: f32, default: f32 },
+    /// Inventory stacks whose class name holds `class`, written once (extras.rs).
+    SetStock { class: &'static str, max: f32, default: f32 },
 }
 
 pub struct Cheat {
@@ -146,6 +163,20 @@ pub const CHEATS: &[Cheat] = &[
     // The hero's own time dilation speeds up everything it does — attacks, dodges,
     // movement — and leaves enemies alone.
     slider("hero_time", Group::Movement, "주인공 시간 배속 (기본 1)", &[Chosen(a::TIME)], 1.0, 3.0, 1.5, true),
+    // The world's own clock: everything, hero included, at this speed.
+    slider("game_speed", Group::Movement, "게임 속도 (기본 1)", &[Chosen(a::WORLD_TIME)], 0.2, 3.0, 0.5, true),
+    // Enemies: their own clock and their health (extras.rs).
+    slider("enemy_time", Group::Combat, "적 속도 (기본 1)", &[Effect::EnemyTime], 0.05, 1.0, 0.3, true),
+    toggle("frail", Group::Combat, "약한 적 (한 방에 처치)", &[Effect::EnemyFrail], true),
+    // Items: the stack counts in the inventory (extras.rs).
+    toggle("stock", Group::Items, "소모품 줄지 않음", &[Effect::Stock("Useable")], true),
+    Cheat {
+        id: "shards",
+        group: Group::Items,
+        label: "가진 샤드 수량",
+        kind: Kind::SetStock { class: "Shard", max: 999.0, default: 999.0 },
+        verified: true,
+    },
 ];
 
 impl Cheat {
@@ -153,7 +184,7 @@ impl Cheat {
     pub fn effects(&self) -> &'static [Effect] {
         match self.kind {
             Kind::Toggle(e) | Kind::Slider { effects: e, .. } => e,
-            Kind::Set { .. } => &[],
+            Kind::Set { .. } | Kind::SetStock { .. } => &[],
         }
     }
 }
@@ -196,7 +227,7 @@ impl Active {
             Some((id, v)) => (id, Some(v.parse::<f32>().map_err(|_| format!("{v} is not a number"))?)),
             None => (s, None),
         };
-        let held = || ids(|k| !matches!(k, Kind::Set { .. }));
+        let held = || ids(|k| !matches!(k, Kind::Set { .. } | Kind::SetStock { .. }));
         let c = find(id).ok_or_else(|| format!("unknown cheat `{id}` — one of: {}", held()))?;
         match (c.kind, value) {
             (Kind::Toggle(_), None) => Ok(Active { cheat: c.id, value: 0.0 }),
@@ -209,11 +240,13 @@ impl Active {
                     Err(format!("{id} takes {min}..={max}"))
                 }
             }
-            (Kind::Set { .. }, _) => Err(format!("{id} is written once — use `set {id} <value>`, not hold")),
+            (Kind::Set { .. } | Kind::SetStock { .. }, _) => {
+                Err(format!("{id} is written once — use `set {id} <value>`, not hold"))
+            }
         }
     }
 
-    fn effects(self) -> &'static [Effect] {
+    pub fn effects(self) -> &'static [Effect] {
         find(self.cheat).map_or(&[], Cheat::effects)
     }
 
@@ -223,7 +256,7 @@ impl Active {
             .iter()
             .filter_map(|e| match *e {
                 Fixed(a, _) | Chosen(a) => Some(a),
-                Fill(..) => None,
+                _ => None,
             })
             .collect()
     }
@@ -234,6 +267,8 @@ impl Active {
                 Fixed(a, v) => s.put(a, v)?,
                 Chosen(a) => s.put(a, self.value)?,
                 Fill(a, max) => s.put(a, s.current(max)?)?,
+                // extras.rs, each tick after the hero's
+                Effect::EnemyTime | Effect::EnemyFrail | Effect::Stock(_) => {}
             }
         }
         Ok(())
@@ -249,9 +284,11 @@ pub fn attributes() -> Vec<Attr> {
                 v.push(target);
                 v.extend(caps);
             }
+            Kind::SetStock { .. } => {}
             Kind::Toggle(e) | Kind::Slider { effects: e, .. } => v.extend(e.iter().flat_map(|e| match *e {
                 Fixed(a, _) | Chosen(a) => vec![a],
                 Fill(a, b) => vec![a, b],
+                _ => vec![],
             })),
         }
     }
@@ -277,7 +314,11 @@ mod tests {
         for c in CHEATS {
             if let Kind::Slider { min, max, default, effects } = c.kind {
                 assert!(min < max && (min..=max).contains(&default), "{}", c.id);
-                assert!(effects.iter().any(|e| matches!(e, Chosen(_))), "{} has a slider that moves nothing", c.id);
+                assert!(
+                    effects.iter().any(|e| matches!(e, Chosen(_) | Effect::EnemyTime)),
+                    "{} has a slider that moves nothing",
+                    c.id
+                );
             }
         }
     }

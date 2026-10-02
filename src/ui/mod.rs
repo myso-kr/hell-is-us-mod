@@ -33,6 +33,9 @@ pub enum Request {
     Set(&'static str, f32),
     Toggles(Vec<Active>),
     Restore,
+    /// Remember where the hero stands, in a slot; go back to one.
+    SavePosition(usize),
+    LoadPosition(usize),
     Quit,
 }
 
@@ -104,6 +107,14 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
                     reply(false, e);
                 }
             }
+            Ok(Request::SavePosition(i)) => match engine.save_position(i) {
+                Ok(p) => reply(true, format!("위치 {} 저장 ({:.0}, {:.0}, {:.0})", i + 1, p[0], p[1], p[2])),
+                Err(e) => reply(false, e),
+            },
+            Ok(Request::LoadPosition(i)) => match engine.load_position(i) {
+                Ok(()) => reply(true, format!("위치 {} 로 이동", i + 1)),
+                Err(e) => reply(false, e),
+            },
             Ok(Request::Restore) => match engine.stop() {
                 Ok(()) => reply(true, "originals restored".into()),
                 Err(e) => reply(false, e),
