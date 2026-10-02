@@ -8,9 +8,11 @@ use crate::attr::{Attr, Session};
 use crate::cheats::{self, Active};
 use crate::game::locate;
 use crate::game::process::Game;
+use crate::geometry::{Footprint, Geometry};
 use crate::hold::{self, Originals};
 use crate::player::{self, Chain};
 use std::cell::RefCell;
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 pub struct Attached {
@@ -22,13 +24,22 @@ pub struct Attached {
     chain: RefCell<Option<Chain>>,
     /// Enemies, items and the like for the minimap.
     scanner: RefCell<Scanner>,
+    /// The minimap's background: static meshes seen from above.
+    geometry: RefCell<Geometry>,
 }
 
 pub fn attach() -> Result<Attached, String> {
     let game = Game::find()?.ok_or("the game is not running")?;
     let version = locate::from_exe(&game.exe).map(|i| i.version).unwrap_or_else(|_| "unknown".into());
     let anchors = anchors::discover(&game, game.base)?;
-    Ok(Attached { game, anchors, version, chain: RefCell::new(None), scanner: RefCell::default() })
+    Ok(Attached {
+        game,
+        anchors,
+        version,
+        chain: RefCell::new(None),
+        scanner: RefCell::default(),
+        geometry: RefCell::default(),
+    })
 }
 
 impl Attached {
@@ -76,7 +87,22 @@ impl Attached {
         let hero = chain.hero(&self.game, &self.anchors)?;
         let mut s = self.scanner.borrow_mut();
         s.refresh(&self.game, &self.anchors.names, hero, chain.root, chain.sets)?;
+        if let Some(actors) = s.actors_offset() {
+            self.geometry.borrow_mut().refresh(
+                &self.game,
+                &self.anchors.names,
+                hero,
+                chain.root,
+                chain.location,
+                actors,
+            );
+        }
         Ok(s.positions(&self.game, chain.location))
+    }
+
+    /// The footprints found so far (shared, not copied).
+    pub fn footprints(&self) -> Arc<Vec<Footprint>> {
+        self.geometry.borrow().footprints.clone()
     }
 }
 
@@ -102,6 +128,8 @@ pub struct Snapshot {
     pub world: Option<String>,
     /// What the minimap marks besides the hero.
     pub things: Vec<Thing>,
+    /// The minimap's background.
+    pub footprints: Arc<Vec<Footprint>>,
 }
 
 impl Snapshot {
@@ -178,6 +206,7 @@ impl Engine {
             pose: None,
             world: None,
             things: Vec::new(),
+            footprints: Arc::default(),
         };
         if let Err(e) = self.refresh() {
             snap.game = Err(e.clone());
@@ -192,7 +221,10 @@ impl Engine {
             // every loading screen, and the player expects god mode to survive one.
             if snap.gate.is_ok() {
                 match a.things() {
-                    Ok(t) => snap.things = t,
+                    Ok(t) => {
+                        snap.things = t;
+                        snap.footprints = a.footprints();
+                    }
                     Err(e) => snap.notice = Some(format!("minimap: {e}")),
                 }
                 match a.session() {

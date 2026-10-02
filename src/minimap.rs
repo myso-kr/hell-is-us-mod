@@ -38,6 +38,8 @@ pub struct MapState {
     pub hidden: BTreeSet<Sub>,
     /// How big the icons are, in pixels.
     pub icon_px: u8,
+    /// Whether the level's walls and floors are drawn under everything else.
+    pub terrain: bool,
     /// Per world: the trail, with `None` where it breaks.
     pub trails: BTreeMap<String, Vec<Option<Point>>>,
     pub markers: BTreeMap<String, Vec<Point>>,
@@ -56,6 +58,7 @@ impl Default for MapState {
             layers: ALL_LAYERS,
             hidden: BTreeSet::new(),
             icon_px: 16,
+            terrain: true,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
             dirty: false,
@@ -115,8 +118,15 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nicon_px {}\n",
-            self.show, self.heading_up, self.radius_m, self.toggle_key, self.marker_key, self.layers, self.icon_px
+            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\n",
+            self.show,
+            self.heading_up,
+            self.radius_m,
+            self.toggle_key,
+            self.marker_key,
+            self.layers,
+            self.icon_px,
+            self.terrain
         );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
@@ -140,6 +150,7 @@ impl MapState {
     /// A broken line costs only itself.
     pub fn parse(text: &str) -> MapState {
         let mut s = MapState::default();
+        let mut layers_version = 0u8;
         let point = |f: &[&str]| -> Option<Point> {
             let v: Vec<f32> = f.iter().filter_map(|x| x.parse().ok()).filter(|v: &f32| v.is_finite()).collect();
             (v.len() == 3).then(|| [v[0], v[1], v[2]])
@@ -154,6 +165,7 @@ impl MapState {
                         s.radius_m = r;
                     }
                 }
+                ["terrain", v] => s.terrain = v == "true",
                 ["icon_px", v] => {
                     if let Some(px) = v.parse::<u8>().ok().filter(|p| ICON_PX.contains(p)) {
                         s.icon_px = px;
@@ -164,6 +176,7 @@ impl MapState {
                         s.hidden.insert(sub);
                     }
                 }
+                ["layers_version", v] => layers_version = v.parse().unwrap_or(0),
                 ["layers", v] => {
                     if let Ok(b) = v.parse::<u8>() {
                         s.layers = b & ALL_LAYERS;
@@ -193,6 +206,10 @@ impl MapState {
                 _ => {}
             }
         }
+        // A file from before the save-point kind: that kind starts on.
+        if layers_version < 2 {
+            s.layers |= crate::actors::Kind::Save.bit();
+        }
         if s.toggle_key == s.marker_key {
             (s.toggle_key, s.marker_key) = (9, 6);
         }
@@ -211,7 +228,9 @@ impl MapState {
 }
 
 /// Every `actors::Kind` drawn.
-pub const ALL_LAYERS: u8 = 0b1_1111;
+pub const ALL_LAYERS: u8 = 0b11_1111;
+/// The layer bits as of this version; files without it predate the save-point kind.
+const LAYERS_VERSION: u8 = 2;
 
 /// F1–F12, except F8: that one is the panel's.
 pub fn usable_key(k: u8) -> bool {
@@ -319,6 +338,7 @@ mod tests {
             radius_m: 120.0,
             layers: 0b101,
             icon_px: 22,
+            terrain: false,
             hidden: [Sub::Lore, Sub::Door].into_iter().collect(),
             ..MapState::default()
         };
@@ -327,6 +347,10 @@ mod tests {
         s.observe("Map_A", [90_000.0, 0.0, 0.0]);
         s.dirty = false;
         assert_eq!(MapState::parse(&s.render()), s);
+        let old = MapState::parse("layers 31\n");
+        assert_eq!(old.layers, ALL_LAYERS, "a file from before save points turns them on");
+        let off = MapState::parse("layers 31\nlayers_version 2\n");
+        assert_eq!(off.layers, 31, "a file that knows of them keeps them off");
         let k = MapState::parse("toggle_key 10\nmarker_key 5\n");
         assert_eq!((k.toggle_key, k.marker_key), (10, 5));
         let k = MapState::parse("toggle_key 8\nmarker_key 13\n");

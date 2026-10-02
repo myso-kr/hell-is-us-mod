@@ -43,6 +43,16 @@ been verified in play yet.
 - Map filters go below the five kinds, to 22 finer sorts read from class names
   (enemy families; medicine, food, weapons, gear, skills, research, lore, quest
   items...). The icon size is set in the panel (10–32 px).
+- The minimap draws the level itself under everything else. Static meshes on the
+  hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
+  from each mesh's bounds and transform. The game ships no map of the area it could
+  use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- Save points, the objects you interact with to save, get their own group and icon.
+  Autosave triggers are not shown.
+- Heights are told apart. Ground is coloured by its height against the hero's feet:
+  deep, lower, level, raised, cliffs and rocks, and walls. Each band has an edge in
+  its own colour where the ground steps, so the edges read as contour lines. Big
+  cliffs are no longer left out, and the map tab shows a legend.
 - The panel has more room: it is wider and uses larger spacing and text. The map tab
   is split into four boxes. Kinds are on/off switches with their map colour, finer
   sorts are coloured chips under 'details', and counts are in parentheses.

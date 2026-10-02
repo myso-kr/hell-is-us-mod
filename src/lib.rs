@@ -8,6 +8,7 @@ pub mod cli;
 #[cfg(windows)]
 pub mod engine;
 pub mod game;
+pub mod geometry;
 pub mod hold;
 pub mod icons;
 pub mod journal;

@@ -19,6 +19,7 @@ fn source(k: Kind) -> &'static str {
         Kind::Loot => include_str!("../assets/icons/loot.svg"),
         Kind::Npc => include_str!("../assets/icons/npc.svg"),
         Kind::Interact => include_str!("../assets/icons/interact.svg"),
+        Kind::Save => include_str!("../assets/icons/save.svg"),
     }
 }
 

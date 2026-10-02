@@ -70,8 +70,9 @@ src/
   cheats.rs       치트 표 (7행), 일반 필드 목록 HERO_FIELDS / MOVEMENT_FIELDS
   actors.rs       미니맵에 찍을 액터: 레벨 순회, 클래스 계보로 분류(classify), 1 Hz 스캔 + 매 스텝 위치,
                   다 쓴 것 거르기(Done: 적 체력 0, InteractionActionComponent.bHasBeenActivated),
-                  세부 종류 Sub 22종 (적: 계열명, 아이템: 클래스 이름 접두사·단어, 문·퍼즐: 계보) — Kind 는 Sub 에서
+                  그룹 Kind 6개(적·아이템·전리품·NPC·문·퍼즐·저장), 세부 종류 Sub 23종 (적: 계열명, 아이템: 클래스 이름 접두사·단어, 문·퍼즐: 계보) — Kind 는 Sub 에서
   icons.rs        assets/icons/*.svg 를 include_str! 로 넣고 resvg 로 래스터화 (미리 곱한 ARGB)
+  geometry.rs     미니맵 배경: 정적 메시 → 위에서 본 사각형(Footprint), 액터별 캐시, 3초마다 갱신
   minimap.rs      미니맵 상태(경로·마커·설정·레이어, 월드별), 투영(View), minimap.txt 형식
   raster.rs       미리 곱한 알파 픽셀 버퍼에 원·고리·선·삼각형·N, draw_map (한 프레임)
   hold.rs         원래 값 기록(originals.txt), 부분 복구

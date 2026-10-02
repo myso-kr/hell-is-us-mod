@@ -28,10 +28,11 @@ pub enum Kind {
     Loot,
     Npc,
     Interact,
+    Save,
 }
 
 impl Kind {
-    pub const ALL: [Kind; 5] = [Kind::Enemy, Kind::Item, Kind::Loot, Kind::Npc, Kind::Interact];
+    pub const ALL: [Kind; 6] = [Kind::Enemy, Kind::Item, Kind::Loot, Kind::Npc, Kind::Interact, Kind::Save];
 
     pub fn label(self) -> &'static str {
         match self {
@@ -40,6 +41,7 @@ impl Kind {
             Kind::Loot => "전리품",
             Kind::Npc => "NPC",
             Kind::Interact => "문·퍼즐",
+            Kind::Save => "저장",
         }
     }
 
@@ -55,6 +57,7 @@ impl Kind {
             Kind::Loot => [255, 150, 40],
             Kind::Npc => [80, 200, 240],
             Kind::Interact => [190, 130, 255],
+            Kind::Save => [250, 220, 70],
         }
     }
 }
@@ -84,10 +87,11 @@ pub enum Sub {
     Door,
     LymbicLock,
     Translation,
+    SavePoint,
 }
 
 impl Sub {
-    pub const ALL: [Sub; 22] = [
+    pub const ALL: [Sub; 23] = [
         Sub::Feral,
         Sub::Primeval,
         Sub::Negator,
@@ -110,6 +114,7 @@ impl Sub {
         Sub::Door,
         Sub::LymbicLock,
         Sub::Translation,
+        Sub::SavePoint,
     ];
 
     pub fn kind(self) -> Kind {
@@ -121,6 +126,7 @@ impl Sub {
             Loot => Kind::Loot,
             Npc => Kind::Npc,
             Door | LymbicLock | Translation => Kind::Interact,
+            SavePoint => Kind::Save,
         }
     }
 
@@ -150,6 +156,7 @@ impl Sub {
             Door => "interact.door",
             LymbicLock => "interact.lock",
             Translation => "interact.translation",
+            SavePoint => "save",
         }
     }
 
@@ -178,6 +185,7 @@ impl Sub {
             Door => "문",
             LymbicLock => "림빅 잠금",
             Translation => "드론 번역",
+            SavePoint => "저장 지점",
         }
     }
 }
@@ -237,6 +245,8 @@ pub fn classify(lineage: &[String]) -> Option<Sub> {
         Some(Sub::Loot)
     } else if has("NpcActor") {
         Some(Sub::Npc)
+    } else if has("InteractableCheckpointActor") {
+        Some(Sub::SavePoint)
     } else if any("LymbicLockPanel") {
         Some(Sub::LymbicLock)
     } else if any("DroneTranslation") {
@@ -316,6 +326,10 @@ fn find_done(m: &dyn Memory, n: &Names, actor: u64, kind: Kind, sets: u64) -> Op
         let p = n.field(m, set, "Health").filter(|p| p.size == 16)?;
         return Some(Done::Health(set + p.offset as u64 + 0xC));
     }
+    // A save point is used again and again: having been used says nothing.
+    if kind == Kind::Save {
+        return None;
+    }
     let comp = component(m, n, actor, "InteractionActionComponent")?;
     let p = n.field(m, comp, "bHasBeenActivated").filter(|p| p.size == 1)?;
     Some(Done::Activated(comp + p.offset as u64))
@@ -333,7 +347,8 @@ pub struct Scanner {
     scanned: Option<Instant>,
 }
 
-fn array(m: &dyn Memory, at: u64, cap: u32) -> Vec<u64> {
+/// A `TArray` of object pointers, read in one go; empty if it does not look like one.
+pub(crate) fn array(m: &dyn Memory, at: u64, cap: u32) -> Vec<u64> {
     let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { return Vec::new() };
     if !mem::plausible(data) || num == 0 || num > cap {
         return Vec::new();
@@ -356,6 +371,11 @@ fn find_actors(m: &dyn Memory, level: u64, hero: u64) -> Option<u64> {
 }
 
 impl Scanner {
+    /// `ULevel::Actors`' offset, once a scan has found it.
+    pub fn actors_offset(&self) -> Option<u64> {
+        self.actors
+    }
+
     /// A full scan when one is due. `hero` is the hero pawn; `root` is
     /// `Actor.RootComponent`'s offset, `sets` the ability system's `SpawnedAttributes`.
     pub fn refresh(&mut self, m: &dyn Memory, n: &Names, hero: u64, root: u64, sets: u64) -> Result<(), String> {
@@ -476,6 +496,18 @@ mod tests {
         );
         assert_eq!(classify(&l(&["X_DroneTranslation_Interact_BP_C", "InteractableActor"])), Some(Sub::Translation));
         assert_eq!(classify(&l(&["SmallFenceDoor01_BP_C", "InteractableDoorActor"])), Some(Sub::Door));
+        let save = l(&[
+            "SenedraTravelGated_SavePointRight_Interact_BP_C",
+            "Base_SavePoint_Interact_BP_C",
+            "InteractableCheckpointActor",
+            "InteractableActor",
+        ]);
+        assert_eq!(classify(&save), Some(Sub::SavePoint));
+        assert_eq!(
+            classify(&l(&["Base_CheckPoint_Trigger_BP_C", "OverlapCheckpointActor"])),
+            None,
+            "autosave triggers"
+        );
         assert_eq!(classify(&l(&["Base_TutorialToast_Interact_BP_C", "InteractableActor"])), None, "tutorial triggers");
         assert_eq!(classify(&l(&["StaticMeshActor", "Actor", "Object"])), None);
     }
@@ -495,6 +527,6 @@ mod tests {
             assert_eq!(acc & k.bit(), 0);
             acc | k.bit()
         });
-        assert_eq!(all, 0b1_1111);
+        assert_eq!(all, 0b11_1111);
     }
 }

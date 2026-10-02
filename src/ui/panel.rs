@@ -73,7 +73,7 @@ pub struct Panel {
     /// The minimap tab.
     map: bool,
     /// Which kinds' finer sorts are unfolded in the map tab.
-    unfolded: [bool; 5],
+    unfolded: [bool; 6],
     marks: verify::Marks,
     on: HashMap<&'static str, bool>,
     value: HashMap<&'static str, f32>,
@@ -124,7 +124,7 @@ impl Panel {
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
             debug: tab == Some("debug"),
             map: tab == Some("map"),
-            unfolded: [false; 5],
+            unfolded: [false; 6],
             wanted: resume.clone(),
             keep: saved.keep,
             resume: (saved.keep && !resume.is_empty()).then_some(resume),
@@ -322,6 +322,37 @@ impl Panel {
                 ui.label("아이콘 크기");
                 ui.add(egui::Slider::new(&mut state.icon_px, crate::minimap::ICON_PX).suffix(" px"));
                 ui.end_row();
+                ui.label("벽·바닥 윤곽");
+                ui.horizontal(|ui| {
+                    toggle(ui, &mut state.terrain);
+                    let n = snap.map_or(0, |s| s.footprints.len());
+                    ui.label(RichText::new(format!("지금 불러온 구조물 ({n})")).color(DIM).small());
+                });
+                ui.end_row();
+                if state.terrain {
+                    ui.label("");
+                    ui.horizontal_wrapped(|ui| {
+                        ui.spacing_mut().item_spacing.x = 10.0;
+                        for b in crate::raster::Band::ALL {
+                            let (fill, edge) = b.colours();
+                            let swatch = Color32::from_rgb(
+                                fill.0.max(edge.0 / 2),
+                                fill.1.max(edge.1 / 2),
+                                fill.2.max(edge.2 / 2),
+                            );
+                            let (r, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                            ui.painter().rect_filled(r, 2.0, swatch);
+                            ui.painter().rect_stroke(
+                                r,
+                                2.0,
+                                egui::Stroke::new(1.0, Color32::from_rgb(edge.0, edge.1, edge.2)),
+                                egui::StrokeKind::Inside,
+                            );
+                            ui.label(RichText::new(b.label()).small());
+                        }
+                    });
+                    ui.end_row();
+                }
             });
         });
 
@@ -427,7 +458,7 @@ impl Panel {
 
         let changed = (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key)
             != (before.show, before.heading_up, before.radius_m, before.toggle_key, before.marker_key)
-            || (state.layers, state.icon_px) != (before.layers, before.icon_px)
+            || (state.layers, state.icon_px, state.terrain) != (before.layers, before.icon_px, before.terrain)
             || state.hidden != before.hidden;
         if changed {
             state.dirty = true;

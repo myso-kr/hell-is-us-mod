@@ -193,9 +193,9 @@ pub fn run(shared: Arc<Shared>) {
         let game = shared.game_pid.load(Ordering::SeqCst);
         let focus = pid_of(unsafe { GetForegroundWindow() });
         let focused = game != 0 && (focus == game || focus == std::process::id());
-        let (pose, world, things) = match shared.snap.lock().unwrap().as_ref() {
-            Some(s) => (s.pose, s.world.clone(), s.things.clone()),
-            None => (None, None, Vec::new()),
+        let (pose, world, things, footprints) = match shared.snap.lock().unwrap().as_ref() {
+            Some(s) => (s.pose, s.world.clone(), s.things.clone(), s.footprints.clone()),
+            None => (None, None, Vec::new(), Default::default()),
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
 
@@ -232,7 +232,7 @@ pub fn run(shared: Arc<Shared>) {
                     heading_up: state.heading_up,
                     scale: (SIZE_PX as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
                 };
-                draw_map(&mut cv, &state, world, &view, &things, icons.as_ref());
+                draw_map(&mut cv, &state, world, &view, &things, icons.as_ref(), &footprints);
                 surface.present(hwnd, &cv, r.right - SIZE_PX - MARGIN, r.top + MARGIN + 24);
                 if !shown {
                     unsafe { ShowWindow(hwnd, SW_SHOWNOACTIVATE) };

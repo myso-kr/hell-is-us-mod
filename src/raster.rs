@@ -6,6 +6,7 @@
 //! takes from a 32-bit top-down DIB. Edges are anti-aliased by coverage over one pixel.
 
 use crate::actors::{Kind, Thing};
+use crate::geometry::Footprint;
 use crate::icons::Icons;
 use crate::minimap::{MapState, View};
 
@@ -118,6 +119,26 @@ impl Canvas {
         }
     }
 
+    /// A convex polygon, its points in either winding.
+    pub fn polygon(&mut self, p: &[(f32, f32)], c: Rgba) {
+        if p.len() < 3 {
+            return;
+        }
+        let edge = |a: (f32, f32), b: (f32, f32), x: f32, y: f32| {
+            let (ex, ey) = (b.0 - a.0, b.1 - a.1);
+            ((x - a.0) * ey - (y - a.1) * ex) / (ex * ex + ey * ey).sqrt().max(f32::EPSILON)
+        };
+        // Signed area decides which side is inside.
+        let area: f32 = (0..p.len()).map(|i| p[i].0 * p[(i + 1) % p.len()].1 - p[(i + 1) % p.len()].0 * p[i].1).sum();
+        let sign = if area < 0.0 { 1.0 } else { -1.0 };
+        let (x0, x1) = (p.iter().map(|q| q.0).fold(f32::MAX, f32::min), p.iter().map(|q| q.0).fold(f32::MIN, f32::max));
+        let (y0, y1) = (p.iter().map(|q| q.1).fold(f32::MAX, f32::min), p.iter().map(|q| q.1).fold(f32::MIN, f32::max));
+        self.each(x0, y0, x1, y1, |s, x, y, px, py| {
+            let d = (0..p.len()).map(|i| sign * edge(p[i], p[(i + 1) % p.len()], px, py)).fold(f32::MAX, f32::min);
+            s.blend(x, y, c, d + 0.5);
+        });
+    }
+
     /// The letter N, `size` px tall, centred on (cx, cy) — the only text the map needs.
     pub fn letter_n(&mut self, cx: f32, cy: f32, size: f32, c: Rgba) {
         let (hw, hh) = (size * 0.32, size / 2.0);
@@ -135,20 +156,153 @@ const MARKER: Rgba = Rgba(255, 200, 60, 240);
 const HERO: Rgba = Rgba(255, 255, 255, 255);
 const NORTH: Rgba = Rgba(255, 110, 90, 255);
 const OUTLINE: Rgba = Rgba(0, 0, 0, 200);
-
 fn colour(k: Kind) -> Rgba {
     let [r, g, b] = k.rgb();
     Rgba(r, g, b, 255)
 }
 
+/// Lower than this (cm) is a floor; higher stands up.
+const FLAT: f32 = 80.0;
+/// Something standing up and wider than this (cm) is a cliff or a big rock, whose box
+/// is far larger than its shape: drawn as faint high ground, not as a wall.
+const MAX_STANDING: f32 = 2_500.0;
+
+/// How a footprint is drawn, by its height against the hero's feet. Each band is
+/// laid down as one shape with an edge in its own colour, so where the ground steps
+/// up or down a line runs — the map's contour lines. Drawn in this order.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Band {
+    /// Surfaces more than 4 m below the feet.
+    Deep,
+    /// Surfaces from 4 m to 1.2 m below.
+    Lower,
+    /// The hero's own level.
+    Level,
+    /// Surfaces up to 3 m above: steps, platforms, ledges.
+    Raised,
+    /// Cliffs and big rocks: boxes too big to be walls.
+    High,
+    /// What stands up at the hero's level: walls, pillars, doors.
+    Wall,
+}
+
+impl Band {
+    pub const ALL: [Band; 6] = [Band::Deep, Band::Lower, Band::Level, Band::Raised, Band::High, Band::Wall];
+
+    /// (fill, edge).
+    pub fn colours(self) -> (Rgba, Rgba) {
+        match self {
+            Band::Deep => (Rgba(40, 70, 120, 45), Rgba(70, 110, 170, 90)),
+            Band::Lower => (Rgba(70, 110, 150, 55), Rgba(110, 160, 205, 140)),
+            Band::Level => (Rgba(120, 130, 140, 55), Rgba(165, 175, 185, 140)),
+            Band::Raised => (Rgba(190, 160, 105, 70), Rgba(235, 200, 130, 190)),
+            Band::High => (Rgba(140, 100, 70, 45), Rgba(185, 140, 95, 120)),
+            Band::Wall => (Rgba(185, 190, 196, 85), Rgba(240, 242, 244, 215)),
+        }
+    }
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Band::Deep => "깊은 곳",
+            Band::Lower => "낮은 곳",
+            Band::Level => "같은 높이",
+            Band::Raised => "높은 곳",
+            Band::High => "절벽·바위",
+            Band::Wall => "벽",
+        }
+    }
+}
+
+/// Which band a footprint falls in for a hero whose feet are at `feet` (cm), or
+/// `None` when it is not drawn: a ceiling, or too far up or down to matter.
+pub fn band(f: &Footprint, feet: f32) -> Option<Band> {
+    let (bottom, top) = (f.zmin - feet, f.zmax - feet);
+    if bottom > 300.0 || top < -800.0 {
+        return None; // overhead (ceilings, upper floors) or far below
+    }
+    if f.height() >= FLAT {
+        if f.size() > MAX_STANDING {
+            return Some(Band::High);
+        }
+        if bottom <= 250.0 && top >= -150.0 {
+            return Some(Band::Wall);
+        }
+    }
+    Some(match top {
+        t if t < -400.0 => Band::Deep,
+        t if t < -120.0 => Band::Lower,
+        t if t <= 60.0 => Band::Level,
+        t if t <= 300.0 => Band::Raised,
+        _ => return None,
+    })
+}
+
 /// One frame of the minimap: a disc of radius `r` px centred in the canvas.
 /// With `icons`, things are drawn as icons; without, as coloured dots.
-pub fn draw_map(cv: &mut Canvas, state: &MapState, world: &str, view: &View, things: &[Thing], icons: Option<&Icons>) {
+pub fn draw_map(
+    cv: &mut Canvas,
+    state: &MapState,
+    world: &str,
+    view: &View,
+    things: &[Thing],
+    icons: Option<&Icons>,
+    footprints: &[Footprint],
+) {
     cv.clear();
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
     let r = cx.min(cy) - 14.0;
     let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
     cv.disc(cx, cy, r, BACKGROUND);
+
+    if state.terrain {
+        // Feet are about 90 cm below the capsule's centre.
+        let feet = view.center[2] - 90.0;
+        let reach = r / view.scale.max(f32::EPSILON);
+        let mut masks: Vec<Canvas> = Band::ALL.iter().map(|_| Canvas::new(cv.w, cv.h)).collect();
+        for f in footprints {
+            let c = f.center();
+            let d = ((c[0] - view.center[0]).powi(2) + (c[1] - view.center[1]).powi(2)).sqrt();
+            if d - f.reach() > reach {
+                continue;
+            }
+            let Some(b) = band(f, feet) else { continue };
+            let pts: Vec<(f32, f32)> = f
+                .corners
+                .iter()
+                .map(|c| {
+                    let (x, y) = view.project([c[0], c[1], 0.0]);
+                    (cx + x, cy + y)
+                })
+                .collect();
+            masks[Band::ALL.iter().position(|x| *x == b).unwrap()].polygon(&pts, Rgba(255, 255, 255, 255));
+        }
+        // Each band is one shape — the union of its footprints — laid over the map once,
+        // with an edge where it ends. Overlaps do not pile up.
+        let rim = (r - 1.0) * (r - 1.0);
+        for (mask, band) in masks.iter().zip(Band::ALL) {
+            let (fill, edge) = band.colours();
+            let cover = |x: usize, y: usize| (mask.px[y * mask.w + x] >> 24) as f32 / 255.0;
+            for y in 1..cv.h - 1 {
+                for x in 1..cv.w - 1 {
+                    let (dx, dy) = (x as f32 + 0.5 - cx, y as f32 + 0.5 - cy);
+                    if dx * dx + dy * dy > rim {
+                        continue;
+                    }
+                    let a = cover(x, y);
+                    if a <= 0.0 {
+                        continue;
+                    }
+                    let edged = a >= 0.5
+                        && [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)].iter().any(|&(nx, ny)| cover(nx, ny) < 0.5);
+                    if edged {
+                        cv.blend(x as i32, y as i32, edge, 1.0);
+                    } else {
+                        cv.blend(x as i32, y as i32, fill, a);
+                    }
+                }
+            }
+        }
+    }
 
     if let Some(trail) = state.trails.get(world) {
         for pair in trail.windows(2) {
@@ -261,6 +415,54 @@ mod tests {
     }
 
     #[test]
+    fn a_square_polygon_fills_inside_only() {
+        let mut cv = Canvas::new(20, 20);
+        cv.polygon(&[(4.0, 4.0), (16.0, 4.0), (16.0, 16.0), (4.0, 16.0)], Rgba(255, 255, 255, 255));
+        assert_eq!(cv.px[10 * 20 + 10] >> 24, 255);
+        assert_eq!(cv.px[20 + 1] >> 24, 0);
+        let mut cv = Canvas::new(20, 20);
+        cv.polygon(&[(4.0, 4.0), (4.0, 16.0), (16.0, 16.0), (16.0, 4.0)], Rgba(255, 255, 255, 255));
+        assert_eq!(cv.px[10 * 20 + 10] >> 24, 255, "either winding");
+    }
+
+    #[test]
+    fn footprints_fall_in_bands_by_height_against_the_feet() {
+        let fp = |z: f64, half_height: f64, half_width: f64| {
+            crate::geometry::footprint([0.0, 0.0, z], 0.0, [1.0; 3], [0.0; 3], [half_width, half_width, half_height])
+                .unwrap()
+        };
+        let feet = 0.0;
+        assert_eq!(band(&fp(0.0, 10.0, 300.0), feet), Some(Band::Level), "the floor underfoot");
+        assert_eq!(band(&fp(-250.0, 10.0, 300.0), feet), Some(Band::Lower));
+        assert_eq!(band(&fp(-600.0, 10.0, 300.0), feet), Some(Band::Deep));
+        assert_eq!(band(&fp(150.0, 10.0, 300.0), feet), Some(Band::Raised), "a platform");
+        assert_eq!(band(&fp(150.0, 150.0, 100.0), feet), Some(Band::Wall));
+        assert_eq!(band(&fp(500.0, 2000.0, 3000.0), feet), Some(Band::High), "a cliff");
+        assert_eq!(band(&fp(450.0, 10.0, 300.0), feet), None, "a ceiling");
+        assert_eq!(band(&fp(-2000.0, 10.0, 300.0), feet), None, "far below");
+    }
+
+    #[test]
+    fn walls_on_the_heros_floor_are_drawn_and_ceilings_are_not() {
+        let s = MapState { terrain: true, ..MapState::default() };
+        let v = View { center: [0.0, 0.0, 100.0], yaw_deg: 0.0, heading_up: false, scale: 0.05 };
+        // A wall 10 m north of the hero, standing on their floor; a ceiling slab over them.
+        let wall =
+            crate::geometry::footprint([1000.0, 0.0, 100.0], 0.0, [1.0; 3], [0.0; 3], [100.0, 300.0, 150.0]).unwrap();
+        let ceiling =
+            crate::geometry::footprint([0.0, 0.0, 900.0], 0.0, [1.0; 3], [0.0; 3], [400.0, 400.0, 20.0]).unwrap();
+        let mut cv = Canvas::new(200, 200);
+        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling]);
+        // The wall at 10 m north, 0.05 px/cm: 50 px above the centre.
+        assert!((cv.px[50 * 200 + 100] >> 16) & 0xFF > 60, "wall drawn");
+        // Beside the hero (10 px left), where only the ceiling would be.
+        let bg = cv.px[100 * 200 + 85];
+        let mut plain = Canvas::new(200, 200);
+        draw_map(&mut plain, &s, "W", &v, &[], None, &[]);
+        assert_eq!(bg, plain.px[100 * 200 + 85], "ceiling not drawn");
+    }
+
+    #[test]
     fn icons_blit_opaque_over_the_map() {
         let icons = Icons::new(16).unwrap();
         let mut cv = Canvas::new(200, 200);
@@ -273,6 +475,7 @@ mod tests {
             &v,
             &[Thing { sub: crate::actors::Sub::Medicine, at: [3000.0, 0.0, 0.0] }],
             Some(&icons),
+            &[],
         );
         assert!(cv.px[70 * 200 + 100] >> 24 > 200, "item icon 30 px above the centre");
     }
@@ -285,12 +488,12 @@ mod tests {
         s.observe("W", [1000.0, 0.0, 0.0]);
         s.toggle_marker("W", [100_000.0, 0.0, 0.0]);
         let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01 };
-        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None);
+        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None, &[]);
         assert_eq!(cv.px[100 * 200 + 100] >> 24, 255, "hero arrow");
         // 30 m ahead at 0.01 px/cm is 30 px above the centre, in enemy red.
         assert_eq!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235);
         s.layers = 0;
-        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None);
+        draw_map(&mut cv, &s, "W", &v, &[Thing { sub: crate::actors::Sub::Feral, at: [3000.0, 0.0, 0.0] }], None, &[]);
         assert_ne!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235, "layer off, not drawn");
         assert_eq!(cv.px[0], 0, "outside the disc stays clear");
     }

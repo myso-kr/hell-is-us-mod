@@ -46,7 +46,8 @@
 - 2단계 (적·상호작용 표시): 구현함 — GUObjectArray 대신 `World.Levels` → 레벨의 액터 배열(+0xA0,
   리플렉션 밖이라 "주인공을 담은 배열"로 찾음). 1 Hz 전체 스캔 18 ms. 남은 일: 주운 아이템·죽은 적이
   계속 보이면 숨김/사망 상태를 읽어 거른다 — **했음**: 체력 0 / bHasBeenActivated. 아이콘은 SVG(resvg).
-- 3단계 (지도 이미지): 게임에 `Close/Middle/FarWorldMapSoftTexture`, `CompassSumg`,
+- 3단계 (지도 이미지): **조사 끝 → MAP.md. 게임 월드맵은 국가 지도라 배경으로 부적합, 사용자 결정으로
+  B(월드의 정적 메시로 지도 생성) 진행 중.** 원래 계획: 게임에 `Close/Middle/FarWorldMapSoftTexture`, `CompassSumg`,
   `ShowCompass` 가 있다. pak 은 AES 암호화 → AESDumpster 로 키 추출 → FModel 로
   텍스처와 월드↔지도 좌표 변환 데이터를 찾는다. **추출한 에셋은 저장소에 넣지 않는다.**
 - 완료 기준(1단계): 걸으면 점이 움직이고, 회전이 카메라와 맞고, 마커가 재시작 후에도 남음.
