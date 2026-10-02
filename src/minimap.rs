@@ -49,6 +49,19 @@ pub struct MapState {
     pub guide_auto: bool,
     /// Which tiers of goal are shown, one bit per `goals::Tier`.
     pub goal_tiers: u8,
+    /// The world yaw the game calls north (degrees): 270 in Hell Is Us, found by
+    /// comparing with the game's compass item. Kept, in case an area differs.
+    pub north_yaw: f32,
+    /// The big map in the middle of the game window, and its key and radius (m).
+    pub big_key: u8,
+    pub big_radius_m: f32,
+    /// Shown now; not kept across runs.
+    pub big: bool,
+    /// Hide every overlay while a game menu is open (the game shows its cursor, or is
+    /// paused).
+    pub hide_in_menus: bool,
+    /// Draw a walking route (A*) to the guide's goal, not just a straight line.
+    pub route: bool,
     /// The goal being guided to, by actor — chosen in the panel or with the cycle key.
     /// Not kept across runs: actors are new each time.
     pub target: Option<u64>,
@@ -77,6 +90,12 @@ impl Default for MapState {
             guide_auto: true,
             goal_tiers: 0b111,
             target: None,
+            north_yaw: 270.0,
+            big_key: 3,
+            big_radius_m: 250.0,
+            big: false,
+            hide_in_menus: true,
+            route: true,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
             dirty: false,
@@ -136,7 +155,7 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\n",
+            "show {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_key {}\nbig_radius {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\n",
             self.show,
             self.heading_up,
             self.radius_m,
@@ -149,7 +168,12 @@ impl MapState {
             self.compass_key,
             self.cycle_key,
             self.guide_auto,
-            self.goal_tiers
+            self.goal_tiers,
+            self.big_key,
+            self.big_radius_m,
+            self.hide_in_menus,
+            self.route,
+            self.north_yaw
         );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
@@ -190,6 +214,23 @@ impl MapState {
                 }
                 ["terrain", v] => s.terrain = v == "true",
                 ["compass", v] => s.compass = v == "true",
+                ["hide_in_menus", v] => s.hide_in_menus = v == "true",
+                ["route", v] => s.route = v == "true",
+                ["north_yaw", v] => {
+                    if let Some(n) = v.parse::<f32>().ok().filter(|n| (0.0..360.0).contains(n)) {
+                        s.north_yaw = n;
+                    }
+                }
+                ["big_radius", v] => {
+                    if let Some(r) = v.parse::<f32>().ok().filter(|r| (50.0..=2000.0).contains(r)) {
+                        s.big_radius_m = r;
+                    }
+                }
+                ["big_key", v] => {
+                    if let Some(k) = v.parse().ok().filter(|k| usable_key(*k)) {
+                        s.big_key = k;
+                    }
+                }
                 ["guide_auto", v] => s.guide_auto = v == "true",
                 ["goal_tiers", v] => {
                     if let Ok(b) = v.parse::<u8>() {
@@ -250,10 +291,10 @@ impl MapState {
         if layers_version < 2 {
             s.layers |= crate::actors::Kind::Save.bit();
         }
-        // Four keys, four different keys — or all back to their defaults.
-        let keys = [s.toggle_key, s.marker_key, s.compass_key, s.cycle_key];
-        if (0..4).any(|i| keys[i + 1..].contains(&keys[i])) {
-            (s.toggle_key, s.marker_key, s.compass_key, s.cycle_key) = (9, 6, 10, 11);
+        // Five keys, five different keys — or all back to their defaults.
+        let keys = s.keys();
+        if (0..keys.len()).any(|i| keys[i + 1..].contains(&keys[i])) {
+            (s.toggle_key, s.marker_key, s.compass_key, s.cycle_key, s.big_key) = (9, 6, 10, 11, 3);
         }
         s
     }
@@ -266,6 +307,13 @@ impl MapState {
     /// Whether a thing of this sort is drawn: its kind on, and the sort not hidden.
     pub fn shows(&self, sub: Sub) -> bool {
         self.layers & sub.kind().bit() != 0 && !self.hidden.contains(&sub)
+    }
+}
+
+impl MapState {
+    /// Every key this map uses: map, marker, compass, cycle, big map.
+    pub fn keys(&self) -> [u8; 5] {
+        [self.toggle_key, self.marker_key, self.compass_key, self.cycle_key, self.big_key]
     }
 }
 
@@ -287,20 +335,21 @@ pub struct View {
     pub heading_up: bool,
     /// Pixels per centimetre.
     pub scale: f32,
+    /// The world yaw the game calls north (degrees). In Hell Is Us that is 270: what
+    /// the game's own compass shows as north lies along −Y.
+    pub north_deg: f32,
 }
 
 impl View {
     /// A world point as an offset in pixels from the map's centre, y down.
     pub fn project(&self, p: Point) -> (f32, f32) {
         let (dx, dy) = (p[0] - self.center[0], p[1] - self.center[1]);
-        if self.heading_up {
-            let (s, c) = self.yaw_deg.to_radians().sin_cos();
-            let forward = dx * c + dy * s;
-            let right = -dx * s + dy * c;
-            (right * self.scale, -forward * self.scale)
-        } else {
-            (dy * self.scale, -dx * self.scale)
-        }
+        // Whatever is up on the map: the camera's facing, or north.
+        let up = if self.heading_up { self.yaw_deg } else { self.north_deg };
+        let (s, c) = up.to_radians().sin_cos();
+        let forward = dx * c + dy * s;
+        let right = -dx * s + dy * c;
+        (right * self.scale, -forward * self.scale)
     }
 
     /// Which way the hero's arrow points on the map, as a unit vector, y down.
@@ -308,14 +357,15 @@ impl View {
         if self.heading_up {
             (0.0, -1.0)
         } else {
-            let (s, c) = self.yaw_deg.to_radians().sin_cos();
+            let (s, c) = (self.yaw_deg - self.north_deg).to_radians().sin_cos();
             (s, -c)
         }
     }
 
-    /// Which way north (+X) is on the map, as a unit vector, y down.
+    /// Which way north is on the map, as a unit vector, y down.
     pub fn north(&self) -> (f32, f32) {
-        let (x, y) = self.project([self.center[0] + 1.0, self.center[1], self.center[2]]);
+        let (s, c) = self.north_deg.to_radians().sin_cos();
+        let (x, y) = self.project([self.center[0] + c, self.center[1] + s, self.center[2]]);
         let len = (x * x + y * y).sqrt().max(f32::EPSILON);
         (x / len, y / len)
     }
@@ -331,7 +381,7 @@ mod tests {
 
     #[test]
     fn north_up_puts_x_up_and_y_right() {
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: false, scale: 1.0 };
+        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: false, scale: 1.0, north_deg: 0.0 };
         assert!(close(v.project([100.0, 0.0, 0.0]), (0.0, -100.0)));
         assert!(close(v.project([0.0, 100.0, 0.0]), (100.0, 0.0)));
         assert!(close(v.north(), (0.0, -1.0)));
@@ -341,8 +391,20 @@ mod tests {
     }
 
     #[test]
+    fn north_up_follows_the_games_north() {
+        // The game's north along -Y (yaw 270). Yaw turns clockwise seen from above, so
+        // facing -Y the right hand points along +X (yaw 0 = 270 + 90): the game's east.
+        let v = View { center: [0.0; 3], yaw_deg: 270.0, heading_up: false, scale: 1.0, north_deg: 270.0 };
+        let close = |a: (f32, f32), b: (f32, f32)| (a.0 - b.0).abs() < 1e-3 && (a.1 - b.1).abs() < 1e-3;
+        assert!(close(v.project([0.0, -100.0, 0.0]), (0.0, -100.0)), "north is up");
+        assert!(close(v.project([100.0, 0.0, 0.0]), (100.0, 0.0)), "+X is the game's east");
+        assert!(close(v.north(), (0.0, -1.0)));
+        assert!(close(v.heading(), (0.0, -1.0)), "facing the game's north, the arrow points up");
+    }
+
+    #[test]
     fn heading_up_puts_what_is_ahead_up() {
-        let v = View { center: [0.0; 3], yaw_deg: 90.0, heading_up: true, scale: 0.5 };
+        let v = View { center: [0.0; 3], yaw_deg: 90.0, heading_up: true, scale: 0.5, north_deg: 0.0 };
         // Facing +Y: a point ahead on +Y is up, +X (north) is on the left.
         assert!(close(v.project([0.0, 100.0, 0.0]), (0.0, -50.0)));
         assert!(close(v.project([100.0, 0.0, 0.0]), (-50.0, 0.0)));
@@ -386,6 +448,11 @@ mod tests {
             cycle_key: 3,
             guide_auto: false,
             goal_tiers: 0b101,
+            big_key: 4,
+            big_radius_m: 400.0,
+            north_yaw: 90.0,
+            hide_in_menus: false,
+            route: false,
             hidden: [Sub::Lore, Sub::Door].into_iter().collect(),
             ..MapState::default()
         };

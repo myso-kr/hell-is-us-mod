@@ -13,6 +13,7 @@ use crate::goals::{Goal, Goals};
 use crate::gobjects::{self, Objects};
 use crate::hold::{self, Originals};
 use crate::knowledge::{self, Knowledge};
+use crate::obstacles::{Obstacles, Scene};
 use crate::player::{self, Chain};
 use std::cell::RefCell;
 use std::sync::Arc;
@@ -43,10 +44,16 @@ struct Guide {
     knowledge: Option<Knowledge>,
     knowledge_read: Option<Instant>,
     goals: Goals,
+    /// What stands in the way: collision shapes, collected a slice per step.
+    obstacles: Obstacles,
 }
 
 const SAVES_EVERY: Duration = Duration::from_secs(60);
 const KNOWLEDGE_EVERY: Duration = Duration::from_secs(2);
+
+fn mem_ptr(m: &dyn crate::mem::Memory, at: u64) -> Result<u64, String> {
+    crate::mem::read_u64(m, at).filter(|&p| crate::mem::plausible(p)).ok_or_else(|| "pointer unreadable".into())
+}
 
 pub fn attach() -> Result<Attached, String> {
     let game = Game::find()?.ok_or("the game is not running")?;
@@ -121,6 +128,19 @@ impl Attached {
         Ok(s.positions(&self.game, chain.location))
     }
 
+    /// Whether the game is paused: the world's `WorldSettings.Pauser` is set. Menus
+    /// that stop the game set it.
+    pub fn paused(&self) -> Result<bool, String> {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let hero = self.chain()?.hero(m, &self.anchors)?;
+        let level = mem_ptr(m, hero + crate::names::OUTER)?;
+        let world = mem_ptr(m, level + crate::names::OUTER)?;
+        let persistent = n.follow(m, world, "PersistentLevel")?;
+        let settings = n.follow(m, persistent, "WorldSettings")?;
+        let p = n.field(m, settings, "Pauser").ok_or("no WorldSettings.Pauser")?;
+        Ok(crate::mem::read_u64(m, settings + p.offset as u64).is_some_and(|v| v != 0))
+    }
+
     /// Places where the hero can still learn something, and what the hero knows —
     /// for the compass and the guide.
     pub fn goals(&self) -> Result<(Vec<Goal>, Knowledge), String> {
@@ -142,8 +162,18 @@ impl Attached {
         }
         let actors = self.scanner.borrow().actors_offset().ok_or("actors not scanned yet")?;
         g.goals.refresh(m, n, hero, chain.root, actors);
+        if let Ok((p, _)) = chain.pose(m, &self.anchors) {
+            let objects = g.objects.take().unwrap();
+            g.obstacles.step(m, n, &objects, p);
+            g.objects = Some(objects);
+        }
         let k = g.knowledge.clone().unwrap();
         Ok((g.goals.evaluate(m, &k, chain.location), k))
+    }
+
+    /// The obstacles and ground of the last complete pass (shared, not copied).
+    pub fn obstacles(&self) -> Arc<Scene> {
+        self.guide.borrow().obstacles.done.clone()
     }
 
     /// The footprints found so far (shared, not copied).
@@ -180,6 +210,10 @@ pub struct Snapshot {
     pub goals: Vec<Goal>,
     /// Open investigations, by name.
     pub quests: Vec<String>,
+    /// The game is paused (a menu that stops it is open).
+    pub paused: bool,
+    /// What stands in the way, and the ground, for the route.
+    pub obstacles: Arc<Scene>,
 }
 
 impl Snapshot {
@@ -259,6 +293,8 @@ impl Engine {
             footprints: Arc::default(),
             goals: Vec::new(),
             quests: Vec::new(),
+            paused: false,
+            obstacles: Arc::default(),
         };
         if let Err(e) = self.refresh() {
             snap.game = Err(e.clone());
@@ -268,6 +304,7 @@ impl Engine {
             snap.game = Ok((a.game.pid, a.version.clone()));
             snap.gate = a.gate();
             snap.pose = a.pose().ok();
+            snap.paused = a.paused().unwrap_or(false);
             snap.world = a.chain().ok().and_then(|c| c.world(&a.game, &a.anchors).ok());
             // A closed gate pauses the toggles rather than ending them: it closes on
             // every loading screen, and the player expects god mode to survive one.
@@ -283,6 +320,7 @@ impl Engine {
                     Ok((g, k)) => {
                         snap.goals = g;
                         snap.quests = k.quest_names;
+                        snap.obstacles = a.obstacles();
                     }
                     Err(e) => snap.notice = Some(format!("minimap: {e}")),
                 }

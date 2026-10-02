@@ -52,6 +52,10 @@ pub struct Shared {
     pub launched: AtomicBool,
     /// minimap and panel: the map's trail, markers and settings.
     pub map: Mutex<crate::minimap::MapState>,
+    /// overlay: the guide's route goes through an obstacle somewhere (no way in found).
+    pub route_uncertain: Mutex<bool>,
+    /// overlay: the menu signals last seen — (game cursor showing, game paused).
+    pub menu: Mutex<(bool, bool)>,
     /// hotkey: where the panel is — the player's place for it, kept across runs.
     pub pos: Mutex<Option<(i32, i32)>>,
     pub quit: AtomicBool,

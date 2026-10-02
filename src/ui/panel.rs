@@ -362,15 +362,38 @@ impl Panel {
             });
         });
 
+        let (cursor, paused) = *self.shared.menu.lock().unwrap();
+        section(ui, "게임 메뉴", |ui| {
+            ui.horizontal(|ui| {
+                toggle(ui, &mut state.hide_in_menus);
+                ui.label("인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
+            });
+            let sig =
+                |on: bool| if on { RichText::new("켜짐").color(WAIT) } else { RichText::new("꺼짐").color(DIM) };
+            ui.horizontal(|ui| {
+                ui.label(RichText::new("감지 — 게임 커서").color(DIM).small());
+                ui.label(sig(cursor).small());
+                ui.label(RichText::new("· 일시정지").color(DIM).small());
+                ui.label(sig(paused).small());
+            });
+        });
+
         section(ui, "단축키", |ui| {
             egui::Grid::new("map-keys").num_columns(2).spacing([14.0, 7.0]).show(ui, |ui| {
                 ui.label("미니맵 표시/숨김");
-                let taken = [state.marker_key, state.compass_key, state.cycle_key];
+                let taken = others(&state, state.toggle_key);
                 key_picker(ui, "toggle_key", &mut state.toggle_key, &taken);
                 ui.end_row();
                 ui.label("마커 찍기/지우기");
-                let taken = [state.toggle_key, state.compass_key, state.cycle_key];
+                let taken = others(&state, state.marker_key);
                 key_picker(ui, "marker_key", &mut state.marker_key, &taken);
+                ui.end_row();
+                ui.label("큰 지도 (화면 가운데)");
+                let taken = others(&state, state.big_key);
+                key_picker(ui, "big_key", &mut state.big_key, &taken);
+                ui.end_row();
+                ui.label("큰 지도 반경");
+                ui.add(egui::Slider::new(&mut state.big_radius_m, 50.0..=1000.0).step_by(25.0).suffix(" m"));
                 ui.end_row();
             });
             ui.label(RichText::new("마커 옆(5 m 안)에서 마커 키를 누르면 그 마커를 지웁니다").color(DIM).small());
@@ -465,7 +488,9 @@ impl Panel {
         let changed = (state.show, state.heading_up, state.radius_m, state.toggle_key, state.marker_key)
             != (before.show, before.heading_up, before.radius_m, before.toggle_key, before.marker_key)
             || (state.layers, state.icon_px, state.terrain) != (before.layers, before.icon_px, before.terrain)
-            || state.hidden != before.hidden;
+            || state.hidden != before.hidden
+            || (state.big_key, state.big_radius_m, state.hide_in_menus)
+                != (before.big_key, before.big_radius_m, before.hide_in_menus);
         if changed {
             state.dirty = true;
         }
@@ -488,16 +513,24 @@ impl Panel {
                 toggle(ui, &mut state.compass);
                 ui.end_row();
                 ui.label("나침반 표시/숨김");
-                let taken = [state.toggle_key, state.marker_key, state.cycle_key];
+                let taken = others(&state, state.compass_key);
                 key_picker(ui, "compass_key", &mut state.compass_key, &taken);
                 ui.end_row();
                 ui.label("다음 목표로 안내");
-                let taken = [state.toggle_key, state.marker_key, state.compass_key];
+                let taken = others(&state, state.cycle_key);
                 key_picker(ui, "cycle_key", &mut state.cycle_key, &taken);
                 ui.end_row();
             });
+            ui.horizontal(|ui| {
+                ui.label("북쪽 보정");
+                for (deg, name) in [(270.0, "기본 (−Y)"), (0.0, "+X"), (90.0, "+Y"), (180.0, "−X")] {
+                    ui.selectable_value(&mut state.north_yaw, deg, name);
+                }
+            });
             ui.label(
-                RichText::new("N 은 월드의 +X 방향입니다. 게임 나침반 아이템과 다를 수 있습니다").color(DIM).small(),
+                RichText::new("게임 나침반 아이템의 북쪽과 다르면 바꾸세요 (미니맵·큰 지도·나침반 모두에 적용)")
+                    .color(DIM)
+                    .small(),
             );
         });
 
@@ -505,6 +538,10 @@ impl Panel {
             ui.horizontal(|ui| {
                 toggle(ui, &mut state.guide_auto);
                 ui.label("자동 — 고른 곳이 없으면 가장 가까운 퀘스트 목표로");
+            });
+            ui.horizontal(|ui| {
+                toggle(ui, &mut state.route);
+                ui.label("실제 이동 경로 (A*) — 벽을 돌아가는 길을 그리고 나침반이 다음 꺾이는 곳을 가리킴");
             });
             ui.horizontal_wrapped(|ui| {
                 ui.spacing_mut().item_spacing = egui::vec2(6.0, 6.0);
@@ -532,6 +569,15 @@ impl Panel {
                         });
                     });
                     ui.label(RichText::new(&g.detail).color(DIM).small());
+                    if state.route && *self.shared.route_uncertain.lock().unwrap() {
+                        ui.label(
+                            RichText::new(
+                                "⚠ 들어가는 길을 찾지 못해 장애물을 넘는 추정 구간이 있습니다 (지도에 노란 점선)",
+                            )
+                            .color(WAIT)
+                            .small(),
+                        );
+                    }
                 }
                 None => {
                     ui.label(RichText::new("안내 중인 곳이 없습니다").color(DIM));
@@ -570,8 +616,17 @@ impl Panel {
             });
         });
 
-        let changed = (state.compass, state.compass_key, state.cycle_key, state.guide_auto, state.goal_tiers)
-            != (before.compass, before.compass_key, before.cycle_key, before.guide_auto, before.goal_tiers);
+        let changed =
+            (state.compass, state.compass_key, state.cycle_key, state.guide_auto, state.goal_tiers, state.route)
+                != (
+                    before.compass,
+                    before.compass_key,
+                    before.cycle_key,
+                    before.guide_auto,
+                    before.goal_tiers,
+                    before.route,
+                )
+                || state.north_yaw != before.north_yaw;
         if changed {
             state.dirty = true;
         }
@@ -782,6 +837,11 @@ impl eframe::App for Panel {
     fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
         self.persist(true);
     }
+}
+
+/// The keys the map uses other than `mine`.
+fn others(state: &crate::minimap::MapState, mine: u8) -> Vec<u8> {
+    state.keys().into_iter().filter(|&k| k != mine).collect()
 }
 
 /// A function key, F1–F12 — not F8 (the panel's) and none the other pickers hold.

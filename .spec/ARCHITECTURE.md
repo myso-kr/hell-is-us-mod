@@ -74,6 +74,9 @@ src/
   icons.rs        assets/icons/*.svg 를 include_str! 로 넣고 resvg 로 래스터화 (미리 곱한 ARGB)
   gobjects.rs     GUObjectArray 찾기·객체 목록·클래스로 찾기
   knowledge.rs    현재 저장 상태 → 아는 사실·태그·진행 중 조사
+  terrain.rs      지형: 충돌 컴포넌트 → HeightfieldRef(CookedPhysicalMaterials 뒤) → Chaos FHeightField 높이, 경사
+  obstacles.rs    장애물: (+ 죽는 물 상자·지형으로 물 구간) 메시 충돌 형상(AggGeom) × 인스턴스 행렬 × ComponentToWorld(+0x1D0) → 2D 껍질+높이, GUObjectArray 조금씩
+  pathfind.rs     A*: 장애물(주인공 높이) 완전 차단 + 지나온 길 싼 길, 안 되면 비싼 통과, 줄 당기기, 다음 지점
   goals.rs        안내 목표: 페이로드가 새 사실·태그를 주는 상호작용 오브젝트, 퀘스트/비밀/단서
   geometry.rs     미니맵 배경: 정적 메시 → 위에서 본 사각형(Footprint), 액터별 캐시, 3초마다 갱신
   minimap.rs      미니맵 상태(경로·마커·설정·레이어, 월드별), 투영(View), minimap.txt 형식
@@ -94,7 +97,8 @@ src/
                   ui/minimap.rs — 레이어드 창, UpdateLayeredWindow, 표시·마커 키 폴링 (패널에서 고름), 10초마다 저장
 ```
 
-좌표: UE X 앞("북"으로 씀), Y 오른쪽, Z 위, yaw 는 +X 에서 +Y 쪽으로(위에서 보면 시계 방향).
+좌표: UE X 앞, Y 오른쪽, Z 위, yaw 는 +X 에서 +Y 쪽으로(위에서 보면 시계 방향).
+**게임의 북쪽 = 월드 −Y (yaw 270)** — 게임 나침반과 비교해 확인 (`MapState.north_yaw`). 동쪽 = +X.
 월드 이름 = 폰 → OuterPrivate(레벨) → OuterPrivate(월드) 의 이름.
 로드된 레벨 = `World.Levels` (+0x178, 리플렉션). 레벨의 액터 = `ULevel::Actors` (+0xA0, 리플렉션 밖 —
 주인공 레벨에서 주인공을 담은 유일한 TArray 로 찾음). 빌드 24045435: 레벨 140, 액터 10,671.

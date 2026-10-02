@@ -10,6 +10,7 @@ use crate::geometry::Footprint;
 use crate::goals::Goal;
 use crate::icons::Icons;
 use crate::minimap::{MapState, View};
+use crate::pathfind::Path;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
@@ -247,8 +248,8 @@ fn wrap(a: f32) -> f32 {
     (a + 540.0).rem_euclid(360.0) - 180.0
 }
 
-/// One frame of the compass strip, for a camera facing `yaw` (UE degrees: 0 = +X,
-/// called north; 90 = +Y, east).
+/// One frame of the compass strip, for a camera facing `yaw` — measured from the
+/// game's north, clockwise (the caller subtracts the world yaw of north).
 pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
     cv.clear();
     let w = cv.w as f32;
@@ -433,6 +434,7 @@ pub fn draw_map(
     icons: Option<&Icons>,
     footprints: &[Footprint],
     goals: &[Goal],
+    route: &Path,
 ) {
     cv.clear();
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
@@ -558,7 +560,52 @@ pub fn draw_map(
         let colour = Rgba(cr, cg, cb, 255);
         let p = view.project(g.at);
         let d = (p.0 * p.0 + p.1 * p.1).sqrt();
-        if target {
+        if target && route.points.len() >= 2 {
+            // The walking route: a line through its points, cut at the rim. Legs that go
+            // through an obstacle — no way in was found — are dashed in yellow.
+            let pts: Vec<(f32, f32)> = route.points.iter().map(|q| view.project([q[0], q[1], 0.0])).collect();
+            for (k, s) in pts.windows(2).enumerate() {
+                let through = route.through.get(k).copied().unwrap_or(false);
+                let (a, b) = (s[0], s[1]);
+                let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= (r - 2.0) * (r - 2.0);
+                if !inside(a) && !inside(b) {
+                    continue;
+                }
+                let clip = |p: (f32, f32), q: (f32, f32)| {
+                    if inside(p) {
+                        return p;
+                    }
+                    // Walk from q towards p until the rim.
+                    let (mut lo, mut hi) = (0.0f32, 1.0f32);
+                    for _ in 0..12 {
+                        let mid = (lo + hi) / 2.0;
+                        let m = (q.0 + (p.0 - q.0) * mid, q.1 + (p.1 - q.1) * mid);
+                        if inside(m) {
+                            lo = mid;
+                        } else {
+                            hi = mid;
+                        }
+                    }
+                    (q.0 + (p.0 - q.0) * lo, q.1 + (p.1 - q.1) * lo)
+                };
+                let (a, b) = (clip(a, b), clip(b, a));
+                if through {
+                    let len = ((b.0 - a.0).powi(2) + (b.1 - a.1).powi(2)).sqrt().max(f32::EPSILON);
+                    let (ux, uy) = ((b.0 - a.0) / len, (b.1 - a.1) / len);
+                    let mut t = 0.0;
+                    while t < len {
+                        let e = (t + 5.0).min(len);
+                        let (p0, p1) = ((cx + a.0 + ux * t, cy + a.1 + uy * t), (cx + a.0 + ux * e, cy + a.1 + uy * e));
+                        cv.line(p0, p1, 4.5, Rgba(0, 0, 0, 160));
+                        cv.line(p0, p1, 2.5, Rgba(255, 220, 60, 235));
+                        t += 9.0;
+                    }
+                } else {
+                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 4.5, Rgba(0, 0, 0, 160));
+                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 2.5, Rgba(cr, cg, cb, 235));
+                }
+            }
+        } else if target {
             let reach = d.min(r - 8.0);
             let (ux, uy) = (p.0 / d.max(f32::EPSILON), p.1 / d.max(f32::EPSILON));
             // Dashed: 6 px on, 4 off.
@@ -683,20 +730,20 @@ mod tests {
     #[test]
     fn walls_on_the_heros_floor_are_drawn_and_ceilings_are_not() {
         let s = MapState { terrain: true, ..MapState::default() };
-        let v = View { center: [0.0, 0.0, 100.0], yaw_deg: 0.0, heading_up: false, scale: 0.05 };
+        let v = View { center: [0.0, 0.0, 100.0], yaw_deg: 0.0, heading_up: false, scale: 0.05, north_deg: 0.0 };
         // A wall 10 m north of the hero, standing on their floor; a ceiling slab over them.
         let wall =
             crate::geometry::footprint([1000.0, 0.0, 100.0], 0.0, [1.0; 3], [0.0; 3], [100.0, 300.0, 150.0]).unwrap();
         let ceiling =
             crate::geometry::footprint([0.0, 0.0, 900.0], 0.0, [1.0; 3], [0.0; 3], [400.0, 400.0, 20.0]).unwrap();
         let mut cv = Canvas::new(200, 200);
-        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling], &[]);
+        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling], &[], &Path::default());
         // The wall at 10 m north, 0.05 px/cm: 50 px above the centre.
         assert!((cv.px[50 * 200 + 100] >> 16) & 0xFF > 60, "wall drawn");
         // Beside the hero (10 px left), where only the ceiling would be.
         let bg = cv.px[100 * 200 + 85];
         let mut plain = Canvas::new(200, 200);
-        draw_map(&mut plain, &s, "W", &v, &[], None, &[], &[]);
+        draw_map(&mut plain, &s, "W", &v, &[], None, &[], &[], &Path::default());
         assert_eq!(bg, plain.px[100 * 200 + 85], "ceiling not drawn");
     }
 
@@ -705,7 +752,7 @@ mod tests {
         let icons = Icons::new(16).unwrap();
         let mut cv = Canvas::new(200, 200);
         let s = MapState::default();
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01 };
+        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0 };
         draw_map(
             &mut cv,
             &s,
@@ -715,6 +762,7 @@ mod tests {
             Some(&icons),
             &[],
             &[],
+            &Path::default(),
         );
         assert!(cv.px[70 * 200 + 100] >> 24 > 200, "item icon 30 px above the centre");
     }
@@ -726,7 +774,7 @@ mod tests {
         s.observe("W", [0.0, 0.0, 0.0]);
         s.observe("W", [1000.0, 0.0, 0.0]);
         s.toggle_marker("W", [100_000.0, 0.0, 0.0]);
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01 };
+        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0 };
         draw_map(
             &mut cv,
             &s,
@@ -736,6 +784,7 @@ mod tests {
             None,
             &[],
             &[],
+            &Path::default(),
         );
         assert_eq!(cv.px[100 * 200 + 100] >> 24, 255, "hero arrow");
         // 30 m ahead at 0.01 px/cm is 30 px above the centre, in enemy red.
@@ -750,6 +799,7 @@ mod tests {
             None,
             &[],
             &[],
+            &Path::default(),
         );
         assert_ne!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235, "layer off, not drawn");
         assert_eq!(cv.px[0], 0, "outside the disc stays clear");

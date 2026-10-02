@@ -19,10 +19,13 @@ pub mod log;
 pub mod mem;
 pub mod minimap;
 pub mod names;
+pub mod obstacles;
+pub mod pathfind;
 pub mod paths;
 pub mod player;
 pub mod raster;
 pub mod settings;
+pub mod terrain;
 #[cfg(windows)]
 pub mod ui;
 pub mod verify;

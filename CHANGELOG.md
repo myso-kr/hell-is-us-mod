@@ -47,6 +47,31 @@ been verified in play yet.
   hero's floor (walls, floors, pillars) are drawn as their outlines from above, built
   from each mesh's bounds and transform. The game ships no map of the area it could
   use instead (`.spec/MAP.md`). It can be switched off in the map tab.
+- Routes know water, slopes and bridges. Deadly water comes from the game's
+  own kill boxes, cut to where the ground lies below them. The ground comes from
+  the landscape's physics heightfields: steep ground costs more, and rocks are
+  judged by the ground they stand on. A bridge's deck is walked over its piers.
+  Routes are now worked out off the overlay thread.
+- Routes no longer slip through thin fences or squeeze diagonally past corners.
+  When no way round is found nearby, a wider area is searched. Only then is a
+  route allowed through an obstacle, and that part is drawn as a dashed yellow
+  line, with a warning on the guide tab.
+- Routes go round what is really there. The game keeps no ground navmesh in
+  memory, so obstacles come from every mesh's collision shapes (boxes, spheres,
+  capsules, convex hulls). That covers plain meshes, instanced meshes and foliage
+  alike, placed by instance matrices and each component's world transform. 69k
+  obstacles are collected without stalls. Anything at the hero's level blocks. A
+  route is only allowed through when there is no way round.
+- North now matches the game's own compass. The game's north is world −Y (yaw
+  270), not +X. This applies to the compass strip, the north-up maps and the N
+  marker, and can be adjusted in the panel.
+- Walking routes: A* over a grid built from the walls on the hero's level, with
+  cliffs dearer and the walked trail cheaper, pulled straight where no wall is in the
+  way. The route is drawn on the maps, and the compass points along it with the
+  route's length.
+- Big map in the middle of the game window (F3, north-up, radius 50–1000 m). All
+  overlays hide while a game menu is open, detected by the game cursor showing or
+  the game pausing.
 - Compass strip at the top centre of the game window (F10). Quest guidance comes
   from the game's own state. The hero's known facts and tags are read from the save
   state, and every interactable's payload is compared against them. Places still

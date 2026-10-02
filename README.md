@@ -54,7 +54,10 @@ new is a goal: a **quest goal** if it serves an open investigation, a **secret**
 (mysteries, good deeds, timeloops), or a **clue**. The compass and the minimap point
 to the chosen goal and show its distance. **F11** moves on to the next goal. The
 panel's 안내 tab lists every goal by distance; with auto on, the guide takes the
-nearest quest goal. See `.spec/GUIDE.md`.
+nearest quest goal. The route to it is worked out with A* around the walls the map
+knows, drawn on the map, and followed by the compass. **F3** opens a big map in the
+middle of the screen. Every overlay hides while a game menu is open, detected by the
+game showing its cursor or pausing. See `.spec/GUIDE.md`.
 
 ## How it finds its way in
 
