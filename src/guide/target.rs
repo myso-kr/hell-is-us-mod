@@ -115,6 +115,7 @@ mod tests {
             tags: vec![],
             keys: vec![],
             gate: Gate::Open,
+            named: true,
         }
     }
 

@@ -74,6 +74,29 @@ pub struct Goal {
     /// Journal keys it belongs to directly (`Quest01` for a quest item).
     pub keys: Vec<String>,
     pub gate: Gate,
+    /// Whether `label` is the game's own text (an item, a person, a Datapad entry). If
+    /// not it is the trigger's class in words, and the journal may name it better: a
+    /// mystery's or a good deed's title, by its tags (`name_by_journal`).
+    pub named: bool,
+}
+
+/// Name the goals the game's text left unnamed after the journal's mystery, good deed
+/// or timeloop whose tags theirs extend (`Secrets.Mystery.TheHermit` names a trigger
+/// tagged `Secrets.Mystery.TheHermitCompleted`), the longest such prefix, keeping what
+/// the trigger marks after the dot.
+pub fn name_by_journal(goals: &mut [Goal], journal: &[crate::quests::Quest]) {
+    for g in goals.iter_mut().filter(|g| !g.named) {
+        let deed = journal
+            .iter()
+            .filter_map(|q| Some((q, q.tags.as_deref().filter(|p| !p.is_empty())?)))
+            .filter(|(_, prefix)| g.tags.iter().any(|t| t.starts_with(prefix)))
+            .max_by_key(|(_, prefix)| prefix.len());
+        if let Some((q, _)) = deed {
+            let event = g.label.find(" · ").map(|i| g.label[i..].to_string()).unwrap_or_default();
+            g.label = format!("{}{event}", q.name);
+            g.named = true;
+        }
+    }
 }
 
 /// Whether going there is enough.
@@ -526,14 +549,15 @@ impl Goals {
         })
     }
 
-    /// What a place is called, in the player's language where the game has it: an item it
+    /// What a place is called, and whether that is the game's own text (`Goal::named`), in
+    /// the player's language where the game has it: an item it
     /// hands out by the item's name, a person by theirs, and a trigger by the Datapad entry
     /// its facts are about (the one most of them are about) with what it marks after a dot.
     /// The entry's name is the one the hero knows (`i18n::subject`), so a real name is not
     /// given away early. Without the game's text, the trigger's class in words.
-    fn place_name(&self, p: &Payload) -> String {
+    fn place_name(&self, p: &Payload) -> (String, bool) {
         if !p.items.is_empty() || p.npc {
-            return p.label.clone();
+            return (p.label.clone(), true);
         }
         let mut units: HashMap<String, usize> = HashMap::new();
         for (f, _) in &p.facts {
@@ -544,10 +568,10 @@ impl Goals {
         let unit = units.into_iter().max_by(|a, b| a.1.cmp(&b.1).then(b.0.cmp(&a.0))).map(|(u, _)| u);
         match unit.and_then(|u| crate::i18n::subject(&u)) {
             Some(name) => match p.event {
-                Some(key) => format!("{name} · {}", crate::i18n::tr(key)),
-                None => name,
+                Some(key) => (format!("{name} · {}", crate::i18n::tr(key)), true),
+                None => (name, true),
             },
-            None => p.label.clone(),
+            None => (p.label.clone(), false),
         }
     }
 
@@ -678,10 +702,12 @@ impl Goals {
             if p.gate == Gate::Conditional {
                 detail += tr!("NEEDS_SOMETHING_A_KEY_A_PUZZLE");
             }
+            let (label, named) = self.place_name(p);
             out.push(Goal {
                 tier,
                 id: actor,
-                label: self.place_name(p),
+                label: label.clone(),
+                named,
                 detail,
                 at,
                 quests,
@@ -706,6 +732,41 @@ mod tests {
         assert_eq!(gate_of("SenedraSmugglersRefugeesMet_PayloadInactive_Interact_BP_C"), Gate::Visit);
         assert_eq!(gate_of("SenedraForestArcasSpireDoorOpening_PayloadInactive_Interact_BP_C"), Gate::Conditional);
         assert_eq!(gate_of("SenedraForestPillarPuzzleComplete_PayloadInactive_Interact_BP_C"), Gate::Conditional);
+    }
+
+    #[test]
+    fn the_journal_names_what_the_game_text_did_not() {
+        use crate::quests::{Kind, Quest, Status};
+        let deed = |name: &str, tags: &str| Quest {
+            key: String::new(),
+            kind: Kind::Mystery,
+            name: name.into(),
+            detail: String::new(),
+            status: Status::Started,
+            progress: None,
+            leads: Vec::new(),
+            quest: None,
+            tags: Some(tags.into()),
+        };
+        let journal = [deed("은둔자", "Secrets.Mystery.TheHermit"), deed("다른 것", "Secrets.Mystery.The")];
+        let goal = |label: &str, named: bool| Goal {
+            tier: Tier::Secret,
+            id: 1,
+            label: label.into(),
+            detail: String::new(),
+            at: [0.0; 3],
+            quests: Vec::new(),
+            tags: vec!["Secrets.Mystery.TheHermitCompleted".into()],
+            keys: Vec::new(),
+            gate: Gate::Open,
+            named,
+        };
+        let mut goals = [goal("Acasa Hermit Tomb · opened", false), goal("Hermit's Key", true)];
+        name_by_journal(&mut goals, &journal);
+        // The longest prefix wins; what the trigger marks stays.
+        assert_eq!(goals[0].label, "은둔자 · opened");
+        // The game's own name is left alone.
+        assert_eq!(goals[1].label, "Hermit's Key");
     }
 
     #[test]

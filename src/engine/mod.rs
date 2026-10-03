@@ -230,6 +230,9 @@ impl Engine {
                             snap.clues = d.clues.clone();
                             snap.budget = d.budget.clone();
                         }
+                        // Triggers the game's text did not name, named after the journal's
+                        // mysteries and good deeds where their tags say which.
+                        crate::goals::name_by_journal(&mut snap.goals, &snap.journal);
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }

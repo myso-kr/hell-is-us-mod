@@ -418,6 +418,8 @@ impl Survey {
                     tags: left.tags.clone(),
                     keys,
                     gate,
+                    // An item's name is the game's; a trigger's class the journal may name.
+                    named: !left.items.is_empty(),
                 })
             })
             .collect()

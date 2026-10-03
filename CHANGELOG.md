@@ -50,7 +50,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   alive, so you can see which to kill first (in the legend while enemies are shown).
 - Places named only by the game's internal trigger take the name of the Datapad entry their facts
   are about, in the game's language ("Jova Sign Observation" is "Jova"), with what they mark after a
-  dot; a trigger with no facts reads as words ("Captain Vaas Office · done").
+  dot; one with no facts takes the title of the mystery or good deed its tags belong to ("Captain
+  Vaas Office" is that mystery's name in your language); only a trigger with neither reads as words.
 - Both sides of the panel have the same margin; the achievements list's order and "show unlocked"
   switches no longer squeeze each other.
 - Long lists can be grouped: places by kind, achievements by kind (story, deeds and mysteries,
