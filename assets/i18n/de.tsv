@@ -602,3 +602,17 @@ SHARDS_HELD	Splitter im Besitz
 NAV_PLAY	Spielen
 NAV_WAY	Wegfindung
 NAV_SYSTEM	System
+EVENT_OPENED	geöffnet
+EVENT_OPENING	öffnen
+EVENT_DONE	erledigt
+EVENT_VISITED	besucht
+EVENT_ENTERED	betreten
+EVENT_FAILED	gescheitert
+EVENT_ACTIVATED	aktiviert
+EVENT_REVEALED	enthüllt
+EVENT_CONFIRMED	bestätigt
+EVENT_FOUND	entdeckt
+EVENT_STARTED	begonnen
+EVENT_LOOTED	geplündert
+EVENT_UNLOCKED	entsperrt
+EVENT_TRAVEL	Reise möglich

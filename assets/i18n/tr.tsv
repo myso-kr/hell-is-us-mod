@@ -602,3 +602,17 @@ SHARDS_HELD	Elindeki parçalar
 NAV_PLAY	Oyun
 NAV_WAY	Yol bulma
 NAV_SYSTEM	Sistem
+EVENT_OPENED	açıldı
+EVENT_OPENING	açılacak
+EVENT_DONE	tamamlandı
+EVENT_VISITED	ziyaret edildi
+EVENT_ENTERED	girildi
+EVENT_FAILED	başarısız
+EVENT_ACTIVATED	etkinleştirildi
+EVENT_REVEALED	ortaya çıktı
+EVENT_CONFIRMED	doğrulandı
+EVENT_FOUND	bulundu
+EVENT_STARTED	başladı
+EVENT_LOOTED	yağmalandı
+EVENT_UNLOCKED	kilidi açıldı
+EVENT_TRAVEL	yolculuk serbest

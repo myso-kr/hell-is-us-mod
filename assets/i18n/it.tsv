@@ -602,3 +602,17 @@ SHARDS_HELD	Frammenti posseduti
 NAV_PLAY	Gioco
 NAV_WAY	Orientamento
 NAV_SYSTEM	Sistema
+EVENT_OPENED	aperto
+EVENT_OPENING	da aprire
+EVENT_DONE	completato
+EVENT_VISITED	visitato
+EVENT_ENTERED	entrato
+EVENT_FAILED	fallito
+EVENT_ACTIVATED	attivato
+EVENT_REVEALED	rivelato
+EVENT_CONFIRMED	confermato
+EVENT_FOUND	scoperto
+EVENT_STARTED	iniziato
+EVENT_LOOTED	saccheggiato
+EVENT_UNLOCKED	sbloccato
+EVENT_TRAVEL	viaggio consentito

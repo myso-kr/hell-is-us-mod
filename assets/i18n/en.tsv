@@ -602,3 +602,17 @@ SHARDS_HELD	Shards held
 NAV_PLAY	Play
 NAV_WAY	Finding the way
 NAV_SYSTEM	System
+EVENT_OPENED	opened
+EVENT_OPENING	to open
+EVENT_DONE	done
+EVENT_VISITED	visited
+EVENT_ENTERED	entered
+EVENT_FAILED	failed
+EVENT_ACTIVATED	activated
+EVENT_REVEALED	revealed
+EVENT_CONFIRMED	confirmed
+EVENT_FOUND	found
+EVENT_STARTED	started
+EVENT_LOOTED	looted
+EVENT_UNLOCKED	unlocked
+EVENT_TRAVEL	travel allowed

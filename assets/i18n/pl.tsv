@@ -602,3 +602,17 @@ SHARDS_HELD	Posiadane odłamki
 NAV_PLAY	Gra
 NAV_WAY	Nawigacja
 NAV_SYSTEM	System
+EVENT_OPENED	otwarte
+EVENT_OPENING	do otwarcia
+EVENT_DONE	ukończone
+EVENT_VISITED	odwiedzone
+EVENT_ENTERED	wejście
+EVENT_FAILED	nieudane
+EVENT_ACTIVATED	aktywowane
+EVENT_REVEALED	odkryte
+EVENT_CONFIRMED	potwierdzone
+EVENT_FOUND	odnalezione
+EVENT_STARTED	rozpoczęte
+EVENT_LOOTED	złupione
+EVENT_UNLOCKED	odblokowane
+EVENT_TRAVEL	można podróżować

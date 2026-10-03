@@ -602,3 +602,17 @@ SHARDS_HELD	Éclats possédés
 NAV_PLAY	Jeu
 NAV_WAY	Orientation
 NAV_SYSTEM	Système
+EVENT_OPENED	ouvert
+EVENT_OPENING	à ouvrir
+EVENT_DONE	terminé
+EVENT_VISITED	visité
+EVENT_ENTERED	entré
+EVENT_FAILED	échoué
+EVENT_ACTIVATED	activé
+EVENT_REVEALED	révélé
+EVENT_CONFIRMED	confirmé
+EVENT_FOUND	découvert
+EVENT_STARTED	commencé
+EVENT_LOOTED	pillé
+EVENT_UNLOCKED	déverrouillé
+EVENT_TRAVEL	voyage permis

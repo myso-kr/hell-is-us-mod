@@ -245,6 +245,76 @@ pub fn pretty(class: &str) -> String {
     s.replace('_', " ")
 }
 
+/// A trigger's class as a name a player can read. Places that hand out no item are named
+/// only by their class (`AcasaHermitTombFullyOpened_PayloadInactive_Interact_BP_C`), and
+/// shown so the list read like code: the words split apart, and what the trigger marks
+/// (opened, done, visited…) in the player's language after a dot.
+pub fn readable(class: &str) -> String {
+    let words = split_words(&pretty(class));
+    // The longest event that ends the name; the rest is the place.
+    for (tail, key) in EVENTS {
+        if words.len() > tail.len() && words[words.len() - tail.len()..].iter().zip(tail.iter()).all(|(w, t)| w == t) {
+            let name = words[..words.len() - tail.len()].join(" ");
+            return format!("{name} · {}", crate::i18n::tr(key));
+        }
+    }
+    words.join(" ")
+}
+
+/// What a trigger's name can end with, longest first, and its i18n key.
+const EVENTS: [(&[&str], &str); 19] = [
+    (&["Fully", "Opened"], "EVENT_OPENED"),
+    (&["All", "Opened"], "EVENT_OPENED"),
+    (&["Travel", "Allowed"], "EVENT_TRAVEL"),
+    (&["Opened"], "EVENT_OPENED"),
+    (&["Opening"], "EVENT_OPENING"),
+    (&["Completion"], "EVENT_DONE"),
+    (&["Complete"], "EVENT_DONE"),
+    (&["Completed"], "EVENT_DONE"),
+    (&["Success"], "EVENT_DONE"),
+    (&["Visited"], "EVENT_VISITED"),
+    (&["Entered"], "EVENT_ENTERED"),
+    (&["Failed"], "EVENT_FAILED"),
+    (&["Activated"], "EVENT_ACTIVATED"),
+    (&["Reveal"], "EVENT_REVEALED"),
+    (&["Confirmed"], "EVENT_CONFIRMED"),
+    (&["Discovered"], "EVENT_FOUND"),
+    (&["Started"], "EVENT_STARTED"),
+    (&["Looted"], "EVENT_LOOTED"),
+    (&["Unlocked"], "EVENT_UNLOCKED"),
+];
+
+/// Words out of a CamelCase name (spaces already between its parts): a break before a
+/// capital after a small letter or a digit, before the last capital of a run followed by
+/// a small letter (`ONSoldier`), and before digits after a small letter (`Mausoleum01`,
+/// but not `T01`).
+fn split_words(s: &str) -> Vec<String> {
+    let mut words = Vec::new();
+    for part in s.split_whitespace() {
+        let c: Vec<char> = part.chars().collect();
+        let mut word = String::new();
+        for i in 0..c.len() {
+            let (prev, next) = (i.checked_sub(1).map(|j| c[j]), c.get(i + 1).copied());
+            let cut = match prev {
+                Some(p) => {
+                    (p.is_lowercase() && (c[i].is_uppercase() || c[i].is_ascii_digit()))
+                        || (p.is_ascii_digit() && c[i].is_uppercase())
+                        || (p.is_uppercase() && c[i].is_uppercase() && next.is_some_and(char::is_lowercase))
+                }
+                None => false,
+            };
+            if cut && !word.is_empty() {
+                words.push(std::mem::take(&mut word));
+            }
+            word.push(c[i]);
+        }
+        if !word.is_empty() {
+            words.push(word);
+        }
+    }
+    words
+}
+
 fn pointer_set(m: &dyn Memory, at: u64) -> Vec<u64> {
     // TSet<T*>: a TSparseArray whose TArray holds { value, next, hash } — 16 bytes.
     let (Some(data), Some(num)) = (mem::read_u64(m, at), mem::read_u32(m, at + 8)) else { return Vec::new() };
@@ -336,7 +406,7 @@ impl Goals {
             tags,
             used,
             root: rc,
-            label: items.first().cloned().unwrap_or_else(|| pretty(&class)),
+            label: items.first().cloned().unwrap_or_else(|| readable(&class)),
             items,
             keys,
             note: None,
@@ -593,6 +663,24 @@ mod tests {
         assert_eq!(gate_of("SenedraSmugglersRefugeesMet_PayloadInactive_Interact_BP_C"), Gate::Visit);
         assert_eq!(gate_of("SenedraForestArcasSpireDoorOpening_PayloadInactive_Interact_BP_C"), Gate::Conditional);
         assert_eq!(gate_of("SenedraForestPillarPuzzleComplete_PayloadInactive_Interact_BP_C"), Gate::Conditional);
+    }
+
+    #[test]
+    fn trigger_names_are_split_and_their_event_named() {
+        let name = |c: &str| readable(c).split(" · ").next().unwrap().to_string();
+        assert_eq!(name("AcasaHermitTombFullyOpened_PayloadInactive_Interact_BP_C"), "Acasa Hermit Tomb");
+        assert_eq!(name("CaptainVaasOfficeCompletion_PayloadInactive_Interact_BP_C"), "Captain Vaas Office");
+        assert_eq!(name("LetheHidingONSoldierDiscovered_PayloadInactive_Interact_BP_C"), "Lethe Hiding ON Soldier");
+        assert_eq!(name("JeljinMausoleum01Completed_PayloadInactive_Interact_BP_C"), "Jeljin Mausoleum 01");
+        assert!(readable("TrainingRoomCompletion_PayloadInactive_Interact_BP_C").contains(" · "));
+        // No event at the end: the words only.
+        assert_eq!(readable("BloodQueenTombFrescoes_PayloadInactive_Interact_BP_C"), "Blood Queen Tomb Frescoes");
+        assert_eq!(readable("Cons_MedicineCivilianT01_GatherSingleUse_Interact_BP_C"), "Cons Medicine Civilian T01");
+        // An event alone is not a name.
+        assert_eq!(
+            readable("DoorOpened_PayloadInactive_Interact_BP_C"),
+            "Door · ".to_string() + crate::i18n::tr("EVENT_OPENED")
+        );
     }
 
     #[test]

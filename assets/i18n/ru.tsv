@@ -602,3 +602,17 @@ SHARDS_HELD	Имеющиеся осколки
 NAV_PLAY	Игра
 NAV_WAY	Навигация
 NAV_SYSTEM	Система
+EVENT_OPENED	открыто
+EVENT_OPENING	открыть
+EVENT_DONE	выполнено
+EVENT_VISITED	посещено
+EVENT_ENTERED	вход
+EVENT_FAILED	провалено
+EVENT_ACTIVATED	активировано
+EVENT_REVEALED	раскрыто
+EVENT_CONFIRMED	подтверждено
+EVENT_FOUND	обнаружено
+EVENT_STARTED	начато
+EVENT_LOOTED	обыскано
+EVENT_UNLOCKED	разблокировано
+EVENT_TRAVEL	путь открыт

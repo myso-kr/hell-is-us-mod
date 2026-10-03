@@ -602,3 +602,17 @@ SHARDS_HELD	Fragmentos que você tem
 NAV_PLAY	Jogo
 NAV_WAY	Orientação
 NAV_SYSTEM	Sistema
+EVENT_OPENED	aberto
+EVENT_OPENING	abrir
+EVENT_DONE	concluído
+EVENT_VISITED	visitado
+EVENT_ENTERED	entrou
+EVENT_FAILED	falhou
+EVENT_ACTIVATED	ativado
+EVENT_REVEALED	revelado
+EVENT_CONFIRMED	confirmado
+EVENT_FOUND	descoberto
+EVENT_STARTED	iniciado
+EVENT_LOOTED	saqueado
+EVENT_UNLOCKED	desbloqueado
+EVENT_TRAVEL	viagem liberada
