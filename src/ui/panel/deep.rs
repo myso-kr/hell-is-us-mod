@@ -108,7 +108,7 @@ impl Panel {
                 let progress = a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| format!("  {}/{of}", v.min(of))).unwrap_or_default();
                 t.style(tw::row(8.0)).add(|t| {
                     let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name) };
-                    text(t, RichText::new(head).color(if a.unlocked { DIM } else { Color32::from_gray(225) }));
+                    text(t, RichText::new(head).color(if a.unlocked { DIM } else { super::super::theme::TEXT }));
                     if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
                         self.revealed.insert(id);
                     }
@@ -156,7 +156,7 @@ impl Panel {
                 );
                 t.style(tw::row(8.0)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
-                    text(t, RichText::new(head).color(if *solved { DIM } else { Color32::from_gray(225) }).small());
+                    text(t, RichText::new(head).color(if *solved { DIM } else { super::super::theme::TEXT }).small());
                     if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
                         if open {
                             self.revealed.remove(&id);
@@ -212,7 +212,7 @@ impl Panel {
                 let open = self.revealed.contains(&p.id);
                 t.style(tw::row(8.0)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
-                    text(t, RichText::new(head).color(if p.solved { DIM } else { Color32::from_gray(225) }));
+                    text(t, RichText::new(head).color(if p.solved { DIM } else { super::super::theme::TEXT }));
                     if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
                         if open {
                             self.revealed.remove(&p.id);
@@ -259,7 +259,7 @@ impl Panel {
                 let open = self.revealed.contains(&id);
                 t.style(tw::row(8.0)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, Sub::Vault, 18.0));
-                    let colour = if v.state == VaultState::Opened { DIM } else { Color32::from_gray(225) };
+                    let colour = if v.state == VaultState::Opened { DIM } else { super::super::theme::TEXT };
                     text(t, RichText::new(format!("{name} · {region} — {status}")).color(colour));
                     if v.state != VaultState::Opened && w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_CODE") })).clicked() {
                         if open {
@@ -305,7 +305,7 @@ impl Panel {
                 let line = trf!("GROUPS_ENEMIES", place = crate::i18n::place(&h.world), left = h.left, all = h.all, enemies = h.enemies_left);
                 t.style(tw::row(8.0)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, Sub::EnemyGroup, 18.0));
-                    let colour = if h.left == 0 { DIM } else if mine { Color32::from_gray(235) } else { Color32::from_gray(200) };
+                    let colour = if h.left == 0 { DIM } else if mine { super::super::theme::TITLE } else { super::super::theme::TEXT };
                     text(t, RichText::new(line).color(colour));
                     if mine && h.left > 0 {
                         if let (Some(p), true) = (here, w(t, |ui| ui.small_button(tr!("NEAREST"))).clicked()) {

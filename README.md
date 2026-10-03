@@ -11,10 +11,10 @@ game through its memory. **No game files are modified.**
 | Document | What it settles |
 |---|---|
 | [CHANGELOG.md](CHANGELOG.md) | what each release changed, and the game build it was verified on |
-| [docs/PLAN.md](docs/PLAN.md) | what this is, the phases, and what each one attaches to |
-| [docs/ANCHORS.md](docs/ANCHORS.md) | how the tool finds its way in, and what a game update can break |
-| [docs/CHEATS.md](docs/CHEATS.md) | the cheats, what each writes, and what "verified" means |
-| [.spec/](.spec/README.md) | handoff documents for whoever continues the work (Korean): status, next steps, procedures, structure, decisions, research |
+| [.spec/PLAN.md](.spec/PLAN.md) | what this is, the phases, and what each one attaches to |
+| [.spec/ANCHORS.md](.spec/ANCHORS.md) | how the tool finds its way in, and what a game update can break |
+| [.spec/CHEATS.md](.spec/CHEATS.md) | the cheats, what each writes, and what "verified" means |
+| [.spec/](.spec/README.md) | handoff documents for whoever continues the work (Korean, with the three English references above): status, next steps, procedures, structure, decisions, research |
 
 ## Quick start
 

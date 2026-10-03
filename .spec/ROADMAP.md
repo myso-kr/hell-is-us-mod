@@ -21,7 +21,7 @@
 
 ## 2. 치트 검증 — **대부분 완료 (2026-10-02): 4개 확인, 11개 삭제, 3개 미시도.** 남은 3개는 아무 때나
 
-(아래는 처음 계획. 결과는 STATUS 와 docs/CHEATS.md)
+(아래는 처음 계획. 결과는 STATUS 와 .spec/CHEATS.md)
 
 - 패널(`hiumod`)에서 하나씩 켜고 디버그 탭으로 원래 값·넣은 값·현재 값을 본다.
 - 의심 지점:
@@ -33,7 +33,7 @@
   - 쿨다운 0.05 (`NEAR_ZERO`) 가 이 게임에서도 필요한지.
   - CE 테이블 사용자 보고: 공유 코드를 훅한 "무한 체력"이 적도 무적으로 만듦. 우리는
     주인공 ASC 에만 쓰므로 해당 없어야 함 — 적이 안 죽는지 실제로 본다.
-- 완료 기준: 각 행 `verified: true` 또는 원인과 함께 수정·삭제. docs/CHEATS.md 갱신.
+- 완료 기준: 각 행 `verified: true` 또는 원인과 함께 수정·삭제. .spec/CHEATS.md 갱신.
 
 ## 3. 미니맵 오버레이 (큼) — **1단계 확인, 2단계 코드 완료 (2026-10-02, 게임 화면 확인 필요)**
 
@@ -64,7 +64,7 @@
   살려 개발자 치트를 쓰거나, 게임 UMG 로 미니맵을 그린다 (Palworld PalMiniMap 방식).
 - 업적 차단도 여기서: `CharlieAchievementsUnlockerSubsystem` 을 막는다.
 - 바깥에서 안 된 치트(피해·방어·회복·무적 시간·쿨다운·경험치)는 여기서 GameplayEffect
-  (또는 `CharlieCheatManager`)로 — docs/CHEATS.md 의 실패 목록이 후보.
+  (또는 `CharlieCheatManager`)로 — .spec/CHEATS.md 의 실패 목록이 후보.
 - 결정 전에 DECISIONS D1 을 다시 읽을 것.
 
 ## 6. 릴리스 (작음)

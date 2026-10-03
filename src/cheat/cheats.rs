@@ -117,7 +117,7 @@ pub struct Cheat {
     pub label: &'static str,
     pub kind: Kind,
     /// Seen working in game. Unverified rows work the same way, carry a badge in
-    /// the panel, and become verified per docs/CHEATS.md — not by assumption.
+    /// the panel, and become verified per .spec/CHEATS.md — not by assumption.
     pub verified: bool,
 }
 
@@ -153,7 +153,7 @@ const NEAR_ZERO: f32 = 0.05;
 // Seen in play on 24045435 (verify.txt, 2026-10-02): what the game reads directly
 // works — Endurance, the movement component, time dilation. What it re-derives
 // through GAS — every `*Coefficient` tried, weapon attack power — held in memory
-// and did nothing, and was dropped (docs/CHEATS.md, .spec/DECISIONS.md D12).
+// and did nothing, and was dropped (.spec/CHEATS.md, .spec/DECISIONS.md D12).
 pub const CHEATS: &[Cheat] = &[
     // 생존
     toggle("god", Group::Survival, "KEEP_HEALTH_CAP_AT_MAXIMUM", &[Fill(a::ENDURANCE_CAP, a::ENDURANCE_MAX)], true),
@@ -165,7 +165,7 @@ pub const CHEATS: &[Cheat] = &[
     // 전투
     toggle("lymbic", Group::Combat, "INFINITE_LYMBIC_ENERGY", &[Fill(a::LYMBIC, a::LYMBIC_MAX)], false),
     // Coefficients like these held in memory but did nothing for every one tried in
-    // play (docs/CHEATS.md); these two are kept only until someone tries them.
+    // play (.spec/CHEATS.md); these two are kept only until someone tries them.
     toggle("lymbic_cost", Group::Combat, "NO_LYMBIC_COST", &[Fixed(a::LYMBIC_COST, 0.0)], false),
     toggle("skill_cooldown", Group::Combat, "NO_SKILL_COOLDOWN", &[Fixed(a::SKILL_COOLDOWN, NEAR_ZERO)], false),
     // 이동 — plain fields, not attributes: the values the game actually moves by.

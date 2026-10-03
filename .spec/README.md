@@ -19,9 +19,9 @@
 | 부록 | [ITEMS.md](ITEMS.md) | 퀘스트 아이템 전수조사 설계: pak 의 WP 셀 → 오프라인 DB, 세이브 Guid 로 상태 판정, 런타임 합치기 |
 | 부록 | [MAP.md](MAP.md) | 미니맵 3단계: 게임 에셋 조사(AES·retoc·월드맵 텍스처), 결론, 월드에서 지도 만들기 진행 기록 |
 
-`docs/` 와의 차이: `docs/` 는 저장소를 보는 사람에게 설명하는 문서(영어)이고,
-`.spec/` 은 작업을 이어 갈 사람을 위한 작업 문서(한국어)입니다. 둘이 어긋나면
-코드와 `docs/ANCHORS.md` 가 기준입니다.
+영어 참고 문서도 여기 있습니다 — [PLAN.md](PLAN.md) (무엇·단계), [ANCHORS.md](ANCHORS.md) (들어가는 길·게임 업데이트가
+깨뜨릴 수 있는 것), [CHEATS.md](CHEATS.md) (치트·검증 기준). 어긋나면 코드와 ANCHORS.md 가 기준입니다.
+`docs/` 는 GitHub Pages 홈페이지 전용입니다 (2026-10-03 통합).
 
 형제 프로젝트: `~/dungeons2-mod` (Minecraft Dungeons II, 같은 구조의 원본),
 `~/combolands-mod` (MelonLoader), `~/big-dragon-mod` (CDP).

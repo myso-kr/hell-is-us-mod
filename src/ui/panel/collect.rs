@@ -21,7 +21,7 @@ impl Panel {
                     w(t, |ui| crate::ui::svg::sort(ui, crate::survey::collect_sort(c.label), 18.0));
                     let label = trf!("COLLECT_HERE_AND_ALL", sort = crate::i18n::tr(c.label), got_here = c.here.0, all_here = c.here.1, got = c.all.0, all = c.all.1);
                     let done = c.here.0 == c.here.1;
-                    if tw::pick(t, open, RichText::new(label).color(if done { DIM } else { Color32::from_gray(225) })) {
+                    if tw::pick(t, open, RichText::new(label).color(if done { DIM } else { super::super::theme::TEXT })) {
                         self.unfolded_collect = if open { None } else { Some(c.label) };
                     }
                 });

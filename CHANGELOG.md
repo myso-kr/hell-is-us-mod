@@ -4,7 +4,7 @@ Versions follow [semantic versioning](https://semver.org/).
 
 Every release records the Steam build it was verified against. Steam's `buildid`
 is in `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. See
-[`docs/ANCHORS.md`](docs/ANCHORS.md).
+[`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
 ## Unreleased — 0.1.0
 

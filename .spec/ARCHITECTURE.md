@@ -132,7 +132,7 @@ examples/               일회용 탐침 (gitignore)
 주인공·ASC·위치를 얹는다. 클래스·속성은 `names::fixture::Pool` 로 (`class`, `inherit`).
 
 ## 문서·예제·테스트 규칙 (2026-10-03)
-- `.spec/` (한국어, 인수인계·조사·결정) 과 `docs/` (영어, 저장소를 보는 사람용) 는 일부러 따로 — .spec/README.md.
+- 문서는 모두 `.spec/` (한국어 인수인계·조사·결정 + 영어 참고 PLAN·ANCHORS·CHEATS). `docs/` 는 GitHub Pages 홈페이지만.
 - `examples/` 는 실행 중인 게임에 대는 일회용 탐침 (gitignore). 남길 가치가 있으면 `doctor` 하위 명령으로 옮긴다
   (예: `doctor saves`, `doctor locale`).
 - 단위 테스트는 각 파일 안 `#[cfg(test)]`, 파일 형식을 공개 API 로 묶어 보는 통합 테스트는 `tests/` (data_files.rs).

@@ -28,10 +28,7 @@ use std::sync::mpsc::Sender;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-const OK: Color32 = Color32::from_rgb(0x8F, 0xD1, 0x7A);
-const BAD: Color32 = Color32::from_rgb(0xF0, 0x82, 0x78);
-const WAIT: Color32 = Color32::from_rgb(0xE8, 0xC0, 0x6A);
-const DIM: Color32 = Color32::from_gray(150);
+use super::theme::{BAD, DIM, OK, WAIT};
 
 /// The window's width before its first page is measured (px).
 pub const WIDTH: f32 = 960.0;
@@ -53,28 +50,6 @@ const MAX_SHARE: f32 = 0.85;
 /// Room under the page for its footer, and for the title bar and margins (px).
 const FOOTER: f32 = 92.0;
 const CHROME: f32 = 56.0;
-
-/// A compact console look: text a size smaller than before, gaps to match.
-pub fn install_style(ctx: &egui::Context) {
-    ctx.all_styles_mut(|s| {
-        s.spacing.item_spacing = egui::vec2(7.0, 5.0);
-        s.spacing.button_padding = egui::vec2(7.0, 3.0);
-        s.spacing.interact_size.y = 21.0;
-        s.spacing.slider_width = 170.0;
-        s.spacing.combo_width = 68.0;
-        for (style, size) in [
-            (egui::TextStyle::Body, 12.5),
-            (egui::TextStyle::Button, 12.5),
-            (egui::TextStyle::Small, 11.0),
-            (egui::TextStyle::Monospace, 12.0),
-            (egui::TextStyle::Heading, 15.0),
-        ] {
-            if let Some(f) = s.text_styles.get_mut(&style) {
-                f.size = size;
-            }
-        }
-    });
-}
 
 /// egui's own fonts have no Hangul, and neither they nor Malgun Gothic have arrows
 /// and shapes like ▾ ▸ ↑ ↓. Malgun Gothic and Segoe UI Symbol ship with Windows, so
@@ -372,8 +347,9 @@ impl Panel {
         // own clicks rather than starting a drag.
         let row = egui::UiBuilder::new().max_rect(rect).layout(egui::Layout::left_to_right(egui::Align::Center));
         ui.scope_builder(row, |ui| {
-            ui.label(RichText::new("Hell Is Us Mod").strong());
-            ui.label(RichText::new("`").color(DIM));
+            ui.label(RichText::new("◆").color(super::theme::ACCENT));
+            ui.label(RichText::new("Hell Is Us Mod").strong().color(super::theme::TITLE));
+            ui.label(RichText::new("`").color(DIM).monospace());
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button(" × ").on_hover_text(tr!("CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND")).clicked() {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
@@ -427,11 +403,11 @@ impl Panel {
     /// guide, then debugging.
     fn nav(&mut self, ui: &mut egui::Ui) {
         let item = |ui: &mut egui::Ui, on: bool, text: String| {
-            let label = RichText::new(text).size(13.0).color(if on { Color32::WHITE } else { Color32::from_gray(185) });
+            let label = RichText::new(text).size(13.0).color(if on { super::theme::TITLE } else { DIM });
             let button = egui::Button::new(label)
-                .fill(if on { Color32::from_rgb(0x2A, 0x3A, 0x52) } else { Color32::TRANSPARENT })
-                .stroke(if on { egui::Stroke::new(1.0, Color32::from_rgb(0x4A, 0x7A, 0xB8)) } else { egui::Stroke::NONE })
-                .corner_radius(6.0)
+                .fill(if on { super::theme::ACCENT_DEEP } else { Color32::TRANSPARENT })
+                .stroke(if on { egui::Stroke::new(1.0, super::theme::ACCENT) } else { egui::Stroke::NONE })
+                .corner_radius(super::theme::R_CONTROL)
                 .min_size(egui::vec2(ui.available_width(), 26.0));
             ui.add(button).clicked()
         };
@@ -707,16 +683,16 @@ pub(super) fn toggle(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
         let track = if *on { OK.gamma_multiply(0.85) } else { Color32::from_gray(70) };
         ui.painter().rect_filled(rect, radius, track);
         let x = egui::lerp((rect.left() + radius)..=(rect.right() - radius), t);
-        ui.painter().circle_filled(egui::pos2(x, rect.center().y), radius - 3.0, Color32::from_gray(235));
+        ui.painter().circle_filled(egui::pos2(x, rect.center().y), radius - 3.0, super::theme::TITLE);
     }
     response
 }
 
 /// A pill that is filled with the kind's colour while on.
 fn chip(text: &str, on: bool, colour: Color32) -> egui::Button<'static> {
-    let label = RichText::new(text.to_string()).color(if on { Color32::from_gray(15) } else { DIM });
+    let label = RichText::new(text.to_string()).color(if on { super::theme::GROUND } else { DIM });
     egui::Button::new(label)
         .fill(if on { colour } else { Color32::TRANSPARENT })
         .stroke(egui::Stroke::new(1.0, if on { colour } else { colour.gamma_multiply(0.5) }))
-        .corner_radius(12.0)
+        .corner_radius(super::theme::R_CHIP)
 }

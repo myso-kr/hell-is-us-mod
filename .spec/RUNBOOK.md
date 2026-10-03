@@ -49,7 +49,7 @@ hiumod pose            # 위치·방향을 0.5초마다 (Ctrl+C 로 끝)
    - `FField layout` → 엔진이 올라갔다. `names::LAYOUTS` 에 새 후보를 추가.
    - `no property X` → 엔진/게임이 속성 이름을 바꿨다. `player.rs` 의 이름을 고친다.
    - `cheat table: not in the game` / `in N sets` → `cheats.rs` 행을 고친다.
-3. `docs/ANCHORS.md` 의 빌드 표에 새 빌드와 결과를 적는다.
+3. `.spec/ANCHORS.md` 의 빌드 표에 새 빌드와 결과를 적는다.
 
 ## 커밋
 

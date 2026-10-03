@@ -214,9 +214,9 @@ impl Console {
                 for (kind, text) in &self.lines {
                     let colour = match kind {
                         Line::Input => Color32::from_rgb(140, 200, 255),
-                        Line::Out => Color32::from_gray(210),
+                        Line::Out => super::theme::TEXT,
                         Line::Err => Color32::from_rgb(255, 150, 120),
-                        Line::Note => Color32::from_gray(130),
+                        Line::Note => super::theme::DIM,
                     };
                     ui.add(egui::Label::new(RichText::new(text).text_style(mono.clone()).color(colour)).wrap());
                 }

@@ -185,7 +185,7 @@ pub fn pick_with(tui: &mut Tui, on: bool, icon: impl FnOnce(&mut egui::Ui), text
 pub fn note(tui: &mut Tui, text: impl Into<String>) {
     let text = text.into();
     block(tui, |ui| {
-        ui.add(egui::Label::new(RichText::new(text).color(Color32::from_gray(150)).small()).wrap());
+        ui.add(egui::Label::new(RichText::new(text).color(super::theme::DIM).small()).wrap());
     });
 }
 
@@ -203,13 +203,7 @@ pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> 
     fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
         let rect = container.full_container();
         let p = ui.painter();
-        p.rect(
-            rect,
-            8.0,
-            Color32::from_rgb(0x1C, 0x21, 0x29),
-            egui::Stroke::new(1.0, Color32::from_rgb(0x2E, 0x35, 0x40)),
-            egui::StrokeKind::Inside,
-        );
+        p.rect(rect, super::theme::R_CARD, super::theme::CARD, egui::Stroke::new(1.0, super::theme::EDGE), egui::StrokeKind::Inside);
         let bar = egui::Rect::from_min_size(rect.min + egui::vec2(1.0, 10.0), egui::vec2(3.0, 16.0));
         p.rect_filled(bar, 1.5, ACCENT);
     }
@@ -218,14 +212,14 @@ pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> 
         ..col(5.0)
     })
     .add_with_background_ui(background, |tui, _| {
-        w(tui, |ui| ui.label(RichText::new(title).strong().size(13.5).color(Color32::from_rgb(0xD8, 0xE4, 0xF2))));
+        w(tui, |ui| ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE)));
         body(tui)
     })
     .main
 }
 
-/// The cards' accent: a muted steel blue.
-pub const ACCENT: Color32 = Color32::from_rgb(0x5A, 0x9C, 0xE6);
+/// The cards' accent bar: the theme's accent.
+pub const ACCENT: Color32 = super::theme::ACCENT;
 
 /// A form row: the label in a third of the row (72–150 px, wrapping), then the
 /// controls in what is left, wrapping onto a second line rather than overflowing.

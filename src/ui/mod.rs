@@ -22,6 +22,7 @@ mod overlay;
 mod panel;
 mod pen;
 mod svg;
+mod theme;
 mod tracker;
 mod tw;
 
@@ -250,7 +251,7 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
             options,
             Box::new(move |cc| {
                 panel::install_fonts(&cc.egui_ctx);
-                panel::install_style(&cc.egui_ctx);
+                theme::install(&cc.egui_ctx);
                 cc.egui_ctx.set_visuals(eframe::egui::Visuals::dark());
                 let (s, c) = (shared.clone(), cc.egui_ctx.clone());
                 threads.push(std::thread::spawn(move || worker(s, rx, c)));
