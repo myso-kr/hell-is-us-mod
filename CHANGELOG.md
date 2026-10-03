@@ -6,6 +6,17 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## 0.2.1 — 2026-10-04
+
+Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
+
+### Fixed
+
+- Updating from the footer stopped after the download with "update failed": the zip's unpacker
+  (`tar.exe`) could not start from the panel, which runs without a console. It now gets its own
+  input and output, as the download does. From 0.2.0 itself the button still fails: download this
+  release by hand once (the footer's "What's new" link opens it); updates work from 0.2.1 on.
+
 ## 0.2.0 — 2026-10-04
 
 Verified on Steam build **24045435**, where `hiumod doctor` passes every check.

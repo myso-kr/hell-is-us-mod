@@ -97,6 +97,7 @@ fn curl(args: &[&str]) -> Result<Vec<u8>, String> {
     use std::os::windows::process::CommandExt;
     const NO_WINDOW: u32 = 0x0800_0000;
     let out = std::process::Command::new("curl.exe")
+        .stdin(std::process::Stdio::null())
         .args(["-fsSL", "--max-time", "120", "-A", concat!("hiumod/", env!("CARGO_PKG_VERSION"))])
         .args(args)
         .creation_flags(NO_WINDOW)
@@ -157,17 +158,19 @@ fn fetch(release: &Release) -> Result<PathBuf, String> {
     std::fs::create_dir_all(&files).map_err(|e| e.to_string())?;
     {
         use std::os::windows::process::CommandExt;
-        let ok = std::process::Command::new("tar.exe")
+        // Its own pipes, as curl's: the panel let its console go, so there are no handles
+        // to inherit, and starting it with them failed ("not supported", os error 50).
+        let out = std::process::Command::new("tar.exe")
             .arg("-xf")
             .arg(&zip)
             .arg("-C")
             .arg(&files)
+            .stdin(std::process::Stdio::null())
             .creation_flags(0x0800_0000)
-            .status()
-            .map_err(|e| format!("tar.exe: {e}"))?
-            .success();
-        if !ok {
-            return Err("tar.exe could not unpack the zip".into());
+            .output()
+            .map_err(|e| format!("tar.exe: {e}"))?;
+        if !out.status.success() {
+            return Err(format!("tar.exe: {}", String::from_utf8_lossy(&out.stderr).trim()));
         }
     }
     if !files.join("hiumod.exe").is_file() {
@@ -202,6 +205,9 @@ pub fn apply(staged: &Path) -> Result<(), String> {
         std::fs::copy(&from, &to).map_err(|e| format!("{}: {e}", to.display()))?;
     }
     std::process::Command::new(&exe)
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
         .env(AFTER, std::process::id().to_string())
         .current_dir(&install)
         .spawn()
