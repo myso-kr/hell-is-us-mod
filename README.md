@@ -76,10 +76,10 @@ Every overlay hides while a game menu is open.
 |---|---|
 | <kbd>&#96;</kbd> | show or hide the panel |
 | <kbd>Shift</kbd> + <kbd>&#96;</kbd> | open or close the console (for checking things) |
-| <kbd>F9</kbd> | minimap → big map → off |
-| <kbd>F10</kbd> | compass |
-| <kbd>F11</kbd> | guide to the next goal |
-| <kbd>F6</kbd> | place or remove a pin |
+| <kbd>F2</kbd> | minimap → big map → off |
+| <kbd>F3</kbd> | compass |
+| <kbd>F4</kbd> | guide to the next goal |
+| <kbd>F5</kbd> | place or remove a pin |
 
 The function keys can be changed on the panel's Map page. The game's own <kbd>F1</kbd> (HUD) and
 <kbd>F7</kbd> (photo mode) and Steam's <kbd>F12</kbd> (screenshot) are left to them: the panel does

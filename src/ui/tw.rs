@@ -386,14 +386,19 @@ pub fn chip(tui: &mut Tui, text: impl Into<String>, tone: Tone) {
 
 /// A key as a keycap: `F10`, `` ` ``.
 pub fn keycap(tui: &mut Tui, key: &str) {
-    w(tui, |ui| {
-        egui::Frame::new()
-            .fill(super::theme::CONTROL)
-            .stroke(egui::Stroke::new(1.0, super::theme::EDGE))
-            .corner_radius(super::theme::R_CONTROL)
-            .inner_margin(egui::Margin::symmetric(7, 1))
-            .show(ui, |ui| ui.label(RichText::new(key).monospace().color(super::theme::TITLE)))
-    });
+    w(tui, |ui| kbd(ui, key));
+}
+
+/// A key as a keycap in an egui row (HTML's `<kbd>`): the control fill, an edge, the
+/// key in monospace. A chord is its keys joined by "+": `kbd(ui, "Shift")`, "+", `` ` ``.
+pub fn kbd(ui: &mut egui::Ui, key: &str) -> egui::Response {
+    egui::Frame::new()
+        .fill(super::theme::CONTROL)
+        .stroke(egui::Stroke::new(1.0, super::theme::EDGE))
+        .corner_radius(super::theme::R_CONTROL)
+        .inner_margin(egui::Margin::symmetric(6, 0))
+        .show(ui, |ui| ui.label(RichText::new(key).monospace().color(super::theme::TITLE)))
+        .response
 }
 
 /// A form row: the label in 42 % of the row (72–200 px, wrapping), then the

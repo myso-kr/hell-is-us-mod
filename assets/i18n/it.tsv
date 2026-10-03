@@ -616,5 +616,6 @@ EVENT_UNLOCKED	sbloccato
 EVENT_TRAVEL	viaggio consentito
 LEGEND_HAZE_LINK	Legame della foschia
 EVENT_CHANGED	cambiamento
-CONSOLE_KEY_HINT	Console {key}
 HELP_KEY_CONSOLE	Apri/chiudi la console (per controllare)
+PANEL_KEY_LABEL	Pannello
+KEY_LEFT_OF_1	Il tasto a sinistra dell’1 (con ` e ~)

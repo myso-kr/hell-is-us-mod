@@ -5,7 +5,7 @@
 //! ```text
 //! worker   owns the Engine. Steps it ten times a second and runs what the panel asks
 //! hotkey   watches ` (~) while the game or the panel has focus; shows and hides the window
-//! minimap  the map window: F9 shows/hides it, F6 drops a marker (both changeable); reads snapshots only
+//! minimap  the map window: F2 steps its display, F5 drops a marker (changeable); reads snapshots only
 //! ui       eframe. Draws the last snapshot and sends requests — never touches the game
 //! tray     the notification-area icon: click to show/hide, right-click for a menu
 //! ```

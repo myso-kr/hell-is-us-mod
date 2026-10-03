@@ -11,9 +11,14 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 ### Changed
 
 - The console opens and closes with <kbd>Shift</kbd>+<kbd>&#96;</kbd> (showing the panel if it is
-  hidden), instead of a header button that appeared only over a game menu; the header shows the key.
+  hidden), instead of a header button that appeared only over a game menu. The header shows the
+  panel's and the console's keys as keycaps, written as the keys pressed (` and Shift+`: "~" is
+  another key on some layouts).
 - The key pickers no longer offer the game's <kbd>F1</kbd> (HUD) and <kbd>F7</kbd> (photo mode) or
   Steam's <kbd>F12</kbd> (screenshot); a saved key on one goes back to the defaults.
+- New default keys, next to the game's F1: <kbd>F2</kbd> map display, <kbd>F3</kbd> compass,
+  <kbd>F4</kbd> next goal, <kbd>F5</kbd> pin (were F9, F10, F11, F6). If you never changed them, they
+  move to the new keys by themselves; keys you chose stay.
 
 ### Diagnostics
 

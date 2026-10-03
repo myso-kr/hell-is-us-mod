@@ -616,5 +616,6 @@ EVENT_UNLOCKED	解除
 EVENT_TRAVEL	移動可能
 LEGEND_HAZE_LINK	ヘイズの繋がり
 EVENT_CHANGED	状態変化
-CONSOLE_KEY_HINT	コンソール {key}
 HELP_KEY_CONSOLE	コンソールの開閉 (確認用)
+PANEL_KEY_LABEL	パネル
+KEY_LEFT_OF_1	1 の左のキー (` と ~ の刻印)

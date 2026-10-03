@@ -191,7 +191,7 @@ panel settings, and have the single map key cycle through display modes, as most
   Filled" on the minimap and big map cards.
 - Display mode `display` = minimap / big map / off (the old `show false` reads as off).
   `cycle_modes` = which modes the map key cycles through (a bit set, at least one). Each press of the
-  map key (default F9) steps minimap → big map → off, through the chosen modes only. **The dedicated
+  map key (default F2; F9 until 0.2.1) steps minimap → big map → off, through the chosen modes only. **The dedicated
   big map key was removed**, leaving four keys: map display mode, marker, compass, next goal.
 
 ## 11. Floors and compass distance cues (2026-10-03)

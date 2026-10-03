@@ -69,11 +69,12 @@ fn keys_help_card(t: &mut Tui, state: &crate::minimap::MapState) {
     card(t, tr!("KEYS"), |t| {
         let rows = [
             ("`".to_string(), tr!("HELP_KEY_PANEL")),
-            ("Shift+`".to_string(), tr!("HELP_KEY_CONSOLE")),
             (format!("F{}", state.toggle_key), tr!("SWITCH_MAP_DISPLAY")),
             (format!("F{}", state.compass_key), tr!("SHOW_OR_HIDE_THE_COMPASS")),
             (format!("F{}", state.cycle_key), tr!("GUIDE_TO_THE_NEXT_GOAL")),
             (format!("F{}", state.marker_key), tr!("PLACE_OR_REMOVE_A_MARKER")),
+            // Last: the console is for checking things, not for play.
+            ("Shift+`".to_string(), tr!("HELP_KEY_CONSOLE")),
         ];
         for (key, what) in rows {
             t.style(tw::row(INLINE)).add(|t| {

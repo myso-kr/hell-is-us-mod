@@ -461,7 +461,6 @@ impl Panel {
         ui.scope_builder(row, |ui| {
             ui.label(RichText::new("◆").color(super::theme::ACCENT));
             ui.label(RichText::new("Hell Is Us Mod").strong().color(super::theme::TITLE));
-            ui.label(RichText::new("`").color(DIM).monospace());
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                 if ui.button(" × ").on_hover_text(tr!("CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND")).clicked() {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
@@ -469,11 +468,18 @@ impl Panel {
                 if ui.button(" — ").on_hover_text(tr!("HIDE_OPENS_IT_AGAIN")).clicked() {
                     hotkey::hide(&self.shared);
                 }
-                // The console is opened and closed by Shift+` (hotkey.rs): a button that
-                // showed only over a game menu was hard to reach. Its key, as a hint.
-                let hint = RichText::new(trf!("CONSOLE_KEY_HINT", key = "Shift+`")).small();
-                ui.label(hint.color(if self.console.open { super::theme::ACCENT } else { DIM }))
-                    .on_hover_text(tr!("CLI_CONSOLE"));
+                // The panel's and the console's keys, as keycaps (`<kbd>`), right to left:
+                // written as the keys pressed, ` and Shift+` — "~" is Shift+` only on some
+                // layouts (US, Korean), another key on others (UK, AZERTY).
+                ui.add_space(super::theme::INLINE);
+                let console = if self.console.open { super::theme::ACCENT } else { DIM };
+                ui.label(RichText::new(tr!("CONSOLE")).small().color(console)).on_hover_text(tr!("KEY_LEFT_OF_1"));
+                tw::kbd(ui, "`").on_hover_text(tr!("KEY_LEFT_OF_1"));
+                ui.label(RichText::new("+").small().color(DIM));
+                tw::kbd(ui, "Shift");
+                ui.add_space(super::theme::BLOCK);
+                ui.label(RichText::new(tr!("PANEL_KEY_LABEL")).small().color(DIM)).on_hover_text(tr!("KEY_LEFT_OF_1"));
+                tw::kbd(ui, "`").on_hover_text(tr!("KEY_LEFT_OF_1"));
             });
         });
         ui.add_space(super::theme::TIGHT);

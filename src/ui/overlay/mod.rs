@@ -6,8 +6,8 @@
 //! and these have to keep drawing then.
 //!
 //! Keys, polled like the panel's ` and only while the game or the panel has focus, chosen in the
-//! panel: show/hide the map (F9), drop or remove a marker (F6), show/hide the compass
-//! (F10), move the guide to the next place (F11), the big map in the middle (F3).
+//! panel: step the map's display (F2), drop or remove a marker (F5), show/hide the
+//! compass (F3), move the guide to the next place (F4).
 //! Only the worker's snapshot is read here — never the game's memory.
 //!
 //! While a game menu is open — the game shows its mouse cursor, or is paused — every

@@ -616,5 +616,6 @@ EVENT_UNLOCKED	desbloqueado
 EVENT_TRAVEL	viaje permitido
 LEGEND_HAZE_LINK	Vínculo de bruma
 EVENT_CHANGED	cambio
-CONSOLE_KEY_HINT	Consola {key}
 HELP_KEY_CONSOLE	Abrir/cerrar la consola (para comprobar)
+PANEL_KEY_LABEL	Panel
+KEY_LEFT_OF_1	La tecla a la izquierda del 1 (con ` y ~)

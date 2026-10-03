@@ -616,5 +616,6 @@ EVENT_UNLOCKED	entsperrt
 EVENT_TRAVEL	Reise möglich
 LEGEND_HAZE_LINK	Dunst-Verbindung
 EVENT_CHANGED	verändert
-CONSOLE_KEY_HINT	Konsole {key}
 HELP_KEY_CONSOLE	Konsole öffnen/schließen (zum Prüfen)
+PANEL_KEY_LABEL	Panel
+KEY_LEFT_OF_1	Die Taste links neben der 1 (mit ` und ~)

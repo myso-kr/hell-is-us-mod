@@ -616,5 +616,6 @@ EVENT_UNLOCKED	odblokowane
 EVENT_TRAVEL	można podróżować
 LEGEND_HAZE_LINK	Więź mgły
 EVENT_CHANGED	zmiana
-CONSOLE_KEY_HINT	Konsola {key}
 HELP_KEY_CONSOLE	Otwórz/zamknij konsolę (do sprawdzania)
+PANEL_KEY_LABEL	Panel
+KEY_LEFT_OF_1	Klawisz na lewo od 1 (z ` i ~)

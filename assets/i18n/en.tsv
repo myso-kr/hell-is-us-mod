@@ -616,5 +616,6 @@ EVENT_UNLOCKED	unlocked
 EVENT_TRAVEL	travel allowed
 LEGEND_HAZE_LINK	Haze link
 EVENT_CHANGED	changed
-CONSOLE_KEY_HINT	Console {key}
 HELP_KEY_CONSOLE	Open or close the console (for checking things)
+PANEL_KEY_LABEL	Panel
+KEY_LEFT_OF_1	The key left of 1 (` and ~ on it)

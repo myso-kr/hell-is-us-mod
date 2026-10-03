@@ -215,7 +215,12 @@ is ready for input whenever the panel is open.
 - **Function keys left free** (2026-10-04): the game's defaults use F1 (show the HUD) and F7 (photo
   mode), Steam's F12 takes a screenshot (Game8's and Magic Game World's control lists); the key
   pickers do not offer them (`minimap::TAKEN_KEYS`), and a saved setting on one goes back to the
-  defaults (F9 map, F6 pin, F10 compass, F11 next goal), which nothing in the game uses.
+  defaults.
+- **Default keys F2–F5** (2026-10-04, `minimap::DEFAULT_KEYS`): F2 map display, F3 compass, F4 next
+  goal, F5 pin — beside the game's F1, none of them the game's. They were F9, F6, F10, F11; a saved
+  file with all four of those untouched moves to the new ones, a key the player chose stays. Shift+Tab
+  for the map display was weighed and left: it is the Steam overlay's key, and taking it from the
+  game would take it from the overlay too.
 - **Console** (`src/ui/console.rs`):
   - A typed command runs **the same executable with those arguments**, without a window
     (`CREATE_NO_WINDOW`), and its stdout/stderr stream in line by line (`[hiumod]` log lines use the

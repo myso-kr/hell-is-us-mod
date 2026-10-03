@@ -117,7 +117,7 @@ time several of these lived in different files.
 | `src/ui/overlay/`, `src/guide/target.rs` | Overlay thread: minimap + compass; choosing the guide target (`settle_target`, `cycle`) now lives in `guide/target.rs` (was `ui/minimap.rs`) |
 | `src/ui/panel/guide.rs` | Guide tab: compass toggle and key, auto-guide, kind chips, current target, active investigations, Places list (nearest first, click to guide) (was `ui/panel.rs`) |
 
-- Default keys at the time: minimap F9, marker F6, **compass F10, next goal F11**. All four can be
+- Default keys at the time (F2, F5, F3, F4 since 0.2.2): minimap F9, marker F6, **compass F10, next goal F11**. All four can be
   rebound in the panel; if any two collide, all reset to defaults. (The map keys were later
   reorganised — see MAP.md §10.)
 - Auto-guide: when nothing is chosen, or the chosen goal disappears (because it was used), switch to

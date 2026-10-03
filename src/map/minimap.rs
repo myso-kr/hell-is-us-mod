@@ -117,16 +117,16 @@ impl Default for MapState {
             cycle: 0b111,
             heading_up: true,
             radius_m: 60.0,
-            toggle_key: 9,
-            marker_key: 6,
+            toggle_key: DEFAULT_KEYS[0],
+            marker_key: DEFAULT_KEYS[1],
             layers: ALL_LAYERS,
             hidden: BTreeSet::new(),
             icon_px: 16,
             terrain: true,
             relief: ReliefMode::Both,
             compass: true,
-            compass_key: 10,
-            cycle_key: 11,
+            compass_key: DEFAULT_KEYS[2],
+            cycle_key: DEFAULT_KEYS[3],
             guide_auto: true,
             goal_tiers: 0b111,
             quest: None,
@@ -390,10 +390,11 @@ impl MapState {
         if layers_version < 2 {
             s.layers |= crate::actors::Kind::Save.bit();
         }
-        // Four keys, four different keys — or all back to their defaults.
+        // Four keys, four different keys — or all back to their defaults. The old defaults,
+        // all four untouched, move to the new ones.
         let keys = s.keys();
-        if (0..keys.len()).any(|i| keys[i + 1..].contains(&keys[i])) {
-            (s.toggle_key, s.marker_key, s.compass_key, s.cycle_key) = (9, 6, 10, 11);
+        if (0..keys.len()).any(|i| keys[i + 1..].contains(&keys[i])) || keys == OLD_DEFAULT_KEYS {
+            [s.toggle_key, s.marker_key, s.compass_key, s.cycle_key] = DEFAULT_KEYS;
         }
         s
     }
@@ -440,6 +441,13 @@ pub fn usable_key(k: u8) -> bool {
 
 /// The function keys the game (F1 HUD, F7 photo mode) and Steam (F12 screenshot) use.
 pub const TAKEN_KEYS: [u8; 3] = [1, 7, 12];
+
+/// The map's keys by default, in `keys()` order (map display, pin, compass, next goal):
+/// F2, F5, F3, F4, next to the game's F1 and clear of its F7.
+pub const DEFAULT_KEYS: [u8; 4] = [2, 5, 3, 4];
+/// The defaults until 0.2.1 (F9, F6, F10, F11), moved to `DEFAULT_KEYS` when all four
+/// are still as they were.
+const OLD_DEFAULT_KEYS: [u8; 4] = [9, 6, 10, 11];
 
 #[cfg(test)]
 mod tests {
@@ -589,8 +597,8 @@ mod tests {
             terrain: false,
             relief: ReliefMode::Contour,
             compass: false,
-            compass_key: 2,
-            cycle_key: 3,
+            compass_key: 10,
+            cycle_key: 11,
             guide_auto: false,
             goal_tiers: 0b101,
             display: Display::Big,
@@ -625,13 +633,15 @@ mod tests {
         assert_eq!((k.toggle_key, k.marker_key), (11, 5));
         // The game's and Steam's keys (F1 HUD, F7 photo mode, F12 screenshot) are not taken.
         let k = MapState::parse("toggle_key 12\nmarker_key 7\ncompass_key 1\n");
-        assert_eq!((k.toggle_key, k.marker_key, k.compass_key), (9, 6, 10));
+        assert_eq!((k.toggle_key, k.marker_key, k.compass_key), (2, 5, 3));
         let k = MapState::parse("toggle_key 8\nmarker_key 13\n");
-        assert_eq!((k.toggle_key, k.marker_key), (8, 6), "F8 is free now; F13 is no key");
-        let k = MapState::parse("toggle_key 6\n");
-        assert_eq!((k.toggle_key, k.marker_key), (9, 6), "one key cannot do both");
-        let k = MapState::parse("compass_key 6\n");
-        assert_eq!((k.marker_key, k.compass_key), (6, 10), "nor can the compass take the marker's");
+        assert_eq!((k.toggle_key, k.marker_key), (8, 5), "F8 is free; F13 is no key");
+        let k = MapState::parse("toggle_key 5\n");
+        assert_eq!((k.toggle_key, k.marker_key), (2, 5), "one key cannot do both");
+        let k = MapState::parse("compass_key 5\n");
+        assert_eq!((k.marker_key, k.compass_key), (5, 3), "nor can the compass take the marker's");
+        let k = MapState::parse("toggle_key 9\nmarker_key 6\ncompass_key 10\ncycle_key 11\n");
+        assert_eq!(k.keys(), DEFAULT_KEYS, "the old defaults, untouched, move to the new");
         let t = MapState::parse("radius 99999\nmarker W 1 2\ntrail W a b c\nshow false\n???\n");
         assert_eq!(t.radius_m, 60.0);
         assert!(t.markers.is_empty() && t.trails.is_empty());

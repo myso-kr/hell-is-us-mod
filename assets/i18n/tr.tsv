@@ -616,5 +616,6 @@ EVENT_UNLOCKED	kilidi açıldı
 EVENT_TRAVEL	yolculuk serbest
 LEGEND_HAZE_LINK	Pus bağı
 EVENT_CHANGED	değişti
-CONSOLE_KEY_HINT	Konsol {key}
 HELP_KEY_CONSOLE	Konsolu aç/kapat (kontrol için)
+PANEL_KEY_LABEL	Panel
+KEY_LEFT_OF_1	1’in solundaki tuş (` ve ~ yazan)

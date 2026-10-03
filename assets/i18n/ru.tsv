@@ -616,5 +616,6 @@ EVENT_UNLOCKED	разблокировано
 EVENT_TRAVEL	путь открыт
 LEGEND_HAZE_LINK	Связь дымки
 EVENT_CHANGED	перемена
-CONSOLE_KEY_HINT	Консоль {key}
 HELP_KEY_CONSOLE	Открыть/закрыть консоль (для проверки)
+PANEL_KEY_LABEL	Панель
+KEY_LEFT_OF_1	Клавиша слева от 1 (с ` и ~)
