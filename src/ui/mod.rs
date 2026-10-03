@@ -18,7 +18,7 @@
 mod console;
 mod hotkey;
 mod layered;
-mod minimap;
+mod overlay;
 mod panel;
 mod pen;
 mod tracker;
@@ -220,7 +220,7 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
     let shared = Arc::new(Shared::default());
     shared.visible.store(true, Ordering::SeqCst);
     *shared.pos.lock().unwrap() = crate::settings::load().pos;
-    *shared.map.lock().unwrap() = minimap::load();
+    *shared.map.lock().unwrap() = overlay::load();
     if launch && Game::find()?.is_none() {
         locate::find(None)?;
         launch::launch()?;
@@ -253,7 +253,7 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
                 let (s, c) = (shared.clone(), cc.egui_ctx.clone());
                 threads.push(std::thread::spawn(move || hotkey::watch(s, c)));
                 let s = shared.clone();
-                threads.push(std::thread::spawn(move || minimap::run(s)));
+                threads.push(std::thread::spawn(move || overlay::run(s)));
                 let s = shared.clone();
                 threads.push(std::thread::spawn(move || backups(s)));
                 Ok(Box::new(panel::Panel::new(shared, tx)))

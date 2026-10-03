@@ -33,7 +33,17 @@
 //! checked for that shape before anything is written.
 
 use crate::cheats::{Active, Effect};
-use crate::engine::Attached;
+/// What the effects past the hero need of the attached game — engine.rs implements it
+/// for `Attached`, so this module does not depend on the engine.
+pub trait Reach {
+    fn memory(&self) -> &dyn crate::mem::Memory;
+    fn names(&self) -> &crate::names::Names;
+    /// The game image's base address.
+    fn base(&self) -> u64;
+    fn hero(&self) -> Result<u64, String>;
+    fn enemies(&self) -> Vec<u64>;
+    fn inventory(&self) -> Result<u64, String>;
+}
 use crate::mem::{self, Memory};
 use crate::names::{Names, CLASS};
 use std::collections::HashMap;
@@ -167,8 +177,8 @@ fn put_pair(m: &dyn Memory, at: u64, base: f32, current: f32) -> bool {
 impl Extras {
     /// One tick of every active cheat that reaches past the hero. Errors are reported,
     /// not fatal — an inventory not found yet, an enemy streaming out.
-    pub fn tick(&mut self, a: &Attached, active: &[Active]) -> Vec<String> {
-        let (m, n) = (&a.game, &a.anchors.names);
+    pub fn tick(&mut self, a: &dyn Reach, active: &[Active]) -> Vec<String> {
+        let (m, n) = (a.memory(), a.names());
         let mut errors = Vec::new();
         let wants = |f: fn(&Effect) -> bool| active.iter().find(|t| t.effects().iter().any(f));
         let enemies = || a.enemies();
@@ -236,7 +246,7 @@ impl Extras {
         }
 
         if wants(|e| matches!(e, Effect::Ghost)).is_some() {
-            match (a.chain().and_then(|c| c.hero(m, &a.anchors)), a.enemies().first().copied()) {
+            match (a.hero(), a.enemies().first().copied()) {
                 (Ok(hero), enemy) => {
                     if let Some((t, f)) = team_at(m, n, hero) {
                         if self.team.is_none_or(|(h, ..)| h != hero) {
@@ -259,10 +269,10 @@ impl Extras {
         }
 
         if wants(|e| matches!(e, Effect::Untouchable)).is_some() {
-            if let Ok(hero) = a.chain().and_then(|c| c.hero(m, &a.anchors)) {
+            if let Ok(hero) = a.hero() {
                 // The hero's primitive components, found once per hero.
                 if self.overlaps.as_ref().is_none_or(|(h, _)| *h != hero) {
-                    match crate::gobjects::discover(m, a.game.base) {
+                    match crate::gobjects::discover(m, a.base()) {
                         Ok(objects) => {
                             let bits = objects
                                 .all(m)
@@ -316,8 +326,8 @@ impl Extras {
 
     /// Put back what the cheats no longer in `keep` overwrote, on the targets still in
     /// play, and forget the rest.
-    pub fn release(&mut self, a: &Attached, keep: &[Active]) {
-        let (m, n) = (&a.game, &a.anchors.names);
+    pub fn release(&mut self, a: &dyn Reach, keep: &[Active]) {
+        let (m, n) = (a.memory(), a.names());
         let kept = |f: fn(&Effect) -> bool| keep.iter().any(|t| t.effects().iter().any(f));
         let alive: Vec<u64> = a.enemies();
         if !kept(|e| matches!(e, Effect::EnemyTime)) {
@@ -342,7 +352,7 @@ impl Extras {
         if !kept(|e| matches!(e, Effect::WeaponXp)) {
             self.weapon_xp.clear();
         }
-        let hero = a.chain().and_then(|c| c.hero(m, &a.anchors)).ok();
+        let hero = a.hero().ok();
         if !kept(|e| matches!(e, Effect::Ghost)) {
             if let Some((h, t, f)) = self.team.take() {
                 if Some(h) == hero {
@@ -377,8 +387,8 @@ impl Extras {
     }
 
     /// Write every stack of a class to `v`, each up to its own maximum. How many.
-    pub fn set_stock(&mut self, a: &Attached, class: &str, v: u32) -> Result<usize, String> {
-        let (m, n) = (&a.game, &a.anchors.names);
+    pub fn set_stock(&mut self, a: &dyn Reach, class: &str, v: u32) -> Result<usize, String> {
+        let (m, n) = (a.memory(), a.names());
         let inv = a.inventory()?;
         let mut done = 0;
         for s in stacks(m, n, inv).into_iter().filter(|s| s.class.contains(class)) {

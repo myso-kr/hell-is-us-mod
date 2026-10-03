@@ -64,7 +64,8 @@ FName index = (블록 << 16) | (블록 안 오프셋 / 2). 엔트리 = u16 헤�
 ```
 src/
   main.rs  cli.rs       CLI 명령 (doctor/list/get/set/hold/restore/pose/ui), 인자 해석
-  engine.rs             붙기·게이트·hold·읽기 루프, Snapshot (패널·오버레이가 읽는 유일한 것). 파생값 1초마다·Arc 공유
+  engine/               mod.rs (Engine 루프: 붙기·게이트·hold, 파생값 1초마다·Arc 공유) · attached.rs (붙은 게임과
+                        그 질의·캐시, extras 의 Reach 구현) · snapshot.rs (패널·오버레이가 읽는 유일한 것)
   unreal/               게임 메모리와 언리얼 리플렉션
     mem.rs              Memory trait, 포인터 사슬, 테스트용 Fake
     names.rs anchors.rs FNamePool·GEngine 찾기, 클래스 이름·계보·속성
@@ -76,7 +77,7 @@ src/
     attr.rs             속성 세트 읽기·쓰기 (Session)
     knowledge.rs        아는 사실·태그·조사
     terrain.rs obstacles.rs navmesh.rs geometry.rs   지형 높이, 장애물 껍질, 내비메시(A*+funnel), 정적 메시 윤곽
-  cheat/                cheats.rs (표) · hold.rs (원래 값 기록·복구) · extras.rs (주인공 밖 대상)
+  cheat/                cheats.rs (표) · hold.rs (원래 값 기록·복구) · extras.rs (주인공 밖 대상; 게임은 Reach 트레이트로만)
   guide/                어디로, 왜
     goals.rs            안내 목표 (페이로드·NPC·퀘스트 아이템), Gate
     quests.rs           퀘스트 저널·비밀(선행·미스터리·타임루프), 시간 예산 읽기
@@ -85,7 +86,8 @@ src/
     pathfind.rs         장애물 격자 A* (내비메시 없을 때)
     target.rs           안내 대상 고르기 (자동·건너뛰기·막힘 → 여는 것), 순환 키
   map/                  지도 상태와 그리기
-    minimap.rs          MapState·PinKind·Marker·View, minimap.txt
+    minimap.rs          MapState (경로·설정·레이어), minimap.txt — pins·view 를 다시 내보냄
+    pins.rs view.rs     지도 핀 (PinKind 24종·Marker) · 표시 방식·지형 모드·투영 (View)
     canvas.rs           미리 곱한 알파 픽셀 버퍼, 도형, 벡터 글꼴
     compass.rs          나침반 띠, 층 표시(흐림·위아래 화살표)
     raster.rs           draw_map (한 프레임) — canvas·compass 를 다시 내보냄
@@ -99,7 +101,8 @@ src/
     mod.rs              Request·Shared·worker 스레드·백업/메모리 로그 스레드
     panel/              eframe 패널: mod.rs (틀·헤더·탭·콘솔 창) + 탭마다 한 파일
                         groups · map · guide · quests · collect · saves · debug
-    minimap.rs          오버레이 스레드: 미니맵·큰 지도·나침반·추적기, 경로 계산, 지형 굽기
+    overlay/            오버레이 스레드: mod.rs (프레임 루프·창·키) · route.rs (목표까지 경로, 내비메시→격자, 스레드)
+                        · bake.rs (지형 굽기) · hud.rs (핀 목표·나침반 표시·추적기 줄)
     tracker.rs pen.rs   퀘스트 추적기, GDI 한글 글자
     console.rs hotkey.rs layered.rs tw.rs   드롭다운 콘솔, 단축키·창 순서, 레이어드 창, 카드 레이아웃
 assets/                 icons/ (종류 23) · pins/ (핀 24) · i18n/ (모드 문구 번역) · missables.tsv — 코드에 박지 않는 데이터

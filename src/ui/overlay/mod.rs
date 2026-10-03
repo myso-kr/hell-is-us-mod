@@ -13,19 +13,22 @@
 //! While a game menu is open — the game shows its mouse cursor, or is paused — every
 //! overlay hides (panel setting), so the inventory and menus are never covered.
 //!
-//! The walking route to the guide's goal (pathfind.rs) is worked out here, at most
-//! once a second and whenever the goal changes or the hero has moved on.
+//! The walking route to the guide's goal (route.rs), the landscape bake (bake.rs) and
+//! what the windows show (hud.rs) are worked out beside this loop.
+
+mod bake;
+mod hud;
+mod route;
 
 use super::hotkey::{game_window, pid_of};
 use super::layered::{pump, Layered};
 use super::Shared;
-use crate::goals::{Gate, Goal, Tier};
-use crate::guide::target::{cycle, flat, settle_target};
+use crate::guide::target::{cycle, settle_target};
 use super::pen::Pen;
 use super::tracker;
 use crate::quests::Quest;
-use crate::minimap::{Display, MapState, ReliefMode, View};
-use crate::raster::{draw_compass, draw_map, Canvas, Pin};
+use crate::minimap::{Display, MapState, View};
+use crate::raster::{draw_compass, draw_map, Canvas};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -44,13 +47,6 @@ const FRAME: Duration = Duration::from_millis(50);
 /// third frame — it is many more pixels.
 const BIG_SHARE: f32 = 0.8;
 const BIG_EVERY: u32 = 3;
-/// Work the route out again after this long, or when the hero has moved this far (cm).
-const ROUTE_EVERY: Duration = Duration::from_secs(1);
-const ROUTE_MOVED: f32 = 500.0;
-/// The compass points at the route this far ahead (cm), not at the goal itself.
-const ROUTE_AHEAD: f32 = 800.0;
-/// A goal's actor stands about this far above the floor it is on (cm).
-const GOAL_FEET: f32 = 50.0;
 const SAVE_EVERY: Duration = Duration::from_secs(10);
 
 pub fn path() -> std::path::PathBuf {
@@ -86,42 +82,12 @@ fn cursor_shown() -> bool {
     unsafe { GetCursorInfo(&mut ci) != 0 && ci.flags & CURSOR_SHOWING != 0 }
 }
 
-/// What the overlay thread knows about the current route.
-/// The landscape baked for the map, and the bake under way.
-#[derive(Default)]
-struct Baking {
-    done: Option<Arc<crate::relief::Relief>>,
-    /// The scene it was baked from.
-    from: Option<Arc<crate::obstacles::Scene>>,
-    pending: Option<std::thread::JoinHandle<(crate::relief::Relief, Arc<crate::obstacles::Scene>)>>,
-}
-
-/// Bake again when the hero is this far from the baked square's centre (cm), or the
-/// scene changes; the square reaches this far past the widest map's edge.
-const RELIEF_MOVED: f32 = 10_000.0;
-const RELIEF_SPARE: f32 = 15_000.0;
 
 /// What the tracker last drew: the journal, the followed quest, whether its places are
 /// near, whether the guided goal is blocked, and the needs line.
 type Tracked = (Arc<Vec<Quest>>, Option<String>, bool, bool, String);
 
-#[derive(Default)]
-struct Route {
-    path: crate::pathfind::Path,
-    goal: Option<u64>,
-    from: [f32; 2],
-    at: Option<Instant>,
-    /// A route being worked out off this thread (it can take a few hundred ms), and
-    /// the goal it is for.
-    pending: Option<std::thread::JoinHandle<(crate::pathfind::Path, u64)>>,
-    /// Goals whose last route had to go through something.
-    blocked: std::collections::HashSet<u64>,
-}
 
-/// Which way `to` lies from `from`, as a UE yaw in degrees.
-fn bearing(from: [f32; 3], to: [f32; 3]) -> f32 {
-    (to[1] - from[1]).atan2(to[0] - from[0]).to_degrees()
-}
 
 pub fn run(shared: Arc<Shared>) {
     let (Some(mut map_window), Some(mut compass_window)) = (
@@ -153,8 +119,8 @@ pub fn run(shared: Arc<Shared>) {
     let mut icon_px = shared.map.lock().unwrap().icon_px;
     let mut icons = make(icon_px);
     let mut was = [false; 4];
-    let mut route = Route::default();
-    let mut baking = Baking::default();
+    let mut route = route::Route::default();
+    let mut baking = bake::Baking::default();
     let mut saved = Instant::now();
     let mut tick = 0u32;
     let mut frame_start = Instant::now();
@@ -230,36 +196,7 @@ pub fn run(shared: Arc<Shared>) {
                         p[2]
                     ));
                 }
-                // The map pins of this world, as goals the guide can be sent to.
-                let mut goals = goals.clone();
-                for m in state.markers.get(world).into_iter().flatten() {
-                    goals.push(Goal {
-                        tier: Tier::Clue,
-                        id: m.id(world),
-                        label: m.title(),
-                        detail: tr!("지도 핀").into(),
-                        at: m.at,
-                        quests: vec![],
-                        tags: vec![],
-                        keys: vec![],
-                        gate: Gate::Open,
-                    });
-                }
-                if let Some((w, id, at, label)) = state.adhoc.clone() {
-                    if crate::survey::Survey::world_of(world) == w && !goals.iter().any(|g| g.id == id) {
-                        goals.push(Goal {
-                            tier: Tier::Clue,
-                            id,
-                            label,
-                            detail: tr!("패널에서 고른 곳").into(),
-                            at,
-                            quests: vec![],
-                            tags: vec![],
-                            keys: vec![],
-                            gate: Gate::Open,
-                        });
-                    }
-                }
+                let goals = hud::with_pins(&goals, &state, world);
                 let chosen = state.quest.clone();
                 settle_target(&mut state, &goals, p, crate::quests::followed(&journal, chosen.as_deref()), &journal, &route.blocked);
                 if cycle_now {
@@ -267,96 +204,15 @@ pub fn run(shared: Arc<Shared>) {
                 }
 
                 // The route to the goal, when it is due.
-                let goal = state.target.and_then(|t| goals.iter().find(|g| g.id == t));
-                match goal.filter(|_| state.route) {
-                    Some(g) => {
-                        let moved = ((p[0] - route.from[0]).powi(2) + (p[1] - route.from[1]).powi(2)).sqrt();
-                        let due = route.goal != Some(g.id)
-                            || moved > ROUTE_MOVED
-                            || route.at.is_none_or(|t| t.elapsed() >= ROUTE_EVERY);
-                        if route.pending.as_ref().is_some_and(|h| h.is_finished()) {
-                            if let Ok((path, id)) = route.pending.take().unwrap().join() {
-                                // Same goal: keep the way being followed unless this one
-                                // is clearly better, so the compass does not swing.
-                                // Whether it can be walked to at all: a route that has to go
-                                // through (a locked door, a puzzle) marks its goal blocked.
-                                if path.uncertain() {
-                                    route.blocked.insert(id);
-                                } else {
-                                    route.blocked.remove(&id);
-                                }
-                                if id == g.id
-                                    && (route.path.points.len() < 2
-                                        || crate::pathfind::better(&route.path, &path, [p[0], p[1]], ROUTE_AHEAD))
-                                {
-                                    route.path = path;
-                                }
-                            }
-                        }
-                        if due && route.pending.is_none() {
-                            let trail: Vec<[f32; 2]> = state
-                                .trails
-                                .get(world)
-                                .map(|t| t.iter().flatten().map(|q| [q[0], q[1]]).collect())
-                                .unwrap_or_default();
-                            let (from, to, feet, id, scene, nav) =
-                                ([p[0], p[1]], [g.at[0], g.at[1]], p[2] - 90.0, g.id, obstacles.clone(), nav.clone());
-                            let goal_feet = g.at[2] - GOAL_FEET;
-                            route.pending = Some(std::thread::spawn(move || {
-                                // The game's navmesh first: it knows stairs, cellars and
-                                // closed doors. The obstacle grid where it has nothing.
-                                let path = nav
-                                    .route([from[0], from[1], feet], [to[0], to[1], goal_feet])
-                                    .map(|(path, _)| path)
-                                    .unwrap_or_else(|| {
-                                        crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail)
-                                    });
-                                (path, id)
-                            }));
-                            if route.goal != Some(g.id) {
-                                route.path = Default::default();
-                            }
-                            route.goal = Some(g.id);
-                            route.from = [p[0], p[1]];
-                            route.at = Some(Instant::now());
-                        }
-                    }
-                    None => {
-                        let blocked = std::mem::take(&mut route.blocked);
-                        route = Route { blocked, ..Route::default() };
-                    }
-                }
-                // Keep the drawn route starting at the hero.
-                let mut path = route.path.clone();
-                if let Some(first) = path.points.first_mut() {
-                    *first = [p[0], p[1]];
-                }
+                let goal = state.target.and_then(|t| goals.iter().find(|g| g.id == t)).filter(|_| state.route);
+                let trail = || {
+                    state.trails.get(world).map(|t| t.iter().flatten().map(|q| [q[0], q[1]]).collect()).unwrap_or_default()
+                };
+                route.follow(goal, p, trail, &obstacles, &nav);
+                let path = route.drawn(p);
                 *shared.route_uncertain.lock().unwrap() = path.uncertain();
 
-                // The landscape for the map, baked off this thread when the hero has
-                // moved far, the map grew, or the scene changed.
-                if baking.pending.as_ref().is_some_and(|h| h.is_finished()) {
-                    if let Ok((rel, scene)) = baking.pending.take().unwrap().join() {
-                        baking.done = Some(Arc::new(rel));
-                        baking.from = Some(scene);
-                    }
-                }
-                let half = state.radius_m.max(state.big_radius_m) * 100.0 + RELIEF_SPARE;
-                let stale = baking.done.as_ref().is_none_or(|r| {
-                    let (c, h) = r.extent();
-                    (p[0] - c[0]).hypot(p[1] - c[1]) > RELIEF_MOVED
-                        || h < half - RELIEF_SPARE / 2.0
-                        || h > half * 2.0
-                        || (p[2] - 90.0 - r.feet).abs() > crate::relief::TINT_MOVED
-                }) || baking.from.as_ref().is_none_or(|s| !Arc::ptr_eq(s, &obstacles));
-                if state.relief != ReliefMode::Off && !obstacles.terrain.is_empty() && stale && baking.pending.is_none()
-                {
-                    let (scene, centre, feet) = (obstacles.clone(), [p[0], p[1]], p[2] - 90.0);
-                    baking.pending = Some(std::thread::spawn(move || {
-                        (crate::relief::Relief::bake(&scene, centre, half, feet), scene)
-                    }));
-                }
-                let relief = baking.done.clone().filter(|_| state.relief != ReliefMode::Off);
+                let relief = baking.relief(&state, p, &obstacles);
 
                 if state.display == Display::Big {
                     map_window.hide();
@@ -424,39 +280,7 @@ pub fn run(shared: Arc<Shared>) {
                 }
 
                 if state.compass {
-                    let mut pins: Vec<Pin> = goals
-                        .iter()
-                        .filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || Some(g.id) == state.target)
-                        .filter(|g| !crate::minimap::is_pin(g.id) || Some(g.id) == state.target)
-                        .map(|g| {
-                            let target = Some(g.id) == state.target;
-                            // The target is pointed at along its route, and its distance is the route's.
-                            let (aim, distance) = match (target, path.points.len() >= 2) {
-                                (true, true) => {
-                                    let next = crate::pathfind::next_point(&path.points, [p[0], p[1]], ROUTE_AHEAD)
-                                        .unwrap_or([g.at[0], g.at[1]]);
-                                    ([next[0], next[1], g.at[2]], crate::pathfind::length(&path.points))
-                                }
-                                _ => (g.at, flat(p, g.at)),
-                            };
-                            Pin {
-                                bearing: bearing(p, aim) - state.north_yaw,
-                                rgb: g.tier.rgb(),
-                                target,
-                                distance_m: distance / 100.0,
-                                dz_m: (g.at[2] - p[2]) / 100.0,
-                            }
-                        })
-                        .collect();
-                    if let Some(markers) = state.markers.get(world) {
-                        pins.extend(markers.iter().filter(|m| state.target != Some(m.id(world))).map(|m| Pin {
-                            bearing: bearing(p, m.at) - state.north_yaw,
-                            rgb: m.kind.rgb(),
-                            target: false,
-                            distance_m: flat(p, m.at) / 100.0,
-                            dz_m: (m.at[2] - p[2]) / 100.0,
-                        }));
-                    }
+                    let pins = hud::compass_pins(&goals, &state, world, p, &path);
                     draw_compass(&mut compass_cv, yaw - state.north_yaw, &pins);
                     let x = r.left + (r.right - r.left - COMPASS_W) / 2;
                     compass_window.present(&compass_cv, x, r.top + 12);
@@ -470,27 +294,7 @@ pub fn run(shared: Arc<Shared>) {
                     // The goal being guided to can only be reached through something.
                     let stuck = state.target.is_some_and(|t| route.blocked.contains(&t));
                     // A deadline due now comes first; then what it still needs.
-                    let alert = crate::missables::alert(&deadlines);
-                    let line = followed
-                        .and_then(|q| needs.iter().find(|(k, _)| *k == q.key))
-                        .map(|(_, list)| {
-                            let w = crate::survey::Survey::world_of(world);
-                            let here = list.iter().filter(|x| !x.done && x.world == w).count();
-                            let away = list.iter().filter(|x| !x.done && x.world != w).count();
-                            match (here, away) {
-                                (0, 0) => String::new(),
-                                (h, 0) => trf!("필요한 것: 이 지역 {h}곳", h = h),
-                                (0, a) => trf!("필요한 것: 다른 지역 {a}곳 — 장갑차로 이동", a = a),
-                                (h, a) => trf!("필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳", h = h, a = a),
-                            }
-                        })
-                        .unwrap_or_default();
-                    let line = match alert {
-                        Some(a) if line.is_empty() => a,
-                        Some(a) => format!("{a}
-{line}"),
-                        None => line,
-                    };
+                    let line = hud::needs_line(followed, &needs, &deadlines, world);
                     let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone());
                     if tracked.as_ref() != Some(&now) {
                         tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck, &line);
@@ -541,13 +345,3 @@ pub fn run(shared: Arc<Shared>) {
     save(&mut shared.map.lock().unwrap());
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn bearings_follow_unreal_yaw() {
-        assert_eq!(bearing([0.0; 3], [100.0, 0.0, 0.0]), 0.0);
-        assert_eq!(bearing([0.0; 3], [0.0, 100.0, 0.0]), 90.0);
-    }
-}

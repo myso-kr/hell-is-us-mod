@@ -1,26 +1,8 @@
-//! The loop every front end drives: attach to the game, watch the hero gate, hold
-//! the active toggles, read the values. The CLI's `hold` and the overlay are both a
-//! thin layer over `Engine::step`.
+//! The game attached: its memory and anchors, the hero's chain learned once, and
+//! the readers kept between steps (actors, footprints, the guide's caches) — each
+//! query the engine makes of the game is a method here.
 
-use crate::actors::{Scanner, Thing};
-use crate::anchors::{self, Anchors};
-use crate::attr::{Attr, Session};
-use crate::cheats::{self, Active, Kind};
-use crate::extras::Extras;
-use crate::game::locate;
-use crate::game::process::Game;
-use crate::geometry::{Footprint, Geometry};
-use crate::goals::{Goal, Goals};
-use crate::gobjects::{self, Objects};
-use crate::hold::{self, Originals};
-use crate::knowledge::{self, Knowledge};
-use crate::mem::Memory;
-use crate::obstacles::{Obstacles, Scene};
-use crate::player::{self, Chain};
-use std::cell::RefCell;
-use std::sync::Arc;
-use std::collections::{HashMap, HashSet};
-use std::time::{Duration, Instant};
+use super::*;
 
 pub struct Attached {
     pub game: Game,
@@ -263,7 +245,15 @@ impl Attached {
         if g.objects.is_none() {
             g.objects = Some(gobjects::discover(m, self.game.base)?);
         }
-        if g.saves.is_empty() || g.saves_read.is_none_or(|t| t.elapsed() >= SAVES_EVERY) {
+        // The save objects: the quest pass finds them as it walks every object (a new
+        // one each time the game saves — then the knowledge is read again at once);
+        // until its first pass, a search of its own (~0.4 s).
+        let seen = g.quests.saves();
+        if !seen.is_empty() && seen != g.saves.as_slice() {
+            g.saves = seen.to_vec();
+            g.saves_read = Some(Instant::now());
+            g.knowledge_read = None;
+        } else if g.saves.is_empty() || seen.is_empty() && g.saves_read.is_none_or(|t| t.elapsed() >= SAVES_EVERY) {
             g.saves = g.objects.as_ref().unwrap().of_class(m, n, "CharlieSaveGame");
             g.saves_read = Some(Instant::now());
         }
@@ -391,328 +381,23 @@ impl Attached {
     }
 }
 
-/// What one step saw. Plain data, so a UI thread can hold a copy.
-#[derive(Clone, Debug)]
-pub struct Snapshot {
-    /// (pid, Steam build id) when attached.
-    pub game: Result<(u32, String), String>,
-    pub gate: Result<(), String>,
-    /// The current value of every attribute the cheat table names, `None` where
-    /// unreadable this step.
-    pub values: Vec<(Attr, Option<f32>)>,
-    pub active: Vec<Active>,
-    /// Originals on record, waiting to be put back.
-    pub pending: usize,
-    /// The originals themselves — what the debug tab compares against.
-    pub originals: Vec<(Attr, (f32, f32))>,
-    /// Why the toggles stopped, or what the last tick could not do.
-    pub notice: Option<String>,
-    /// Where the hero is (cm) and the camera's yaw (degrees) — the minimap's input.
-    pub pose: Option<([f64; 3], f64)>,
-    /// The world the hero is in, by name.
-    pub world: Option<String>,
-    /// What the minimap marks besides the hero.
-    pub things: Vec<Thing>,
-    /// The minimap's background.
-    pub footprints: Arc<Vec<Footprint>>,
-    /// Places with something new to learn.
-    pub goals: Vec<Goal>,
-    /// The quest journal: main quests and good deeds, with their state.
-    pub journal: Arc<Vec<crate::quests::Quest>>,
-    /// The game is paused (a menu that stops it is open).
-    pub paused: bool,
-    /// What stands in the way, and the ground, for the route.
-    pub obstacles: Arc<Scene>,
-    /// The game's navmesh: the route's first choice.
-    pub nav: Arc<crate::navmesh::NavMesh>,
-    /// For each quest under way, what it needs in every world (the survey).
-    pub needs: Arc<Vec<(String, Vec<crate::survey::Need>)>>,
-    /// NPCs that want an item the hero holds.
-    pub handovers: Arc<Vec<crate::survey::Need>>,
-    /// Missable good deeds not done yet, and their deadlines.
-    pub deadlines: Arc<Vec<crate::missables::Deadline>>,
-    /// Collectibles placed and taken, per sort (the survey); NPCs with more to tell.
-    pub collection: Arc<Vec<crate::survey::Collect>>,
-    pub stories: Arc<Vec<crate::survey::Need>>,
-    /// How many good deeds, mysteries and timeloops the game has.
-    pub secret_totals: [usize; 3],
-    /// Saved positions: (world, where).
-    pub slots: [Option<(String, [f64; 3])>; SLOTS],
-}
-
-/// How many positions can be saved.
-pub const SLOTS: usize = 5;
-/// A teleport lands this far above the saved spot (cm), so it does not start in the
-/// ground.
-const LIFT: f64 = 50.0;
-
-impl Snapshot {
-    pub fn value(&self, a: Attr) -> Option<f32> {
-        self.values.iter().find(|(x, _)| *x == a).and_then(|(_, v)| *v)
+impl crate::extras::Reach for Attached {
+    fn memory(&self) -> &dyn crate::mem::Memory {
+        &self.game
     }
-}
-
-/// What the journal and the survey give, worked out once a second (`DERIVE_EVERY`).
-struct Derived {
-    journal: Arc<Vec<crate::quests::Quest>>,
-    needs: Arc<Vec<(String, Vec<crate::survey::Need>)>>,
-    handovers: Arc<Vec<crate::survey::Need>>,
-    deadlines: Arc<Vec<crate::missables::Deadline>>,
-    collection: Arc<Vec<crate::survey::Collect>>,
-    stories: Arc<Vec<crate::survey::Need>>,
-    secret_totals: [usize; 3],
-}
-
-const DERIVE_EVERY: Duration = Duration::from_secs(1);
-
-pub struct Engine {
-    derived: Option<(Instant, Derived)>,
-    attached: Option<Attached>,
-    checked: Option<Instant>,
-    originals: Originals,
-    /// What the cheats past the hero overwrote (extras.rs).
-    extras: Extras,
-    active: Vec<Active>,
-    notice: Option<String>,
-    slots: [Option<(String, [f64; 3])>; SLOTS],
-}
-
-/// How often to look for the game, or check it is still the same process. Listing
-/// processes is the one expensive thing a step does.
-const RECHECK: Duration = Duration::from_secs(2);
-
-impl Engine {
-    pub fn new() -> Result<Engine, String> {
-        Ok(Engine {
-            derived: None,
-            attached: None,
-            checked: None,
-            originals: Originals::load(&hold::default_path())?,
-            extras: Extras::default(),
-            slots: Default::default(),
-            active: Vec::new(),
-            notice: None,
-        })
+    fn names(&self) -> &crate::names::Names {
+        &self.anchors.names
     }
-
-    pub fn pending(&self) -> usize {
-        self.originals.len()
+    fn base(&self) -> u64 {
+        self.game.base
     }
-
-    /// Attach, or notice the game went away. When it has, everything the record
-    /// would have put back died with it.
-    fn refresh(&mut self) -> Result<(), String> {
-        let due = self.checked.is_none_or(|t| t.elapsed() >= RECHECK);
-        if !due {
-            return if self.attached.is_some() { Ok(()) } else { Err(tr!("게임이 실행 중이 아닙니다").into()) };
-        }
-        self.checked = Some(Instant::now());
-        let live = Game::find()?.map(|g| g.pid);
-        if let Some(a) = &self.attached {
-            if live == Some(a.game.pid) {
-                return Ok(());
-            }
-            self.attached = None;
-            if !self.active.is_empty() {
-                self.active.clear();
-                self.notice = Some(tr!("게임이 종료됨 — 치트 꺼짐").into());
-            }
-            self.extras.forget();
-            self.originals.forget()?;
-        }
-        self.attached = Some(attach()?);
-        Ok(())
+    fn hero(&self) -> Result<u64, String> {
+        self.chain().and_then(|c| c.hero(&self.game, &self.anchors))
     }
-
-    fn attached(&mut self) -> Result<&Attached, String> {
-        self.refresh()?;
-        Ok(self.attached.as_ref().expect("refresh attached"))
+    fn enemies(&self) -> Vec<u64> {
+        Attached::enemies(self)
     }
-
-    pub fn step(&mut self) -> Snapshot {
-        let mut snap = Snapshot {
-            game: Err(String::new()),
-            gate: Err(String::new()),
-            values: Vec::new(),
-            active: Vec::new(),
-            pending: 0,
-            originals: Vec::new(),
-            notice: None,
-            pose: None,
-            world: None,
-            things: Vec::new(),
-            footprints: Arc::default(),
-            goals: Vec::new(),
-            collection: Default::default(),
-            stories: Default::default(),
-            secret_totals: [0; 3],
-            deadlines: Default::default(),
-            handovers: Default::default(),
-            needs: Default::default(),
-            nav: Default::default(),
-            journal: Default::default(),
-            paused: false,
-            obstacles: Arc::default(),
-            slots: self.slots.clone(),
-        };
-        if let Err(e) = self.refresh() {
-            snap.game = Err(e.clone());
-            snap.gate = Err(e);
-        } else {
-            let a = self.attached.as_ref().unwrap();
-            snap.game = Ok((a.game.pid, a.version.clone()));
-            snap.gate = a.gate();
-            snap.pose = a.pose().ok();
-            snap.paused = a.paused().unwrap_or(false);
-            snap.world = a.chain().ok().and_then(|c| c.world(&a.game, &a.anchors).ok());
-            // A closed gate pauses the toggles rather than ending them: it closes on
-            // every loading screen, and the player expects god mode to survive one.
-            if snap.gate.is_ok() {
-                match a.things() {
-                    Ok(t) => {
-                        snap.things = t;
-                        snap.footprints = a.footprints();
-                    }
-                    Err(e) => snap.notice = Some(trf!("미니맵: {e}", e = e)),
-                }
-                match a.goals() {
-                    Ok((g, _)) => {
-                        snap.goals = g;
-                        // What follows from the journal and the survey changes with the
-                        // knowledge (read every 2 s): worked out once a second, shared.
-                        if self.derived.as_ref().is_none_or(|(at, _)| at.elapsed() >= DERIVE_EVERY) {
-                            let journal = Arc::new(a.journal());
-                            let (collection, stories) = snap.world.as_deref().map(|w| a.collection(w)).unwrap_or_default();
-                            let d = Derived {
-                                needs: Arc::new(a.needs(&journal)),
-                                handovers: Arc::new(a.handovers()),
-                                deadlines: Arc::new(crate::missables::deadlines(&journal, &a.deeds())),
-                                collection: Arc::new(collection),
-                                stories: Arc::new(stories),
-                                secret_totals: crate::quests::Kind::SECRETS.map(|(k, _)| a.secret_total(k)),
-                                journal,
-                            };
-                            self.derived = Some((Instant::now(), d));
-                        }
-                        if let Some((_, d)) = &self.derived {
-                            snap.journal = d.journal.clone();
-                            snap.needs = d.needs.clone();
-                            snap.handovers = d.handovers.clone();
-                            snap.deadlines = d.deadlines.clone();
-                            snap.collection = d.collection.clone();
-                            snap.stories = d.stories.clone();
-                            snap.secret_totals = d.secret_totals;
-                        }
-                        snap.obstacles = a.obstacles();
-                        snap.nav = a.nav();
-                    }
-                    Err(e) => snap.notice = Some(trf!("미니맵: {e}", e = e)),
-                }
-                match a.session() {
-                    Err(e) => snap.notice = Some(e),
-                    Ok(s) => {
-                        match hold::tick(&s, &self.active, &mut self.originals) {
-                            Ok(errors) if errors.is_empty() => {}
-                            Ok(errors) => snap.notice = Some(errors.join("; ")),
-                            Err(e) => {
-                                self.active.clear();
-                                self.notice = Some(trf!("원래 값을 기록하지 못함 — 치트 꺼짐: {e}", e = e));
-                            }
-                        }
-                        snap.values = cheats::attributes().into_iter().map(|a| (a, s.current(a).ok())).collect();
-                    }
-                }
-                let errors = self.extras.tick(a, &self.active);
-                if !errors.is_empty() && snap.notice.is_none() {
-                    snap.notice = Some(errors.join("; "));
-                }
-            }
-        }
-        snap.active = self.active.clone();
-        snap.pending = self.originals.len();
-        snap.originals = self.originals.entries();
-        snap.notice = self.notice.take().or(snap.notice);
-        snap
-    }
-
-    pub fn set(&mut self, name: &str, v: f32) -> Result<(), String> {
-        self.refresh()?;
-        let a = self.attached.as_ref().unwrap();
-        a.gate()?;
-        if let Some(Kind::SetStock { class, max, .. }) = cheats::find(name).map(|c| c.kind) {
-            if !(1.0..=max).contains(&v) {
-                return Err(trf!("{name}: 1..={max} 사이", name = name, max = max));
-            }
-            return self.extras.set_stock(a, class, v as u32).map(drop);
-        }
-        cheats::set_value(&a.session()?, name, v)
-    }
-
-    /// Remember where the hero stands, in slot `i`.
-    pub fn save_position(&mut self, i: usize) -> Result<[f64; 3], String> {
-        self.refresh()?;
-        let a = self.attached.as_ref().unwrap();
-        a.gate()?;
-        let (p, _) = a.pose()?;
-        let world = a.chain()?.world(&a.game, &a.anchors)?;
-        *self.slots.get_mut(i).ok_or(tr!("그런 슬롯이 없음"))? = Some((world, p));
-        Ok(p)
-    }
-
-    /// Back to slot `i` — only in the world it was saved in.
-    pub fn load_position(&mut self, i: usize) -> Result<(), String> {
-        self.refresh()?;
-        let a = self.attached.as_ref().unwrap();
-        a.gate()?;
-        let (world, p) = self.slots.get(i).cloned().flatten().ok_or(tr!("그 슬롯에 저장된 것이 없음"))?;
-        if a.chain()?.world(&a.game, &a.anchors)? != world {
-            return Err(trf!("다른 지역에서 저장됨 ({world})", world = crate::i18n::place(&world)));
-        }
-        a.teleport([p[0], p[1], p[2] + LIFT])
-    }
-
-    /// Replace the active toggles. Turning anything on needs the gate; whatever a
-    /// toggle being dropped had overwritten goes back at once.
-    pub fn set_active(&mut self, toggles: Vec<Active>) -> Result<(), String> {
-        let a = self.attached()?;
-        if !toggles.is_empty() {
-            a.gate()?;
-        }
-        let keep: Vec<Attr> = toggles.iter().flat_map(|t| t.restores()).collect();
-        let drop: Vec<Attr> = self.active.iter().flat_map(|t| t.restores()).filter(|x| !keep.contains(x)).collect();
-        self.active = toggles;
-        let a = self.attached.as_ref().unwrap();
-        self.extras.release(a, &self.active);
-        if drop.is_empty() {
-            return Ok(());
-        }
-        let failed = self.originals.restore_only(&a.session()?, &drop);
-        if failed.is_empty() {
-            Ok(())
-        } else {
-            Err(trf!("되돌리지 못함: {a0}", a0 = failed.join("; ")))
-        }
-    }
-
-    /// Switch everything off and put back every original on record. Only while the
-    /// hero is in play: the record names attributes, and only the hero's are ours.
-    pub fn stop(&mut self) -> Result<(), String> {
-        self.active.clear();
-        if let Some(a) = self.attached.as_ref() {
-            self.extras.release(a, &[]);
-        }
-        if self.originals.is_empty() {
-            return Ok(());
-        }
-        self.refresh()?;
-        let a = self.attached.as_ref().unwrap();
-        a.gate()?;
-        let s = a.session()?;
-        let failed = self.originals.restore(&s);
-        if failed.is_empty() {
-            Ok(())
-        } else {
-            Err(trf!("되돌리지 못함: {a0} — 나중에 `hiumod restore` 를 실행하세요", a0 = failed.join("; ")))
-        }
+    fn inventory(&self) -> Result<u64, String> {
+        Attached::inventory(self)
     }
 }
