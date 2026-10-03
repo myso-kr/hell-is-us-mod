@@ -41,9 +41,11 @@ Read about it in your language:
    and unzip it anywhere. It only ever writes to `<game folder>\Mods\`.
 2. **Run `hiumod.exe`.** It starts the game through Steam if needed, attaches once you
    are in, and closes when the game does. Play windowed or borderless.
-3. **Press <kbd>`</kbd>** (left of <kbd>1</kbd>) for the panel. Once, type
-   `doctor survey` in its console for the guide's full data — about two minutes, needs
-   the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0).
+3. **Press <kbd>`</kbd>** (left of <kbd>1</kbd>) for the panel. The first time you
+   control the hero, it reads the game's maps and text by itself (about two minutes).
+   That needs the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0);
+   if it's missing, the panel offers to install it — through winget, or without
+   administrator rights into the game's `Mods` folder if winget can't.
 
 **Status:** attaches to Steam build `24045435`, where `doctor` passes every check.
 Four cheats are verified in play — `god`, `stamina`, `speed` and `hero_time`; the rest
@@ -90,7 +92,7 @@ machine. Each language had a native-speaker pass against the game's own terms.
 
 ```
 hiumod doctor          # checks everything, writes nothing — load a save first
-hiumod doctor survey   # the guide's data from your game files (once per game update)
+hiumod doctor survey   # the guide's data from your game files (the panel does this itself)
 hiumod hold god stamina speed=1200  # until Ctrl+C, then puts things back
 hiumod restore         # if a hold was killed rather than stopped
 hiumod help            # every command

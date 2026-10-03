@@ -434,3 +434,16 @@ RAGE	Öfke
 TERROR	Terör
 VIGILANCE	Uyanıklık
 LOAD_POSITION	Git
+GAME_DATA	Oyun verisi
+READING_THE_GAMES_MAPS	◐ Oyunun haritaları okunuyor… (yaklaşık 2 dk)
+READING_THE_GAMES_TEXT	◐ Oyunun metinleri okunuyor…
+INSTALLING_NET_8_WINGET	◐ .NET 8 winget ile kuruluyor — Windows izin isteyebilir
+INSTALLING_NET_8_MODS_FOLDER	◐ .NET 8 Mods klasörüne kuruluyor…
+READING_FAILED	✕ Okuma başarısız: {e}
+GAME_DATA_READY	● Hazır
+INSTALL_FAILED	✕ Kurulum başarısız: {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	Rehber verisi için .NET 8 çalışma zamanı gerekiyor.
+INSTALL_NET_8	.NET 8’i kur
+INSTALL_NET_8_HOW	Önce winget ile Microsoft’un paketi (Windows izin ister); olmazsa yönetici izni gerekmeden, yalnızca senin için oyunun Mods klasörüne.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	Kahramanı kontrol ettiğinde okunur
+WAITING_FOR_THE_GAME	Oyun bekleniyor

@@ -319,7 +319,8 @@ fn probe(args: &[String]) -> R {
             )?;
             let game = hiumod::paths::data_dir().parent().ok_or("no game folder")?.to_path_buf();
             let run = |extra: &[&str]| -> Result<(), String> {
-                let mut cmd = std::process::Command::new("dotnet");
+                let dotnet = hiumod::runtime::dotnet().ok_or(tr!("THE_SURVEY_NEEDS_THE_NET_8_RUNTIME"))?;
+                let mut cmd = std::process::Command::new(dotnet);
                 cmd.arg(&tool).arg("--game").arg(&game).args(extra);
                 log!("{}", trf!("RUNNING", tool = tool.display(), args = extra.join(" ")));
                 let status = cmd.status().map_err(|e| format!("dotnet: {e}"))?;

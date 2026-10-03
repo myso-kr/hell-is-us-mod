@@ -320,3 +320,12 @@ been verified in play yet.
   - sitemap, robots.txt and llms.txt
 - The English reference docs (PLAN, ANCHORS, CHEATS) moved to `.spec/`.
 - Korean: the Vaults now use the game's own term, "금지된 지식의 금고".
+- The guide's game data is read without typing `doctor survey`.
+  - Once the hero is in control, the panel reads what is missing (the maps, or the
+    game's text) in the background. It reads the maps again when the Steam build
+    changes.
+  - The sidebar shows the progress.
+- When the .NET 8 runtime is missing, the panel offers to install it. It uses winget
+  (Microsoft's package) first. If that fails, Microsoft's dotnet-install script puts
+  it in `Mods\dotnet` without administrator rights.
+

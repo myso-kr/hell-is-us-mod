@@ -40,6 +40,8 @@ struct Guide {
     survey: Option<crate::survey::Survey>,
     /// The game's spawner and vault tables (Mods\survey), read once.
     tables: Option<crate::tables::Tables>,
+    /// `gamedata::generation` when those two were read: new files read again.
+    data: u64,
     known_facts: HashSet<String>,
     known_tags: HashSet<String>,
     held: HashSet<String>,
@@ -50,6 +52,19 @@ struct Guide {
     save: u64,
     /// What stands in the way: collision shapes, collected a slice per step.
     obstacles: Obstacles,
+}
+
+impl Guide {
+    /// New game data written since the survey and tables were read (gamedata.rs):
+    /// drop them, to be read again.
+    fn fresh(&mut self) {
+        let now = crate::gamedata::generation();
+        if self.data != now {
+            self.survey = None;
+            self.tables = None;
+            self.data = now;
+        }
+    }
 }
 
 const SAVES_EVERY: Duration = Duration::from_secs(60);
@@ -252,6 +267,7 @@ impl Attached {
         let hero = chain.hero(&self.game, &self.anchors)?;
         let (m, n) = (&self.game, &self.anchors.names);
         let mut g = self.guide.borrow_mut();
+        g.fresh();
         if g.objects.is_none() {
             g.objects = Some(gobjects::discover(m, self.game.base)?);
         }
@@ -387,6 +403,7 @@ impl Attached {
     pub fn vaults(&self) -> (Vec<crate::tables::VaultNote>, usize) {
         let (lore, known, opened) = self.research();
         let mut g = self.guide.borrow_mut();
+        g.fresh();
         let g = &mut *g;
         let tables =
             g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
@@ -397,6 +414,7 @@ impl Attached {
     /// Every world's Hollows left (F8).
     pub fn hollows(&self) -> Vec<crate::tables::Hollows> {
         let mut g = self.guide.borrow_mut();
+        g.fresh();
         let g = &mut *g;
         let tables =
             g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));

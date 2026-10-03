@@ -381,7 +381,15 @@ impl Panel {
         };
         match snap.map(|s| &s.game) {
             Some(Ok((pid, version))) => {
-                line(ui, tr!("GAME"), RichText::new(trf!("CONNECTED_V_PID", version = version, pid = pid)).color(OK));
+                // "● Connected" in the body size, the build and PID under it small.
+                let connected = trf!("CONNECTED_V_PID", version = version, pid = pid);
+                let (state, detail) = connected.split_once('\n').unwrap_or((&connected, ""));
+                ui.label(RichText::new(tr!("GAME")).color(DIM).small());
+                ui.add(egui::Label::new(RichText::new(state).color(OK)).wrap());
+                if !detail.is_empty() {
+                    ui.add(egui::Label::new(RichText::new(detail).color(DIM).small()).wrap());
+                }
+                ui.add_space(super::theme::INLINE);
                 // A build the mod was not checked on: names may have moved.
                 if version != crate::game::TESTED_BUILD {
                     let warn = trf!("CHECKED_ON_BUILD_IF_SOMETHING_IS", tested = crate::game::TESTED_BUILD);
@@ -398,6 +406,62 @@ impl Panel {
                 line(ui, tr!("HERO_GATE"), RichText::new(trf!("GATE_CLOSED_WHY", e = e)).color(WAIT))
             }
             _ => line(ui, tr!("HERO_GATE"), RichText::new(tr!("GATE_CLOSED")).color(DIM)),
+        }
+        self.game_data(ui, snap);
+    }
+
+    /// The guide's game data (gamedata.rs) and the runtime it needs (runtime.rs): what
+    /// is being read, or the button that installs .NET 8 — the one step left to the
+    /// player, since it puts software on their machine.
+    fn game_data(&self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+        use crate::gamedata::{Kind, Run};
+        use crate::runtime::Install;
+        ui.label(RichText::new(tr!("GAME_DATA")).color(DIM).small());
+        let build = snap.and_then(|s| s.game.as_ref().ok()).map(|(_, v)| v.clone());
+        let needs = build.as_deref().and_then(crate::gamedata::next);
+        // The state in the body size, as the game's and the gate's above; what to do
+        // about it, small — the same two sizes as every sidebar line.
+        let text = |ui: &mut egui::Ui, t: String, c: Color32| {
+            ui.add(egui::Label::new(RichText::new(t).color(c)).wrap());
+        };
+        let small = |ui: &mut egui::Ui, t: String, c: Color32| {
+            ui.add(egui::Label::new(RichText::new(t).color(c).small()).wrap());
+        };
+        match (crate::gamedata::state(), crate::runtime::install_state()) {
+            (Run::Running(Kind::Survey), _) => text(ui, tr!("READING_THE_GAMES_MAPS").into(), WAIT),
+            (Run::Running(Kind::Locale), _) => text(ui, tr!("READING_THE_GAMES_TEXT").into(), WAIT),
+            (_, Install::Winget) => text(ui, tr!("INSTALLING_NET_8_WINGET").into(), WAIT),
+            (_, Install::Script) => text(ui, tr!("INSTALLING_NET_8_MODS_FOLDER").into(), WAIT),
+            (Run::Failed(_, e), _) if needs.is_some() => text(ui, trf!("READING_FAILED", e = e), BAD),
+            _ if needs.is_none() && build.is_some() => text(ui, tr!("GAME_DATA_READY").into(), OK),
+            _ if crate::runtime::available() == Some(false) => {
+                if let Install::Failed(e) = crate::runtime::install_state() {
+                    text(ui, trf!("INSTALL_FAILED", e = e), BAD);
+                }
+                small(ui, tr!("THE_SURVEY_NEEDS_THE_NET_8_RUNTIME").into(), DIM);
+                if ui.button(tr!("INSTALL_NET_8")).on_hover_text(tr!("INSTALL_NET_8_HOW")).clicked() {
+                    crate::runtime::install();
+                }
+            }
+            _ if build.is_some() => small(ui, tr!("READ_ONCE_THE_HERO_IS_IN_CONTROL").into(), DIM),
+            _ => text(ui, tr!("WAITING_FOR_THE_GAME").into(), DIM),
+        }
+        ui.add_space(super::theme::INLINE);
+    }
+
+    /// Start reading what game data is missing, once the hero is in control and the
+    /// runtime is there — never while a run is going or after one failed (the panel
+    /// says why; the console's `doctor survey` tries again).
+    fn read_game_data(&self, snap: &Snapshot) {
+        let (Ok((_, build)), Ok(())) = (&snap.game, &snap.gate) else { return };
+        if !matches!(crate::gamedata::state(), crate::gamedata::Run::Idle | crate::gamedata::Run::Done) {
+            return;
+        }
+        if crate::runtime::available() != Some(true) {
+            return;
+        }
+        if let Some(kind) = crate::gamedata::next(build) {
+            crate::gamedata::start(kind, build);
         }
     }
 
@@ -588,6 +652,7 @@ impl eframe::App for Panel {
         if let Some(s) = &snap {
             self.resume(s);
             self.follow(s);
+            self.read_game_data(s);
         }
         let open = snap.as_ref().is_some_and(|s| s.gate.is_ok());
 

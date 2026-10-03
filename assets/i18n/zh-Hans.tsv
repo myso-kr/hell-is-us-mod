@@ -434,3 +434,16 @@ RAGE	愤怒
 TERROR	恐惧
 VIGILANCE	警惕
 LOAD_POSITION	前往
+GAME_DATA	游戏数据
+READING_THE_GAMES_MAPS	◐ 正在读取游戏地图…（约 2 分钟）
+READING_THE_GAMES_TEXT	◐ 正在读取游戏文本…
+INSTALLING_NET_8_WINGET	◐ 正在通过 winget 安装 .NET 8——Windows 可能会请求权限
+INSTALLING_NET_8_MODS_FOLDER	◐ 正在将 .NET 8 安装到 Mods 文件夹…
+READING_FAILED	✕ 读取失败：{e}
+GAME_DATA_READY	● 已就绪
+INSTALL_FAILED	✕ 安装失败：{e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	指引数据需要 .NET 8 运行时。
+INSTALL_NET_8	安装 .NET 8
+INSTALL_NET_8_HOW	先通过 winget 安装 Microsoft 官方包（Windows 会请求权限）；若失败，则无需管理员权限，仅为当前用户安装到游戏的 Mods 文件夹。
+READ_ONCE_THE_HERO_IS_IN_CONTROL	可以操控主角后开始读取
+WAITING_FOR_THE_GAME	正在等待游戏

@@ -434,3 +434,16 @@ RAGE	Rage
 TERROR	Terreur
 VIGILANCE	Vigilance
 LOAD_POSITION	Aller
+GAME_DATA	Données du jeu
+READING_THE_GAMES_MAPS	◐ Lecture des cartes du jeu… (environ 2 min)
+READING_THE_GAMES_TEXT	◐ Lecture des textes du jeu…
+INSTALLING_NET_8_WINGET	◐ Installation de .NET 8 avec winget — Windows peut demander une autorisation
+INSTALLING_NET_8_MODS_FOLDER	◐ Installation de .NET 8 dans le dossier Mods…
+READING_FAILED	✕ Échec de la lecture : {e}
+GAME_DATA_READY	● Prêt
+INSTALL_FAILED	✕ Échec de l’installation : {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	Les données du guide nécessitent le runtime .NET 8.
+INSTALL_NET_8	Installer .NET 8
+INSTALL_NET_8_HOW	D’abord le paquet de Microsoft via winget (Windows demande une autorisation) ; en cas d’échec, dans le dossier Mods du jeu, pour vous seul, sans droits d’administrateur.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	Lu dès que vous contrôlez le héros
+WAITING_FOR_THE_GAME	En attente du jeu

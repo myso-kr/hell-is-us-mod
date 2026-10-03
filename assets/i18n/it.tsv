@@ -434,3 +434,16 @@ RAGE	Furore
 TERROR	Terrore
 VIGILANCE	Vigilanza
 LOAD_POSITION	Vai
+GAME_DATA	Dati del gioco
+READING_THE_GAMES_MAPS	◐ Lettura delle mappe del gioco… (circa 2 min)
+READING_THE_GAMES_TEXT	◐ Lettura dei testi del gioco…
+INSTALLING_NET_8_WINGET	◐ Installazione di .NET 8 con winget: Windows potrebbe chiedere il permesso
+INSTALLING_NET_8_MODS_FOLDER	◐ Installazione di .NET 8 nella cartella Mods…
+READING_FAILED	✕ Lettura non riuscita: {e}
+GAME_DATA_READY	● Pronto
+INSTALL_FAILED	✕ Installazione non riuscita: {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	I dati della guida richiedono il runtime .NET 8.
+INSTALL_NET_8	Installa .NET 8
+INSTALL_NET_8_HOW	Prima il pacchetto di Microsoft tramite winget (Windows chiede il permesso); se non riesce, nella cartella Mods del gioco, solo per te, senza diritti di amministratore.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	Letti appena controlli il protagonista
+WAITING_FOR_THE_GAME	In attesa del gioco

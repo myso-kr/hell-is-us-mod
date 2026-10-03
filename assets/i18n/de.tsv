@@ -434,3 +434,16 @@ RAGE	Wut
 TERROR	Terror
 VIGILANCE	Wachsamkeit
 LOAD_POSITION	Hin
+GAME_DATA	Spieldaten
+READING_THE_GAMES_MAPS	◐ Karten des Spiels werden gelesen … (ca. 2 Min.)
+READING_THE_GAMES_TEXT	◐ Texte des Spiels werden gelesen …
+INSTALLING_NET_8_WINGET	◐ .NET 8 wird mit winget installiert – Windows fragt eventuell nach einer Berechtigung
+INSTALLING_NET_8_MODS_FOLDER	◐ .NET 8 wird in den Mods-Ordner installiert …
+READING_FAILED	✕ Lesen fehlgeschlagen: {e}
+GAME_DATA_READY	● Bereit
+INSTALL_FAILED	✕ Installation fehlgeschlagen: {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	Die Daten der Führung brauchen die .NET-8-Laufzeit.
+INSTALL_NET_8	.NET 8 installieren
+INSTALL_NET_8_HOW	Zuerst Microsofts Paket über winget (Windows fragt nach einer Berechtigung); klappt das nicht, in den Mods-Ordner des Spiels, nur für dich, ohne Administratorrechte.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	Wird gelesen, sobald du den Helden steuerst
+WAITING_FOR_THE_GAME	Warte auf das Spiel

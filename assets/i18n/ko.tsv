@@ -434,3 +434,16 @@ RAGE	분노
 TERROR	공포
 VIGILANCE	경계
 LOAD_POSITION	이동
+GAME_DATA	게임 데이터
+READING_THE_GAMES_MAPS	◐ 게임 지도 읽는 중… (약 2분)
+READING_THE_GAMES_TEXT	◐ 게임 텍스트 읽는 중…
+INSTALLING_NET_8_WINGET	◐ winget으로 .NET 8 설치 중 — Windows가 권한을 물을 수 있습니다
+INSTALLING_NET_8_MODS_FOLDER	◐ Mods 폴더에 .NET 8 설치 중…
+READING_FAILED	✕ 읽기 실패: {e}
+GAME_DATA_READY	● 준비됨
+INSTALL_FAILED	✕ 설치 실패: {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	안내 데이터를 읽으려면 .NET 8 런타임이 필요합니다.
+INSTALL_NET_8	.NET 8 설치
+INSTALL_NET_8_HOW	먼저 winget으로 Microsoft 공식 패키지를 설치합니다 (Windows가 권한을 묻습니다). 실패하면 관리자 권한 없이 게임 Mods 폴더에 이 사용자용으로 설치합니다.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	주인공을 조작할 수 있게 되면 읽습니다
+WAITING_FOR_THE_GAME	게임 기다리는 중

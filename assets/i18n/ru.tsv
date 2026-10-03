@@ -434,3 +434,16 @@ RAGE	Гнев
 TERROR	Страх
 VIGILANCE	Бдительность
 LOAD_POSITION	Перейти
+GAME_DATA	Данные игры
+READING_THE_GAMES_MAPS	◐ Чтение карт игры… (около 2 мин)
+READING_THE_GAMES_TEXT	◐ Чтение текстов игры…
+INSTALLING_NET_8_WINGET	◐ Установка .NET 8 через winget — Windows может запросить разрешение
+INSTALLING_NET_8_MODS_FOLDER	◐ Установка .NET 8 в папку Mods…
+READING_FAILED	✕ Ошибка чтения: {e}
+GAME_DATA_READY	● Готово
+INSTALL_FAILED	✕ Ошибка установки: {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	Для данных путеводителя нужна среда .NET 8.
+INSTALL_NET_8	Установить .NET 8
+INSTALL_NET_8_HOW	Сначала пакет Microsoft через winget (Windows запросит разрешение); если не выйдет — в папку Mods игры, только для вас, без прав администратора.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	Чтение начнётся, когда вы будете управлять героем
+WAITING_FOR_THE_GAME	Ожидание игры

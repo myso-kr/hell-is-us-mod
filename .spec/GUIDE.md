@@ -530,3 +530,20 @@
   - 폼 라벨 칸 1/3·최대 150 → 42 %·최대 200 (라벨이 일찍 줄바꿈되던 것).
   - 여러 줄 항목(놓치기 쉬운 선행·업적·적 무리)은 `tw::item` (간격 2) 으로 머리·설명을 묶어, 카드 간격 8 은 항목 사이에만.
   - 안내 '갈 곳' 목록이 잘리던 것 — block 안 ScrollArea 는 지난 프레임 높이에 갇힘 → `min_scrolled_height`.
+
+## 34. 게임 데이터 자동 읽기와 .NET 8 런타임 (2026-10-03)
+- 사용자가 `doctor survey` 를 칠 필요 없음. 패널이 주인공 조작 중 + 런타임 있음일 때 `gamedata::next(build)`:
+  `Mods\survey` 에 json 이 없거나 `Mods\survey\BUILD` 가 지금 Steam 빌드와 다르면 survey(+locale), 아니면
+  `Mods\locale
+ames.tsv` 가 없으면 locale. 같은 exe 를 `doctor survey|locale` 로 창 없이 실행, 끝나면 `generation` 증가 →
+  attached 의 Guide::fresh 가 survey·tables 를 다시 읽음, 이름은 i18n::follow_game 이 names 가 비면 다시 읽음.
+  stamp 없는 예전 survey 는 지금 빌드 것으로 보고 stamp. 실패하면 사이드바에 이유, 자동 재시도 없음 (콘솔에서 다시).
+- 런타임 (`infra/runtime.rs`): PATH·%ProgramFiles%\dotnet (설치 직후 PATH 가 옛것)·Mods\dotnet 순으로
+  `--list-runtimes` 에 `Microsoft.NETCore.App 8.` 이 있는 호스트. 패널은 `available()` (15 초마다 백그라운드 확인) 만 씀.
+- 설치는 사용자 버튼으로만 (소프트웨어를 깔기 때문): ① winget `Microsoft.DotNet.Runtime.8` (머신 전체, UAC, Windows Update 로 갱신)
+  ② 실패·없음 → 공식 dotnet-install.ps1 `-Runtime dotnet -Channel 8.0 -InstallDir Mods\dotnet -NoPath` (사용자 전용, 관리자 불필요).
+  실측: ② 11 초, 71 MB. survey 도구를 런타임 포함으로 배포하는 안(zip +31 MB)은 사용자 결정으로 기각.
+- 조사: Microsoft 배포 문서(FDD/SCD), winget 무인 설치 옵션, dotnet-install 스크립트(비관리자), FDD apphost 의 "You must install .NET" 대화상자.
+
+- 사이드바 상태 묶음(게임·주인공 게이트·게임 데이터)은 두 크기만: 제목 small DIM, 상태 값 본문 크기, 덧붙는 설명(빌드·PID,
+  해야 할 일)은 small. "● 연결됨\nv… · PID …" 는 줄을 나눠 첫 줄만 본문 크기.

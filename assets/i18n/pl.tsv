@@ -434,3 +434,16 @@ RAGE	Gniew
 TERROR	Przerażenie
 VIGILANCE	Czujność
 LOAD_POSITION	Idź
+GAME_DATA	Dane gry
+READING_THE_GAMES_MAPS	◐ Odczyt map gry… (ok. 2 min)
+READING_THE_GAMES_TEXT	◐ Odczyt tekstów gry…
+INSTALLING_NET_8_WINGET	◐ Instalacja .NET 8 przez winget — Windows może poprosić o zgodę
+INSTALLING_NET_8_MODS_FOLDER	◐ Instalacja .NET 8 w folderze Mods…
+READING_FAILED	✕ Odczyt nieudany: {e}
+GAME_DATA_READY	● Gotowe
+INSTALL_FAILED	✕ Instalacja nieudana: {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	Dane przewodnika wymagają środowiska .NET 8.
+INSTALL_NET_8	Zainstaluj .NET 8
+INSTALL_NET_8_HOW	Najpierw pakiet Microsoftu przez winget (Windows poprosi o zgodę); jeśli się nie uda — do folderu Mods gry, tylko dla ciebie, bez uprawnień administratora.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	Odczyt, gdy przejmiesz kontrolę nad bohaterem
+WAITING_FOR_THE_GAME	Czekam na grę

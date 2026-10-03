@@ -434,3 +434,16 @@ RAGE	Rage
 TERROR	Terror
 VIGILANCE	Vigilance
 LOAD_POSITION	Go
+GAME_DATA	Game data
+READING_THE_GAMES_MAPS	◐ Reading the game's maps… (about 2 min)
+READING_THE_GAMES_TEXT	◐ Reading the game's text…
+INSTALLING_NET_8_WINGET	◐ Installing .NET 8 with winget — Windows may ask for permission
+INSTALLING_NET_8_MODS_FOLDER	◐ Installing .NET 8 into the Mods folder…
+READING_FAILED	✕ Reading failed: {e}
+GAME_DATA_READY	● Ready
+INSTALL_FAILED	✕ Install failed: {e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	The guide's data needs the .NET 8 runtime.
+INSTALL_NET_8	Install .NET 8
+INSTALL_NET_8_HOW	Microsoft's package through winget first (Windows asks for permission); if that fails, into the game's Mods folder for you only, no administrator needed.
+READ_ONCE_THE_HERO_IS_IN_CONTROL	Read once you're in control of the hero
+WAITING_FOR_THE_GAME	Waiting for the game

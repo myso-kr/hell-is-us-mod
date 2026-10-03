@@ -434,3 +434,16 @@ RAGE	憤激
 TERROR	恐怖
 VIGILANCE	警戒
 LOAD_POSITION	移動
+GAME_DATA	ゲームデータ
+READING_THE_GAMES_MAPS	◐ ゲームのマップを読み込み中…（約2分）
+READING_THE_GAMES_TEXT	◐ ゲームのテキストを読み込み中…
+INSTALLING_NET_8_WINGET	◐ winget で .NET 8 をインストール中 — Windows が許可を求める場合があります
+INSTALLING_NET_8_MODS_FOLDER	◐ Mods フォルダーに .NET 8 をインストール中…
+READING_FAILED	✕ 読み込み失敗：{e}
+GAME_DATA_READY	● 準備完了
+INSTALL_FAILED	✕ インストール失敗：{e}
+THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	ガイドのデータには .NET 8 ランタイムが必要です。
+INSTALL_NET_8	.NET 8 をインストール
+INSTALL_NET_8_HOW	まず winget で Microsoft 公式パッケージを入れます（Windows が許可を求めます）。失敗した場合は、管理者権限なしでゲームの Mods フォルダーにこのユーザー用として入れます。
+READ_ONCE_THE_HERO_IS_IN_CONTROL	主人公を操作できるようになったら読み込みます
+WAITING_FOR_THE_GAME	ゲームを待っています
