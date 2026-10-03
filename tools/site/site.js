@@ -34,20 +34,34 @@ const height = (x, z) => {
 function start() {
   let renderer;
   try {
-    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'low-power' });
+    // MSAA only touches the full-resolution passes (the upscale, the depth fill, the
+    // route), which are cheap; the terrain's contours antialias themselves (fwidth).
+    renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'low-power', precision: 'mediump' });
   } catch {
     document.documentElement.classList.add('no-webgl');
     return;
   }
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // Two resolutions. The terrain — its contour shader is nearly all the cost — is
+  // drawn into a buffer at about two thirds of the CSS pixels and scaled up
+  // smoothly; fog and soft lines lose nothing visible. The route and the beacon,
+  // thin and sharp, are drawn over it at the screen's own resolution, against the
+  // terrain's depth filled in again at full size (depth only: no shading), so the
+  // hills still hide them. The terrain's scale adapts (see frame) from 0.45 to 0.85.
+  const FULL = Math.min(devicePixelRatio, 1.5);
+  const MAX_SCALE = 0.85, MIN_SCALE = 0.45;
+  let scale = 0.66;
+  renderer.setPixelRatio(FULL);
+  renderer.autoClear = false;
+  const low = new THREE.WebGLRenderTarget(1, 1, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: true });
   const scene = new THREE.Scene();
+  const overlay = new THREE.Scene();
   const ground = new THREE.Color('#0e1217');
   scene.background = ground;
   scene.fog = new THREE.FogExp2(ground, 0.0105);
-  const camera = new THREE.PerspectiveCamera(48, 1, 0.5, 400);
+  const camera = new THREE.PerspectiveCamera(48, 1, 1, 230); // past ~200 m it is all fog
 
   // the terrain: contour lines in the fragment shader, every 1.6 m, every fifth heavier
-  const size = 260, seg = 220;
+  const size = 260, seg = 160; // ~51k triangles: fewer and the contour lines kink at the quads
   const geo = new THREE.PlaneGeometry(size, size, seg, seg);
   geo.rotateX(-Math.PI / 2);
   const pos = geo.attributes.position;
@@ -95,6 +109,20 @@ function start() {
       }`,
   });
   scene.add(new THREE.Mesh(geo, mat));
+  const depthOnly = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ colorWrite: false }));
+  depthOnly.renderOrder = -1;
+  overlay.add(depthOnly);
+
+  // the low-resolution terrain, stretched over the screen
+  const flat = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const upscale = new THREE.Scene();
+  upscale.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+    uniforms: { uLow: { value: low.texture } },
+    depthTest: false,
+    depthWrite: false,
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+    fragmentShader: `uniform sampler2D uLow; varying vec2 vUv; void main(){ gl_FragColor = texture2D(uLow, vUv); }`,
+  })));
 
   // the route: along the valley floor, a little above it
   const pts = [];
@@ -103,7 +131,7 @@ function start() {
     pts.push(new THREE.Vector3(x, height(x, z) + 0.6, z));
   }
   const curve = new THREE.CatmullRomCurve3(pts);
-  const tube = new THREE.TubeGeometry(curve, 400, 0.22, 6, false);
+  const tube = new THREE.TubeGeometry(curve, 220, 0.22, 4, false);
   const routeMat = new THREE.ShaderMaterial({
     uniforms: { uTime: uniforms.uTime, uAccent: uniforms.uAccent },
     transparent: true,
@@ -120,7 +148,7 @@ function start() {
         gl_FragColor = vec4(uAccent * (0.55 + 0.45 * dash) + tip * 0.6, 0.85);
       }`,
   });
-  scene.add(new THREE.Mesh(tube, routeMat));
+  overlay.add(new THREE.Mesh(tube, routeMat));
 
   // the goal: a beacon at the route's end
   const end = curve.getPoint(1);
@@ -129,7 +157,7 @@ function start() {
     new THREE.MeshBasicMaterial({ color: '#5a9ce6', transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }),
   );
   beacon.position.set(end.x, end.y + 7, end.z);
-  scene.add(beacon);
+  overlay.add(beacon);
   uniforms.uFocus.value.set(end.x, end.z);
 
   // camera: a slow drift down the valley, eased toward the pointer
@@ -144,6 +172,7 @@ function start() {
   function resize() {
     const w = canvas.clientWidth, h = canvas.clientHeight;
     renderer.setSize(w, h, false);
+    low.setSize(Math.max(1, Math.round(w * scale)), Math.max(1, Math.round(h * scale)));
     camera.aspect = w / h;
     camera.fov = w < 700 ? 62 : 48;
     camera.updateProjectionMatrix();
@@ -166,13 +195,32 @@ function start() {
     look.set(Math.sin((z - 40) * 0.05) * 10, 0, z - 48);
     camera.lookAt(look);
     beacon.material.opacity = 0.18 + 0.1 * Math.sin(t * 2.0);
+    renderer.setRenderTarget(low);
+    renderer.clear();
     renderer.render(scene, camera);
+    renderer.setRenderTarget(null);
+    renderer.clear();
+    renderer.render(upscale, flat);
+    renderer.render(overlay, camera);
   }
   if (still) {
     frame();
     new ResizeObserver(frame).observe(canvas);
   } else {
-    renderer.setAnimationLoop(() => { if (visible && !document.hidden) frame(); });
+    // 30 fps is plenty for a slow drift, and half the work of 60. The interval
+    // between drawn frames also measures the GPU: a run of slow ones lowers the
+    // resolution, a run of quick ones raises it back.
+    const STEP = 1000 / 30;
+    let last = 0, slow = 0, quick = 0;
+    renderer.setAnimationLoop((now) => {
+      if (!visible || document.hidden || now - last < STEP - 2) return;
+      const dt = last ? now - last : STEP;
+      last = now;
+      frame();
+      if (dt > STEP * 1.5) { slow++; quick = 0; } else if (dt < STEP * 1.1) { quick++; slow = 0; }
+      if (slow > 20 && scale > MIN_SCALE) { scale = Math.max(MIN_SCALE, scale - 0.15); resize(); slow = 0; }
+      if (quick > 240 && scale < MAX_SCALE) { scale = Math.min(MAX_SCALE, scale + 0.1); resize(); quick = 0; }
+    });
   }
   document.documentElement.classList.add('webgl');
 }
@@ -206,4 +254,11 @@ for (const s of document.querySelectorAll('main > section:not(.hero)')) io.obser
 const langs = document.querySelector('.langs');
 document.addEventListener('click', (e) => { if (langs && !langs.contains(e.target)) langs.open = false; });
 
-start();
+// Start after the page has painted and the browser is idle, so the 3D scene never
+// delays the text; a phone that asks to save data gets the CSS contours instead.
+const saveData = navigator.connection && navigator.connection.saveData;
+if (!saveData) {
+  const go = () => start();
+  if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 1500 });
+  else setTimeout(go, 200);
+}

@@ -67,7 +67,7 @@ p { margin: 0 0 1em; text-wrap: pretty; }
 
 /* the hero */
 .hero { position: relative; min-height: 100svh; display: grid; align-items: end; overflow: hidden; isolation: isolate; }
-#terrain { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; }
+#terrain { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; image-rendering: auto; } /* drawn small, scaled up smoothly */
 .hero::before { /* the SVG contour fallback, under the canvas until WebGL draws */
   content: ''; position: absolute; inset: 0; z-index: -3;
   background:
