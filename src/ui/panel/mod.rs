@@ -1059,10 +1059,10 @@ impl eframe::App for Panel {
                     // The footer: across both columns, a hairline over two even halves.
                     let foot = tw::span_all(egui_taffy::taffy::Style {
                         padding: egui_taffy::taffy::Rect {
-                            left: egui_taffy::taffy::prelude::length(0.0),
+                            left: egui_taffy::taffy::prelude::length(0.0_f32),
                             right: egui_taffy::taffy::prelude::length(lane),
-                            top: egui_taffy::taffy::prelude::length(0.0),
-                            bottom: egui_taffy::taffy::prelude::length(0.0),
+                            top: egui_taffy::taffy::prelude::length(0.0_f32),
+                            bottom: egui_taffy::taffy::prelude::length(0.0_f32),
                         },
                         ..tw::col(super::theme::TIGHT)
                     });
