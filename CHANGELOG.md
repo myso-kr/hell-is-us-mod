@@ -250,3 +250,12 @@ been verified in play yet.
 - Panel pages are balanced. The map page splits into the map settings with keys,
   and what the map shows with pins. The save page gains a card listing the game's
   own save files and when each was written.
+- Memory. The engine alone stays near 50 MB and the overlay's heavy work peaks at
+  112 MB, both measured headless. The panel logs its working set, private bytes and
+  peak once a minute and shows them in the debug tab. Journal, needs, collection
+  and other survey-derived lists are now worked out once a second, not ten times,
+  and shared between panel and overlay instead of copied every frame.
+- Source layout. The modules now sit in folders by role: unreal, read, cheat,
+  guide, map and infra. The panel is split into one file per page, and raster
+  into canvas, compass and map drawing. Target choice moved to guide/target.rs,
+  and file paths all start from paths.rs. Every old module path still resolves.

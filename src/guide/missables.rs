@@ -70,7 +70,7 @@ pub struct Deadline {
 
 /// The table: (tag stem, deadline, what to do).
 fn table() -> Vec<(String, Due, String)> {
-    include_str!("../assets/missables.tsv")
+    include_str!("../../assets/missables.tsv")
         .lines()
         .filter(|l| !l.starts_with('#') && !l.trim().is_empty())
         .filter_map(|l| {

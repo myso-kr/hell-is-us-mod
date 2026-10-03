@@ -68,11 +68,21 @@ pub struct Shared {
     pub quit: AtomicBool,
 }
 
-/// Back the saves up after each write the game makes (backup.rs), until the panel quits.
+/// Back the saves up after each write the game makes (backup.rs), and log this
+/// process's memory once a minute — where a growth would show (memstat.rs), until the
+/// panel quits.
 fn backups(shared: Arc<Shared>) {
     let mut watch = crate::backup::Watch::default();
+    let mut logged = std::time::Instant::now();
     while !shared.quit.load(Ordering::SeqCst) {
         std::thread::sleep(Duration::from_secs(2));
+        if logged.elapsed() >= Duration::from_secs(60) {
+            logged = std::time::Instant::now();
+            if let (Some((ws, private)), Some(peak)) = (crate::memstat::now(), crate::memstat::peak()) {
+                use crate::memstat::mb;
+                crate::journal::line(&format!("memory: working {} · private {} · peak {}", mb(ws), mb(private), mb(peak)));
+            }
+        }
         match watch.poll() {
             Some(Ok(to)) => crate::journal::line(&format!("save backed up to {}", to.display())),
             Some(Err(e)) => crate::journal::line(&format!("save backup failed: {e}")),

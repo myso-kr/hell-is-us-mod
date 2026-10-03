@@ -57,49 +57,59 @@ FName index = (블록 << 16) | (블록 안 오프셋 / 2). 엔트리 = u16 헤�
 
 ## 코드 지도
 
+폴더는 **역할(층)** 으로 나눈다. 아래 층은 위 층을 모른다 (unreal → read → guide/cheat → map → engine → ui).
+모든 모듈은 `lib.rs` 에서 최상위로 다시 내보내므로 `crate::goals`, `hiumod::mem` 처럼 **모듈 이름만으로** 부른다
+(어느 폴더에 있는지는 경로에 드러나지 않음 — 옮겨도 호출부가 안 바뀐다).
+
 ```
 src/
-  main.rs         CLI 명령 (doctor/list/get/set/hold/restore/pose/ui)
-  cli.rs          인자 해석
-  engine.rs       붙기(앵커 탐색)·체인 학습·게이트·hold·읽기 루프. CLI hold 와 패널이 공유
-  anchors.rs      FNamePool·GEngine 탐색, FField 레이아웃 선택
-  player.rs       리플렉션으로 체인 학습, 주인공 게이트, 위치·방향
-  names.rs        FNamePool 읽기, 클래스 이름·계보·속성(상속 포함) 찾기
-  attr.rs         속성 세트/속성을 이름으로 해석(`*` 포함), 검사된 읽기·쓰기 (Session).
-                  일반 float 필드도 같은 Session 에 (`add_fields`, 레이블 Hero / Movement)
-  cheats.rs       치트 표 (7행), 일반 필드 목록 HERO_FIELDS / MOVEMENT_FIELDS
-  actors.rs       미니맵에 찍을 액터: 레벨 순회, 클래스 계보로 분류(classify), 1 Hz 스캔 + 매 스텝 위치,
-                  다 쓴 것 거르기(Done: 적 체력 0, InteractionActionComponent.bHasBeenActivated),
-                  그룹 Kind 6개(적·아이템·전리품·NPC·문·퍼즐·저장), 세부 종류 Sub 23종 (적: 계열명, 아이템: 클래스 이름 접두사·단어, 문·퍼즐: 계보) — Kind 는 Sub 에서
-  icons.rs        assets/icons/*.svg 를 include_str! 로 넣고 resvg 로 래스터화 (미리 곱한 ARGB)
-  gobjects.rs     GUObjectArray 찾기·객체 목록·클래스로 찾기
-  knowledge.rs    현재 저장 상태 → 아는 사실·태그·진행 중 조사
-  relief.rs       지도용 지형: 주인공 주변을 높이·음영·물 격자로 굽기(별도 스레드), bilinear 조회
-  terrain.rs      지형: 충돌 컴포넌트 → HeightfieldRef(CookedPhysicalMaterials 뒤) → Chaos FHeightField 높이, 경사
-  probe.rs        doctor 하위 명령: 반사 필드 값 트리(+네이티브 빈 구간), 속성 검색, SDK 덤프, 변화 감시, 값 스캔
-  extras.rs       주인공 밖 대상 치트: 적 시간 배속·체력 1, 인벤토리 스택 수량(유지·지정) — 원래 값은 대상별 메모리
-  obstacles.rs    장애물: (+ 죽는 물 상자·지형으로 물 구간) 메시 충돌 형상(AggGeom) × 인스턴스 행렬 × ComponentToWorld(+0x1D0) → 2D 껍질+높이, GUObjectArray 조금씩
-  pathfind.rs     A*: 장애물(주인공 높이) 완전 차단 + 지나온 길 싼 길, 안 되면 비싼 통과, 줄 당기기, 다음 지점
-  goals.rs        안내 목표: 페이로드가 새 사실·태그를 주는 상호작용 오브젝트, 퀘스트/비밀/단서
-  geometry.rs     미니맵 배경: 정적 메시 → 위에서 본 사각형(Footprint), 액터별 캐시, 3초마다 갱신
-  minimap.rs      미니맵 상태(경로·마커·설정·레이어, 월드별), 투영(View), minimap.txt 형식
-  raster.rs       미리 곱한 알파 픽셀 버퍼에 원·고리·선·삼각형·N, draw_map (한 프레임)
-  hold.rs         원래 값 기록(originals.txt), 부분 복구
-  settings.rs     패널 설정(settings.txt)
-  verify.rs       사용자 검증 기록(verify.txt)
-  journal.rs      로그(hiumod.log)
-  paths.rs        데이터 폴더: <설치 루트>\Mods\, 안 되면 %LOCALAPPDATA%\hiumod\
-  mem.rs          Memory trait, 포인터 사슬, 테스트용 Fake 메모리
-  log.rs          패닉하지 않는 log!/warn!
-  game/
-    locate.rs     Steam 라이브러리에서 설치 찾기, buildid 읽기
-    launch.rs     steam://rungameid/1620730
-    process.rs    프로세스 찾기·열기, ReadProcessMemory/WriteProcessMemory, Ctrl+C
-  ui/             dungeons2-mod 와 같은 F8 패널 (worker·hotkey·eframe) + 오버레이 스레드:
-                  ui/layered.rs — 레이어드 창 공용, ui/minimap.rs — 미니맵·나침반·안내 대상,
-                  ui/layout.rs — 패널 그리드: 폭을 강제하고 잘라내는 열, 라벨 칸 고정 폼 행, 줄바꿈 버튼 줄·설명,
-  ui/minimap.rs — 레이어드 창, UpdateLayeredWindow, 표시·마커 키 폴링 (패널에서 고름), 10초마다 저장
+  main.rs  cli.rs       CLI 명령 (doctor/list/get/set/hold/restore/pose/ui), 인자 해석
+  engine.rs             붙기·게이트·hold·읽기 루프, Snapshot (패널·오버레이가 읽는 유일한 것). 파생값 1초마다·Arc 공유
+  unreal/               게임 메모리와 언리얼 리플렉션
+    mem.rs              Memory trait, 포인터 사슬, 테스트용 Fake
+    names.rs anchors.rs FNamePool·GEngine 찾기, 클래스 이름·계보·속성
+    gobjects.rs         GUObjectArray
+    player.rs           리플렉션으로 체인 학습, 주인공 게이트, 위치·방향
+    usmap.rs probe.rs   .usmap 쓰기, doctor 하위 명령
+  read/                 리플렉션으로 읽는 세계
+    actors.rs           미니맵 액터 분류 (Kind 6 / Sub 23)
+    attr.rs             속성 세트 읽기·쓰기 (Session)
+    knowledge.rs        아는 사실·태그·조사
+    terrain.rs obstacles.rs navmesh.rs geometry.rs   지형 높이, 장애물 껍질, 내비메시(A*+funnel), 정적 메시 윤곽
+  cheat/                cheats.rs (표) · hold.rs (원래 값 기록·복구) · extras.rs (주인공 밖 대상)
+  guide/                어디로, 왜
+    goals.rs            안내 목표 (페이로드·NPC·퀘스트 아이템), Gate
+    quests.rs           퀘스트 저널·비밀(선행·미스터리·타임루프), 시간 예산 읽기
+    survey.rs           tools/survey 결과 (Mods\survey\*.json) 조회
+    missables.rs        놓칠 수 있는 것 (assets/missables.tsv)
+    pathfind.rs         장애물 격자 A* (내비메시 없을 때)
+    target.rs           안내 대상 고르기 (자동·건너뛰기·막힘 → 여는 것), 순환 키
+  map/                  지도 상태와 그리기
+    minimap.rs          MapState·PinKind·Marker·View, minimap.txt
+    canvas.rs           미리 곱한 알파 픽셀 버퍼, 도형, 벡터 글꼴
+    compass.rs          나침반 띠, 층 표시(흐림·위아래 화살표)
+    raster.rs           draw_map (한 프레임) — canvas·compass 를 다시 내보냄
+    relief.rs icons.rs  지형 굽기, assets/{icons,pins}/*.svg 래스터화
+  infra/                log.rs journal.rs (hiumod.log) · paths.rs (Mods\ 폴더, 모든 파일 경로의 뿌리) ·
+                        settings.rs · verify.rs · backup.rs (세이브 백업) · memstat.rs (자기 메모리)
+  game/                 밖에서 본 게임: locate.rs (설치), launch.rs, process.rs (RPM/WPM)
+  ui/                   패널·오버레이 (Windows 전용)
+    mod.rs              Request·Shared·worker 스레드·백업/메모리 로그 스레드
+    panel/              eframe 패널: mod.rs (틀·헤더·탭·콘솔 창) + 탭마다 한 파일
+                        groups · map · guide · quests · collect · saves · debug
+    minimap.rs          오버레이 스레드: 미니맵·큰 지도·나침반·추적기, 경로 계산, 지형 굽기
+    tracker.rs pen.rs   퀘스트 추적기, GDI 한글 글자
+    console.rs hotkey.rs layered.rs tw.rs   드롭다운 콘솔, 단축키·창 순서, 레이어드 창, 카드 레이아웃
+assets/                 icons/ (종류 23) · pins/ (핀 24) · missables.tsv — 코드에 박지 않는 데이터
+tools/survey/           C# + CUE4Parse 조사기 (결과는 커밋 안 함)
+examples/               일회용 탐침 (gitignore)
 ```
+
+규칙
+- 새 모듈은 역할 폴더에 넣고 그 폴더 `mod.rs` 와 `lib.rs` 의 `pub use` 에 한 줄씩.
+- 파일 경로는 `paths::data_dir()` 에서만 시작. 데이터·아이콘은 `assets/` 파일로.
+- UI 는 게임 메모리를 읽지 않는다 (Snapshot 만). 안내 규칙은 guide/, 그리기는 map/ 에.
+- 한 파일이 ~700 줄을 넘으면 관심사로 나눈다 (panel → panel/, raster → canvas/compass).
 
 좌표: UE X 앞, Y 오른쪽, Z 위, yaw 는 +X 에서 +Y 쪽으로(위에서 보면 시계 방향).
 **게임의 북쪽 = 월드 −Y (yaw 270)** — 게임 나침반과 비교해 확인 (`MapState.north_yaw`). 동쪽 = +X.

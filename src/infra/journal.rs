@@ -10,7 +10,7 @@ use std::path::PathBuf;
 const LIMIT: u64 = 1 << 20;
 
 pub fn path() -> PathBuf {
-    crate::hold::default_path().with_file_name("hiumod.log")
+    crate::paths::data_dir().join("hiumod.log")
 }
 
 #[cfg(windows)]

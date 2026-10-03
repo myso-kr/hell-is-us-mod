@@ -21,7 +21,7 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 pub fn path() -> PathBuf {
-    crate::hold::default_path().with_file_name("settings.txt")
+    crate::paths::data_dir().join("settings.txt")
 }
 
 #[derive(Clone, Debug, PartialEq)]

@@ -9,7 +9,7 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 pub fn path() -> PathBuf {
-    crate::hold::default_path().with_file_name("verify.txt")
+    crate::paths::data_dir().join("verify.txt")
 }
 
 pub type Marks = BTreeMap<String, bool>;

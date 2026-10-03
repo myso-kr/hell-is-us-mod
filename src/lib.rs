@@ -1,40 +1,26 @@
 //! The module list, so the tests can drive everything that does not need the game.
+//!
+//! The modules live in folders by role (.spec/ARCHITECTURE.md): `unreal` (memory and
+//! reflection), `read` (the world, read through it), `cheat`, `guide`, `map`, `infra`,
+//! `game` (the process from outside), `ui`. Each module is also re-exported at the top
+//! (`crate::goals`, `hiumod::mem`), so a path names a module, not where it lives.
 
-pub mod actors;
-pub mod anchors;
-pub mod attr;
-pub mod cheats;
-pub mod backup;
+pub mod cheat;
 pub mod cli;
 #[cfg(windows)]
 pub mod engine;
-pub mod extras;
 pub mod game;
-pub mod geometry;
-pub mod goals;
-pub mod gobjects;
-pub mod hold;
-pub mod icons;
-pub mod journal;
-pub mod knowledge;
-pub mod log;
-pub mod mem;
-pub mod minimap;
-pub mod missables;
-pub mod names;
-pub mod navmesh;
-pub mod obstacles;
-pub mod pathfind;
-pub mod paths;
-pub mod player;
-pub mod probe;
-pub mod quests;
-pub mod survey;
-pub mod usmap;
-pub mod raster;
-pub mod relief;
-pub mod settings;
-pub mod terrain;
+pub mod guide;
+pub mod infra;
+pub mod map;
+pub mod read;
 #[cfg(windows)]
 pub mod ui;
-pub mod verify;
+pub mod unreal;
+
+pub use cheat::{cheats, extras, hold};
+pub use guide::{goals, missables, pathfind, quests, survey};
+pub use infra::{backup, journal, log, memstat, paths, settings, verify};
+pub use map::{icons, minimap, raster, relief};
+pub use read::{actors, attr, geometry, knowledge, navmesh, obstacles, terrain};
+pub use unreal::{anchors, gobjects, mem, names, player, probe, usmap};

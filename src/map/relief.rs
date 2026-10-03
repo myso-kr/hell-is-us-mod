@@ -8,7 +8,7 @@
 //! contour lines stay one pixel wide at any zoom.
 
 use crate::obstacles::Scene;
-use crate::raster::Rgba;
+use super::canvas::Rgba;
 
 /// Texels a side, at most; texels grow beyond that instead.
 pub const MAX_SIDE: usize = 1024;

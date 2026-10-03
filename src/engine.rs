@@ -417,7 +417,7 @@ pub struct Snapshot {
     /// Places with something new to learn.
     pub goals: Vec<Goal>,
     /// The quest journal: main quests and good deeds, with their state.
-    pub journal: Vec<crate::quests::Quest>,
+    pub journal: Arc<Vec<crate::quests::Quest>>,
     /// The game is paused (a menu that stops it is open).
     pub paused: bool,
     /// What stands in the way, and the ground, for the route.
@@ -425,14 +425,14 @@ pub struct Snapshot {
     /// The game's navmesh: the route's first choice.
     pub nav: Arc<crate::navmesh::NavMesh>,
     /// For each quest under way, what it needs in every world (the survey).
-    pub needs: Vec<(String, Vec<crate::survey::Need>)>,
+    pub needs: Arc<Vec<(String, Vec<crate::survey::Need>)>>,
     /// NPCs that want an item the hero holds.
-    pub handovers: Vec<crate::survey::Need>,
+    pub handovers: Arc<Vec<crate::survey::Need>>,
     /// Missable good deeds not done yet, and their deadlines.
-    pub deadlines: Vec<crate::missables::Deadline>,
+    pub deadlines: Arc<Vec<crate::missables::Deadline>>,
     /// Collectibles placed and taken, per sort (the survey); NPCs with more to tell.
-    pub collection: Vec<crate::survey::Collect>,
-    pub stories: Vec<crate::survey::Need>,
+    pub collection: Arc<Vec<crate::survey::Collect>>,
+    pub stories: Arc<Vec<crate::survey::Need>>,
     /// How many good deeds, mysteries and timeloops the game has.
     pub secret_totals: [usize; 3],
     /// Saved positions: (world, where).
@@ -451,7 +451,21 @@ impl Snapshot {
     }
 }
 
+/// What the journal and the survey give, worked out once a second (`DERIVE_EVERY`).
+struct Derived {
+    journal: Arc<Vec<crate::quests::Quest>>,
+    needs: Arc<Vec<(String, Vec<crate::survey::Need>)>>,
+    handovers: Arc<Vec<crate::survey::Need>>,
+    deadlines: Arc<Vec<crate::missables::Deadline>>,
+    collection: Arc<Vec<crate::survey::Collect>>,
+    stories: Arc<Vec<crate::survey::Need>>,
+    secret_totals: [usize; 3],
+}
+
+const DERIVE_EVERY: Duration = Duration::from_secs(1);
+
 pub struct Engine {
+    derived: Option<(Instant, Derived)>,
     attached: Option<Attached>,
     checked: Option<Instant>,
     originals: Originals,
@@ -469,6 +483,7 @@ const RECHECK: Duration = Duration::from_secs(2);
 impl Engine {
     pub fn new() -> Result<Engine, String> {
         Ok(Engine {
+            derived: None,
             attached: None,
             checked: None,
             originals: Originals::load(&hold::default_path())?,
@@ -527,14 +542,14 @@ impl Engine {
             things: Vec::new(),
             footprints: Arc::default(),
             goals: Vec::new(),
-            collection: Vec::new(),
-            stories: Vec::new(),
+            collection: Default::default(),
+            stories: Default::default(),
             secret_totals: [0; 3],
-            deadlines: Vec::new(),
-            handovers: Vec::new(),
-            needs: Vec::new(),
+            deadlines: Default::default(),
+            handovers: Default::default(),
+            needs: Default::default(),
             nav: Default::default(),
-            journal: Vec::new(),
+            journal: Default::default(),
             paused: false,
             obstacles: Arc::default(),
             slots: self.slots.clone(),
@@ -562,14 +577,31 @@ impl Engine {
                 match a.goals() {
                     Ok((g, _)) => {
                         snap.goals = g;
-                        snap.journal = a.journal();
-                        snap.needs = a.needs(&snap.journal);
-                        snap.handovers = a.handovers();
-                        snap.deadlines = crate::missables::deadlines(&snap.journal, &a.deeds());
-                        if let Some(w) = snap.world.as_deref() {
-                            (snap.collection, snap.stories) = a.collection(w);
+                        // What follows from the journal and the survey changes with the
+                        // knowledge (read every 2 s): worked out once a second, shared.
+                        if self.derived.as_ref().is_none_or(|(at, _)| at.elapsed() >= DERIVE_EVERY) {
+                            let journal = Arc::new(a.journal());
+                            let (collection, stories) = snap.world.as_deref().map(|w| a.collection(w)).unwrap_or_default();
+                            let d = Derived {
+                                needs: Arc::new(a.needs(&journal)),
+                                handovers: Arc::new(a.handovers()),
+                                deadlines: Arc::new(crate::missables::deadlines(&journal, &a.deeds())),
+                                collection: Arc::new(collection),
+                                stories: Arc::new(stories),
+                                secret_totals: crate::quests::Kind::SECRETS.map(|(k, _)| a.secret_total(k)),
+                                journal,
+                            };
+                            self.derived = Some((Instant::now(), d));
                         }
-                        snap.secret_totals = crate::quests::Kind::SECRETS.map(|(k, _)| a.secret_total(k));
+                        if let Some((_, d)) = &self.derived {
+                            snap.journal = d.journal.clone();
+                            snap.needs = d.needs.clone();
+                            snap.handovers = d.handovers.clone();
+                            snap.deadlines = d.deadlines.clone();
+                            snap.collection = d.collection.clone();
+                            snap.stories = d.stories.clone();
+                            snap.secret_totals = d.secret_totals;
+                        }
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }
