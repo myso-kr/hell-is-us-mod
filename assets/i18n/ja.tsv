@@ -223,7 +223,6 @@ GATE_CLOSED	○ 閉
 CHEATS	チート
 TOOLS	ツール
 RESTORE_ALL	すべて元に戻す ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	次回もオンのチートを維持
 NEXT_RUN_ONCE_THE_HERO_CAN	次回の起動時、主人公を操作できるようになったら、今オンのチートを再びオンにします。
 WRITES_ONLY_WHILE_THE_HERO_IS	主人公を操作している間だけ値を書き込みます · 実績はブロックされません
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	クエストトラッカー（右上、ミニマップの下）
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	パネルを表示
 TRAY_HIDE_PANEL	パネルを隠す
 TRAY_QUIT	終了
 LEGEND	凡例
+KEEP_SETTINGS	設定を保持
+GITHUB	GitHub
+CHECK_FOR_UPDATES	更新を確認
+CHECK_FOR_UPDATES_HINT	GitHub のリリースで新しい版を探します。指示するまで何もダウンロードしません。
+CHECKING_FOR_UPDATES	確認中…
+UP_TO_DATE	最新です
+UPDATE_FAILED	更新に失敗
+RELEASE_NOTES	変更点
+DOWNLOAD_VERSION	v{version} を入手
+DOWNLOADING_UPDATE	ダウンロード中…
+RESTART_TO_UPDATE	再起動して v{version} を適用
+RESTART_TO_UPDATE_HINT	ゲームの値を元に戻し、ファイルを置き換えて新しい版を起動します。
+SPLASH_TAGLINE	PC 版 Hell Is Us のコンパニオン

@@ -117,6 +117,47 @@ The panel runs **once** (a named mutex; a second start shows the running one and
 kept inside its monitor's work area (`hotkey.rs` `keep_on_screen`). The console and its header toggle
 show only over a game menu (the game or the console in front, the cursor showing or the game paused).
 
+**Each window is handled by its own handle** (2026-10-04, `hotkey.rs` `watch`, every 30 ms), not in
+the panel's frames: egui runs a frame only when something happens in one of its windows, so a
+decision made there waited for the next event, which could be clicks away (the console came up only
+after clicking back and forth between the game and the panel).
+- The console's window is kept by egui while it is open, created hidden; `watch` shows or hides it
+  with `ShowWindow` the moment the condition changes, and asks the panel for a frame so its header
+  toggle follows.
+- The panel minimised (its taskbar button) is hidden as its own — does: the console with it, and the
+  keyboard given back to the game (`take_focus`, as Windows has already given it to some other
+  window and would refuse a plain request). Left minimised, the panel still counted as showing.
+  Shown again, it is restored first.
+
+**The shell is one grid of three rows** (`tw` `sidebar` + `span_all`): the header, the body (the
+sidebar | the page), the footer across both columns. The footer is two even halves (`tw::share`:
+`flex-1 basis-0 min-w-0`), so what they hold never widens the row or the window; each is two rows,
+mirrored: buttons first (restore all and "Keep settings" | the update), small text second (a note |
+the version, GitHub, the copyright). The scroll bar's lane is the frame's right margin rather than a
+gutter of its own: the frame gives it up on the right and the header and footer take it back as
+padding, so every edge is `BLOCK` from the window's whether the page scrolls or not.
+
+A ScrollArea is never taller than the room its parent has, and a taffy leaf's room is the height it
+reported the frame before. Starting from 0, the page's scroll area stayed 0 tall and the page drew
+nothing (it worked only while the footer sat in the same leaf and gave it height). The page's room
+is given outright (`allocate_ui_with_layout` at `page_height`); it still shrinks to its content.
+
+**The splash** (`panel/splash.rs`) is a window of its own in the middle of the screen, drawn after
+the introduction video's closing card and the site's hero: the ground colour, contour lines
+drifting, the compass strip with its glowing goal, the double diamond, the name, the loading steps
+(game, hero gate, game data) and a bar. The panel opens off the screen and lays itself out there
+(its frames run as a shown window's do; the hotkey thread leaves it be while `Shared::splash`); the
+splash goes, and the panel comes to its place, once the splash has shown 1.8 s, the first reading
+is in with nothing still being read, the cheats kept from last time are back on, and the panel has
+kept its size for 0.3 s, or after 8 s whatever is left.
+
+**The footer** holds restore all, "Keep settings" (the cheats on now come back next launch), the
+version, updates, GitHub and the copyright. Updates are checked once at start. **Updates** (`src/ui/update.rs`) are by hand at each step: check (GitHub's latest release
+through Windows' `curl.exe`), download (the zip and its `.sha256`, checked, unpacked with
+`tar.exe`), restart. Restarting renames the running files aside (`*.update-old`, removed at the next
+start), copies the new ones in, starts the new panel with `HIUMOD_AFTER` = this pid (it waits for
+this one to exit before taking the one-panel mutex), and closes as × does.
+
 The Map page's **previews** (2026-10-03, split 2026-10-04): while that page shows
 (`Shared::preview_wanted`), the overlay draws both maps with the settings as they are, four times a
 second, whatever the display mode: the minimap at the top of its card (`Shared::preview`), the big

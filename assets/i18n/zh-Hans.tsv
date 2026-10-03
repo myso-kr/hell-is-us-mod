@@ -223,7 +223,6 @@ GATE_CLOSED	○ 关闭
 CHEATS	作弊
 TOOLS	工具
 RESTORE_ALL	全部还原（{pending}）
-KEEP_THESE_CHEATS_ON_NEXT_TIME	下次保持这些作弊开启
 NEXT_RUN_ONCE_THE_HERO_CAN	下次运行时，待可操控主角后，会自动重新开启当前已开启的作弊。
 WRITES_ONLY_WHILE_THE_HERO_IS	仅在操控主角时写入数值 · 不影响成就
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	任务追踪器（右上角，小地图下方）
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	显示面板
 TRAY_HIDE_PANEL	隐藏面板
 TRAY_QUIT	退出
 LEGEND	图例
+KEEP_SETTINGS	保留设置
+GITHUB	GitHub
+CHECK_FOR_UPDATES	检查更新
+CHECK_FOR_UPDATES_HINT	在 GitHub 发布页查找新版本。在你确认之前不会下载任何内容。
+CHECKING_FOR_UPDATES	正在检查…
+UP_TO_DATE	已是最新
+UPDATE_FAILED	更新失败
+RELEASE_NOTES	更新内容
+DOWNLOAD_VERSION	下载 v{version}
+DOWNLOADING_UPDATE	正在下载…
+RESTART_TO_UPDATE	重启以应用 v{version}
+RESTART_TO_UPDATE_HINT	恢复游戏数值，替换文件并启动新版本。
+SPLASH_TAGLINE	PC 版 Hell Is Us 辅助工具

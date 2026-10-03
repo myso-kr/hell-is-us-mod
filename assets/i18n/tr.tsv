@@ -223,7 +223,6 @@ GATE_CLOSED	○ Kapalı
 CHEATS	Hileler
 TOOLS	Araçlar
 RESTORE_ALL	Hepsini geri yükle ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	Bu hileleri bir sonraki sefer de açık tut
 NEXT_RUN_ONCE_THE_HERO_CAN	Bir sonraki çalıştırmada kahramanı kontrol edebildiğinde, şu an açık olan hileler yeniden açılır.
 WRITES_ONLY_WHILE_THE_HERO_IS	Yalnızca kahraman kontrol edilirken değer yazar · başarımlar engellenmez
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Görev takipçisi (sağ üst, mini haritanın altında)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	Paneli göster
 TRAY_HIDE_PANEL	Paneli gizle
 TRAY_QUIT	Çık
 LEGEND	Açıklama
+KEEP_SETTINGS	Ayarları koru
+GITHUB	GitHub
+CHECK_FOR_UPDATES	Güncellemeleri denetle
+CHECK_FOR_UPDATES_HINT	GitHub’da daha yeni bir sürüm arar. Siz istemeden hiçbir şey indirilmez.
+CHECKING_FOR_UPDATES	Denetleniyor…
+UP_TO_DATE	Güncel
+UPDATE_FAILED	Güncelleme başarısız
+RELEASE_NOTES	Yenilikler
+DOWNLOAD_VERSION	v{version} indir
+DOWNLOADING_UPDATE	İndiriliyor…
+RESTART_TO_UPDATE	v{version} için yeniden başlat
+RESTART_TO_UPDATE_HINT	Oyun değerlerini geri alır, dosyaları değiştirir ve yeni sürümü başlatır.
+SPLASH_TAGLINE	PC için Hell Is Us yardımcısı

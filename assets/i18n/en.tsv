@@ -223,7 +223,6 @@ GATE_CLOSED	○ Closed
 CHEATS	Cheats
 TOOLS	Tools
 RESTORE_ALL	Restore all ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	Keep these cheats on next time
 NEXT_RUN_ONCE_THE_HERO_CAN	Next launch, once you control the hero, the cheats now on are turned back on.
 WRITES_ONLY_WHILE_THE_HERO_IS	Applies only while you control the hero · achievements still unlock
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest tracker (top right, under the minimap)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	Show panel
 TRAY_HIDE_PANEL	Hide panel
 TRAY_QUIT	Quit
 LEGEND	Legend
+KEEP_SETTINGS	Keep settings
+GITHUB	GitHub
+CHECK_FOR_UPDATES	Check for updates
+CHECK_FOR_UPDATES_HINT	Looks for a newer release on GitHub. Nothing is downloaded until you ask.
+CHECKING_FOR_UPDATES	Checking…
+UP_TO_DATE	Up to date
+UPDATE_FAILED	Update failed
+RELEASE_NOTES	What’s new
+DOWNLOAD_VERSION	Download v{version}
+DOWNLOADING_UPDATE	Downloading…
+RESTART_TO_UPDATE	Restart to apply v{version}
+RESTART_TO_UPDATE_HINT	Puts the game’s values back, replaces the files and starts the new version.
+SPLASH_TAGLINE	A companion for Hell Is Us on PC

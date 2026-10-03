@@ -223,7 +223,6 @@ GATE_CLOSED	○ 닫힘
 CHEATS	치트
 TOOLS	도구
 RESTORE_ALL	모두 원래대로 ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	다음에도 켜 둔 치트 유지
 NEXT_RUN_ONCE_THE_HERO_CAN	다음 실행 때 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다.
 WRITES_ONLY_WHILE_THE_HERO_IS	주인공을 조작하는 동안에만 값을 적용합니다 · 업적은 차단되지 않습니다
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	퀘스트 추적기 (오른쪽 위, 미니맵 아래)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	패널 보이기
 TRAY_HIDE_PANEL	패널 숨기기
 TRAY_QUIT	종료
 LEGEND	범례
+KEEP_SETTINGS	설정 유지
+GITHUB	GitHub
+CHECK_FOR_UPDATES	업데이트 확인
+CHECK_FOR_UPDATES_HINT	GitHub 릴리스에서 새 버전을 찾습니다. 받기를 누르기 전에는 아무것도 내려받지 않습니다.
+CHECKING_FOR_UPDATES	확인 중…
+UP_TO_DATE	최신 버전
+UPDATE_FAILED	업데이트 실패
+RELEASE_NOTES	변경 사항
+DOWNLOAD_VERSION	v{version} 받기
+DOWNLOADING_UPDATE	받는 중…
+RESTART_TO_UPDATE	재시작해서 v{version} 적용
+RESTART_TO_UPDATE_HINT	게임 값을 원래대로 돌리고 파일을 바꾼 뒤 새 버전을 실행합니다.
+SPLASH_TAGLINE	PC용 Hell Is Us 동반 도구

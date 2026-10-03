@@ -223,7 +223,6 @@ GATE_CLOSED	○ Fechado
 CHEATS	Cheats
 TOOLS	Ferramentas
 RESTORE_ALL	Restaurar tudo ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	Manter estes cheats ativos na próxima vez
 NEXT_RUN_ONCE_THE_HERO_CAN	Na próxima execução, quando o herói puder ser controlado, os cheats ativos agora serão religados.
 WRITES_ONLY_WHILE_THE_HERO_IS	Só escreve valores enquanto o herói é controlado · conquistas não são bloqueadas
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Rastreador de missões (canto superior direito, sob o minimapa)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	Mostrar painel
 TRAY_HIDE_PANEL	Ocultar painel
 TRAY_QUIT	Sair
 LEGEND	Legenda
+KEEP_SETTINGS	Manter configurações
+GITHUB	GitHub
+CHECK_FOR_UPDATES	Procurar atualizações
+CHECK_FOR_UPDATES_HINT	Procura uma versão mais nova no GitHub. Nada é baixado até você pedir.
+CHECKING_FOR_UPDATES	Verificando…
+UP_TO_DATE	Atualizado
+UPDATE_FAILED	Falha na atualização
+RELEASE_NOTES	Novidades
+DOWNLOAD_VERSION	Baixar v{version}
+DOWNLOADING_UPDATE	Baixando…
+RESTART_TO_UPDATE	Reiniciar para aplicar v{version}
+RESTART_TO_UPDATE_HINT	Restaura os valores do jogo, troca os arquivos e inicia a nova versão.
+SPLASH_TAGLINE	Um companheiro para Hell Is Us no PC

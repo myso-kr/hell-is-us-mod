@@ -223,7 +223,6 @@ GATE_CLOSED	○ Chiuso
 CHEATS	Trucchi
 TOOLS	Strumenti
 RESTORE_ALL	Ripristina tutto ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	Mantieni questi trucchi la prossima volta
 NEXT_RUN_ONCE_THE_HERO_CAN	La prossima volta, quando potrai controllare l'eroe, i trucchi attivi ora verranno riattivati.
 WRITES_ONLY_WHILE_THE_HERO_IS	Scrive valori solo mentre controlli l'eroe · non blocca gli obiettivi Steam
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Tracker indagini (in alto a destra, sotto la minimappa)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	Mostra pannello
 TRAY_HIDE_PANEL	Nascondi pannello
 TRAY_QUIT	Esci
 LEGEND	Legenda
+KEEP_SETTINGS	Mantieni impostazioni
+GITHUB	GitHub
+CHECK_FOR_UPDATES	Cerca aggiornamenti
+CHECK_FOR_UPDATES_HINT	Cerca una versione più recente su GitHub. Non scarica nulla finché non lo chiedi.
+CHECKING_FOR_UPDATES	Controllo…
+UP_TO_DATE	Aggiornato
+UPDATE_FAILED	Aggiornamento non riuscito
+RELEASE_NOTES	Novità
+DOWNLOAD_VERSION	Scarica v{version}
+DOWNLOADING_UPDATE	Download…
+RESTART_TO_UPDATE	Riavvia per applicare v{version}
+RESTART_TO_UPDATE_HINT	Ripristina i valori del gioco, sostituisce i file e avvia la nuova versione.
+SPLASH_TAGLINE	Un compagno per Hell Is Us su PC

@@ -105,10 +105,10 @@ impl Panel {
             }
             self.budget_block(t, &list, snap);
             block(t, |ui| ui.separator());
-            t.style(tw::row(INLINE)).add(|t| {
-                tw::switch(t, &mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO"));
-                tw::order(t, &mut self.achievements_grouped, tr!("STEAM_ORDER"), tr!("BY_KIND"));
-            });
+            // The order as the places list has it, on its own line; the switch under it.
+            // Side by side in a card's width they did not fit, and were squeezed.
+            tw::order(t, &mut self.achievements_grouped, tr!("STEAM_ORDER"), tr!("BY_KIND"));
+            tw::switch(t, &mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO"));
             let mut shown: Vec<_> = list.iter().filter(|a| self.show_unlocked || !a.unlocked).collect();
             if self.achievements_grouped {
                 // Stable: within a kind, Steam's own order.

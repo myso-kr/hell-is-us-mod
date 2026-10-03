@@ -13,6 +13,7 @@ mod map;
 mod now;
 mod quests;
 mod saves;
+mod splash;
 
 use super::tw::{self, block, card, choices, field, note, switch, text, w};
 use super::{hotkey, Request, Shared};
@@ -76,6 +77,15 @@ pub fn install_fonts(ctx: &egui::Context) {
             fonts.families.entry(family).or_default().push(name.into());
         }
     }
+    // The splash's name, bold (the site and video use a condensed bold; Segoe UI Bold
+    // is on every Windows). Missing, the body face stands in.
+    let display = egui::FontFamily::Name("display".into());
+    if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\segoeuib.ttf") {
+        fonts.font_data.insert("display".into(), Arc::new(egui::FontData::from_owned(bytes)));
+        fonts.families.entry(display.clone()).or_default().push("display".into());
+    }
+    let body = fonts.families.get(&egui::FontFamily::Proportional).cloned().unwrap_or_default();
+    fonts.families.entry(display).or_default().extend(body);
     ctx.set_fonts(fonts);
 }
 
@@ -276,6 +286,13 @@ pub struct Panel {
     /// nothing would come back next time.
     wanted: Vec<Active>,
     keep: bool,
+    /// The footer's update from GitHub's releases; checked once, at the first frame.
+    updater: super::update::Updater,
+    update_checked: bool,
+    /// While the splash shows: when it opened.
+    splash: Option<Instant>,
+    /// When the window last changed size: the splash waits for the panel to settle.
+    resized_at: Instant,
     /// Cheats to turn back on from last time, once the gate first opens.
     resume: Option<Vec<Active>>,
     /// settings.txt as last written, and when.
@@ -285,6 +302,8 @@ pub struct Panel {
 impl Panel {
     pub fn new(shared: Arc<Shared>, tx: Sender<Request>) -> Panel {
         let saved = settings::load();
+        // The splash first (splash.rs): the hotkey thread leaves the window be till it goes.
+        shared.splash.store(true, Ordering::SeqCst);
         // A slider takes its saved value if it is still in range, else its default.
         let value = CHEATS
             .iter()
@@ -316,6 +335,10 @@ impl Panel {
             unfolded: [false; 6],
             wanted: resume.clone(),
             keep: saved.keep,
+            updater: Default::default(),
+            update_checked: false,
+            splash: Some(Instant::now()),
+            resized_at: Instant::now(),
             resume: (saved.keep && !resume.is_empty()).then_some(resume),
             saved: (settings::render(&saved), Instant::now()),
             marks: verify::load(),
@@ -654,8 +677,20 @@ impl Panel {
         }
     }
 
-    fn footer(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
+    /// The footer's left half: restore all and keep settings, then a note (a reply for a
+    /// few seconds, else the game's notice, else the rule). Mirrored by `footer_right`:
+    /// buttons in the first row, small text in the second.
+    fn footer_left(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
         let pending = snap.map_or(0, |s| s.pending);
+        let attached = snap.is_some_and(|s| s.game.is_ok());
+        let small = |t: String, c: Color32| RichText::new(t).small().color(c);
+        let note = match (&self.reply, snap.and_then(|s| s.notice.clone())) {
+            (Some((ok, text, at)), _) if at.elapsed() < Duration::from_secs(5) => {
+                small(text.clone(), if *ok { OK } else { BAD })
+            }
+            (_, Some(n)) => small(n, if attached { WAIT } else { DIM }),
+            _ => small(tr!("WRITES_ONLY_WHILE_THE_HERO_IS").into(), DIM),
+        };
         ui.horizontal(|ui| {
             let restore = ui.add_enabled(pending > 0, egui::Button::new(trf!("RESTORE_ALL", pending = pending)));
             if restore.clicked() {
@@ -667,19 +702,149 @@ impl Panel {
             }
             ui.add_space(super::theme::INLINE);
             toggle(ui, &mut self.keep).on_hover_text(tr!("NEXT_RUN_ONCE_THE_HERO_CAN"));
-            ui.label(tr!("KEEP_THESE_CHEATS_ON_NEXT_TIME")).on_hover_text(tr!("NEXT_RUN_ONCE_THE_HERO_CAN"));
+            ui.label(tr!("KEEP_SETTINGS")).on_hover_text(tr!("NEXT_RUN_ONCE_THE_HERO_CAN"));
         });
-        let attached = snap.is_some_and(|s| s.game.is_ok());
-        if let Some(n) = snap.and_then(|s| s.notice.clone()) {
-            ui.add(egui::Label::new(RichText::new(n).color(if attached { WAIT } else { DIM }).small()).wrap());
+        ui.add_space(super::theme::TIGHT);
+        ui.add(egui::Label::new(note).truncate());
+    }
+
+    /// The footer's right half, right-aligned: the update, then the version, GitHub and
+    /// the copyright. The update is checked once, at the first frame.
+    fn footer_right(&mut self, ui: &mut egui::Ui) {
+        if !self.update_checked {
+            self.update_checked = true;
+            self.updater.check(ui.ctx());
         }
-        if let Some((ok, text, at)) = &self.reply {
-            if at.elapsed() < Duration::from_secs(5) {
-                ui.add(egui::Label::new(RichText::new(text).color(if *ok { OK } else { BAD }).small()).wrap());
+        let small = |t: String| RichText::new(t).small().color(DIM);
+        let width = ui.available_width();
+        let row = ui.spacing().interact_size.y;
+        ui.allocate_ui_with_layout(egui::vec2(width, row), egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            self.update_control(ui)
+        });
+        ui.add_space(super::theme::TIGHT);
+        let line = ui.text_style_height(&egui::TextStyle::Small);
+        ui.allocate_ui_with_layout(egui::vec2(width, line), egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            ui.label(small("© 2026 myso-kr · MIT".into()));
+            ui.label(small("·".into()));
+            if ui.link(RichText::new(tr!("GITHUB")).small()).clicked() {
+                super::update::open(super::update::PAGE);
+            }
+            ui.label(small("·".into()));
+            ui.label(small(format!("v{}", env!("CARGO_PKG_VERSION"))));
+        });
+    }
+
+    /// The splash, a window of its own in the middle of the screen (splash.rs), while
+    /// the panel lays itself out off the screen. It goes once it has shown `splash::MIN`,
+    /// the first reading is in with nothing still being read, the cheats kept from last
+    /// time are back on, and the panel has kept its size a moment (or `splash::MAX` has
+    /// gone by); the panel then comes to its place.
+    fn splash_window(&mut self, ctx: &egui::Context, since: Instant, snap: Option<&Snapshot>) {
+        use crate::gamedata::Run;
+        let reading = matches!(crate::gamedata::state(), Run::Running(_));
+        let game = snap.map(|s| s.game.is_ok());
+        let ready = match game {
+            Some(true) => !reading,
+            Some(false) => true,
+            None => false,
+        };
+        let settled = self.resized_at.elapsed() >= Duration::from_millis(300);
+        // The cheats kept from last time, back on: once the hero is in control they are
+        // sent (`resume`), and the engine is given a moment to take them.
+        let gate = snap.map(|s| s.gate.is_ok());
+        let cheats = gate != Some(true)
+            || (self.resume.is_none() && self.sent.is_none_or(|t| t.elapsed() > Duration::from_millis(800)));
+        let elapsed = since.elapsed();
+        if elapsed >= splash::MAX || (elapsed >= splash::MIN && ready && settled && cheats) {
+            self.splash = None;
+            self.shared.splash.store(false, Ordering::SeqCst);
+            // To its place (the saved one, else over the game) and in front.
+            hotkey::show(&self.shared, ctx);
+            return;
+        }
+        let colour = |done: Option<bool>, busy: bool| match done {
+            Some(true) => OK,
+            _ if busy => WAIT,
+            _ => DIM,
+        };
+        let steps = [
+            splash::Step { name: tr!("GAME").into(), colour: colour(game, snap.is_none()) },
+            splash::Step { name: tr!("HERO_GATE").into(), colour: colour(gate, game == Some(true)) },
+            splash::Step {
+                name: tr!("GAME_DATA").into(),
+                colour: if reading { WAIT } else { colour(game.map(|g| g && ready), false) },
+            },
+        ];
+        // Time and readiness together: never full before it may close.
+        let by_time = elapsed.as_secs_f32() / splash::MIN.as_secs_f32();
+        let progress = if ready && settled && cheats { by_time } else { by_time.min(0.85) };
+        let (w, h) = splash::screen();
+        let ppp = ctx.pixels_per_point();
+        let at = egui::pos2((w / ppp - splash::SIZE.x) / 2.0, (h / ppp - splash::SIZE.y) / 2.0);
+        let builder = egui::ViewportBuilder::default()
+            .with_title("Hell Is Us Mod")
+            .with_decorations(false)
+            .with_always_on_top()
+            .with_taskbar(false)
+            .with_resizable(false)
+            .with_position(at)
+            .with_inner_size(splash::SIZE);
+        ctx.show_viewport_immediate(egui::ViewportId::from_hash_of("hiumod-splash"), builder, |ctx, _| {
+            egui::CentralPanel::default()
+                .frame(egui::Frame::NONE)
+                .show(ctx, |ui| splash::draw(ui, since, &steps, progress));
+        });
+        ctx.request_repaint_after(Duration::from_millis(16));
+    }
+
+    /// Updating from GitHub's releases, by hand at every step: check, download, restart.
+    /// (Right to left: what is added first sits furthest right.)
+    fn update_control(&mut self, ui: &mut egui::Ui) {
+        use super::update::{self, Stage};
+        // Right to left: the button at the edge, its status before it.
+        match self.updater.stage() {
+            stage @ (Stage::Idle | Stage::Current | Stage::Failed(_)) => {
+                if ui.button(tr!("CHECK_FOR_UPDATES")).on_hover_text(tr!("CHECK_FOR_UPDATES_HINT")).clicked() {
+                    self.updater.check(ui.ctx());
+                }
+                match &stage {
+                    Stage::Current => {
+                        ui.label(RichText::new(tr!("UP_TO_DATE")).color(OK));
+                    }
+                    Stage::Failed(why) => {
+                        ui.label(RichText::new(tr!("UPDATE_FAILED")).color(BAD)).on_hover_text(why);
+                    }
+                    _ => {}
+                }
+            }
+            Stage::Checking => {
+                ui.add_enabled(false, egui::Button::new(tr!("CHECK_FOR_UPDATES")));
+                ui.label(RichText::new(tr!("CHECKING_FOR_UPDATES")).color(DIM));
+            }
+            Stage::Found(release) => {
+                let label = trf!("DOWNLOAD_VERSION", version = release.version);
+                if ui.button(RichText::new(label).color(super::theme::ACCENT)).clicked() {
+                    self.updater.fetch(ui.ctx(), release.clone());
+                }
+                if ui.link(tr!("RELEASE_NOTES")).clicked() {
+                    update::open(&release.page);
+                }
+            }
+            Stage::Fetching(_) => {
+                ui.add_enabled(false, egui::Button::new(tr!("DOWNLOADING_UPDATE")));
+            }
+            Stage::Ready(version, files) => {
+                let label = trf!("RESTART_TO_UPDATE", version = version);
+                let button = egui::Button::new(RichText::new(label).color(super::theme::ACCENT));
+                if ui.add(button).on_hover_text(tr!("RESTART_TO_UPDATE_HINT")).clicked() {
+                    match update::apply(&files) {
+                        // Closed as × closes it: the game's values put back first.
+                        Ok(()) => ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close),
+                        Err(e) => self.updater.fail(e),
+                    }
+                }
             }
         }
-        ui.add_space(super::theme::TIGHT);
-        ui.add(egui::Label::new(RichText::new(tr!("WRITES_ONLY_WHILE_THE_HERO_IS")).color(DIM).small()).wrap());
     }
 
     /// The window is exactly as tall as what is in it: nothing clipped, nothing empty.
@@ -687,6 +852,7 @@ impl Panel {
         let (width, height) = (width.ceil(), height.ceil());
         if (height - self.height).abs() > 1.0 || (width - self.width).abs() > 1.0 {
             (self.width, self.height) = (width, height);
+            self.resized_at = Instant::now();
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::InnerSize(egui::vec2(width, height)));
         }
     }
@@ -732,13 +898,12 @@ impl Panel {
     /// see-through, as in Half-Life: its own window (an egui viewport), shown while the
     /// panel is and the console is open.
     fn console_window(&mut self, ctx: &egui::Context) {
-        if self.console.open {
-            // Looked at again shortly: a game menu opens or closes without a frame here.
-            ctx.request_repaint_after(std::time::Duration::from_millis(150));
-        }
+        self.shared.console_open.store(self.console.open, std::sync::atomic::Ordering::SeqCst);
+        // Kept while open, made hidden: whether it shows is hotkey.rs `watch`'s call, made
+        // at once as the game's menu opens (no frame runs here then).
         let game = self.shared.game_pid.load(std::sync::atomic::Ordering::SeqCst);
-        let shown = self.console.open && game != 0 && hotkey::console_allowed(&self.shared);
-        let Some((_, r)) = shown.then(|| hotkey::game_window(game)).flatten() else {
+        let open = self.console.open && game != 0;
+        let Some((_, r)) = open.then(|| hotkey::game_window(game)).flatten() else {
             return;
         };
         let ppp = ctx.pixels_per_point();
@@ -746,6 +911,7 @@ impl Panel {
         let size = egui::vec2(w, (h * super::console::SHARE).max(180.0));
         let builder = egui::ViewportBuilder::default()
             .with_title("Hell Is Us Mod · console")
+            .with_visible(false)
             .with_decorations(false)
             .with_transparent(true)
             .with_always_on_top()
@@ -809,51 +975,105 @@ impl eframe::App for Panel {
         // the monitor.
         let monitor_w = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1920.0, |m| m.x);
         self.fit_columns(monitor_w);
-        let width = (FRAME + NAV + DIVIDER + self.page_width() + SCROLLBAR).min(monitor_w * 0.9);
+        // The scroll bar's lane is the frame's right margin, not a gutter of its own:
+        // the frame gives up that much on the right, the header and footer take it back
+        // as padding, so every edge is `BLOCK` from the window's whether the page
+        // scrolls or not.
+        let lane = {
+            let s = ui.spacing().scroll;
+            (s.bar_width + s.bar_inner_margin + s.bar_outer_margin).min(super::theme::BLOCK)
+        };
+        let width = (FRAME + NAV + DIVIDER + self.page_width()).min(monitor_w * 0.9);
+        let margin = egui::Margin {
+            left: super::theme::BLOCK as i8,
+            right: (super::theme::BLOCK - lane) as i8,
+            top: super::theme::BLOCK as i8,
+            bottom: super::theme::BLOCK as i8,
+        };
         let used = egui::Frame::central_panel(ui.style())
-            .inner_margin(super::theme::BLOCK)
+            .inner_margin(margin)
             .show(ui, |ui| {
-                ui.set_width(width - FRAME);
-                ui.set_max_width(width - FRAME);
-                self.title_bar(ui);
-                // `grid grid-cols-[172px_1fr]`: the sidebar, then the page — which
+                let inner = width - FRAME + lane;
+                ui.set_width(inner);
+                ui.set_max_width(inner);
+                ui.allocate_ui_with_layout(
+                    egui::vec2(inner - lane, 0.0),
+                    egui::Layout::top_down(egui::Align::Min),
+                    |ui| self.title_bar(ui),
+                );
+                // `grid grid-cols-[176px_1fr]`, three rows: the sidebar and the page (which
                 // scrolls inside the window past `page_height`, over its own grid of
-                // cards, with the footer under it.
+                // cards), then the footer across both.
                 let left = ui.cursor().min.x;
                 let top = ui.cursor().min.y;
-                let shell = tw::full(tw::sidebar(NAV, DIVIDER));
+                let shell = egui_taffy::taffy::Style {
+                    gap: egui_taffy::taffy::Size {
+                        width: egui_taffy::taffy::prelude::length(DIVIDER),
+                        height: egui_taffy::taffy::prelude::length(super::theme::INLINE),
+                    },
+                    ..tw::full(tw::sidebar(NAV, DIVIDER))
+                };
+                let mut body = 0.0_f32;
                 tui(ui, ui.id().with("shell")).reserve_available_width().style(shell).show(|t| {
-                    block(t, |ui| {
+                    let side = block(t, |ui| {
                         self.status(ui, snap.as_ref());
                         ui.add_space(super::theme::TIGHT);
                         ui.separator();
                         ui.add_space(super::theme::INLINE);
                         self.nav(ui);
+                        ui.min_rect().bottom()
                     });
-                    block(t, |ui| {
-                        tw::scroll(ui, "page", page_height, 0.0, super::theme::SURFACE, |ui| {
-                            ui.add_enabled_ui(open, |ui| {
-                                tui(ui, ui.id().with("page"))
-                                    .reserve_available_width()
-                                    .style(tw::full(tw::col(tw::GAP)))
-                                    .show(|t| self.page(t, snap.as_ref()));
+                    let page_w = self.page_width();
+                    let page = tw::block_at_least(t, page_w + lane, |ui| {
+                        // A ScrollArea is no taller than the room its parent has, and a taffy
+                        // leaf's room is the height it reported last frame: from 0, it stayed
+                        // 0 and the page drew nothing. Its room is given here outright; it
+                        // still shrinks to its content.
+                        let room = egui::vec2(page_w + lane, page_height);
+                        ui.allocate_ui_with_layout(room, egui::Layout::top_down(egui::Align::Min), |ui| {
+                            tw::scroll(ui, "page", page_height, 0.0, super::theme::SURFACE, |ui| {
+                                // The cards' width, whether the bar shows or not.
+                                ui.set_width(page_w);
+                                ui.add_enabled_ui(open, |ui| {
+                                    tui(ui, ui.id().with("page"))
+                                        .reserve_available_width()
+                                        .style(tw::full(tw::col(tw::GAP)))
+                                        .show(|t| self.page(t, snap.as_ref()));
+                                });
                             });
                         });
-                        ui.add_space(super::theme::INLINE);
-                        ui.separator();
-                        ui.add_space(super::theme::TIGHT);
-                        self.footer(ui, snap.as_ref());
+                        ui.min_rect().bottom()
+                    });
+                    body = side.max(page);
+                    // The footer: across both columns, a hairline over two even halves.
+                    let foot = tw::span_all(egui_taffy::taffy::Style {
+                        padding: egui_taffy::taffy::Rect {
+                            left: egui_taffy::taffy::prelude::length(0.0),
+                            right: egui_taffy::taffy::prelude::length(lane),
+                            top: egui_taffy::taffy::prelude::length(0.0),
+                            bottom: egui_taffy::taffy::prelude::length(0.0),
+                        },
+                        ..tw::col(super::theme::TIGHT)
+                    });
+                    t.style(foot).add(|t| {
+                        block(t, |ui| ui.separator());
+                        t.style(tw::row(super::theme::INLINE)).add(|t| {
+                            tw::share(t, |ui| self.footer_left(ui, snap.as_ref()));
+                            tw::share(t, |ui| self.footer_right(ui));
+                        });
                     });
                 });
                 let x = left + NAV + DIVIDER / 2.0;
                 let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
-                let bottom = ui.min_rect().bottom();
-                ui.painter().vline(x, top..=bottom, stroke);
+                ui.painter().vline(x, top..=body, stroke);
             })
             .response
             .rect;
         self.fit(ui, width, used.height().min(max_height));
         self.console_window(ui.ctx());
+        if let Some(since) = self.splash {
+            self.splash_window(ui.ctx(), since, snap.as_ref());
+        }
         self.persist(false);
     }
 

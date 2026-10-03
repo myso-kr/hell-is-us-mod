@@ -223,7 +223,6 @@ GATE_CLOSED	○ Zamknięta
 CHEATS	Cheaty
 TOOLS	Narzędzia
 RESTORE_ALL	Przywróć wszystko ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	Zachowaj te cheaty na następny raz
 NEXT_RUN_ONCE_THE_HERO_CAN	Przy następnym uruchomieniu, gdy będzie można sterować bohaterem, obecnie włączone cheaty włączą się ponownie.
 WRITES_ONLY_WHILE_THE_HERO_IS	Wartości zapisywane tylko podczas sterowania bohaterem · osiągnięcia nie są blokowane
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Śledzenie zadań (prawy górny róg, pod minimapą)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	Pokaż panel
 TRAY_HIDE_PANEL	Ukryj panel
 TRAY_QUIT	Zakończ
 LEGEND	Legenda
+KEEP_SETTINGS	Zachowaj ustawienia
+GITHUB	GitHub
+CHECK_FOR_UPDATES	Sprawdź aktualizacje
+CHECK_FOR_UPDATES_HINT	Szuka nowszej wersji na GitHubie. Nic nie jest pobierane bez twojej zgody.
+CHECKING_FOR_UPDATES	Sprawdzanie…
+UP_TO_DATE	Aktualna
+UPDATE_FAILED	Aktualizacja nieudana
+RELEASE_NOTES	Co nowego
+DOWNLOAD_VERSION	Pobierz v{version}
+DOWNLOADING_UPDATE	Pobieranie…
+RESTART_TO_UPDATE	Uruchom ponownie, by użyć v{version}
+RESTART_TO_UPDATE_HINT	Przywraca wartości gry, podmienia pliki i uruchamia nową wersję.
+SPLASH_TAGLINE	Towarzysz do Hell Is Us na PC

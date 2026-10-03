@@ -36,6 +36,14 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   30 times a second, and a frame costs a tenth of what it did (its ground slides instead of being
   redrawn, and is redrawn on a thread of its own; the trail draws only its latest stretch).
 - The panel and its tray icon carry the mod's mark instead of Windows' generic icon.
+- The console and its header button appear as soon as a game menu opens, without clicking back and
+  forth; minimising the panel hides it and gives the keyboard back to the game.
+- A footer across the panel: restore all, "Keep settings", the version, an update from GitHub
+  releases (checked at start; downloaded and applied when you ask), GitHub and the copyright.
+- A splash while the panel starts: it shows until the game, its data and your kept cheats are ready
+  and the panel has laid itself out, so the panel appears finished.
+- Both sides of the panel have the same margin; the achievements list's order and "show unlocked"
+  switches no longer squeeze each other.
 - Long lists can be grouped: places by kind, achievements by kind (story, deeds and mysteries,
   combat, gear, research and collections).
 - The map's lines, outlines and terrain edges are antialiased.

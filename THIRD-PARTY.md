@@ -29,7 +29,13 @@ The panel's Flexbox and Grid layout. Linked as crates; nothing vendored.
 
 ## serde_json
 
-`serde_json` (MIT OR Apache-2.0) reads the survey's JSON (`src/survey.rs`).
+`serde_json` (MIT OR Apache-2.0) reads the survey's JSON (`src/survey.rs`) and GitHub's release
+listing (`src/ui/update.rs`).
+
+## sha2
+
+`sha2` 0.10 (MIT OR Apache-2.0, https://github.com/RustCrypto/hashes) checks a downloaded release
+against its `.sha256` (`src/ui/update.rs`). Linked as a crate.
 
 ## CUE4Parse (tools/survey)
 

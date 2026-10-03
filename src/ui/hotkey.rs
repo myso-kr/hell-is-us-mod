@@ -19,9 +19,9 @@ use windows_sys::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadI
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_OEM_3, VK_RBUTTON};
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, EnumWindows, FindWindowW, GetCursorInfo, GetForegroundWindow, GetWindowRect,
-    GetWindowThreadProcessId, IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, CURSORINFO,
+    GetWindowThreadProcessId, IsIconic, IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, CURSORINFO,
     CURSOR_SHOWING, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_SHOWWINDOW, SW_HIDE,
-    SW_SHOWNOACTIVATE,
+    SW_RESTORE, SW_SHOWNOACTIVATE,
 };
 
 pub(super) fn pid_of(hwnd: HWND) -> u32 {
@@ -111,9 +111,11 @@ pub fn hide(shared: &Shared) {
         unsafe { ShowWindow(console, SW_HIDE) };
     }
     shared.visible.store(false, Ordering::SeqCst);
-    // Hand the keyboard back, so the next keypress goes to the game.
+    // Hand the keyboard back, so the next keypress (and click) goes to the game. Taken
+    // the way the panel takes it: after a minimise Windows has already given it to some
+    // other window, and would refuse a plain request.
     if let Some((game, _)) = game_window(shared.game_pid.load(Ordering::SeqCst)) {
-        unsafe { SetForegroundWindow(game) };
+        take_focus(game);
     }
 }
 
@@ -180,6 +182,10 @@ pub(super) fn show(shared: &Shared, ctx: &egui::Context) {
     }
     let saved = *shared.pos.lock().unwrap();
     let (x, y) = saved.or_else(|| over_game(shared.game_pid.load(Ordering::SeqCst))).unwrap_or((40, 40));
+    // Hidden while minimised (see `watch`): shown again it would still be minimised.
+    if unsafe { IsIconic(hwnd) } != 0 {
+        unsafe { ShowWindow(hwnd, SW_RESTORE) };
+    }
     unsafe { SetWindowPos(hwnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW) };
     keep_on_screen(hwnd);
     let console = console_window();
@@ -202,13 +208,40 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
     const PLAYER: u32 = u32::MAX;
     let mut placed = 0;
     let mut tick = 0u32;
+    let mut allowed_was = false;
     while !shared.quit.load(Ordering::SeqCst) {
         std::thread::sleep(Duration::from_millis(30));
         tick = tick.wrapping_add(1);
         let hwnd = shared.hwnd.load(Ordering::SeqCst) as HWND;
         let game = shared.game_pid.load(Ordering::SeqCst);
-        let visible = shared.visible.load(Ordering::SeqCst);
-        if !hwnd.is_null() && visible {
+        let mut visible = shared.visible.load(Ordering::SeqCst);
+        // Minimised (its taskbar button): hidden as its own — does, the console with it, and
+        // the keyboard back to the game. Left minimised, the panel still counted as showing:
+        // the console stayed up over the game, and nothing had the game's keyboard.
+        if !hwnd.is_null() && visible && unsafe { IsIconic(hwnd) } != 0 {
+            hide(&shared);
+            visible = false;
+        }
+        // The console window: shown or hidden here, at once, as the game's menu opens or
+        // the game takes the keyboard. Decided in the panel's frames it waited for the next
+        // event in a panel window, which could be clicks away. The header's toggle follows
+        // the same test: a change is a frame for the panel.
+        let allowed = console_allowed(&shared);
+        let console = console_window();
+        if !console.is_null() {
+            let want = visible && shared.console_open.load(Ordering::SeqCst) && allowed;
+            if want != (unsafe { IsWindowVisible(console) } != 0) {
+                unsafe { ShowWindow(console, if want { SW_SHOWNOACTIVATE } else { SW_HIDE }) };
+                if want {
+                    console_under(hwnd);
+                }
+            }
+        }
+        if allowed != allowed_was {
+            allowed_was = allowed;
+            ctx.request_repaint();
+        }
+        if !hwnd.is_null() && visible && !shared.splash.load(Ordering::SeqCst) {
             let saved = *shared.pos.lock().unwrap();
             if placed == 0 {
                 if let Some((x, y)) = saved {

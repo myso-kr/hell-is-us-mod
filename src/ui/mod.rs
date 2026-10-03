@@ -30,6 +30,7 @@ mod theme;
 mod tracker;
 mod tray;
 mod tw;
+mod update;
 
 use crate::cheats::Active;
 use crate::engine::{Engine, Snapshot};
@@ -67,6 +68,12 @@ pub struct Shared {
     pub hwnd: AtomicIsize,
     /// hotkey: whether the panel is showing.
     pub visible: AtomicBool,
+    /// panel: the console is open (toggled on). Whether it shows is the hotkey thread's
+    /// call (hotkey.rs `watch`): egui runs no frames while nothing happens in its windows.
+    pub console_open: AtomicBool,
+    /// panel: the splash shows (panel/splash.rs); the hotkey thread leaves the window's
+    /// place and size alone till it goes.
+    pub splash: AtomicBool,
     /// run: this panel started the game and is waiting for it.
     pub launched: AtomicBool,
     /// minimap and panel: the map's trail, markers and settings.
@@ -241,6 +248,8 @@ pub fn alert(text: &str) {
 
 /// `launch`: start the game if it is not already running.
 pub fn run(launch: bool) -> Result<(), String> {
+    // Started by an update: the panel it replaces exits first.
+    update::after_update();
     // Another panel is running: it has been asked to show itself; this one goes quietly.
     if !tray::claim() {
         return Ok(());
@@ -271,6 +280,10 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
             .with_title("Hell Is Us Mod")
             .with_icon(app_icon::icon_data(64))
             .with_inner_size([panel::WIDTH, 560.0])
+            // Off the screen while the splash shows (panel/splash.rs): the panel lays
+            // itself out there, its frames running as a shown window's do, and comes to
+            // its place only once it has settled.
+            .with_position([-30000.0, -30000.0])
             .with_decorations(false)
             .with_resizable(false)
             .with_always_on_top(),

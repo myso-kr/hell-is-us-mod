@@ -17,6 +17,8 @@ eframe = { version = "0.36", default-features = false, features = ["glow", "defa
 # CSS Flexbox and Grid for the panel (taffy, via egui): MIT.
 egui_taffy = "0.14"
 raw-window-handle = "0.6"
+# update.rs: checking a downloaded release against its .sha256. Pure Rust, MIT/Apache-2.0.
+sha2 = { version = "0.10", default-features = false }
 windows-sys = { version = "0.59", features = [
     "Win32_Foundation",
     "Win32_Graphics_Gdi",

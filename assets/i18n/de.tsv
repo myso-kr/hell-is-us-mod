@@ -223,7 +223,6 @@ GATE_CLOSED	○ Geschlossen
 CHEATS	Cheats
 TOOLS	Werkzeuge
 RESTORE_ALL	Alle zurücksetzen ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	Aktive Cheats beim nächsten Mal beibehalten
 NEXT_RUN_ONCE_THE_HERO_CAN	Beim nächsten Start werden die jetzt aktiven Cheats wieder eingeschaltet, sobald der Held steuerbar ist.
 WRITES_ONLY_WHILE_THE_HERO_IS	Werte werden nur geschrieben, solange der Held gesteuert wird · Erfolge werden nicht blockiert
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest-Tracker (oben rechts, unter der Minikarte)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	Panel zeigen
 TRAY_HIDE_PANEL	Panel ausblenden
 TRAY_QUIT	Beenden
 LEGEND	Legende
+KEEP_SETTINGS	Einstellungen behalten
+GITHUB	GitHub
+CHECK_FOR_UPDATES	Nach Updates suchen
+CHECK_FOR_UPDATES_HINT	Sucht auf GitHub nach einer neueren Version. Heruntergeladen wird erst, wenn du es willst.
+CHECKING_FOR_UPDATES	Wird gesucht…
+UP_TO_DATE	Aktuell
+UPDATE_FAILED	Update fehlgeschlagen
+RELEASE_NOTES	Neuerungen
+DOWNLOAD_VERSION	v{version} laden
+DOWNLOADING_UPDATE	Wird geladen…
+RESTART_TO_UPDATE	Neu starten für v{version}
+RESTART_TO_UPDATE_HINT	Setzt die Spielwerte zurück, ersetzt die Dateien und startet die neue Version.
+SPLASH_TAGLINE	Ein Begleiter für Hell Is Us auf dem PC

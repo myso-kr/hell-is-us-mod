@@ -179,6 +179,59 @@ pub fn block<T>(tui: &mut Tui, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
     })
 }
 
+/// As `block`, at least `width` across whatever it holds: the panel's page, which
+/// is as wide as its columns of cards even before they are laid out (the cards are
+/// laid out in the width it gets, so measured from them alone it came to nothing).
+pub fn block_at_least<T>(tui: &mut Tui, width: f32, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
+    tui.style(Style {
+        min_size: Size { width: length(width), height: auto() },
+        flex_grow: 1.0,
+        flex_shrink: 1.0,
+        ..Default::default()
+    })
+    .ui_manual(|ui, _| {
+        let inner = f(ui);
+        let used = ui.min_size();
+        TuiContainerResponse {
+            inner,
+            min_size: egui::vec2(width, used.y),
+            intrinsic_size: None,
+            max_size: egui::vec2(used.x.max(width), used.y),
+            infinite: egui::Vec2b::FALSE,
+        }
+    })
+}
+
+/// `col-span-full`: `style` as a grid item across every column.
+pub fn span_all(style: Style) -> Style {
+    use taffy::prelude::line;
+    Style { grid_column: taffy::Line { start: line(1), end: line(-1) }, ..style }
+}
+
+/// `flex-1 basis-0 min-w-0`: an even share of its row, whatever it holds. Its content is
+/// laid out in that share and never widens it, so it cannot push the row, or the
+/// window, wider from one frame to the next.
+pub fn share<T>(tui: &mut Tui, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
+    tui.style(Style {
+        min_size: Size { width: length(0.0_f32), height: auto() },
+        flex_basis: length(0.0_f32),
+        flex_grow: 1.0,
+        flex_shrink: 1.0,
+        ..Default::default()
+    })
+    .ui_manual(|ui, _| {
+        let inner = f(ui);
+        let used = ui.min_size();
+        TuiContainerResponse {
+            inner,
+            min_size: egui::vec2(0.0, used.y),
+            intrinsic_size: None,
+            max_size: egui::vec2(0.0, used.y),
+            infinite: egui::Vec2b::FALSE,
+        }
+    })
+}
+
 /// A leaf exactly as big as the widget it holds.
 ///
 /// Measured unwrapped (`shrink-0 whitespace-nowrap`): a button or a short label is

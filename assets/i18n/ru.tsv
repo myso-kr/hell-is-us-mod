@@ -223,7 +223,6 @@ GATE_CLOSED	○ Закрыт
 CHEATS	Читы
 TOOLS	Инструменты
 RESTORE_ALL	Всё вернуть ({pending})
-KEEP_THESE_CHEATS_ON_NEXT_TIME	Сохранять включённые читы на следующий раз
 NEXT_RUN_ONCE_THE_HERO_CAN	При следующем запуске, когда героем можно будет управлять, включённые сейчас читы включатся снова.
 WRITES_ONLY_WHILE_THE_HERO_IS	Значения записываются, только пока героем можно управлять · достижения не блокируются
 QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Трекер заданий (справа сверху, под мини-картой)
@@ -582,3 +581,16 @@ TRAY_SHOW_PANEL	Показать панель
 TRAY_HIDE_PANEL	Скрыть панель
 TRAY_QUIT	Выход
 LEGEND	Условные обозначения
+KEEP_SETTINGS	Сохранять настройки
+GITHUB	GitHub
+CHECK_FOR_UPDATES	Проверить обновления
+CHECK_FOR_UPDATES_HINT	Ищет новую версию на GitHub. Ничего не скачивается, пока вы не попросите.
+CHECKING_FOR_UPDATES	Проверка…
+UP_TO_DATE	Последняя версия
+UPDATE_FAILED	Ошибка обновления
+RELEASE_NOTES	Что нового
+DOWNLOAD_VERSION	Скачать v{version}
+DOWNLOADING_UPDATE	Загрузка…
+RESTART_TO_UPDATE	Перезапустить с v{version}
+RESTART_TO_UPDATE_HINT	Возвращает значения игры, заменяет файлы и запускает новую версию.
+SPLASH_TAGLINE	Помощник для Hell Is Us на ПК
