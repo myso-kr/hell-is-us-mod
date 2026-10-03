@@ -1,0 +1,13 @@
+<!-- Vault symbol 1: admiration — drawn for the mod after the game's dials. 100×100, y down. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<g stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<path d="M50.00,5.00 A22,22 0 0 1 50.00,49.00" fill="none"/>
+<circle cx="50" cy="27" r="12" fill="none"/>
+<circle cx="50" cy="24" r="4" fill="none"/>
+<line x1="50" y1="28" x2="50" y2="36"/>
+<path d="M50.00,95.00 A22,22 0 0 1 50.00,51.00" fill="none"/>
+<circle cx="50" cy="73" r="12" fill="none"/>
+<circle cx="50" cy="76" r="4" fill="none"/>
+<line x1="50" y1="64" x2="50" y2="72"/>
+</g>
+</svg>

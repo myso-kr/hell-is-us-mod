@@ -311,3 +311,12 @@ been verified in play yet.
 - `PIN_CODE` and `LOAD_POSITION` are split out of keys that two strings shared.
 - A test now checks that no key appears twice in a table.
 
+- Panel theme: `ui/theme.rs` holds one palette, the corner radii and egui's visuals.
+  The cards, sidebar, chips and console all use it.
+- Homepage for GitHub Pages in `docs/`, built by `tools/site/build.py`:
+  - a three.js contour-terrain hero
+  - 12 languages with hreflang
+  - JSON-LD for SoftwareApplication, FAQPage and HowTo
+  - sitemap, robots.txt and llms.txt
+- The English reference docs (PLAN, ANCHORS, CHEATS) moved to `.spec/`.
+- Korean: the Vaults now use the game's own term, "금지된 지식의 금고".

@@ -18,6 +18,7 @@
 | 부록 | [QUESTS.md](QUESTS.md) | 메인 스토리 길안내 조사 + §4 구현: FText 읽기, 선행(서브퀘스트), 퀘스트 저널·추적기·따라가기 |
 | 부록 | [ITEMS.md](ITEMS.md) | 퀘스트 아이템 전수조사 설계: pak 의 WP 셀 → 오프라인 DB, 세이브 Guid 로 상태 판정, 런타임 합치기 |
 | 부록 | [MAP.md](MAP.md) | 미니맵 3단계: 게임 에셋 조사(AES·retoc·월드맵 텍스처), 결론, 월드에서 지도 만들기 진행 기록 |
+| 부록 | [SITE.md](SITE.md) | GitHub Pages 홈페이지: 생성기(tools/site), three.js 히어로, 12개 언어, SEO·AEO·GEO, 배포 |
 
 영어 참고 문서도 여기 있습니다 — [PLAN.md](PLAN.md) (무엇·단계), [ANCHORS.md](ANCHORS.md) (들어가는 길·게임 업데이트가
 깨뜨릴 수 있는 것), [CHEATS.md](CHEATS.md) (치트·검증 기준). 어긋나면 코드와 ANCHORS.md 가 기준입니다.

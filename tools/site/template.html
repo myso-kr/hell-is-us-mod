@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{meta_title}}</title>
+<meta name="description" content="{{meta_description}}">
+<meta name="keywords" content="{{meta_keywords}}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0e1217">
+<link rel="canonical" href="{{canonical}}">
+{{alternates}}
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="hiumod">
+<meta property="og:title" content="{{meta_title}}">
+<meta property="og:description" content="{{meta_description}}">
+<meta property="og:url" content="{{canonical}}">
+<meta property="og:image" content="{{og_image}}">
+<meta property="og:locale" content="{{og_locale}}">
+{{og_alternates}}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{meta_title}}">
+<meta name="twitter:description" content="{{meta_description}}">
+<meta name="twitter:image" content="{{og_image}}">
+<link rel="icon" href="{{root}}assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?{{cjk_fonts}}family=Fira+Sans+Extra+Condensed:wght@500;600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="{{root}}assets/site.css">
+<script type="application/ld+json">
+{{jsonld}}
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module" src="{{root}}assets/site.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">{{skip}}</a>
+
+<header class="bar">
+  <a class="mark" href="{{root}}" aria-label="hiumod">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12Z"/><path d="M12 7 17 12 12 17 7 12Z"/></svg>
+    <span>hiumod</span>
+  </a>
+  <nav aria-label="{{nav_label}}">
+    <a href="#features">{{nav_features}}</a>
+    <a href="#spoilers">{{nav_spoilers}}</a>
+    <a href="#install">{{nav_install}}</a>
+    <a href="#faq">{{nav_faq}}</a>
+  </nav>
+  <details class="langs">
+    <summary aria-label="{{lang_label}}">{{native}}</summary>
+    <ul>
+{{lang_switch}}
+    </ul>
+  </details>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <canvas id="terrain" aria-hidden="true"></canvas>
+    <div class="compass" aria-hidden="true"><div class="compass-track"></div><i class="compass-goal"></i></div>
+    <div class="hero-copy">
+      <p class="kicker">{{hero_kicker}}</p>
+      <h1 id="hero-title">{{hero_title}}</h1>
+      <p class="lede">{{hero_lede}}</p>
+      <div class="cta">
+        <a class="btn btn-main" href="{{releases_url}}">{{cta_download}}</a>
+        <a class="btn" href="#features">{{cta_more}}</a>
+      </div>
+      <p class="fine">{{hero_fine}}</p>
+    </div>
+    <p class="scroll-hint" aria-hidden="true">{{scroll_hint}}</p>
+  </section>
+
+  <section class="intro" aria-labelledby="intro-title">
+    <h2 id="intro-title">{{intro_title}}</h2>
+    <p>{{intro_p1}}</p>
+    <p>{{intro_p2}}</p>
+  </section>
+
+  <section id="features" class="features" aria-labelledby="features-title">
+    <h2 id="features-title">{{features_title}}</h2>
+    <div class="grid">
+      <article><img class="ico" src="{{root}}assets/icons/interact_door.svg" alt="" width="36" height="36" loading="lazy"><h3>{{feat_map_t}}</h3><p>{{feat_map_d}}</p></article>
+      <article><img class="ico" src="{{root}}assets/pins/quest.svg" alt="" width="36" height="36" loading="lazy"><h3>{{feat_guide_t}}</h3><p>{{feat_guide_d}}</p></article>
+      <article><img class="ico" src="{{root}}assets/icons/item_quest.svg" alt="" width="36" height="36" loading="lazy"><h3>{{feat_tracker_t}}</h3><p>{{feat_tracker_d}}</p></article>
+      <article><img class="ico" src="{{root}}assets/icons/interact_puzzle.svg" alt="" width="36" height="36" loading="lazy"><h3>{{feat_puzzles_t}}</h3><p>{{feat_puzzles_d}}</p></article>
+      <article><img class="ico" src="{{root}}assets/icons/enemy_group.svg" alt="" width="36" height="36" loading="lazy"><h3>{{feat_collect_t}}</h3><p>{{feat_collect_d}}</p></article>
+      <article><img class="ico" src="{{root}}assets/icons/npc.svg" alt="" width="36" height="36" loading="lazy"><h3>{{feat_lang_t}}</h3><p>{{feat_lang_d}}</p></article>
+    </div>
+  </section>
+
+  <section id="spoilers" class="spoilers" aria-labelledby="spoilers-title">
+    <div class="spoilers-copy">
+      <h2 id="spoilers-title">{{spoilers_title}}</h2>
+      <p>{{spoilers_d}}</p>
+    </div>
+    <div class="vault" data-hidden="true">
+      <p class="vault-name">{{vault_name}}</p>
+      <div class="vault-code" aria-label="{{vault_code_label}}">
+        <img src="{{root}}assets/symbols/terror.svg" alt="{{sym_terror}}">
+        <img src="{{root}}assets/symbols/admiration.svg" alt="{{sym_admiration}}">
+        <img src="{{root}}assets/symbols/rage.svg" alt="{{sym_rage}}">
+        <img src="{{root}}assets/symbols/amazement.svg" alt="{{sym_amazement}}">
+      </div>
+      <button class="btn reveal" type="button" data-show="{{reveal_show}}" data-hide="{{reveal_hide}}">{{reveal_show}}</button>
+    </div>
+  </section>
+
+  <section class="safety" aria-labelledby="safety-title">
+    <h2 id="safety-title">{{safety_title}}</h2>
+    <ul>
+      <li><strong>{{safe1_t}}</strong> {{safe1_d}}</li>
+      <li><strong>{{safe2_t}}</strong> {{safe2_d}}</li>
+      <li><strong>{{safe3_t}}</strong> {{safe3_d}}</li>
+      <li><strong>{{safe4_t}}</strong> {{safe4_d}}</li>
+    </ul>
+  </section>
+
+  <section id="install" class="install" aria-labelledby="install-title">
+    <h2 id="install-title">{{install_title}}</h2>
+    <ol>
+      <li><h3>{{install_s1_t}}</h3><p>{{install_s1_d}}</p></li>
+      <li><h3>{{install_s2_t}}</h3><p>{{install_s2_d}}</p></li>
+      <li><h3>{{install_s3_t}}</h3><p>{{install_s3_d}}</p></li>
+    </ol>
+    <a class="btn btn-main" href="{{releases_url}}">{{cta_download}}</a>
+  </section>
+
+  <section id="faq" class="faq" aria-labelledby="faq-title">
+    <h2 id="faq-title">{{faq_title}}</h2>
+    <details><summary>{{faq_q1}}</summary><p>{{faq_a1}}</p></details>
+    <details><summary>{{faq_q2}}</summary><p>{{faq_a2}}</p></details>
+    <details><summary>{{faq_q3}}</summary><p>{{faq_a3}}</p></details>
+    <details><summary>{{faq_q4}}</summary><p>{{faq_a4}}</p></details>
+    <details><summary>{{faq_q5}}</summary><p>{{faq_a5}}</p></details>
+    <details><summary>{{faq_q6}}</summary><p>{{faq_a6}}</p></details>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>{{footer_disclaimer}}</p>
+  <p><a href="{{repo_url}}">{{footer_source}}</a> · <a href="https://store.steampowered.com/app/1620730/Hell_is_Us/">{{footer_game}}</a></p>
+</footer>
+</body>
+</html>

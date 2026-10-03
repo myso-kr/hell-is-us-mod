@@ -392,7 +392,7 @@ NEAREST	가장 가까운 곳
 READS_THE_ANSWER_THE_GAME_HOLDS	게임이 가진 정답을 읽습니다 — 직접 풀고 싶다면 누르지 마세요
 PUZZLES_NEARBY	근처 퍼즐 ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	금고 표가 없습니다 — 콘솔에서 `doctor survey`를 한 번 실행하세요
-VAULTS_OF_FORBIDDEN_KNOWLEDGE	금단의 지식 금고 {done}/{all}
+VAULTS_OF_FORBIDDEN_KNOWLEDGE	금지된 지식의 금고 {done}/{all}
 ENEMY_GROUPS_LEFT	남은 적 무리 {left}/{all}
 ENEMY_GROUP_LEFT	남은 적 무리
 DIAL_TURN_STEPS_NOW	다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})

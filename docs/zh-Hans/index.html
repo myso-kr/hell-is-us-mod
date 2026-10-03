@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-Hans">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hiumod — Hell Is Us 小地图、任务攻略与谜题助手</title>
+<meta name="description" content="hiumod 是一款免费开源的 Hell Is Us PC 辅助工具：实时小地图、任务追踪与主线攻略、宝库密码与谜题解法、收集品清单，支持游戏全部 12 种语言。剧透默认隐藏。">
+<meta name="keywords" content="Hell Is Us, 地狱即我们, Hell Is Us 攻略, Hell Is Us mod, Hell Is Us 地图, Hell Is Us 小地图, Hell Is Us 任务攻略, 禁忌知识宝库密码, Hell Is Us 宝库密码, Hell Is Us 谜题解法, 时间循环, 哈迪亚, hiumod">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#0e1217">
+<link rel="canonical" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/zh-Hans/">
+<link rel="alternate" hreflang="en" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/">
+<link rel="alternate" hreflang="ko" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/ko/">
+<link rel="alternate" hreflang="ja" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/ja/">
+<link rel="alternate" hreflang="zh-Hans" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/zh-Hans/">
+<link rel="alternate" hreflang="de" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/de/">
+<link rel="alternate" hreflang="fr" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/fr/">
+<link rel="alternate" hreflang="es" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/es/">
+<link rel="alternate" hreflang="it" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/it/">
+<link rel="alternate" hreflang="pl" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/pl/">
+<link rel="alternate" hreflang="pt-BR" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/pt-BR/">
+<link rel="alternate" hreflang="ru" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/ru/">
+<link rel="alternate" hreflang="tr" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/tr/">
+<link rel="alternate" hreflang="x-default" href="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="hiumod">
+<meta property="og:title" content="hiumod — Hell Is Us 小地图、任务攻略与谜题助手">
+<meta property="og:description" content="hiumod 是一款免费开源的 Hell Is Us PC 辅助工具：实时小地图、任务追踪与主线攻略、宝库密码与谜题解法、收集品清单，支持游戏全部 12 种语言。剧透默认隐藏。">
+<meta property="og:url" content="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/zh-Hans/">
+<meta property="og:image" content="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/assets/og.png">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="ko_KR">
+<meta property="og:locale:alternate" content="ja_JP">
+<meta property="og:locale:alternate" content="de_DE">
+<meta property="og:locale:alternate" content="fr_FR">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:locale:alternate" content="it_IT">
+<meta property="og:locale:alternate" content="pl_PL">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta property="og:locale:alternate" content="ru_RU">
+<meta property="og:locale:alternate" content="tr_TR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="hiumod — Hell Is Us 小地图、任务攻略与谜题助手">
+<meta name="twitter:description" content="hiumod 是一款免费开源的 Hell Is Us PC 辅助工具：实时小地图、任务追踪与主线攻略、宝库密码与谜题解法、收集品清单，支持游戏全部 12 种语言。剧透默认隐藏。">
+<meta name="twitter:image" content="https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/assets/og.png">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Fira+Sans+Extra+Condensed:wght@500;600;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "@id": "https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/#app",
+   "name": "hiumod",
+   "alternateName": "hiumod — Hell Is Us 小地图、任务攻略与谜题助手",
+   "applicationCategory": "GameApplication",
+   "operatingSystem": "Windows 10, Windows 11",
+   "description": "hiumod 是一款免费开源的 Hell Is Us PC 辅助工具：实时小地图、任务追踪与主线攻略、宝库密码与谜题解法、收集品清单，支持游戏全部 12 种语言。剧透默认隐藏。",
+   "inLanguage": [
+    "en",
+    "ko",
+    "ja",
+    "zh-Hans",
+    "de",
+    "fr",
+    "es",
+    "it",
+    "pl",
+    "pt-BR",
+    "ru",
+    "tr"
+   ],
+   "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+   },
+   "isAccessibleForFree": true,
+   "url": "https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/zh-Hans/",
+   "downloadUrl": "https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod/releases/latest",
+   "softwareRequirements": "Hell Is Us (Steam, app 1620730)",
+   "license": "https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod/blob/main/LICENSE",
+   "about": {
+    "@type": "VideoGame",
+    "name": "Hell Is Us",
+    "author": {
+     "@type": "Organization",
+     "name": "Rogue Factor"
+    },
+    "publisher": {
+     "@type": "Organization",
+     "name": "Nacon"
+    },
+    "datePublished": "2025-09-04",
+    "sameAs": "https://store.steampowered.com/app/1620730/Hell_is_Us/"
+   }
+  },
+  {
+   "@type": "FAQPage",
+   "inLanguage": "zh-Hans",
+   "mainEntity": [
+    {
+     "@type": "Question",
+     "name": "Hell Is Us 有地图吗？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "没有。Hell Is Us 刻意不提供地图、罗盘和任务标记。hiumod 在 PC 上为有需要的玩家提供可选的小地图悬浮层和任务追踪。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "Hell Is Us 的宝库密码在哪里找？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "禁忌知识宝库的密码以笔记和铭文的形式散落在哈迪亚各处。hiumod 用游戏中的符号列出每座宝库的密码，每一个都在你选择显示之前保持隐藏。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "用 hiumod 会被封号吗？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "Hell Is Us 是单人游戏，没有反作弊，也没有联机内容，而 hiumod 不修改任何游戏文件。与任何第三方工具一样，请自行斟酌使用。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "支持最新版本的游戏吗？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "hiumod 针对特定的 Steam 版本进行测试，游戏在此之后有更新时会提示你。更新后请重新运行 doctor survey；出现问题的部分会在新版本中修复。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "支持哪些语言？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "支持游戏的全部十二种语言：英语、韩语、日语、简体中文、德语、法语、西班牙语、意大利语、波兰语、巴西葡萄牙语、俄语和土耳其语。它会跟随游戏中设置的语言。"
+     }
+    },
+    {
+     "@type": "Question",
+     "name": "hiumod 免费吗？",
+     "acceptedAnswer": {
+      "@type": "Answer",
+      "text": "免费。它基于 MIT 许可证开源，是一个粉丝项目，与 Rogue Factor 及 Nacon 无关。"
+     }
+    }
+   ]
+  },
+  {
+   "@type": "HowTo",
+   "inLanguage": "zh-Hans",
+   "name": "三步完成安装",
+   "step": [
+    {
+     "@type": "HowToStep",
+     "position": 1,
+     "name": "下载",
+     "text": "从 Releases 页面下载最新的 zip，解压到任意位置。它只会写入游戏目录下的 Mods 文件夹。"
+    },
+    {
+     "@type": "HowToStep",
+     "position": 2,
+     "name": "双击 hiumod.exe",
+     "text": "如果游戏尚未运行，它会通过 Steam 启动游戏，进入游戏后自动连接。按 `（数字键 1 左边的键）显示或隐藏面板。"
+    },
+    {
+     "@type": "HowToStep",
+     "position": 3,
+     "name": "运行一次扫描",
+     "text": "如需攻略的完整数据，请在面板的控制台中输入 doctor survey（需要 .NET 8 运行时，约两分钟）。它会把游戏的地图和文本读取到 Mods 文件夹中。"
+    }
+   ]
+  },
+  {
+   "@type": "WebSite",
+   "@id": "https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/#site",
+   "url": "https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/",
+   "name": "hiumod",
+   "inLanguage": [
+    "en",
+    "ko",
+    "ja",
+    "zh-Hans",
+    "de",
+    "fr",
+    "es",
+    "it",
+    "pl",
+    "pt-BR",
+    "ru",
+    "tr"
+   ]
+  }
+ ]
+}
+</script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"}}</script>
+<script type="module" src="../assets/site.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">跳到正文</a>
+
+<header class="bar">
+  <a class="mark" href="../" aria-label="hiumod">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 22 12 12 22 2 12Z"/><path d="M12 7 17 12 12 17 7 12Z"/></svg>
+    <span>hiumod</span>
+  </a>
+  <nav aria-label="页面导航">
+    <a href="#features">功能</a>
+    <a href="#spoilers">剧透</a>
+    <a href="#install">安装</a>
+    <a href="#faq">常见问题</a>
+  </nav>
+  <details class="langs">
+    <summary aria-label="语言">简体中文</summary>
+    <ul>
+<li><a href="../" hreflang="en" lang="en">English</a></li>
+<li><a href="../ko/" hreflang="ko" lang="ko">한국어</a></li>
+<li><a href="../ja/" hreflang="ja" lang="ja">日本語</a></li>
+<li><a href="../zh-Hans/" hreflang="zh-Hans" lang="zh-Hans" aria-current="page">简体中文</a></li>
+<li><a href="../de/" hreflang="de" lang="de">Deutsch</a></li>
+<li><a href="../fr/" hreflang="fr" lang="fr">Français</a></li>
+<li><a href="../es/" hreflang="es" lang="es">Español</a></li>
+<li><a href="../it/" hreflang="it" lang="it">Italiano</a></li>
+<li><a href="../pl/" hreflang="pl" lang="pl">Polski</a></li>
+<li><a href="../pt-BR/" hreflang="pt-BR" lang="pt-BR">Português (Brasil)</a></li>
+<li><a href="../ru/" hreflang="ru" lang="ru">Русский</a></li>
+<li><a href="../tr/" hreflang="tr" lang="tr">Türkçe</a></li>
+    </ul>
+  </details>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <canvas id="terrain" aria-hidden="true"></canvas>
+    <div class="compass" aria-hidden="true"><div class="compass-track"></div><i class="compass-goal"></i></div>
+    <div class="hero-copy">
+      <p class="kicker">Hell Is Us 辅助工具 · PC</p>
+      <h1 id="hero-title">没有地图，没有罗盘。除非你想要。</h1>
+      <p class="lede">哈迪亚本就是为了让你迷路而设计的。总有那么一晚，你不想再迷路，hiumod 就在那时派上用场：实时小地图、跟随剧情推进的任务追踪，以及禁忌知识宝库的答案——每一项都在你主动打开之前保持隐藏。</p>
+      <div class="cta">
+        <a class="btn btn-main" href="https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod/releases/latest">下载 Windows 版</a>
+        <a class="btn" href="#features">功能一览</a>
+      </div>
+      <p class="fine">免费开源 · Windows 10/11 · 适用 Steam 版 · 与 Rogue Factor 及 Nacon 无关</p>
+    </div>
+    <p class="scroll-hint" aria-hidden="true">向下滚动</p>
+  </section>
+
+  <section class="intro" aria-labelledby="intro-title">
+    <h2 id="intro-title">为 Hell Is Us 的玩法而做</h2>
+    <p>Hell Is Us 拿掉了小地图、任务标记和一切手把手的引导，这正是它的用意：靠你的笔记和记忆认路。大多数时候这很奏效。直到你放下游戏两个星期，再回来时已经想不起时间循环在哪儿，也忘了要找的是谁家的儿子。</p>
+    <p>hiumod 以独立窗口运行在游戏旁边。它读取游戏本身已经知道的信息——你在哪儿、找到了什么、哪些任务还在进行——只显示你要求看的内容。关掉它，游戏就完全是 Rogue Factor 做出来的样子。</p>
+  </section>
+
+  <section id="features" class="features" aria-labelledby="features-title">
+    <h2 id="features-title">功能一览</h2>
+    <div class="grid">
+      <article><img class="ico" src="../assets/icons/interact_door.svg" alt="" width="36" height="36" loading="lazy"><h3>实时小地图</h3><p>跟随你穿行哈迪亚的悬浮层：门、梯子、商人、藏匿点，以及你自己放下的标记；指向任意地点，它会沿可行走的地面画出路线。</p></article>
+      <article><img class="ico" src="../assets/pins/quest.svg" alt="" width="36" height="36" loading="lazy"><h3>主线攻略</h3><p>用游戏自己的原文，一步一步讲解主线剧情：下一步去哪儿、该带什么，每次只揭示一步，后面的内容不会提前剧透。</p></article>
+      <article><img class="ico" src="../assets/icons/item_quest.svg" alt="" width="36" height="36" loading="lazy"><h3>任务追踪</h3><p>日志里每一个进行中的任务，随游玩实时更新，附带任务提到的人物、地点和物品——还有在不可回头的节点之前仍可能错过的那些。</p></article>
+      <article><img class="ico" src="../assets/icons/interact_puzzle.svg" alt="" width="36" height="36" loading="lazy"><h3>宝库与谜题</h3><p>游戏中所有转盘、密码键盘和物品摆放谜题，以及六座禁忌知识宝库的密码，用游戏里的符号画出。每个答案在你点击之前都保持遮盖。</p></article>
+      <article><img class="ico" src="../assets/icons/enemy_group.svg" alt="" width="36" height="36" loading="lazy"><h3>收集品与敌人</h3><p>按区域整理的收集品、离“全部空心行者”成就还剩的敌群、还有话可说的 NPC，以及带进度的 Steam 成就。</p></article>
+      <article><img class="ico" src="../assets/icons/npc.svg" alt="" width="36" height="36" loading="lazy"><h3>你的语言</h3><p>一切都跟随游戏中设置的语言，支持游戏自带的全部十二种语言，地点、人物和物品都使用游戏官方的名称。</p></article>
+    </div>
+  </section>
+
+  <section id="spoilers" class="spoilers" aria-labelledby="spoilers-title">
+    <div class="spoilers-copy">
+      <h2 id="spoilers-title">只在你想看时剧透</h2>
+      <p>每个答案一开始都是隐藏的。只打开你面前的那座宝库，其余的仍和原来一样未知。右侧示例中的密码是编造的。</p>
+    </div>
+    <div class="vault" data-hidden="true">
+      <p class="vault-name">示例宝库</p>
+      <div class="vault-code" aria-label="示例密码，四个符号">
+        <img src="../assets/symbols/terror.svg" alt="恐惧">
+        <img src="../assets/symbols/admiration.svg" alt="钦佩">
+        <img src="../assets/symbols/rage.svg" alt="愤怒">
+        <img src="../assets/symbols/amazement.svg" alt="惊奇">
+      </div>
+      <button class="btn reveal" type="button" data-show="显示密码" data-hide="重新隐藏">显示密码</button>
+    </div>
+  </section>
+
+  <section class="safety" aria-labelledby="safety-title">
+    <h2 id="safety-title">它不做的事</h2>
+    <ul>
+      <li><strong>不碰你的文件。</strong> 游戏目录和存档中的任何内容都不会被修改；它只从外部读取内存。</li>
+      <li><strong>不联网。</strong> Hell Is Us 是单人游戏，hiumod 也不会向任何地方发送任何数据。</li>
+      <li><strong>作弊功能可选。</strong> 提供生命值、耐力、速度等少数几项，默认全部关闭，只有你开启后才生效；仅在你操控主角时写入，关闭后即恢复原值。</li>
+      <li><strong>会检查游戏版本。</strong> 游戏更新后，它会明确告诉你，而不是凭猜测运行，直到重新测试完成。</li>
+    </ul>
+  </section>
+
+  <section id="install" class="install" aria-labelledby="install-title">
+    <h2 id="install-title">三步完成安装</h2>
+    <ol>
+      <li><h3>下载</h3><p>从 Releases 页面下载最新的 zip，解压到任意位置。它只会写入游戏目录下的 Mods 文件夹。</p></li>
+      <li><h3>双击 hiumod.exe</h3><p>如果游戏尚未运行，它会通过 Steam 启动游戏，进入游戏后自动连接。按 `（数字键 1 左边的键）显示或隐藏面板。</p></li>
+      <li><h3>运行一次扫描</h3><p>如需攻略的完整数据，请在面板的控制台中输入 doctor survey（需要 .NET 8 运行时，约两分钟）。它会把游戏的地图和文本读取到 Mods 文件夹中。</p></li>
+    </ol>
+    <a class="btn btn-main" href="https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod/releases/latest">下载 Windows 版</a>
+  </section>
+
+  <section id="faq" class="faq" aria-labelledby="faq-title">
+    <h2 id="faq-title">常见问题</h2>
+    <details><summary>Hell Is Us 有地图吗？</summary><p>没有。Hell Is Us 刻意不提供地图、罗盘和任务标记。hiumod 在 PC 上为有需要的玩家提供可选的小地图悬浮层和任务追踪。</p></details>
+    <details><summary>Hell Is Us 的宝库密码在哪里找？</summary><p>禁忌知识宝库的密码以笔记和铭文的形式散落在哈迪亚各处。hiumod 用游戏中的符号列出每座宝库的密码，每一个都在你选择显示之前保持隐藏。</p></details>
+    <details><summary>用 hiumod 会被封号吗？</summary><p>Hell Is Us 是单人游戏，没有反作弊，也没有联机内容，而 hiumod 不修改任何游戏文件。与任何第三方工具一样，请自行斟酌使用。</p></details>
+    <details><summary>支持最新版本的游戏吗？</summary><p>hiumod 针对特定的 Steam 版本进行测试，游戏在此之后有更新时会提示你。更新后请重新运行 doctor survey；出现问题的部分会在新版本中修复。</p></details>
+    <details><summary>支持哪些语言？</summary><p>支持游戏的全部十二种语言：英语、韩语、日语、简体中文、德语、法语、西班牙语、意大利语、波兰语、巴西葡萄牙语、俄语和土耳其语。它会跟随游戏中设置的语言。</p></details>
+    <details><summary>hiumod 免费吗？</summary><p>免费。它基于 MIT 许可证开源，是一个粉丝项目，与 Rogue Factor 及 Nacon 无关。</p></details>
+  </section>
+</main>
+
+<footer class="foot">
+  <p>hiumod 是非官方粉丝项目。Hell Is Us 是其所有者的商标；本站未使用任何游戏中的图片或素材。图标和符号均为本 mod 专门绘制。</p>
+  <p><a href="https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod">源代码</a> · <a href="https://store.steampowered.com/app/1620730/Hell_is_Us/">Steam 上的 Hell Is Us</a></p>
+</footer>
+</body>
+</html>

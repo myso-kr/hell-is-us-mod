@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/sitemap.xml

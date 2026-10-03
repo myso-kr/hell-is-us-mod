@@ -1,0 +1,37 @@
+# hiumod — hiumod — minimap, quest guide and puzzle helper for Hell Is Us
+
+> hiumod is a free, open-source companion for Hell Is Us on PC: a live minimap, a quest tracker and story guide, vault and puzzle solutions, and collectible checklists, in the game's 12 languages. Spoilers stay hidden until you ask.
+
+- Site: https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/ (12 languages: English, 한국어, 日本語, 简体中文, Deutsch, Français, Español, Italiano, Polski, Português (Brasil), Русский, Türkçe)
+- Source: https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod
+- Download: https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod/releases/latest
+- Game: Hell Is Us (Rogue Factor / Nacon, 2025), Steam app 1620730
+- Unofficial fan-made tool; not affiliated with Rogue Factor or Nacon.
+
+## What it does
+- A live minimap: An overlay that follows you through Hadea: doors, ladders, merchants, stashes and the pins you place yourself, with a route drawn along the walkable ground to wherever you point.
+- A story guide: The main story step by step, in the game's own words: where to go next and what to bring, revealed one step at a time, so nothing ahead spoils itself.
+- A quest tracker: Every open quest in your journal, updated as you play, with the people, places and items it mentions — and the ones you can still miss before a point of no return.
+- Vaults and puzzles: Every dial, keypad and item placement in the game, and the codes of the six Vaults of Forbidden Knowledge drawn as the game's symbols. Each answer stays covered until you click it.
+- Collectibles and enemies: Collectibles by region, the enemy groups still left for the every-Hollow achievement, NPCs with more to tell, and your Steam achievements with progress.
+- Your language: Everything follows the language set in the game, in all twelve it ships with, using the game's own names for places, people and things.
+
+## FAQ
+
+### Is there a map in Hell Is Us?
+No. Hell Is Us deliberately has no map, compass or quest markers. hiumod adds an optional minimap overlay and a quest tracker on PC for players who want one.
+
+### Where can I find the vault codes in Hell Is Us?
+The codes are spread through Hadea as notes and inscriptions. hiumod lists the code for every vault as the game's symbols, each hidden until you choose to reveal it.
+
+### Can I get banned for using hiumod?
+Hell Is Us is single-player with no anti-cheat and no online play, and hiumod changes no game files. As with any third-party tool, use it at your own discretion.
+
+### Does it work with the latest version of the game?
+hiumod is tested against a specific Steam build and tells you when the game has been updated since. After an update, run doctor survey again; anything that breaks is fixed in a new release.
+
+### Which languages does it support?
+All twelve of the game's languages: English, Korean, Japanese, Simplified Chinese, German, French, Spanish, Italian, Polish, Brazilian Portuguese, Russian and Turkish. It follows the language set in the game.
+
+### Is hiumod free?
+Yes. It's free and open source under the MIT license. It's a fan project and isn't affiliated with Rogue Factor or Nacon.

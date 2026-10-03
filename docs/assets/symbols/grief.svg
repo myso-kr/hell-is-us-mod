@@ -1,0 +1,12 @@
+<!-- Vault symbol 4: grief — drawn for the mod after the game's dials. 100×100, y down. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<g stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<polyline points="16,30 17,14 22,7 29,7 36,14 44,22 55,25 66,22 75,15 84,8" fill="none"/>
+<line x1="55" y1="25" x2="55" y2="82"/>
+<circle cx="55" cy="88" r="6" fill="none"/>
+<line x1="44" y1="23" x2="44" y2="44"/>
+<circle cx="44" cy="47" r="3" fill="#ffffff" stroke="none"/>
+<line x1="67" y1="22" x2="67" y2="44"/>
+<circle cx="67" cy="47" r="3" fill="#ffffff" stroke="none"/>
+</g>
+</svg>
