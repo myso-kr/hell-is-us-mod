@@ -116,9 +116,12 @@ impl Panel {
             }),
             // What is known: the quests' clues, a clue looked up, and who still has more to tell.
             // Who has more to tell is where they are: with "where hidden things are".
+            // The quest's clues two columns wide, the search beside; who has more to tell
+            // across the page under them.
             Some(Tool::Clues) => {
-                let n = if self.grants(crate::settings::Consent::PLACES) { 3 } else { 2 };
-                tw::masonry(t, "clues", cols, n, |t, i| match i {
+                let places = self.grants(crate::settings::Consent::PLACES);
+                let spans: &[u16] = if places { &[2, 1, 3] } else { &[2, 1] };
+                tw::spans(t, cols, spans, |t, i| match i {
                     0 => self.quest_clues_card(t, guard, snap),
                     1 => self.find_clue_card(t, snap),
                     _ => self.stories_card(t, guard, snap),
@@ -126,7 +129,9 @@ impl Panel {
             }
             Some(Tool::Puzzles) => {
                 super::deep::puzzles_hero(t, snap);
-                tw::masonry(t, "puzzles", cols, 3, |t, i| match i {
+                // This region's puzzles two columns wide, the locks beside; the vaults
+                // across the page.
+                tw::spans(t, cols, &[2, 1, 3], |t, i| match i {
                     0 => self.puzzles_card(t, guard, snap),
                     1 => self.locks_card(t, guard, snap),
                     _ => self.vaults_card(t, guard, snap),
@@ -135,7 +140,8 @@ impl Panel {
             Some(Tool::Collect) => {
                 // Without "where hidden things are", the collection shows counts only.
                 self.collect_hero(t, snap);
-                tw::masonry(t, "collect", cols, 4, |t, i| match i {
+                // Three cards side by side; the achievements, a long list, across the page.
+                tw::spans(t, cols, &[1, 1, 1, 3], |t, i| match i {
                     0 => self.collection_card(t, guard, snap),
                     1 => self.hollows_card(t, guard, snap),
                     2 => self.budget_card(t, snap),
@@ -144,9 +150,13 @@ impl Panel {
             }
             // The missable deeds' deadlines tell what the story does next: with answers.
             Some(Tool::Quests) => {
+                // The journal two columns wide with the hand-overs beside it; the missable
+                // deeds two wide with the side-story rings beside them.
                 let answers = self.grants(crate::settings::Consent::ANSWERS);
-                let skip = !answers as usize;
-                tw::masonry(t, "quests", cols, 4 - skip, |t, i| match i + (i >= 1) as usize * skip {
+                let order: &[(u16, u8)] =
+                    if answers { &[(2, 0), (1, 2), (2, 1), (1, 3)] } else { &[(2, 0), (1, 2), (3, 3)] };
+                let spans: Vec<u16> = order.iter().map(|(n, _)| *n).collect();
+                tw::spans(t, cols, &spans, |t, i| match order[i].1 {
                     0 => self.quests_card(t, guard, snap),
                     1 => self.deadlines_card(t, guard, snap),
                     2 => self.handovers_card(t, guard, snap),

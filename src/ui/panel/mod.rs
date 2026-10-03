@@ -941,10 +941,10 @@ impl Panel {
         match self.tool {
             // Five cards in rows of three: the story two columns wide (now.rs).
             Some(Tool::Now) => self.now_cards(),
-            Some(Tool::Collect) => 4,
-            Some(Tool::Quests) => 3 + self.grants(crate::settings::Consent::ANSWERS) as usize,
-            Some(Tool::Clues) => 2 + self.grants(crate::settings::Consent::PLACES) as usize,
-            Some(Tool::Map) | Some(Tool::Puzzles) | Some(Tool::Guide) => 3,
+            // Laid out three columns wide with cards spanning two or three (tw::spans): asked
+            // for as "more than four" so the page gets its third column.
+            Some(Tool::Collect) | Some(Tool::Quests) | Some(Tool::Clues) | Some(Tool::Puzzles) => 5,
+            Some(Tool::Map) | Some(Tool::Guide) => 3,
             Some(Tool::Help) => 4,
             // Two columns of questions, whatever the width (consent.rs).
             Some(Tool::Settings) => 2,

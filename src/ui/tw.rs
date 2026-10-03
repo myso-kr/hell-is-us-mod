@@ -202,6 +202,20 @@ pub fn block_at_least<T>(tui: &mut Tui, width: f32, f: impl FnOnce(&mut egui::Ui
     })
 }
 
+/// A page's cards on a grid of `columns`, card `i` `spans[i]` columns wide (no wider than
+/// the grid), the cards of a row stretched to one height: for a page whose long lists
+/// want the width (a quest list, a vault table) beside short cards. `card(tui, i)` draws
+/// card `i`.
+pub fn spans(tui: &mut Tui, columns: usize, spans: &[u16], mut card: impl FnMut(&mut Tui, usize)) {
+    let columns = columns.max(1);
+    let grid = Style { align_items: Some(AlignItems::Stretch), ..grid(columns, GAP) };
+    tui.style(grid).add(|tui| {
+        for (i, n) in spans.iter().enumerate() {
+            span(tui, (*n).min(columns as u16), |tui| card(tui, i));
+        }
+    });
+}
+
 /// `col-span-{n}`: what `body` holds as one grid item `n` columns wide.
 pub fn span<T>(tui: &mut Tui, n: u16, body: impl FnOnce(&mut Tui) -> T) -> T {
     use taffy::prelude::{auto, fr, span as across};

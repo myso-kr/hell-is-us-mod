@@ -34,6 +34,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   open, the nearest places), the side stories under way, the regions worth a trip and why, and what
   is about to be missed; the story card spans two columns.
 - Long achievement lists scroll inside their card.
+- Quests, Clues, Puzzles and Collect lay their long lists out wide: the journal, a quest's clues and
+  this region's puzzles two columns wide beside a short card, the NPCs with more to tell, the vaults
+  and the achievements across the page.
 - The panel's background moves softly: contour lines drifting and a route finding its way, as in the
   introduction video (can be turned off on the Settings page). Cards are thin, slightly see-through
   glass.

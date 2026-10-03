@@ -159,6 +159,12 @@ with the most to do now and what: hand-overs, locks, what is left; the rest in a
 on** (missable deadlines, the keystone order). The old "previously" card became the story card's
 first line.
 
+**Cards spanning columns** (`tw::spans`, 2026-10-04): Quests (the journal 2 wide, hand-overs; the
+missable deeds 2 wide, the side-story rings), Clues (the quest's clues 2 wide, the search; the NPCs with
+more to tell 3 wide), Puzzles (this region's puzzles 2 wide, the locks; the vaults 3 wide), Collect
+(collection, enemy groups, shard budget; the achievements 3 wide), on three columns, the cards of a row
+one height. Masonry stays for the Map and Guide pages and the cheats, whose cards are alike in width.
+
 **Long lists scroll inside their card** (`tw::scroll_list`): the achievements grow to 420 px, then
 scroll, over a taffy column of their own, given its room outright (the 0-height trap above).
 
