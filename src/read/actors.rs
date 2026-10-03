@@ -327,7 +327,9 @@ struct Tracked {
 pub type HazeLink = ([f32; 3], [f32; 3]);
 
 /// `HazeRecord` (build 24045435): `HazeToSpawn` (a soft class, 40 B) at 0x0 and
-/// `SpawnedHaze` (the Haze actor) at 0x30; 0x38 bytes a record.
+/// `SpawnedHaze` (the Haze actor) at 0x30, null until the Haze is spawned in the fight;
+/// 0x38 bytes a record. Confirmed in play 2026-10-04: one `ST_HazeEcstasy_Wheelface`
+/// held four Walkers (Protector, Feral, two Artillery), each a record pointing at it.
 const HAZE_RECORD: u64 = 0x38;
 const SPAWNED_HAZE: u64 = 0x30;
 /// More records than this on one Walker is not a record array.
@@ -388,14 +390,9 @@ pub struct Scanner {
     records: HashMap<u64, Option<u32>>,
     /// The Haze links as last read with the positions.
     links: Vec<HazeLink>,
-    /// Per Walker, the Haze its first record pointed at when last logged: logged again as
-    /// it changes (the Haze is spawned in the fight, after the Walker is first seen).
-    haze_logged: HashMap<u64, u64>,
     /// `Actor.RootComponent`'s offset, from `refresh`: where a Haze not tracked as a thing
     /// is found.
     root_off: u64,
-    /// (enemy classes seen, those with `HazeRecords`) as last logged.
-    haze_classes: (usize, usize),
     /// Per actor, kept across scans: (its class, where it says it is spent).
     done: HashMap<u64, (u64, Option<Done>)>,
     tracked: Vec<Tracked>,
@@ -491,7 +488,6 @@ impl Scanner {
             }
         }
         let alive: std::collections::HashSet<u64> = tracked.iter().map(|t| t.actor).collect();
-        self.log_hazes(m, n, &tracked, &alive);
         self.done.retain(|a, _| alive.contains(a));
         self.tracked = tracked;
         Ok(())
@@ -508,48 +504,6 @@ impl Scanner {
             .filter(|t| !t.done.is_some_and(|d| d.spent(m)))
             .map(|t| t.actor)
             .collect()
-    }
-
-    /// What the Haze links are read from, logged once per Walker with records (and the
-    /// enemy classes with the field as that count changes): the record's layout is laid
-    /// out from its fields, not read, and a fight is what shows whether it holds.
-    fn log_hazes(&mut self, m: &dyn Memory, n: &Names, tracked: &[Tracked], alive: &std::collections::HashSet<u64>) {
-        let enemies: std::collections::HashSet<u64> =
-            tracked.iter().filter(|t| t.sub.kind() == Kind::Enemy).map(|t| t.class).collect();
-        let with = enemies.iter().filter(|c| self.records.get(c).copied().flatten().is_some()).count();
-        if (enemies.len(), with) != self.haze_classes {
-            self.haze_classes = (enemies.len(), with);
-            crate::logfile::line(&format!("haze probe: {} enemy classes, {with} with HazeRecords", enemies.len()));
-        }
-        for t in tracked {
-            let Some(off) = t.records else { continue };
-
-            let at = t.actor + off as u64;
-            let (data, num) = (mem::read_u64(m, at).unwrap_or(0), mem::read_u32(m, at + 8).unwrap_or(0));
-            if num == 0 {
-                continue;
-            }
-            let first = mem::read_u64(m, data + SPAWNED_HAZE).unwrap_or(0);
-            if self.haze_logged.get(&t.actor) == Some(&first) {
-                continue;
-            }
-            self.haze_logged.insert(t.actor, first);
-            let walker = n.class(m, t.actor).unwrap_or_default();
-            let mut parts = Vec::new();
-            for i in 0..num.min(MAX_RECORDS) as u64 {
-                // Every 8 bytes of the first records, to see the layout if 0x38 is wrong.
-                let haze = mem::read_u64(m, data + i * HAZE_RECORD + SPAWNED_HAZE).unwrap_or(0);
-                let class = if mem::plausible(haze) { n.class(m, haze).unwrap_or_default() } else { String::new() };
-                parts.push(format!("#{i} {haze:#x} {class} tracked={}", alive.contains(&haze)));
-            }
-            let raw: Vec<String> =
-                (0..16u64).map(|k| format!("{:#x}", mem::read_u64(m, data + k * 8).unwrap_or(0))).collect();
-            crate::logfile::line(&format!(
-                "haze probe: {walker} off={off:#x} num={num} data={data:#x} {} raw=[{}]",
-                parts.join(" | "),
-                raw.join(" ")
-            ));
-        }
     }
 
     /// The Hazes and the Walkers they keep alive, as of the last `positions`.

@@ -45,10 +45,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   introduction video (can be turned off on the Settings page). Cards are thin, slightly see-through
   glass.
 
-### Diagnostics
+### Fixed
 
-- The engine logs what the Haze links are read from (`haze probe:` lines in `hiumod.log`): no link
-  was found in a first fight, and these lines show why.
+- Haze links now show in fights: a Haze is spawned when the fight starts, and its link to every
+  Hollow Walker it keeps alive is drawn from then on (confirmed in play: one Haze holding four).
 
 ## 0.2.1 — 2026-10-04
 

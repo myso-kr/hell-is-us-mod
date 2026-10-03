@@ -106,9 +106,11 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
   position read links every live Walker to the records' Hazes that are in play (`actors.rs`
   `links`), through the snapshot to `MapState::haze_links` (never saved), drawn on every map as a
   thin Lymbic-violet line under the enemy icons while the enemy layer shows, and in the legend.
-  The engine logs "haze links: N" as the count changes. **To check in play:** that a fight with a
-  Haze logs a non-zero count and draws the lines; a zero count beside a Haze means the record size
-  or field differs.
+  The engine logs "haze links: N" as the count changes. **Confirmed in play (2026-10-04):** the
+  records are filled as the fight starts (`SpawnedHaze` null before, so a first probe that logged
+  each Walker once on sight saw only nulls); one `ST_HazeEcstasy_Wheelface` held four Walkers and the
+  count went 1 → 4 → 5, back down as they fell. A Haze not among the tracked things is read where it
+  stands (its root component), in case some Haze class is not sorted as an enemy.
 
 ### 3.8 Previously
 - On the first attach of a session: where the hero was, the followed quest and its next goal, and the
@@ -131,7 +133,7 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
   hierarchy, attached child, or a separate payload actor nearby) — survey pass over one region.
 - **Timeloop prism signature:** which Amine prism (T01/T02/T03 = Greek signatures) each timeloop
   rift needs — look for the rift actor's placement or condition in the survey's flows and placements.
-- **Haze → Hollow link** (§3.7): found in the reflection data; the live check is one fight with a Haze.
+- **Haze → Hollow link** (§3.7): found in the reflection data and confirmed in a fight.
 - **Gear upgrade costs** (§3.6): done — the `CraftRecipe` assets under `Gameplay/Crafting/`.
 
 ## 5. Order
@@ -146,7 +148,7 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
 | 6 | §3.9 Completion board | medium — the completionist's last stretch | small–medium | glyph/cap paths |
 | 7 | §3.2 Clue board | medium — the Datapad's worst pain | medium | no |
 | 8 | §3.6 Shard budget | medium — three missable achievements | medium | upgrade costs |
-| 9 | §3.7 Haze links | low–medium | medium | built; live check pending |
+| 9 | §3.7 Haze links | low–medium | medium | built, confirmed in play |
 
 Every proposal is a card or a tracker line with its answers hidden by default, in the 12 languages
 (new text keys in every `assets/i18n` table), and confirmed in play before it counts as done.
