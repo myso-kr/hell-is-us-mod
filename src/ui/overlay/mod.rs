@@ -45,7 +45,6 @@ const MARGIN: i32 = 24;
 const FRAME: Duration = Duration::from_millis(50);
 /// The big map takes this share of the game window's height, and is drawn every
 /// third frame — it is many more pixels.
-const BIG_SHARE: f32 = 0.8;
 const BIG_EVERY: u32 = 3;
 /// The panel's hero map: its side (px), how far it reaches (m) and how often (frames).
 const HERO_PX: usize = 176;
@@ -54,6 +53,8 @@ const HERO_EVERY: u32 = 20;
 /// The Map page's preview: redrawn this often (frames) while the page shows, so a
 /// setting moved is seen at once.
 const PREVIEW_EVERY: u32 = 4;
+/// The big map's preview width (px): the panel shows it at about this size.
+const PREVIEW_BIG_W: usize = 640;
 const SAVE_EVERY: Duration = Duration::from_secs(10);
 
 pub fn path() -> std::path::PathBuf {
@@ -110,6 +111,9 @@ pub fn run(shared: Arc<Shared>) {
     // The big map's window is made at the game window's size, and again if that changes.
     let mut big_window: Option<Layered> = None;
     let mut big_cv = Canvas::new(1, 1);
+    // The big map is drawn at half size, then shown at full: these are its half-size
+    // canvas and icons.
+    let mut big_half = Canvas::new(1, 1);
     let mut map_cv = Canvas::new(MAP_PX as usize, MAP_PX as usize);
     let mut compass_cv = Canvas::new(COMPASS_W as usize, COMPASS_H as usize);
     // Without icons the map still works, with dots.
@@ -122,6 +126,7 @@ pub fn run(shared: Arc<Shared>) {
     };
     let mut icon_px = shared.map.lock().unwrap().icon_px;
     let mut icons = make(icon_px);
+    let mut icons_half = make((icon_px / 2).max(8));
     let mut was = [false; 4];
     let mut route = route::Route::default();
     let mut baking = bake::Baking::default();
@@ -179,6 +184,7 @@ pub fn run(shared: Arc<Shared>) {
         if state.icon_px != icon_px {
             icon_px = state.icon_px;
             icons = make(icon_px);
+            icons_half = make((icon_px / 2).max(8));
         }
         let keys = state.keys();
         let mut now = [false; 4];
@@ -210,6 +216,7 @@ pub fn run(shared: Arc<Shared>) {
                     scale: (HERO_PX as f32 / 2.0 - 14.0) / (HERO_RADIUS_M * 100.0),
                     north_deg: state.north_yaw,
                     outline: false,
+                    full: false,
                 };
                 let relief = baking.relief(&state, p, &obstacles);
                 let goals = hud::with_pins(&goals, &state, world);
@@ -242,27 +249,21 @@ pub fn run(shared: Arc<Shared>) {
             && shared.preview_wanted.load(Ordering::SeqCst)
         {
             if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
-                let big = state.display == Display::Big;
-                let (radius, heading_up, outline) = if big {
-                    (state.big_radius_m, false, state.big_outline)
-                } else {
-                    (state.radius_m, state.heading_up, state.mini_outline)
-                };
+                let relief = baking.relief(&state, p, &obstacles);
+                let goals = hud::with_pins(&goals, &state, world);
+                // The minimap, as it draws (solid: dots are the big map's).
                 let side = MAP_PX as usize;
                 let view = View {
                     center: p,
                     yaw_deg: yaw,
-                    heading_up,
-                    scale: (side as f32 / 2.0 - 14.0) / (radius * 100.0),
+                    heading_up: state.heading_up,
+                    scale: (side as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
                     north_deg: state.north_yaw,
-                    outline,
+                    outline: state.mini_outline,
+                    full: false,
                 };
-                let relief = baking.relief(&state, p, &obstacles);
-                let goals = hud::with_pins(&goals, &state, world);
                 let mut cv = Canvas::new(side, side);
-                // As the overlay draws it: dots only on the big map.
-                let dots = state.dots;
-                state.dots = dots && big;
+                let dots = std::mem::replace(&mut state.dots, false);
                 draw_map(
                     &mut cv,
                     &state,
@@ -276,17 +277,44 @@ pub fn run(shared: Arc<Shared>) {
                     relief.as_deref(),
                 );
                 state.dots = dots;
-                if big && state.big_alpha < 100 {
-                    // Premultiplied: every channel scales with the opacity.
-                    let a = state.big_alpha as u32;
-                    for px in cv.px.iter_mut() {
-                        let c = |shift: u32| ((*px >> shift & 0xFF) * a / 100) << shift;
-                        *px = c(24) | c(16) | c(8) | c(0);
-                    }
+                {
+                    let mut preview = shared.preview.lock().unwrap();
+                    let n = preview.as_ref().map_or(0, |h| h.2) + 1;
+                    *preview = Some((side, cv.px, n));
                 }
-                let mut preview = shared.preview.lock().unwrap();
-                let n = preview.as_ref().map_or(0, |h| h.2) + 1;
-                *preview = Some((side, cv.px, n));
+                // The big map, as it covers the game window, made small.
+                if let Some((_, gr)) = game_window(game) {
+                    let (gw, gh) = ((gr.right - gr.left).max(2) as usize, (gr.bottom - gr.top).max(2) as usize);
+                    let mut half = Canvas::new(gw / 2, gh / 2);
+                    let mut full = Canvas::new(gw, gh);
+                    big_frame(
+                        &mut half,
+                        &mut full,
+                        &state,
+                        world,
+                        (p, yaw),
+                        &things,
+                        icons_half.as_ref(),
+                        &footprints,
+                        &goals,
+                        &Default::default(),
+                        relief.as_deref(),
+                    );
+                    let w = PREVIEW_BIG_W.min(gw);
+                    let h = (gh * w / gw).max(1);
+                    let mut small = crate::raster::downscale(&full, w, h);
+                    if state.big_alpha < 100 {
+                        // Premultiplied: every channel scales with the opacity.
+                        let a = state.big_alpha as u32;
+                        for px in small.px.iter_mut() {
+                            let c = |shift: u32| ((*px >> shift & 0xFF) * a / 100) << shift;
+                            *px = c(24) | c(16) | c(8) | c(0);
+                        }
+                    }
+                    let mut preview = shared.preview_big.lock().unwrap();
+                    let n = preview.as_ref().map_or(0, |h| h.3) + 1;
+                    *preview = Some((w, h, small.px, n));
+                }
             }
         }
 
@@ -335,36 +363,30 @@ pub fn run(shared: Arc<Shared>) {
 
                 if state.display == Display::Big {
                     map_window.hide();
-                    let side = ((r.bottom - r.top) as f32 * BIG_SHARE) as i32;
-                    if big_window.as_ref().is_none_or(|w| w.w != side) {
-                        big_window = Layered::new("hiumod-bigmap", "Hell Is Us Map", side, side);
-                        big_cv = Canvas::new(side as usize, side as usize);
+                    // The whole game window is its canvas: centred on the hero, fading out
+                    // toward the edges (as Diablo's and Path of Exile's overlay maps).
+                    let (gw, gh) = (r.right - r.left, r.bottom - r.top);
+                    if big_window.as_ref().is_none_or(|w| (w.w, w.h) != (gw, gh)) {
+                        big_window = Layered::new("hiumod-bigmap", "Hell Is Us Map", gw, gh);
+                        big_cv = Canvas::new(gw as usize, gh as usize);
+                        big_half = Canvas::new((gw / 2).max(1) as usize, (gh / 2).max(1) as usize);
                     }
                     if let Some(w) = big_window.as_mut() {
                         if tick % BIG_EVERY == 0 || !w.is_shown() {
-                            let view = View {
-                                center: p,
-                                yaw_deg: yaw,
-                                heading_up: false,
-                                scale: (side as f32 / 2.0 - 14.0) / (state.big_radius_m * 100.0),
-                                north_deg: state.north_yaw,
-                                outline: state.big_outline,
-                            };
-                            draw_map(
+                            big_frame(
+                                &mut big_half,
                                 &mut big_cv,
                                 &state,
                                 world,
-                                &view,
+                                (p, yaw),
                                 &things,
-                                icons.as_ref(),
+                                icons_half.as_ref(),
                                 &footprints,
                                 &goals,
                                 &path,
                                 relief.as_deref(),
                             );
-                            let x = r.left + (r.right - r.left - side) / 2;
-                            let y = r.top + (r.bottom - r.top - side) / 2;
-                            w.present_alpha(&big_cv, x, y, (state.big_alpha as u32 * 255 / 100) as u8);
+                            w.present_alpha(&big_cv, r.left, r.top, (state.big_alpha as u32 * 255 / 100) as u8);
                         }
                     }
                 } else {
@@ -379,6 +401,7 @@ pub fn run(shared: Arc<Shared>) {
                             scale: (MAP_PX as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
                             north_deg: state.north_yaw,
                             outline: state.mini_outline,
+                            full: false,
                         };
                         // Dots are the big map's: the minimap is small, in a corner.
                         let dots = std::mem::replace(&mut state.dots, false);
@@ -471,4 +494,35 @@ pub fn run(shared: Arc<Shared>) {
         }
     }
     save(&mut shared.map.lock().unwrap());
+}
+
+/// One frame of the big map into `full` (the game window's size): drawn at half size
+/// into `half`, faded toward its edges and doubled. The radius reaches the window's
+/// top and bottom; its sides show as much more as the screen is wide.
+#[allow(clippy::too_many_arguments)]
+fn big_frame(
+    half: &mut Canvas,
+    full: &mut Canvas,
+    state: &crate::minimap::MapState,
+    world: &str,
+    (p, yaw): ([f32; 3], f32),
+    things: &[crate::actors::Thing],
+    icons: Option<&crate::icons::Icons>,
+    footprints: &[crate::geometry::Footprint],
+    goals: &[crate::goals::Goal],
+    path: &crate::pathfind::Path,
+    relief: Option<&crate::relief::Relief>,
+) {
+    let view = View {
+        center: p,
+        yaw_deg: yaw,
+        heading_up: false,
+        scale: (half.h as f32 / 2.0) / (state.big_radius_m * 100.0),
+        north_deg: state.north_yaw,
+        outline: state.big_outline,
+        full: true,
+    };
+    draw_map(half, state, world, &view, things, icons, footprints, goals, path, relief);
+    crate::raster::fade_edges(half);
+    crate::raster::upscale2(half, full);
 }

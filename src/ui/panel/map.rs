@@ -3,66 +3,99 @@
 use super::super::theme::INLINE;
 use super::*;
 
-/// The preview's side in the panel (px): the minimap's own size.
-const PREVIEW: f32 = 240.0;
+/// The minimap's preview side in the panel (px).
+const MINI_PREVIEW: f32 = 150.0;
+
+/// A preview frame the overlay made, as a texture kept in `slot` (made once, then set
+/// each new frame): its id and size.
+fn texture(
+    ctx: &egui::Context,
+    slot: &mut Option<(u64, egui::TextureHandle)>,
+    name: &str,
+    frame: Option<(usize, usize, Vec<u32>, u64)>,
+) -> Option<(egui::TextureId, usize, usize)> {
+    let (w, h, px, n) = frame?;
+    if slot.as_ref().map(|s| s.0) != Some(n) {
+        let bytes: Vec<u8> =
+            px.iter().flat_map(|p| [(p >> 16) as u8, (p >> 8) as u8, *p as u8, (p >> 24) as u8]).collect();
+        let image = egui::ColorImage::from_rgba_premultiplied([w, h], &bytes);
+        match slot.as_mut() {
+            Some((at, tex)) => {
+                tex.set(image, egui::TextureOptions::LINEAR);
+                *at = n;
+            }
+            None => *slot = Some((n, ctx.load_texture(name, image, egui::TextureOptions::LINEAR))),
+        }
+    }
+    slot.as_ref().map(|(_, t)| (t.id(), w, h))
+}
+
+/// The space a preview takes before the overlay has drawn one.
+fn waiting(ui: &mut egui::Ui, size: egui::Vec2) {
+    let (r, _) = ui.allocate_exact_size(size, egui::Sense::hover());
+    ui.painter().rect_filled(r, super::super::theme::R_CONTROL, super::super::theme::CONTROL);
+    ui.painter().text(
+        r.center(),
+        egui::Align2::CENTER_CENTER,
+        tr!("PREVIEW_NEEDS_THE_HERO"),
+        egui::FontId::proportional(12.0),
+        DIM,
+    );
+}
 
 impl Panel {
-    /// The map as the settings below draw it now (the overlay renders it four times a
-    /// second while this page shows): the minimap's, or the big map's when that is the
-    /// display; what it shows and how, in chips under it.
+    /// Both maps as their settings draw them now (the overlay renders them four times a
+    /// second while this page shows): the big map over the game window's shape, the
+    /// minimap beside its settings as chips; the legend under them.
     pub(super) fn preview_card(&mut self, t: &mut Tui, state: &crate::minimap::MapState) {
-        let fresh = self.shared.preview.lock().unwrap().as_ref().map(|h| h.2);
-        if fresh.is_some() && fresh != self.preview_tex.as_ref().map(|h| h.0) {
-            if let Some((side, px, n)) = self.shared.preview.lock().unwrap().clone() {
-                let bytes: Vec<u8> =
-                    px.iter().flat_map(|p| [(p >> 16) as u8, (p >> 8) as u8, *p as u8, (p >> 24) as u8]).collect();
-                let image = egui::ColorImage::from_rgba_premultiplied([side, side], &bytes);
-                match self.preview_tex.as_mut() {
-                    Some((at, tex)) => {
-                        tex.set(image, egui::TextureOptions::LINEAR);
-                        *at = n;
-                    }
-                    None => {
-                        let tex = t.egui_ctx().load_texture("map-preview", image, egui::TextureOptions::LINEAR);
-                        self.preview_tex = Some((n, tex));
-                    }
-                }
-            }
-        }
-        let tex = self.preview_tex.as_ref().map(|h| h.1.id());
-        let big = state.display == crate::minimap::Display::Big;
+        let ctx = t.egui_ctx().clone();
+        let mini = self.shared.preview.lock().unwrap().as_ref().map(|(s, px, n)| (*s, *s, px.clone(), *n));
+        let mini = texture(&ctx, &mut self.preview_tex, "map-preview", mini);
+        let big = self.shared.preview_big.lock().unwrap().clone();
+        let big = texture(&ctx, &mut self.preview_big_tex, "map-preview-big", big);
         card(t, tr!("PREVIEW"), |t| {
+            // The big map: as wide as the card, as tall as the game window's shape.
             w(t, |ui| {
-                ui.vertical_centered(|ui| match tex {
-                    Some(id) => {
-                        ui.add(egui::Image::new((id, egui::vec2(PREVIEW, PREVIEW))));
-                    }
-                    None => {
-                        let (r, _) = ui.allocate_exact_size(egui::vec2(PREVIEW, PREVIEW), egui::Sense::hover());
-                        ui.painter().circle_filled(r.center(), PREVIEW / 2.0 - 12.0, super::super::theme::CONTROL);
-                        ui.painter().text(
-                            r.center(),
-                            egui::Align2::CENTER_CENTER,
-                            tr!("PREVIEW_NEEDS_THE_HERO"),
-                            egui::FontId::proportional(12.0),
-                            DIM,
+                let width = ui.available_width();
+                match big {
+                    Some((id, w, h)) => {
+                        let size = egui::vec2(width, width * h as f32 / w as f32);
+                        let (r, _) = ui.allocate_exact_size(size, egui::Sense::hover());
+                        // The game is behind it in play: a dark ground stands in for it.
+                        ui.painter().rect_filled(r, super::super::theme::R_CONTROL, super::super::theme::GROUND);
+                        ui.painter().image(
+                            id,
+                            r,
+                            egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                            Color32::WHITE,
                         );
                     }
-                })
-            });
-            // What is previewed, as chips: which map, how far, which way up, the style.
-            let (radius, outline) =
-                if big { (state.big_radius_m, state.big_outline) } else { (state.radius_m, state.mini_outline) };
-            tw::choices(t, |t| {
-                tw::chip(t, if big { tr!("BIG_MAP") } else { tr!("MINIMAP") }, tw::Tone::Accent);
-                tw::chip(t, format!("{radius:.0} m"), tw::Tone::Quiet);
-                let up = if state.heading_up && !big { tr!("CAMERA") } else { tr!("NORTH_N") };
-                tw::chip(t, up, tw::Tone::Quiet);
-                tw::chip(t, if outline { tr!("OUTLINE") } else { tr!("FILLED") }, tw::Tone::Quiet);
-                if big {
-                    tw::chip(t, format!("{}%", state.big_alpha), tw::Tone::Quiet);
+                    None => waiting(ui, egui::vec2(width, width * 0.42)),
                 }
             });
+            tw::choices(t, |t| {
+                tw::chip(t, tr!("BIG_MAP"), tw::Tone::Accent);
+                tw::chip(t, format!("{:.0} m", state.big_radius_m), tw::Tone::Quiet);
+                tw::chip(t, if state.big_outline { tr!("OUTLINE") } else { tr!("FILLED") }, tw::Tone::Quiet);
+                tw::chip(t, format!("{}%", state.big_alpha), tw::Tone::Quiet);
+            });
+            // The minimap, at its own size or as near as the card allows, its chips beside.
+            t.style(tw::row(INLINE)).add(|t| {
+                w(t, |ui| match mini {
+                    Some((id, _, _)) => {
+                        ui.add(egui::Image::new((id, egui::vec2(MINI_PREVIEW, MINI_PREVIEW))));
+                    }
+                    None => waiting(ui, egui::vec2(MINI_PREVIEW, MINI_PREVIEW)),
+                });
+                t.style(tw::grow(tw::col(super::super::theme::TIGHT))).add(|t| {
+                    tw::chip(t, tr!("MINIMAP"), tw::Tone::Accent);
+                    tw::chip(t, format!("{:.0} m", state.radius_m), tw::Tone::Quiet);
+                    let up = if state.heading_up { tr!("CAMERA") } else { tr!("NORTH_N") };
+                    tw::chip(t, up, tw::Tone::Quiet);
+                    tw::chip(t, if state.mini_outline { tr!("OUTLINE") } else { tr!("FILLED") }, tw::Tone::Quiet);
+                });
+            });
+            let outline = state.mini_outline && state.big_outline;
             // What each line and colour is, as drawn now.
             let entries = crate::raster::legend(state, outline);
             t.style(tw::grid(2, INLINE)).add(|t| {

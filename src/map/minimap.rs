@@ -438,7 +438,15 @@ mod tests {
 
     #[test]
     fn north_up_puts_x_up_and_y_right() {
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: false, scale: 1.0, north_deg: 0.0, outline: false };
+        let v = View {
+            center: [0.0; 3],
+            yaw_deg: 0.0,
+            heading_up: false,
+            scale: 1.0,
+            north_deg: 0.0,
+            outline: false,
+            full: false,
+        };
         assert!(close(v.project([100.0, 0.0, 0.0]), (0.0, -100.0)));
         assert!(close(v.project([0.0, 100.0, 0.0]), (100.0, 0.0)));
         assert!(close(v.north(), (0.0, -1.0)));
@@ -481,6 +489,7 @@ mod tests {
                 scale: 0.02,
                 north_deg: 270.0,
                 outline: false,
+                full: false,
             };
             let (x, y) = v.project([900.0, 400.0, 0.0]);
             let w = v.unproject(x, y);
@@ -492,8 +501,15 @@ mod tests {
     fn north_up_follows_the_games_north() {
         // The game's north along -Y (yaw 270). Yaw turns clockwise seen from above, so
         // facing -Y the right hand points along +X (yaw 0 = 270 + 90): the game's east.
-        let v =
-            View { center: [0.0; 3], yaw_deg: 270.0, heading_up: false, scale: 1.0, north_deg: 270.0, outline: false };
+        let v = View {
+            center: [0.0; 3],
+            yaw_deg: 270.0,
+            heading_up: false,
+            scale: 1.0,
+            north_deg: 270.0,
+            outline: false,
+            full: false,
+        };
         let close = |a: (f32, f32), b: (f32, f32)| (a.0 - b.0).abs() < 1e-3 && (a.1 - b.1).abs() < 1e-3;
         assert!(close(v.project([0.0, -100.0, 0.0]), (0.0, -100.0)), "north is up");
         assert!(close(v.project([100.0, 0.0, 0.0]), (100.0, 0.0)), "+X is the game's east");
@@ -503,7 +519,15 @@ mod tests {
 
     #[test]
     fn heading_up_puts_what_is_ahead_up() {
-        let v = View { center: [0.0; 3], yaw_deg: 90.0, heading_up: true, scale: 0.5, north_deg: 0.0, outline: false };
+        let v = View {
+            center: [0.0; 3],
+            yaw_deg: 90.0,
+            heading_up: true,
+            scale: 0.5,
+            north_deg: 0.0,
+            outline: false,
+            full: false,
+        };
         // Facing +Y: a point ahead on +Y is up, +X (north) is on the left.
         assert!(close(v.project([0.0, 100.0, 0.0]), (0.0, -50.0)));
         assert!(close(v.project([100.0, 0.0, 0.0]), (-50.0, 0.0)));

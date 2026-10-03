@@ -96,6 +96,9 @@ pub struct View {
     /// Drawn as outlines on a clear background (as Diablo's overlay map): no disc, no
     /// fills — walls, contours and shores as lines, so the game shows through.
     pub outline: bool,
+    /// The whole canvas is the map (the big map over the screen): no disc, no rim, no
+    /// north mark; nothing is cut at a circle, and `fade_edges` softens the edges.
+    pub full: bool,
 }
 
 impl View {

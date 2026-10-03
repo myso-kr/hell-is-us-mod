@@ -384,13 +384,23 @@ pub fn draw_map(
     relief: Option<&Relief>,
 ) {
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
-    let r = cx.min(cy) - 14.0;
+    // Full: the circle the map is cut to holds the whole canvas, so nothing is cut.
+    let r = if view.full { (cx * cx + cy * cy).sqrt() + 2.0 } else { cx.min(cy) - 14.0 };
     let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
     let [ground, lines, marks] = state.opacity;
     // The empty disc is the same every frame at a size: drawn once, then copied. As
     // outlines, there is no disc: the background stays clear.
     if view.outline {
         cv.clear();
+    } else if view.full {
+        let c = faded(BACKGROUND, ground);
+        let px = if c.3 == 0 {
+            0
+        } else {
+            let a = c.3 as u32;
+            (a << 24) | ((c.0 as u32 * a / 255) << 16) | ((c.1 as u32 * a / 255) << 8) | (c.2 as u32 * a / 255)
+        };
+        cv.px.fill(px);
     } else {
         BASE.with(|base| {
             let mut base = base.borrow_mut();
@@ -758,12 +768,14 @@ pub fn draw_map(
         }
     }
 
-    if !view.outline {
+    if !view.outline && !view.full {
         cv.ring(cx, cy, r, 2.0, faded(EDGE, ground.max(lines)));
     }
-    let (nx, ny) = view.north();
-    cv.disc(cx + nx * r, cy + ny * r, 9.0, faded(BACKGROUND, marks));
-    cv.letter_n(cx + nx * r, cy + ny * r, 11.0, faded(NORTH, marks));
+    if !view.full {
+        let (nx, ny) = view.north();
+        cv.disc(cx + nx * r, cy + ny * r, 9.0, faded(BACKGROUND, marks));
+        cv.letter_n(cx + nx * r, cy + ny * r, 11.0, faded(NORTH, marks));
+    }
 
     let (hx, hy) = view.heading();
     let (px, py) = (-hy, hx);
@@ -804,6 +816,87 @@ pub fn legend(state: &MapState, outline: bool) -> Vec<(Swatch, Rgba, &'static st
     out.push((Swatch::Line, TRAIL, tr!("LEGEND_TRAIL")));
     out.push((Swatch::Line, Rgba(245, 120, 200, 235), tr!("LEGEND_ROUTE")));
     out.push((Swatch::Dashed, Rgba(255, 220, 60, 235), tr!("LEGEND_BLOCKED")));
+    out
+}
+
+/// The big map's soft edge: everything keeps its full strength out to `INNER` of the
+/// way to the canvas's edge (an ellipse with the canvas's own shape), then fades to
+/// nothing at the edge, as Diablo's and Path of Exile's overlay maps do.
+pub fn fade_edges(cv: &mut Canvas) {
+    const INNER: f32 = 0.45;
+    let (w, h) = (cv.w, cv.h);
+    let (cx, cy) = (w as f32 / 2.0, h as f32 / 2.0);
+    for y in 0..h {
+        let dy = (y as f32 + 0.5 - cy) / cy;
+        for x in 0..w {
+            let px = &mut cv.px[y * w + x];
+            if *px == 0 {
+                continue;
+            }
+            let dx = (x as f32 + 0.5 - cx) / cx;
+            let t = ((dx * dx + dy * dy).sqrt() - INNER) / (1.0 - INNER);
+            if t <= 0.0 {
+                continue;
+            }
+            let k = if t >= 1.0 { 0.0 } else { 1.0 - t * t * (3.0 - 2.0 * t) };
+            let k = (k * 256.0) as u32;
+            let c = |shift: u32| (((*px >> shift) & 0xFF) * k / 256) << shift;
+            *px = c(24) | c(16) | c(8) | c(0);
+        }
+    }
+}
+
+/// `src` twice as big each way, bilinear, into `dst` (premultiplied stays premultiplied):
+/// the big map is drawn at half size and shown at full, a quarter of the work.
+pub fn upscale2(src: &Canvas, dst: &mut Canvas) {
+    let (sw, sh) = (src.w, src.h);
+    for y in 0..dst.h {
+        let fy = ((y as f32 + 0.5) / 2.0 - 0.5).clamp(0.0, (sh - 1) as f32);
+        let (y0, ty) = (fy as usize, fy.fract());
+        let y1 = (y0 + 1).min(sh - 1);
+        for x in 0..dst.w {
+            let fx = ((x as f32 + 0.5) / 2.0 - 0.5).clamp(0.0, (sw - 1) as f32);
+            let (x0, tx) = (fx as usize, fx.fract());
+            let x1 = (x0 + 1).min(sw - 1);
+            let (a, b, c, d) = (src.px[y0 * sw + x0], src.px[y0 * sw + x1], src.px[y1 * sw + x0], src.px[y1 * sw + x1]);
+            if (a | b | c | d) == 0 {
+                dst.px[y * dst.w + x] = 0;
+                continue;
+            }
+            let ch = |p: u32, s: u32| ((p >> s) & 0xFF) as f32;
+            let mix = |s: u32| {
+                let top = ch(a, s) + (ch(b, s) - ch(a, s)) * tx;
+                let bot = ch(c, s) + (ch(d, s) - ch(c, s)) * tx;
+                ((top + (bot - top) * ty).round() as u32).min(255) << s
+            };
+            dst.px[y * dst.w + x] = mix(24) | mix(16) | mix(8) | mix(0);
+        }
+    }
+}
+
+/// `src` made `w` × `h` (smaller), each pixel the mean of the source pixels it covers.
+pub fn downscale(src: &Canvas, w: usize, h: usize) -> Canvas {
+    let mut out = Canvas::new(w, h);
+    let (sx, sy) = (src.w as f32 / w as f32, src.h as f32 / h as f32);
+    for y in 0..h {
+        let (y0, y1) = ((y as f32 * sy) as usize, (((y + 1) as f32 * sy) as usize).clamp(1, src.h));
+        for x in 0..w {
+            let (x0, x1) = ((x as f32 * sx) as usize, (((x + 1) as f32 * sx) as usize).clamp(1, src.w));
+            let mut sum = [0u32; 4];
+            let mut n = 0u32;
+            for yy in y0..y1.max(y0 + 1) {
+                for xx in x0..x1.max(x0 + 1) {
+                    let p = src.px[yy.min(src.h - 1) * src.w + xx.min(src.w - 1)];
+                    for (k, s) in sum.iter_mut().enumerate() {
+                        *s += (p >> (24 - 8 * k as u32)) & 0xFF;
+                    }
+                    n += 1;
+                }
+            }
+            let c = |k: usize| (sum[k] / n.max(1)) << (24 - 8 * k as u32);
+            out.px[y * w + x] = c(0) | c(1) | c(2) | c(3);
+        }
+    }
     out
 }
 
@@ -917,6 +1010,7 @@ mod tests {
             scale: 0.05,
             north_deg: 0.0,
             outline: false,
+            full: false,
         };
         // A wall 10 m north of the hero, standing on their floor; a ceiling slab over them.
         let wall =
@@ -939,7 +1033,15 @@ mod tests {
         let icons = Icons::new(16).unwrap();
         let mut cv = Canvas::new(200, 200);
         let s = MapState::default();
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0, outline: false };
+        let v = View {
+            center: [0.0; 3],
+            yaw_deg: 0.0,
+            heading_up: true,
+            scale: 0.01,
+            north_deg: 0.0,
+            outline: false,
+            full: false,
+        };
         draw_map(
             &mut cv,
             &s,
@@ -962,7 +1064,15 @@ mod tests {
         s.observe("W", [0.0, 0.0, 0.0]);
         s.observe("W", [1000.0, 0.0, 0.0]);
         s.toggle_marker("W", [100_000.0, 0.0, 0.0]);
-        let v = View { center: [0.0; 3], yaw_deg: 0.0, heading_up: true, scale: 0.01, north_deg: 0.0, outline: false };
+        let v = View {
+            center: [0.0; 3],
+            yaw_deg: 0.0,
+            heading_up: true,
+            scale: 0.01,
+            north_deg: 0.0,
+            outline: false,
+            full: false,
+        };
         draw_map(
             &mut cv,
             &s,

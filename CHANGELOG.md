@@ -28,6 +28,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - The panel stays inside the screen when moved, restored or grown; the console's command line is no
   longer cut off; the console, and its button in the panel's header, show only over a game menu.
 - The map preview has a legend of its lines and colours, as drawn with the settings now.
+- The big map covers the whole screen, centred on the hero and fading out toward the edges; the Map
+  page previews both maps side by side.
+- The panel and its tray icon carry the mod's mark instead of Windows' generic icon.
 - Long lists can be grouped: places by kind, achievements by kind (story, deeds and mysteries,
   combat, gear, research and collections).
 - The map's lines, outlines and terrain edges are antialiased.

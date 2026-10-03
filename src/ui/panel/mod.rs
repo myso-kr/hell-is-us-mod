@@ -240,8 +240,9 @@ pub struct Panel {
     achievements_grouped: bool,
     /// The header's console toggle is showing (see `title_bar`).
     console_button: bool,
-    /// The Map page's preview as a texture, likewise.
+    /// The Map page's previews as textures, likewise: the minimap's, the big map's.
     preview_tex: Option<(u64, egui::TextureHandle)>,
+    preview_big_tex: Option<(u64, egui::TextureHandle)>,
     /// The clues page: the word searched for, and the entry opened (its story unit).
     clue_query: String,
     clue_open: Option<String>,
@@ -328,6 +329,7 @@ impl Panel {
             unfolded_collect: None,
             hero_tex: None,
             preview_tex: None,
+            preview_big_tex: None,
             console_button: false,
             places_grouped: false,
             achievements_grouped: false,

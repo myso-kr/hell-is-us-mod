@@ -138,7 +138,13 @@ struct State {
 }
 
 /// The exe's own icon (resource 1) if it has one, else the stock application icon.
+/// The mod's mark (app_icon.rs) at the tray's size; Windows' generic icon if that fails.
 fn app_icon() -> HICON {
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetSystemMetrics, SM_CXSMICON};
+    let size = unsafe { GetSystemMetrics(SM_CXSMICON) }.clamp(16, 64) as usize;
+    if let Some(icon) = crate::ui::app_icon::hicon(size) {
+        return icon;
+    }
     unsafe {
         let own = LoadIconW(GetModuleHandleW(std::ptr::null()), 1 as _);
         if !own.is_null() {

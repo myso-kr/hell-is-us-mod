@@ -228,6 +228,15 @@ with gaps between them, as Diablo's and Path of Exile's maps do.
   ground layers (disc, relief, terrain bands) every other pixel on every other row is kept and the rest
   cleared, so three quarters of the ground is gap; kept dots are drawn 1.7× stronger so the ground
   still reads. The trail, route, icons, pins and the hero mark are drawn after it and stay solid.
+- **The big map over the whole screen** (2026-10-04): its canvas is the game window, centred on the
+  hero, the radius reaching the top and bottom; it fades from full strength at 45 % of the way to the
+  edge to nothing at the edge, along an ellipse of the screen's shape (`raster.rs` `fade_edges`), as
+  Diablo's and Path of Exile's overlay maps do. `View::full`: no disc, rim or north mark, nothing cut
+  at a circle. Drawn at half size and doubled bilinearly (`upscale2`), a quarter of the work; icons
+  are rasterised at half size for it. The relief is baked 2.5 radii out for the screen's width.
+- **Two previews** on the Map page: the big map as it covers the game window (made small,
+  `raster::downscale`) and the minimap beside its settings; the preview no longer follows the
+  display mode.
 - **Layer opacity** (2026-10-04, setting `opacity` = ground, lines, icons in percent; Map page "Layer
   opacity"): the ground (disc, relief and terrain fills), the lines (contours, shore, terrain edges,
   trail, route) and the icons (things, pins, goals, north, the hero) are faded separately at the point

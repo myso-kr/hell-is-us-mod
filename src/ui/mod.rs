@@ -18,6 +18,7 @@
 //! Closing the panel stops every toggle and puts the originals back. Killing the
 //! process skips that, as it does for `hold`; `hiumod restore` covers it the same way.
 
+mod app_icon;
 mod console;
 mod hotkey;
 mod layered;
@@ -48,6 +49,11 @@ pub enum Request {
     Quit,
 }
 
+/// A square frame the overlay made for the panel: (side, premultiplied pixels, counter).
+pub type Square = Option<(usize, Vec<u32>, u64)>;
+/// A frame of any shape: (width, height, premultiplied pixels, counter).
+pub type Frame = Option<(usize, usize, Vec<u32>, u64)>;
+
 /// What the threads share. Each field has one writer.
 #[derive(Default)]
 pub struct Shared {
@@ -75,9 +81,12 @@ pub struct Shared {
     pub hero: Mutex<Option<(usize, Vec<u32>, u64)>>,
     /// panel: the Map page is showing, so the overlay draws `preview`.
     pub preview_wanted: AtomicBool,
-    /// overlay: the map as the settings draw it now (the minimap's, or the big map's when
-    /// that is the display), for the Map page's preview — (side, pixels, counter).
-    pub preview: Mutex<Option<(usize, Vec<u32>, u64)>>,
+    /// overlay: the minimap as its settings draw it now, for the Map page's preview —
+    /// (side, pixels, counter).
+    pub preview: Mutex<Square>,
+    /// overlay: the big map as it covers the game window now, made small for the same
+    /// page — (width, height, pixels, counter).
+    pub preview_big: Mutex<Frame>,
     /// hotkey: where the panel is — the player's place for it, kept across runs.
     pub pos: Mutex<Option<(i32, i32)>>,
     /// tray: its hidden window, once it exists; 0 after it is gone.
@@ -260,6 +269,7 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
     let options = eframe::NativeOptions {
         viewport: eframe::egui::ViewportBuilder::default()
             .with_title("Hell Is Us Mod")
+            .with_icon(app_icon::icon_data(64))
             .with_inner_size([panel::WIDTH, 560.0])
             .with_decorations(false)
             .with_resizable(false)
