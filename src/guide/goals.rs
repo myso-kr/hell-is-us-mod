@@ -119,6 +119,8 @@ struct Payload {
     used: Option<u64>,
     root: u64,
     label: String,
+    /// What the trigger's class name says it marks (an i18n key: opened, done…).
+    event: Option<&'static str>,
     /// Quest items it hands out, by name — a goal while it is not used.
     items: Vec<String>,
     /// Journal keys it belongs to directly.
@@ -218,6 +220,9 @@ pub struct Goals {
     fact_quest: HashMap<u64, Option<u32>>,
     /// Tag names, by index — for the tier rules and for the detail line.
     tag_names: HashMap<u32, String>,
+    /// Facts' asset names, by name index: how a place is named in the player's language
+    /// (`place_name`).
+    fact_names: HashMap<u32, String>,
     scanned: Option<Instant>,
 }
 
@@ -250,15 +255,23 @@ pub fn pretty(class: &str) -> String {
 /// shown so the list read like code: the words split apart, and what the trigger marks
 /// (opened, done, visited…) in the player's language after a dot.
 pub fn readable(class: &str) -> String {
+    let (name, event) = split_event(class);
+    match event {
+        Some(key) => format!("{name} · {}", crate::i18n::tr(key)),
+        None => name,
+    }
+}
+
+/// A trigger's class as its place's words and the event its name ends with (an i18n
+/// key), if it ends with one of `EVENTS` (the longest that fits).
+fn split_event(class: &str) -> (String, Option<&'static str>) {
     let words = split_words(&pretty(class));
-    // The longest event that ends the name; the rest is the place.
     for (tail, key) in EVENTS {
         if words.len() > tail.len() && words[words.len() - tail.len()..].iter().zip(tail.iter()).all(|(w, t)| w == t) {
-            let name = words[..words.len() - tail.len()].join(" ");
-            return format!("{name} · {}", crate::i18n::tr(key));
+            return (words[..words.len() - tail.len()].join(" "), Some(key));
         }
     }
-    words.join(" ")
+    (words.join(" "), None)
 }
 
 /// What a trigger's name can end with, longest first, and its i18n key.
@@ -375,6 +388,9 @@ impl Goals {
         facts.dedup();
         let facts: Vec<(u32, Option<u32>)> =
             facts.into_iter().filter_map(|f| Some((mem::read_u32(m, f + NAME)?, self.quest_of(m, n, f)))).collect();
+        for &(f, _) in &facts {
+            self.fact_names.entry(f).or_insert_with(|| n.get(m, f).unwrap_or_default());
+        }
         let tags: Vec<u32> = n
             .path(m, comp, &["Rune", "PayloadData", "TagFacts", "GameplayTags"])
             .and_then(|(at, _)| {
@@ -407,6 +423,7 @@ impl Goals {
             used,
             root: rc,
             label: items.first().cloned().unwrap_or_else(|| readable(&class)),
+            event: split_event(&class).1,
             items,
             keys,
             note: None,
@@ -505,7 +522,33 @@ impl Goals {
             note,
             gate: Gate::Open,
             npc: true,
+            event: None,
         })
+    }
+
+    /// What a place is called, in the player's language where the game has it: an item it
+    /// hands out by the item's name, a person by theirs, and a trigger by the Datapad entry
+    /// its facts are about (the one most of them are about) with what it marks after a dot.
+    /// The entry's name is the one the hero knows (`i18n::subject`), so a real name is not
+    /// given away early. Without the game's text, the trigger's class in words.
+    fn place_name(&self, p: &Payload) -> String {
+        if !p.items.is_empty() || p.npc {
+            return p.label.clone();
+        }
+        let mut units: HashMap<String, usize> = HashMap::new();
+        for (f, _) in &p.facts {
+            if let Some(fact) = self.fact_names.get(f).and_then(|name| crate::i18n::fact(name)) {
+                *units.entry(fact.unit).or_default() += 1;
+            }
+        }
+        let unit = units.into_iter().max_by(|a, b| a.1.cmp(&b.1).then(b.0.cmp(&a.0))).map(|(u, _)| u);
+        match unit.and_then(|u| crate::i18n::subject(&u)) {
+            Some(name) => match p.event {
+                Some(key) => format!("{name} · {}", crate::i18n::tr(key)),
+                None => name,
+            },
+            None => p.label.clone(),
+        }
     }
 
     /// Read what the loaded interactables hand out, when a scan is due.
@@ -638,7 +681,7 @@ impl Goals {
             out.push(Goal {
                 tier,
                 id: actor,
-                label: p.label.clone(),
+                label: self.place_name(p),
                 detail,
                 at,
                 quests,
