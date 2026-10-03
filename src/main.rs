@@ -308,7 +308,7 @@ fn probe(args: &[String]) -> R {
             log!("{}", trf!("CLASSES_AND_STRUCTS_STARTING_WITH", n = structs.len(), prefix = prefixes.join(", ")));
             save("sdk.txt", &text)
         }
-        Some(sub @ ("survey" | "locale")) => {
+        Some(sub @ ("survey" | "locale" | "tables")) => {
             // Mappings first, then the survey tool over the game's maps (.spec/SURVEY.md),
             // then the game's text in every language (.spec/I18N.md); `locale` only that.
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
@@ -326,6 +326,12 @@ fn probe(args: &[String]) -> R {
                 let status = cmd.status().map_err(|e| format!("dotnet: {e}"))?;
                 status.success().then_some(()).ok_or(format!("the survey tool failed ({status})"))
             };
+            if sub == "tables" {
+                // Only the game's own tables (spawners, vaults, recipes): seconds, not minutes.
+                run(&["--tables"])?;
+                log!("{}", trf!("SURVEY_WRITTEN_TO", path = hiumod::paths::data_dir().join("survey").display()));
+                return Ok(());
+            }
             if sub == "survey" {
                 match arg(1) {
                     Some(w) => run(&["--world", w])?,
@@ -416,7 +422,7 @@ fn probe(args: &[String]) -> R {
             let v: f64 = arg(2).and_then(|s| s.parse().ok()).ok_or("scan next <value>")?;
             let path = dir.join("scan.txt");
             let text =
-                std::fs::read_to_string(&path).map_err(|_| "no scan yet — `doctor scan <target> <value>` first")?;
+                std::fs::read_to_string(&path).map_err(|_| "no scan yet: run `doctor scan <target> <value>` first")?;
             let kept: Vec<String> = text
                 .lines()
                 .filter(|l| {
@@ -458,7 +464,10 @@ fn probe(args: &[String]) -> R {
             let _ = mem::read_u32; // (reads above go through Memory)
             save("scan.txt", &rows.join("\n"))
         }
-        _ => Err("doctor takes: inspect, find, dump, watch, scan, usmap, survey, locale — see `hiumod help`".into()),
+        _ => {
+            Err("doctor takes: inspect, find, dump, watch, scan, usmap, survey, locale, tables (see `hiumod help`)"
+                .into())
+        }
     }
 }
 
@@ -516,7 +525,7 @@ fn target(a: &hiumod::engine::Attached, objects: &hiumod::gobjects::Objects, wha
                 all = live(objects.all(m).into_iter().filter(|&o| n.is_a(m, o, class)).collect());
             }
             if all.is_empty() {
-                return Err(format!("no live {class} — targets: hero, controller, asc, sets, inventory, items, save, world, enemy[:N], 0xADDRESS, or a class name"));
+                return Err(format!("no live {class}. Targets: hero, controller, asc, sets, inventory, items, save, world, enemy[:N], 0xADDRESS, or a class name"));
             }
             pick(if index.is_none() { all.into_iter().take(1).collect() } else { all })
         }

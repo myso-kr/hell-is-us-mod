@@ -292,7 +292,7 @@ NO_WORLDSETTINGS_PAUSER	没有 WorldSettings.Pauser
 NO_SAVE_STATE_FOUND	未找到存档状态
 THE_SAVE_STATE_COULD_NOT_BE	无法读取存档状态
 ACTORS_NOT_SCANNED_YET	尚未扫描角色
-THE_GAME_EXITED_CHEATS_OFF	游戏已退出 — 作弊已关闭
+THE_GAME_EXITED_CHEATS_OFF	游戏已退出，作弊已关闭
 NO_SUCH_SLOT	没有这个栏位
 NOTHING_SAVED_IN_THAT_SLOT	该栏位为空
 ORIGINAL_VALUES_RESTORED	已恢复原始值
@@ -437,7 +437,7 @@ LOAD_POSITION	前往
 GAME_DATA	游戏数据
 READING_THE_GAMES_MAPS	◐ 正在读取游戏地图…（约 2 分钟）
 READING_THE_GAMES_TEXT	◐ 正在读取游戏文本…
-INSTALLING_NET_8_WINGET	◐ 正在通过 winget 安装 .NET 8——Windows 可能会请求权限
+INSTALLING_NET_8_WINGET	◐ 正在通过 winget 安装 .NET 8（Windows 可能会请求权限）
 INSTALLING_NET_8_MODS_FOLDER	◐ 正在将 .NET 8 安装到 Mods 文件夹…
 READING_FAILED	✕ 读取失败：{e}
 GAME_DATA_READY	● 已就绪
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	剩余的拱心石（建议顺序）：{keystones}
 MORE_WITH_A_LATER_DEADLINE	截止较晚的：{count}
 GO_TO_PAGE	打开“{page}” ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	模组已知的此地区剩余内容：无。
-COUNTS_ONLY_OPEN_A_LINE	只显示数量——点击一行打开对应页面。
+COUNTS_ONLY_OPEN_A_LINE	只显示数量。点击一行打开对应页面。
 LEDGER_QUEST_PLACES	任务地点：{count}
 LEDGER_HANDOVERS	现在可交付：{count}
 LEDGER_PUZZLES	谜题：{count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	还有话可听的 NPC：{count}
 OTHER_REGIONS_CARD	其他地区
 NOTHING_LEFT_ELSEWHERE	模组已知的其他地区剩余内容：无。
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	按现在能在那里做的事排序：交付物品，以及用已持有的棒能打开的锁。
-TRIP_ROW	{place}——现在：{doable} · 剩余：{left}
+TRIP_ROW	{place}（现在：{doable} · 剩余：{left}）
 MINUTES_AGO	{count} 分钟前
 HOURS_AGO	{count} 小时前
 LYMBIC_LOCKS	林比克锁
-THE_RODS_EACH_LOCK_TAKES	每把锁需要的棒——用已持有的棒就能打开的锁排在前面。点击锁或缺少的棒，即可引导前往。
-LOCK_OPENS_NOW	{place}——现在可开
+THE_RODS_EACH_LOCK_TAKES	每把锁需要的棒：用已持有的棒就能打开的锁排在前面。点击锁或缺少的棒，即可引导前往。
+LOCK_OPENS_NOW	{place}：现在可开
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod}——在{place}
-ROD_MISSING_NOWHERE	✗ {rod}——勘测记录中已无可拾取处
+ROD_MISSING_AT	✗ {rod}：在{place}
+ROD_MISSING_NOWHERE	✗ {rod}：勘测记录中已无可拾取处
 LOCKS_IN_OTHER_REGIONS	其他地区的锁：{count}
 CLUES_TAB	线索
 FIND_A_CLUE	查找线索
-CLUE_TEXT_NOT_READ_YET	尚未读取数据板的文本——主角可以操控后会读取（也可以在控制台输入 `doctor locale`）。
+CLUE_TEXT_NOT_READ_YET	尚未读取数据板的文本。主角可以操控后会读取（也可以在控制台输入 `doctor locale`）。
 SEARCH_CLUES_HINT	名字或词语（钥匙、维克多、隧道……）
 CLUES_KNOWN	你对 {subjects} 个数据板条目知道 {facts} 件事。
 NO_CLUE_MATCHES	你知道的内容中没有匹配项。
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	持有的物品：{items}
 CLUES_FOR_QUEST	线索：{quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	追踪任务的线索
 NO_QUEST_FOLLOWED_CLUES	在“任务”页追踪一个任务，它的线索会汇集到这里。
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	这个任务还没有数据板条目——善行、谜团和时间回环按各自的步骤推进，不经过数据板。
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	这个任务还没有数据板条目。善行、谜团和时间回环按各自的步骤推进，不经过数据板。
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	点击条目查看你知道的内容。
+A_WEAPON	一把武器
+A_DEFENSIVE_GEAR	一件防具
+SHARD_BUDGET	碎片预算
+TIMELOOPS_OPEN	时间回环 {open}/{all} 开启
+TIMELOOPS_OPEN_HOVER	时间回环开启期间，敌人会不断重生。全部关闭后，你手上的碎片就是全部。
+SHARD_SIZES_HOVER	碎片大小取决于掉落它的敌人等级：1 级为小型，2 级为中型，3 级为大型。不同大小不能互换；3 个同大小的中性碎片可注入为 1 个情绪碎片。
+NEUTRAL	中性
+SHARD_SMALL	小型
+SHARD_MEDIUM	中型
+SHARD_LARGE	大型
+ENOUGH	足够
+SHORT_BY	缺 {shards}
+COST_HOVER	仍需：{shards}
+NOT_HELD_YET	尚未持有：{items}

@@ -5,7 +5,7 @@ MOVEMENT	Déplacement
 ITEMS	Objets
 KEEP_HEALTH_CAP_AT_MAXIMUM	Santé maintenue (plafond au maximum)
 INFINITE_STAMINA	Énergie illimitée
-GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Fantôme (pour explorer — attaques bloquées tant qu'il est actif)
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Fantôme (pour explorer ; attaques bloquées tant qu'il est actif)
 INFINITE_LYMBIC_ENERGY	Énergie Lymbique illimitée
 NO_LYMBIC_COST	Aucun coût Lymbique
 NO_SKILL_COOLDOWN	Aucun temps de recharge des compétences
@@ -24,11 +24,11 @@ HAND_OVER	Remettre : {item}
 TALK_GOAL	Dialogue : {npc}
 ITEM	Objet : {items}
 NEW_FACTS	Nouveaux faits : {count}
-NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · condition requise (clé, énigme, etc. — y aller ne suffit pas)
+NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · condition requise (clé, énigme, etc. ; y aller ne suffit pas)
 UNTIL_THE_END_OF_ACT_1	Jusqu'à la fin de l'acte 1
 BEFORE_THE_THIRD_KEYSTONE	Avant la troisième Clé
 GOOD_DEED_CLOSING_SOON	Bonne action bientôt close : {deed} ({deadline})
-GOOD_DEEDS_CLOSING_SOON_SEE_THE	Bonnes actions bientôt closes : {n} — voir l'onglet Quêtes
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	Bonnes actions bientôt closes : {n}. Voir l'onglet Quêtes
 MAIN	Principale {n}
 GOOD_DEED	Bonne action
 MYSTERY	Mystère
@@ -99,8 +99,8 @@ SUPPLIES	Provisions
 ENEMY_LOOT_BOX	Caisse de butin ennemi
 DOOR	Porte
 DRONE_TRANSLATION	Traduction du drone
-TYPE_A_COMMAND_HELP_LISTS_THEM	Saisissez une commande — `help` liste les commandes, ↑/↓ historique, Échap arrête l'exécution
-HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod seul ouvre un autre panneau — ajoutez une commande (help)
+TYPE_A_COMMAND_HELP_LISTS_THEM	Saisissez une commande. `help` liste les commandes, ↑/↓ historique, Échap arrête l'exécution
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod seul ouvre un autre panneau. Ajoutez une commande (help)
 THE_LAST_COMMAND_IS_STILL_RUNNING	La commande précédente est encore en cours (Échap l'arrête)
 EXECUTABLE_NOT_FOUND	Exécutable introuvable : {e}
 COULD_NOT_RUN	Exécution impossible : {e}
@@ -111,12 +111,12 @@ COMMAND_HELP	Commande (help)
 MAP_PIN	Repère de carte
 PICKED_IN_THE_PANEL	Lieu choisi dans le panneau
 NEEDED_HERE	Requis : {h} ici
-NEEDED_IN_OTHER_REGIONS_TAKE_THE	Requis : {a} dans d'autres régions — prendre le véhicule blindé
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	Requis : {a} dans d'autres régions (prendre le véhicule blindé)
 NEEDED_HERE_IN_OTHER_REGIONS	Requis : {h} ici · {a} dans d'autres régions
 POSITION_SAVED	Position {slot} enregistrée ({x:.0}, {y:.0}, {z:.0})
 MOVED_TO_POSITION	Déplacé à la position {slot}
 COLLECTION	Collection
-NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Pas de base d'enquête — lancez `doctor survey` une fois dans la console
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Pas de base d'enquête. Lancez `doctor survey` une fois dans la console
 COUNTS_WHAT_LIES_IN_THE_WORLD	Ne compte que ce qui se trouve dans le monde (ni récompenses de PNJ ni boutiques) · cette région / total
 COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · total {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Bonnes actions · Mystères · Boucles temporelles
@@ -156,18 +156,18 @@ COMPASS_AND_HEADING	Boussole et cap
 COMPASS_F	Boussole (F{key})
 TOP_CENTRE_OF_THE_SCREEN	En haut au centre de l'écran
 GUIDE	Guidage
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guidage auto — mène toujours à l'objectif suivant de la quête suivie
-WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Itinéraire à pied (A*) — contourne relief, eau et murs ; la boussole indique le prochain virage
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guidage auto : mène toujours à l'objectif suivant de la quête suivie
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Itinéraire à pied (A*) : contourne relief, eau et murs ; la boussole indique le prochain virage
 NEXT_GOAL	Objectif suivant ▶
-THIS_GOAL_IS_DONE_OR_OUT	Cet objectif est terminé ou inaccessible pour l'instant — l'ignorer pour passer au suivant (pour cette session)
-PICKED_BY_HAND_KEPT_UNTIL_IT	Objectif choisi à la main — conservé jusqu'à son achèvement
+THIS_GOAL_IS_DONE_OR_OUT	Cet objectif est terminé ou inaccessible pour l'instant. L'ignorer pour passer au suivant (pour cette session)
+PICKED_BY_HAND_KEPT_UNTIL_IT	Objectif choisi à la main : conservé jusqu'à son achèvement
 BACK_TO_AUTO	Retour en auto
-NO_WALKING_ROUTE_IT_MAY_BE	⚠ Aucun itinéraire à pied — peut-être derrière une porte fermée, une énigme ou une clé. Guidage aussi loin que possible, le reste en pointillés jaunes
-AUTO_GUIDE_IS_OFF_TURN_ON	Le guidage auto est désactivé — activez l'interrupteur ci-dessus ou choisissez dans « Lieux »
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ Aucun itinéraire à pied. Peut-être derrière une porte fermée, une énigme ou une clé. Guidage aussi loin que possible, le reste en pointillés jaunes
+AUTO_GUIDE_IS_OFF_TURN_ON	Le guidage auto est désactivé. Activez l'interrupteur ci-dessus ou choisissez dans « Lieux »
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Rien de nouveau à récupérer trouvé à proximité
-NO_QUEST_GOAL_IN_REGION	La quête suivie n'a aucun objectif dans cette région — {elsewhere} dans d'autres régions (prendre le véhicule blindé)
+NO_QUEST_GOAL_IN_REGION	La quête suivie n'a aucun objectif dans cette région ; {elsewhere} dans d'autres régions (prendre le véhicule blindé)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Tous les objectifs restants ont été ignorés
-NO_QUEST_GOAL_NEARBY	La quête suivie n'a aucun objectif à proximité — choisissez-en un dans « Lieux »
+NO_QUEST_GOAL_NEARBY	La quête suivie n'a aucun objectif à proximité. Choisissez-en un dans « Lieux »
 GOALS_SKIPPED	Objectifs ignorés : {count}
 UNDO	Annuler
 PLACES	Lieux ({count})
@@ -191,7 +191,7 @@ DETAILS_CLOSED	Détails ▼
 DETAILS_HIDDEN	Détails ▼ ({h} masqués)
 MAP_PINS_AND_TRAIL	Repères et trace
 NEW_PIN_F	Nouveau repère (F{key})
-NO_PINS_IN_THIS_REGION_PRESS	Aucun repère dans cette région — appuyez sur F{key} devant une porte verrouillée ou une énigme pour en placer un
+NO_PINS_IN_THIS_REGION_PRESS	Aucun repère dans cette région. Appuyez sur F{key} devant une porte verrouillée ou une énigme pour en placer un
 REMOVE_THIS_PIN	Supprimer ce repère
 THIS_REGION	Cette région
 TRAIL_POINTS_PINS	Trace {trail} points · {count} repères
@@ -209,19 +209,19 @@ COLLECT	Collecte
 SAVES	Sauvegardes
 DEBUG	Débogage
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Cheats réactivés (session précédente) : {count}
-CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Fermer — restaurer les valeurs d'origine et quitter
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Fermer : restaurer les valeurs d'origine et quitter
 HIDE_OPENS_IT_AGAIN	Masquer (` pour rouvrir)
 CONSOLE_OPEN	Console ▾
 CONSOLE_CLOSED	Console ▸
 CLI_CONSOLE	Console de commandes CLI
 GAME	Jeu
 CONNECTED_V_PID	● Connecté\nv{version} · PID {pid}
-LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Lancement — se connecte automatiquement
-NOT_CONNECTED	○ Non connecté — {e}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Lancement : se connecte automatiquement
+NOT_CONNECTED	○ Non connecté : {e}
 STARTING	Démarrage…
 HERO_GATE	Verrou du héros
-OPEN_IN_CONTROL	● Ouvert — sous contrôle
-GATE_CLOSED_WHY	○ Fermé — {e}
+OPEN_IN_CONTROL	● Ouvert : sous contrôle
+GATE_CLOSED_WHY	○ Fermé : {e}
 GATE_CLOSED	○ Fermé
 CHEATS	Cheats
 TOOLS	Outils
@@ -229,28 +229,28 @@ RESTORE_ALL	Tout restaurer ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Garder ces cheats actifs la prochaine fois
 NEXT_RUN_ONCE_THE_HERO_CAN	Au prochain lancement, les cheats actifs actuellement seront réactivés dès que le héros sera contrôlable.
 WRITES_ONLY_WHILE_THE_HERO_IS	Écrit les valeurs uniquement quand le héros est contrôlé · les succès ne sont pas bloqués
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Suivi de quêtes — au milieu à droite de l'écran
-READING_THE_QUESTS_THEY_APPEAR_A	Lecture des quêtes — elles apparaissent quelques secondes après le chargement du jeu
-MAIN_STORY_AUTO_NOW	Histoire principale auto — {quest}
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Suivi de quêtes (au milieu à droite de l'écran)
+READING_THE_QUESTS_THEY_APPEAR_A	Lecture des quêtes. Elles apparaissent quelques secondes après le chargement du jeu
+MAIN_STORY_AUTO_NOW	Histoire principale auto : {quest}
 MAIN_STORY_AUTO	Histoire principale auto
 CLUES	 · indices {got}/{all}
 DONE_FAILED	{done} terminées · {failed} échouées
-NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Requis : pas de base d'enquête — lancez `hiumod doctor survey` une fois pour remplir objets et PNJ de toutes les régions
-NEEDED_LEFT	Requis — reste {left} / {all}
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Requis : pas de base d'enquête. Lancez `hiumod doctor survey` une fois pour remplir objets et PNJ de toutes les régions
+NEEDED_LEFT	Requis : reste {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	Autres régions (véhicule blindé) : {regions}
 MISSABLE_GOOD_DEEDS	Bonnes actions facilement manquées
 EVERY_GOOD_DEED_WITH_A_DEADLINE	Toutes les bonnes actions à échéance sont terminées ou dépassées
 SOON	Bientôt
 LATER	Plus tard
 NOT_STARTED	 (non commencée)
-DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Échéances dépassées : {passed} — ces bonnes actions ont probablement échoué
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Échéances dépassées : {passed}. Ces bonnes actions ont probablement échoué
 KEYSTONE_ORDER	Ordre des Clés
 BEFORE_THE_NEXT_KEYSTONE	Avant la prochaine Clé : {deeds}
 THINGS_TO_HAND_OVER	Choses à remettre
 NO_ONE_WANTS_AN_ITEM_YOU	Personne ne veut un objet que vous possédez actuellement
 THINGS_TO_HAND_OVER_COUNT	Choses à remettre ({count})
-PEOPLE_WHO_WANT_AN_ITEM_YOU	Personnes qui veulent un objet que vous possédez — à remettre via « Échanger » dans la discussion
-TAKE_THE_APC	{place} — prendre le véhicule blindé
+PEOPLE_WHO_WANT_AN_ITEM_YOU	Personnes qui veulent un objet que vous possédez : à remettre via « Échanger » dans la discussion
+TAKE_THE_APC	{place} (prendre le véhicule blindé)
 SAVE_BACKUPS	Sauvegardes des parties
 COPIES_THE_SAVE_FILES_EACH_TIME	Copie les fichiers de sauvegarde à chaque sauvegarde du jeu (les {count} dernières)
 NO_BACKUPS_YET	Aucune copie pour l'instant
@@ -266,24 +266,24 @@ MIN_AGO	il y a {minutes} min
 H_AGO	il y a {hours} h
 DAYS_AGO	il y a {count} j
 GUIDING	· guide
-THIS_QUEST_HAS_NO_GOAL_IN	Cette quête n'a aucun objectif dans cette région — guidage vers l'objectif d'une autre quête proche
-THIS_ENTRY_HAS_NO_GOAL_IN	Cette entrée n'a aucun objectif dans cette région — elle continue ailleurs
-PAST_A_CLOSED_DOOR_OR_PUZZLE	Derrière une porte fermée ou une énigme — guidage aussi loin que possible ; cherchez d'abord une note, une clé ou un dispositif à proximité
+THIS_QUEST_HAS_NO_GOAL_IN	Cette quête n'a aucun objectif dans cette région. Guidage vers l'objectif d'une autre quête proche
+THIS_ENTRY_HAS_NO_GOAL_IN	Cette entrée n'a aucun objectif dans cette région. Elle continue ailleurs
+PAST_A_CLOSED_DOOR_OR_PUZZLE	Derrière une porte fermée ou une énigme. Guidage aussi loin que possible ; cherchez d'abord une note, une clé ou un dispositif à proximité
 PLACE_TO_EXAMINE	Lieu à examiner
 DEADLINE_ACT1	Avant la fin de l'acte 1
-DEADLINE_DIANA_MEDICINE	Avant la fin de l'acte 1 : {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — le médicament avant qu'elle parte en camion, sinon elle meurt
+DEADLINE_DIANA_MEDICINE	Avant la fin de l'acte 1 : apporter le médicament à {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} avant qu'elle parte en camion, sinon elle meurt
 DEADLINE_JUDITH_BABY	Avant la fin de l'acte 1 ({g:Facts_Shared/Universal_Location_LymbicForge}) : le biberon pour le bébé de {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}, sinon le bébé meurt
-DEADLINE_HALIE_PICTURE	Pendant {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, avant que {g:Facts_VillageOfJova/Name_Real} ne change — sinon {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} meurt
-DEADLINE_VIOLINIST	Avant {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — sinon {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} meurt
+DEADLINE_HALIE_PICTURE	Pendant {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, avant que {g:Facts_VillageOfJova/Name_Real} ne change, sinon {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} meurt
+DEADLINE_VIOLINIST	Avant {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, sinon {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} meurt
 DUE_QUEST03_JOVA	Pendant {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, avant que {g:Facts_VillageOfJova/Name_Real} ne change
-DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — avant d'en sortir la première fois
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda}, avant d'en sortir la première fois
 DUE_TALJU_TRUCK	Avant le départ du camion d'évacuation de {g:Facts_Shared/Universal_Location_Talju}
 DEADLINE_TALJU_TRUCK	Avant le départ du camion d'évacuation de {g:Facts_Shared/Universal_Location_Talju}
-KEYSTONE_ORDER_ADVICE	Ordre conseillé ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} d'abord : certains objets ne sont qu'à {g:Facts_Shared/Universal_Location_Talju}) — le temps passe à chaque clé et des bonnes actions peuvent se fermer
+KEYSTONE_ORDER_ADVICE	Ordre conseillé ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} d'abord : certains objets ne sont qu'à {g:Facts_Shared/Universal_Location_Talju}). Le temps passe à chaque clé et des bonnes actions peuvent se fermer
 DEADLINE_THIRD_KEYSTONE	Avant de placer la troisième clé
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} : {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} : {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} : {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	Pointeur illisible
 THE_GAME_IS_NOT_RUNNING	Le jeu n'est pas lancé
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	Inventaire du héros introuvable
@@ -292,16 +292,16 @@ NO_WORLDSETTINGS_PAUSER	Pas de WorldSettings.Pauser
 NO_SAVE_STATE_FOUND	Aucun état de sauvegarde trouvé
 THE_SAVE_STATE_COULD_NOT_BE	Impossible de lire l'état de sauvegarde
 ACTORS_NOT_SCANNED_YET	Acteurs pas encore analysés
-THE_GAME_EXITED_CHEATS_OFF	Le jeu s'est fermé — cheats désactivés
+THE_GAME_EXITED_CHEATS_OFF	Le jeu s'est fermé, cheats désactivés
 NO_SUCH_SLOT	Cet emplacement n'existe pas
 NOTHING_SAVED_IN_THAT_SLOT	Rien n'est sauvegardé dans cet emplacement
 ORIGINAL_VALUES_RESTORED	Valeurs d'origine restaurées
 WRITE_FAILED	Échec de l'écriture
-NO_HELL_IS_US_INSTALL_FOUND	Aucune installation de Hell Is Us trouvée dans les bibliothèques Steam — indiquez --game-dir
+NO_HELL_IS_US_INSTALL_FOUND	Aucune installation de Hell Is Us trouvée dans les bibliothèques Steam. Indiquez --game-dir
 UNEXPECTED_EXECUTABLE_PATH	Chemin d'exécutable inattendu
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	Le pion n'a pas d'AbilitySystemComponent
 NO_PLAYER_CONTROLLER	Pas de contrôleur de joueur
-NO_PAWN_LOADING_OR_A_CINEMATIC	Pas de pion — chargement ou cinématique ?
+NO_PAWN_LOADING_OR_A_CINEMATIC	Pas de pion (chargement ou cinématique ?)
 THE_CONTROLLED_PAWN_IS_NOT_THE	Le pion contrôlé n'est pas le héros
 NO_ABILITY_SYSTEM	Pas de système de capacités
 NO_LEVEL	Pas de niveau
@@ -313,56 +313,56 @@ ROTATION_UNREADABLE	Rotation illisible
 THE_POSE_IS_NOT_A_NUMBER	La pose n'est pas un nombre
 GENGINE_IS_EMPTY	GEngine est vide
 NO_GAMEENGINE_FOUND_IN_THE_GAME	GameEngine introuvable dans l'image du jeu (démarrage en cours ?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Aucune disposition FField connue ne lit GameEngine.GameInstance — la structure du moteur a changé
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Aucune disposition FField connue ne lit GameEngine.GameInstance. La structure du moteur a changé
 ATTRIBUTE_SET_ARRAY_UNREADABLE	Tableau d'ensembles d'attributs illisible
 ATTRIBUTE_SET_COUNT_UNREADABLE	Nombre d'ensembles d'attributs illisible
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	Aucun attribut n'a pu être nommé — le pool de noms ou la structure des classes ne correspond pas à cette version
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	Aucun attribut n'a pu être nommé. Le pool de noms ou la structure des classes ne correspond pas à cette version
 FIELD_UNREADABLE	Champ illisible
 ATTRIBUTE_UNREADABLE	Attribut illisible
 REFUSING_A_NON_FINITE_VALUE	Valeur non finie refusée
 NO_ATTRIBUTE_COULD_BE_READ	Aucun attribut lisible
 MINIMAP_ERROR	Minicarte : {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Impossible d'enregistrer les valeurs d'origine — cheats désactivés : {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Impossible d'enregistrer les valeurs d'origine. Cheats désactivés : {e}
 SLOT_RANGE	{name} : accepte 1..={max}
 SAVED_IN_ANOTHER_REGION	Sauvegardé dans une autre région ({world})
 COULD_NOT_RESTORE	Restauration impossible : {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Restauration impossible : {what} — lancez `hiumod restore` plus tard
-CANNOT_BE_SET_ONE_OF	`{id}` ne peut pas être défini — parmi : {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Restauration impossible : {what}. Lancez `hiumod restore` plus tard
+CANNOT_BE_SET_ONE_OF	`{id}` ne peut pas être défini. Choix possibles : {choices}
 CHEAT_SET_RANGE	{id} : accepte 0..={max}
-UNKNOWN_CHEAT_ONE_OF	Cheat inconnu `{id}` — parmi : {choices}
+UNKNOWN_CHEAT_ONE_OF	Cheat inconnu `{id}`. Choix possibles : {choices}
 TAKES_NO_VALUE	{id} n'accepte pas de valeur
 CHEAT_RANGE	{id} : accepte {min}..={max}
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id} s'écrit une seule fois — utilisez `set {id} <valeur>`, pas hold
-NO_IN_THE_INVENTORY_PICK_ONE	Pas de {class} dans l'inventaire — ramassez-en un d'abord
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} s'écrit une seule fois. Utilisez `set {id} <valeur>`, pas hold
+NO_IN_THE_INVENTORY_PICK_ONE	Pas de {class} dans l'inventaire. Ramassez-en un d'abord
 LINE_IS_NO_ATTRIBUTE_THIS_VERSION	Ligne {line} : {set}.{name} n'est pas un attribut connu de cette version
-NO_HELL_IS_US_INSTALL_AT	Aucune installation de Hell Is Us dans {dir} — indiquez --game-dir
+NO_HELL_IS_US_INSTALL_AT	Aucune installation de Hell Is Us dans {dir}. Indiquez --game-dir
 CANNOT_OPEN_THE_GAME_PROCESS	Impossible d'ouvrir le processus du jeu : {error}
 PROCESS_SNAPSHOT_FAILED	Échec de la liste des processus : {error}
 CANNOT_LIST_THE_GAMES_MODULES	Impossible de lister les modules du jeu : {error}
 NO_PROPERTY	Pas de propriété {name}
-THE_PAWN_IS_A_NOT_THE	Pion contrôlé : {classes}, pas le héros — chargez d'abord une sauvegarde
+THE_PAWN_IS_A_NOT_THE	Pion contrôlé : {classes}, pas le héros. Chargez d'abord une sauvegarde
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	Le tableau d'ensembles d'attributs semble incorrect (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	Les attributs ne partagent pas la même vtable ({n}/{total} sur 0x{vt})
-INSTALL_STEAM_BUILD	{ok} installation {dir} — build Steam {build}
+INSTALL_STEAM_BUILD	{ok} installation {dir} (build Steam {build})
 INSTALL	{ok} installation : {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} processus {pid} — base 0x{base}, image 0x{size} octets
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} processus {pid} : base 0x{base}, image 0x{size} octets
 NAME_POOL_0X	{ok} pool de noms +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} disposition de FField : next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} joueur : {e}
 HERO	{ok} héros : {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} chaîne : GEngine {path} → contrôleur +0x{pawn} pion → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   porte du héros : ouverte — écriture autorisée
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   porte du héros : ouverte, écriture autorisée
 OK_POSE_YAW	ok   pose : ({x:.0}, {y:.0}, {z:.0}) lacet {yaw:.1}
 FAIL_POSE	FAIL pose : {e}
-OK_MINIMAP_THINGS_IN_MS	ok   éléments de la minicarte : {n} en {ms} ms — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   éléments de la minicarte : {n} en {ms} ms ({kinds})
 FAIL_MINIMAP_THINGS	FAIL éléments de la minicarte : {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   guide : connaît {facts} faits, {tags} tags ; en cours : {open} — {places} lieux en {ms} ms (quête {quest}, secret {secret}, indice {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   guide : connaît {facts} faits, {tags} tags ; en cours : {open} ; {places} lieux en {ms} ms (quête {quest}, secret {secret}, indice {clue})
 FAIL_GUIDE	FAIL guide : {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} attributs : {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} attributs : {sets} ensembles, {count} attributs par nom, vtable +0x{vt}
 ATTRIBUTE_COUNT	Attributs : {n}
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} table des cheats : les {n} attributs nommés existent dans le jeu
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} table des cheats : absent du jeu — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} table des cheats : absente du jeu ({missing})
 PLAYER_WORKS	joueur : fonctionne
 PLAYER_DOES_NOT_WORK	joueur : NE FONCTIONNE PAS
 WRITTEN_TO	Écrit dans {path}
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Mappings : {structs} structs et classes, {enu
 RUNNING	Exécution de {tool} {args}
 SURVEY_WRITTEN_TO	Survey écrit dans {path}
 THE_GAMES_TEXT_WRITTEN_TO	Texte du jeu écrit dans {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} structs et classes, {enums} enums — {kb} Ko, écrit dans {path}
-WATCHING_OBJECT_S_FOR_S_CTRL	Surveillance de {n} objet(s) pendant {secs} s — Ctrl+C pour arrêter
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} structs et classes, {enums} enums ({kb} Ko), écrit dans {path}
+WATCHING_OBJECT_S_FOR_S_CTRL	Surveillance de {n} objet(s) pendant {secs} s. Ctrl+C pour arrêter
 OF_PLACES_NOW_HOLD	Lieux contenant encore {v} : {kept}/{all}
-PLACES_HOLD_CHANGE_IT_IN_GAME	Lieux contenant {v} : {n} — changez la valeur en jeu, puis `doctor scan next <nouvelle valeur>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	Originaux laissés par un hold précédent : {n} — conservés, pas les valeurs actuelles
-HOLDING_CTRL_C_TO_STOP_AND	Maintien de {cheats} — Ctrl+C pour arrêter et tout restaurer
+PLACES_HOLD_CHANGE_IT_IN_GAME	Lieux contenant {v} : {n}. Changez la valeur en jeu, puis `doctor scan next <nouvelle valeur>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	Originaux laissés par un hold précédent : {n}. Ils sont conservés, pas les valeurs actuelles
+HOLDING_CTRL_C_TO_STOP_AND	Maintien de {cheats}. Ctrl+C pour arrêter et tout restaurer
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	Si le processus est tué, `hiumod restore` remet tout en place
 APPLYING	Application en cours
 NOTHING_TO_RESTORE	Rien à restaurer
@@ -389,9 +389,9 @@ TIMELOOP_LEFT	    Boucle temporelle {name} : {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	Aucun puzzle de cadrans, de clavier ou de placement d'objets à moins de 40 m
 GROUPS_ENEMIES	{place} : {left}/{all} groupes · {enemies} ennemis
 NEAREST	Le plus proche
-READS_THE_ANSWER_THE_GAME_HOLDS	Lit la réponse que détient le jeu — n'appuyez pas si vous voulez résoudre seul
+READS_THE_ANSWER_THE_GAME_HOLDS	Lit la réponse que détient le jeu. N'appuyez pas si vous voulez résoudre seul
 PUZZLES_NEARBY	Puzzles proches ({n})
-NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Aucune table de chambres — exécutez `doctor survey` une fois dans la console
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Aucune table de chambres. Exécutez `doctor survey` une fois dans la console
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Chambres des savoirs interdits {done}/{all}
 ENEMY_GROUPS_LEFT	Groupes d'ennemis restants {left}/{all}
 ENEMY_GROUP_LEFT	Groupe d'ennemis restant
@@ -399,7 +399,7 @@ DIAL_TURN_STEPS_NOW	Cadran {n} : tourner de {k} crans (actuellement {now} → {w
 DIAL_RIGHT	Cadran {n} : correct
 SHOW_ANSWER	Voir la réponse
 HIDE	Masquer
-NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	Aucune table de spawners — exécutez `doctor survey` une fois dans la console
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	Aucune table de spawners. Exécutez `doctor survey` une fois dans la console
 RESEARCH_PROGRESS	Recherche {n}/{need}
 OPENED	Ouvert ✓
 VAULT_RESEARCH_HINT	Confiez des objets de recherche à {g:Facts_Tania/Tania_Real_Name} dans le véhicule blindé pour débloquer les infos des chambres · recherches actuelles {n}
@@ -413,18 +413,18 @@ DIGIT_CODE	Code · chiffres : {n}
 ITEM_COUNT	Objets : {n}
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Positions (depuis la gauche, à partir de 1) : {list}
 PUZZLE_LIST_LEFT_HERE	Liste des énigmes · {left} restantes ici
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Pas de liste d'énigmes — lancez `doctor survey` une fois dans la console
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Pas de liste d'énigmes. Lancez `doctor survey` une fois dans la console
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Afficher aussi les portes à clé et les dépôts d'objets
 UNSOLVED_PUZZLE	Énigme non résolue
 VAULT_DOOR	Porte de chambre
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Énigme à proximité — réponse dans l’onglet Énigmes du panneau
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Énigme à proximité : réponse dans l’onglet Énigmes du panneau
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objets de recherche : appuyez sur la ligne Recherches dans « Collection » pour être guidé au plus proche
 ACHIEVEMENTS	Succès {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Cache des succès Steam introuvable (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Afficher aussi ceux débloqués
 HIDDEN_ACHIEVEMENT	Succès caché
 SHOW	Voir
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Vérifié sur la version {tested} — en cas de souci, lancez `doctor` dans la console
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Vérifié sur la version {tested}. En cas de souci, lancez `doctor` dans la console
 ADMIRATION	Admiration
 AMAZEMENT	Stupéfaction
 ECSTASY	Extase
@@ -437,7 +437,7 @@ LOAD_POSITION	Aller
 GAME_DATA	Données du jeu
 READING_THE_GAMES_MAPS	◐ Lecture des cartes du jeu… (environ 2 min)
 READING_THE_GAMES_TEXT	◐ Lecture des textes du jeu…
-INSTALLING_NET_8_WINGET	◐ Installation de .NET 8 avec winget — Windows peut demander une autorisation
+INSTALLING_NET_8_WINGET	◐ Installation de .NET 8 avec winget. Windows peut demander une autorisation
 INSTALLING_NET_8_MODS_FOLDER	◐ Installation de .NET 8 dans le dossier Mods…
 READING_FAILED	✕ Échec de la lecture : {e}
 GAME_DATA_READY	● Prêt
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	Pierres angulaires restantes, dans l’ordre : {keystone
 MORE_WITH_A_LATER_DEADLINE	Échéances plus tardives : {count}
 GO_TO_PAGE	Ouvrir {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Plus rien ici que le mod connaisse.
-COUNTS_ONLY_OPEN_A_LINE	Nombres seulement — cliquez sur une ligne pour ouvrir sa page.
+COUNTS_ONLY_OPEN_A_LINE	Nombres seulement. Cliquez sur une ligne pour ouvrir sa page.
 LEDGER_QUEST_PLACES	Lieux de quête : {count}
 LEDGER_HANDOVERS	Objets à remettre : {count}
 LEDGER_PUZZLES	Énigmes : {count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	PNJ qui ont encore à dire : {count}
 OTHER_REGIONS_CARD	Autres régions
 NOTHING_LEFT_ELSEWHERE	Plus rien dans les autres régions que le mod connaisse.
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	D’abord là où vous pouvez faire le plus maintenant : remises et verrous que vos barres ouvrent.
-TRIP_ROW	{place} — maintenant : {doable} · restant : {left}
+TRIP_ROW	{place} (maintenant : {doable} · restant : {left})
 MINUTES_AGO	il y a {count} min
 HOURS_AGO	il y a {count} h
 LYMBIC_LOCKS	Verrous lymbiques
-THE_RODS_EACH_LOCK_TAKES	Les barres que demande chaque verrou — ceux que vos barres ouvrent déjà en premier. Cliquez sur un verrou ou une barre manquante pour y être guidé.
-LOCK_OPENS_NOW	{place} — ouvrable maintenant
+THE_RODS_EACH_LOCK_TAKES	Les barres que demande chaque verrou. Ceux que vos barres ouvrent déjà viennent en premier. Cliquez sur un verrou ou une barre manquante pour y être guidé.
+LOCK_OPENS_NOW	{place} : ouvrable maintenant
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — à {place}
-ROD_MISSING_NOWHERE	✗ {rod} — plus aucun emplacement dans le relevé
+ROD_MISSING_AT	✗ {rod} (à {place})
+ROD_MISSING_NOWHERE	✗ {rod} : plus aucun emplacement dans le relevé
 LOCKS_IN_OTHER_REGIONS	Verrous dans d’autres régions : {count}
 CLUES_TAB	Indices
 FIND_A_CLUE	Chercher un indice
-CLUE_TEXT_NOT_READ_YET	Les textes de la tablette n’ont pas encore été lus — ils le sont dès que vous contrôlez le héros (ou `doctor locale` dans la console).
+CLUE_TEXT_NOT_READ_YET	Les textes de la tablette n’ont pas encore été lus. Ils le sont dès que vous contrôlez le héros (ou `doctor locale` dans la console).
 SEARCH_CLUES_HINT	Un nom ou un mot (clé, Victor, tunnel…)
 CLUES_KNOWN	Vous savez {facts} choses sur {subjects} entrées de la tablette.
 NO_CLUE_MATCHES	Rien de ce que vous savez ne correspond.
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	Objets que vous portez : {items}
 CLUES_FOR_QUEST	Indices : {quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	Indices de la quête suivie
 NO_QUEST_FOLLOWED_CLUES	Suivez une quête dans l’onglet Quêtes pour réunir ici ses indices.
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Aucune entrée de la tablette pour cette quête — les bonnes actions, mystères et boucles temporelles suivent leurs propres étapes, pas la tablette.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Aucune entrée de la tablette pour cette quête. Les bonnes actions, mystères et boucles temporelles suivent leurs propres étapes, pas la tablette.
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Cliquez sur une entrée pour voir ce que vous en savez.
+A_WEAPON	une arme
+A_DEFENSIVE_GEAR	un équipement défensif
+SHARD_BUDGET	Budget d’éclats
+TIMELOOPS_OPEN	Boucles temporelles ouvertes : {open}/{all}
+TIMELOOPS_OPEN_HOVER	Tant qu’une boucle temporelle est ouverte, ses ennemis reviennent. Une fois toutes fermées, vos éclats sont tout ce qu’il restera.
+SHARD_SIZES_HOVER	Un éclat a la taille de l’ennemi qui l’a lâché : petit au niveau 1, moyen au niveau 2, grand au niveau 3. Les tailles ne se convertissent pas ; trois éclats neutres s’infusent en un éclat d’émotion de même taille.
+NEUTRAL	Neutre
+SHARD_SMALL	Petit
+SHARD_MEDIUM	Moyen
+SHARD_LARGE	Grand
+ENOUGH	Suffisant
+SHORT_BY	Manque {shards}
+COST_HOVER	Coûte encore : {shards}
+NOT_HELD_YET	Pas en main : {items}

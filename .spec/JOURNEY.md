@@ -2,7 +2,7 @@
 
 Research into where players of *Hell Is Us* struggle, stage by stage, and the features that would help
 without taking the game's design away from them. Researched 2026-10-03. Built so far: §3.1, §3.2, §3.3
-(rods → locks), §3.4, §3.5, §3.8 and §3.9 — FEATURES.md §6; the rest is still a proposal.
+(rods → locks), §3.4, §3.5, §3.6, §3.8 and §3.9 — FEATURES.md §6; the rest is still a proposal.
 
 The rule every proposal keeps: **answers stay hidden until asked.** The game's identity is "no map, no
 markers"; the mod is for the night a player would rather not be lost, not a replacement for exploring.
@@ -123,7 +123,7 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
 - **Timeloop prism signature:** which Amine prism (T01/T02/T03 = Greek signatures) each timeloop
   rift needs — look for the rift actor's placement or condition in the survey's flows and placements.
 - **Haze → Hollow link** (§3.7): a `doctor inspect` on a linked Hollow during a fight.
-- **Gear upgrade costs** (§3.6): the upgrade data tables in the paks.
+- **Gear upgrade costs** (§3.6): done — the `CraftRecipe` assets under `Gameplay/Crafting/`.
 
 ## 5. Order
 
@@ -148,6 +148,8 @@ Every proposal is a card or a tracker line with its answers hidden by default, i
 - [Hell is Us Review — GamingBolt](https://gamingbolt.com/hell-is-us-review-i-am-my-own-monster) — backtracking to rifts, five Walker types, Haze links
 - [Hell Is Us Review — Gamecritics](https://gamecritics.com/jack-dunn/hell-is-us-review/) — hours to find an item, "who does this go to?"
 - [Hell is Us Trophy Guide & Roadmap — PowerPyx](https://www.powerpyx.com/hell-is-us-trophy-guide-roadmap/) — missable trophies, collectible counts, points of no return
+- [Upgrades and Crafting Guide — Fextralife](https://hellisus.wiki.fextralife.com/Upgrades_and_Crafting_Guide) — infusing within a size, grade 5 and grade 4 costs
+- [How to Get Small, Medium and Large Shards — Game Rant](https://gamerant.com/how-to-get-all-shards-sizes-in-hell-is-us-small-medium-large/) — shard size by enemy level
 - [Amine Prism — Theta — Fextralife](https://hellisus.wiki.fextralife.com/Amine_Prism_-_Theta) — chests that give prisms and the timeloops they close (search summary)
 - [Hell is Us beginner tips — KeenGamer](https://www.keengamer.com/articles/guides/10-beginner-tips-to-get-started-in-hell-is-us/) — Healing Pulse, Hazes (search summary)
 - The game's own data: `Mods\survey` (rod-locked panels, rod and prism pickups), counted 2026-10-03.

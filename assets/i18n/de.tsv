@@ -281,9 +281,9 @@ DUE_TALJU_TRUCK	Bevor der Evakuierungs-LKW in {g:Facts_Shared/Universal_Location
 DEADLINE_TALJU_TRUCK	Bevor der Evakuierungs-LKW in {g:Facts_Shared/Universal_Location_Talju} abfährt
 KEYSTONE_ORDER_ADVICE	Empfohlene Reihenfolge ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} zuerst: manche Gegenstände gibt es nur in {g:Facts_Shared/Universal_Location_Talju}) – mit jedem Grundstein vergeht Zeit, gute Taten können enden
 DEADLINE_THIRD_KEYSTONE	Bevor der dritte Grundstein eingesetzt wird
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name}: {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name}: {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	Zeiger nicht lesbar
 THE_GAME_IS_NOT_RUNNING	Das Spiel läuft nicht
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	Inventar der Hauptfigur nicht gefunden
@@ -292,16 +292,16 @@ NO_WORLDSETTINGS_PAUSER	Kein WorldSettings.Pauser
 NO_SAVE_STATE_FOUND	Kein Speicherstand gefunden
 THE_SAVE_STATE_COULD_NOT_BE	Speicherstand konnte nicht gelesen werden
 ACTORS_NOT_SCANNED_YET	Akteure noch nicht gescannt
-THE_GAME_EXITED_CHEATS_OFF	Spiel beendet — Cheats aus
+THE_GAME_EXITED_CHEATS_OFF	Spiel beendet, Cheats aus
 NO_SUCH_SLOT	Ungültiger Slot
 NOTHING_SAVED_IN_THAT_SLOT	In diesem Slot ist nichts gespeichert
 ORIGINAL_VALUES_RESTORED	Ursprüngliche Werte wiederhergestellt
 WRITE_FAILED	Schreiben fehlgeschlagen
-NO_HELL_IS_US_INSTALL_FOUND	Keine Hell Is Us-Installation in den Steam-Bibliotheken gefunden — mit --game-dir angeben
+NO_HELL_IS_US_INSTALL_FOUND	Keine Hell Is Us-Installation in den Steam-Bibliotheken gefunden. Mit --game-dir angeben
 UNEXPECTED_EXECUTABLE_PATH	Unerwarteter Pfad der ausführbaren Datei
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	Der Pawn hat keine AbilitySystemComponent
 NO_PLAYER_CONTROLLER	Kein Player Controller
-NO_PAWN_LOADING_OR_A_CINEMATIC	Kein Pawn — lädt gerade oder Zwischensequenz?
+NO_PAWN_LOADING_OR_A_CINEMATIC	Kein Pawn. Lädt gerade oder Zwischensequenz?
 THE_CONTROLLED_PAWN_IS_NOT_THE	Der gesteuerte Pawn ist nicht die Hauptfigur
 NO_ABILITY_SYSTEM	Kein Ability-System
 NO_LEVEL	Kein Level
@@ -313,56 +313,56 @@ ROTATION_UNREADABLE	Ausrichtung nicht lesbar
 THE_POSE_IS_NOT_A_NUMBER	Position/Ausrichtung ist keine Zahl
 GENGINE_IS_EMPTY	GEngine ist leer
 NO_GAMEENGINE_FOUND_IN_THE_GAME	Kein GameEngine im Spielabbild gefunden (startet noch?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Kein bekanntes FField-Layout liest GameEngine.GameInstance — Engine-Aufbau hat sich geändert
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Kein bekanntes FField-Layout liest GameEngine.GameInstance. Der Engine-Aufbau hat sich geändert
 ATTRIBUTE_SET_ARRAY_UNREADABLE	Attributsatz-Array nicht lesbar
 ATTRIBUTE_SET_COUNT_UNREADABLE	Anzahl der Attributsätze nicht lesbar
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	Kein Attribut konnte benannt werden — Namenspool oder Klassenaufbau passt nicht zu diesem Build
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	Kein Attribut konnte benannt werden. Namenspool oder Klassenaufbau passt nicht zu diesem Build
 FIELD_UNREADABLE	Feld nicht lesbar
 ATTRIBUTE_UNREADABLE	Attribut nicht lesbar
 REFUSING_A_NON_FINITE_VALUE	Nicht endlicher Wert wird nicht geschrieben
 NO_ATTRIBUTE_COULD_BE_READ	Kein Attribut lesbar
 MINIMAP_ERROR	Minikarte: {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Ursprüngliche Werte konnten nicht gespeichert werden — Cheats aus: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Ursprüngliche Werte konnten nicht gespeichert werden. Cheats aus: {e}
 SLOT_RANGE	{name}: erlaubt 1..={max}
 SAVED_IN_ANOTHER_REGION	In anderer Region gespeichert ({world})
 COULD_NOT_RESTORE	Wiederherstellen fehlgeschlagen: {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Wiederherstellen fehlgeschlagen: {what} — später `hiumod restore` ausführen
-CANNOT_BE_SET_ONE_OF	`{id}` kann nicht gesetzt werden — möglich: {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Wiederherstellen fehlgeschlagen: {what}. Später `hiumod restore` ausführen
+CANNOT_BE_SET_ONE_OF	`{id}` kann nicht gesetzt werden. Möglich: {choices}
 CHEAT_SET_RANGE	{id}: erlaubt 0..={max}
-UNKNOWN_CHEAT_ONE_OF	Unbekannter Cheat `{id}` — möglich: {choices}
+UNKNOWN_CHEAT_ONE_OF	Unbekannter Cheat `{id}`. Möglich: {choices}
 TAKES_NO_VALUE	{id} nimmt keinen Wert
 CHEAT_RANGE	{id}: erlaubt {min}..={max}
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id} wird einmal geschrieben — `set {id} <Wert>` statt hold verwenden
-NO_IN_THE_INVENTORY_PICK_ONE	Kein {class} im Inventar — zuerst eines aufheben
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} wird einmal geschrieben. `set {id} <Wert>` statt hold verwenden
+NO_IN_THE_INVENTORY_PICK_ONE	Kein {class} im Inventar. Zuerst eines aufheben
 LINE_IS_NO_ATTRIBUTE_THIS_VERSION	Zeile {line}: {set}.{name} ist in dieser Version kein bekanntes Attribut
-NO_HELL_IS_US_INSTALL_AT	Keine Hell Is Us-Installation unter {dir} — mit --game-dir angeben
+NO_HELL_IS_US_INSTALL_AT	Keine Hell Is Us-Installation unter {dir}. Mit --game-dir angeben
 CANNOT_OPEN_THE_GAME_PROCESS	Spielprozess kann nicht geöffnet werden: {error}
 PROCESS_SNAPSHOT_FAILED	Prozessliste fehlgeschlagen: {error}
 CANNOT_LIST_THE_GAMES_MODULES	Spielmodule konnten nicht aufgelistet werden: {error}
 NO_PROPERTY	Keine Eigenschaft {name}
-THE_PAWN_IS_A_NOT_THE	Der Pawn ist {classes}, nicht die Hauptfigur — zuerst einen Spielstand laden
+THE_PAWN_IS_A_NOT_THE	Der Pawn ist {classes}, nicht die Hauptfigur. Zuerst einen Spielstand laden
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	Attributsatz-Array wirkt fehlerhaft (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	Attribute stimmen in der vtable nicht überein ({n}/{total} bei 0x{vt})
-INSTALL_STEAM_BUILD	{ok} Installation {dir} — Steam-Build {build}
+INSTALL_STEAM_BUILD	{ok} Installation {dir} (Steam-Build {build})
 INSTALL	{ok} Installation: {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} Prozess {pid} — Basis 0x{base}, Image 0x{size} Bytes
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} Prozess {pid}: Basis 0x{base}, Image 0x{size} Bytes
 NAME_POOL_0X	{ok} Namenspool +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} FField-Layout: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} Spieler: {e}
 HERO	{ok} Held: {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} Kette: GEngine {path} → Controller +0x{pawn} Pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   Helden-Gate: offen — Schreiben erlaubt
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   Helden-Gate: offen, Schreiben erlaubt
 OK_POSE_YAW	ok   Pose: ({x:.0}, {y:.0}, {z:.0}) Gieren {yaw:.1}
 FAIL_POSE	FAIL Pose: {e}
-OK_MINIMAP_THINGS_IN_MS	ok   Minimap-Objekte: {n} in {ms} ms — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   Minimap-Objekte: {n} in {ms} ms ({kinds})
 FAIL_MINIMAP_THINGS	FAIL Minimap-Objekte: {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   Guide: kennt {facts} Fakten, {tags} Tags; offen: {open} — {places} Orte in {ms} ms (Quest {quest}, Geheimnis {secret}, Hinweis {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   Guide: kennt {facts} Fakten, {tags} Tags; offen: {open}; {places} Orte in {ms} ms (Quest {quest}, Geheimnis {secret}, Hinweis {clue})
 FAIL_GUIDE	FAIL Guide: {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} Attribute: {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} Attribute: {sets} Sets, {count} Attribute nach Name, vtable +0x{vt}
 ATTRIBUTE_COUNT	{n} Attribute
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} Cheat-Tabelle: alle {n} genannten Attribute sind im Spiel vorhanden
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} Cheat-Tabelle: nicht im Spiel — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} Cheat-Tabelle: nicht im Spiel ({missing})
 PLAYER_WORKS	Spieler: funktioniert
 PLAYER_DOES_NOT_WORK	Spieler: FUNKTIONIERT NICHT
 WRITTEN_TO	Geschrieben nach {path}
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Mappings: {structs} Structs und Klassen, {enu
 RUNNING	Starte {tool} {args}
 SURVEY_WRITTEN_TO	Survey geschrieben nach {path}
 THE_GAMES_TEXT_WRITTEN_TO	Spieltext geschrieben nach {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} Structs und Klassen, {enums} Enums — {kb} KB, geschrieben nach {path}
-WATCHING_OBJECT_S_FOR_S_CTRL	Beobachte {n} Objekt(e) für {secs} s — Ctrl+C beendet
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} Structs und Klassen, {enums} Enums ({kb} KB), geschrieben nach {path}
+WATCHING_OBJECT_S_FOR_S_CTRL	Beobachte {n} Objekt(e) für {secs} s. Ctrl+C beendet
 OF_PLACES_NOW_HOLD	{kept} von {all} Stellen enthalten jetzt {v}
-PLACES_HOLD_CHANGE_IT_IN_GAME	{n} Stellen enthalten {v} — im Spiel ändern, dann `doctor scan next <neuer Wert>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	{n} Originalwert(e) eines früheren hold übrig — diese bleiben erhalten, nicht die aktuellen Werte
-HOLDING_CTRL_C_TO_STOP_AND	Halte {cheats} — Ctrl+C beendet und stellt zurück
+PLACES_HOLD_CHANGE_IT_IN_GAME	{n} Stellen enthalten {v}. Im Spiel ändern, dann `doctor scan next <neuer Wert>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	{n} Originalwert(e) eines früheren hold übrig. Diese bleiben erhalten, nicht die aktuellen Werte
+HOLDING_CTRL_C_TO_STOP_AND	Halte {cheats}. Ctrl+C beendet und stellt zurück
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	Wird der Prozess stattdessen beendet, stellt `hiumod restore` alles zurück
 APPLYING	Wird angewendet
 NOTHING_TO_RESTORE	Nichts wiederherzustellen
@@ -413,18 +413,18 @@ DIGIT_CODE	{n}-stelliger Code
 ITEM_COUNT	Gegenstände: {n}
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Stellungen (von links, ab 1): {list}
 PUZZLE_LIST_LEFT_HERE	Rätselliste · hier noch {left}
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Keine Rätselliste — führe einmal `doctor survey` in der Konsole aus
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Keine Rätselliste. Führe einmal `doctor survey` in der Konsole aus
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Auch Schlüsseltüren und Gegenstandsplätze zeigen
 UNSOLVED_PUZZLE	Ungelöstes Rätsel
 VAULT_DOOR	Tresortür
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Rätsel in der Nähe — Lösung im Panel unter „Rätsel“
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Rätsel in der Nähe: Lösung im Panel unter „Rätsel“
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Forschungsgegenstände: Zeile „Forschung“ unter „Sammlung“ drücken, um zum nächsten geführt zu werden
 ACHIEVEMENTS	Erfolge {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steams Erfolgs-Cache nicht gefunden (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Auch freigeschaltete zeigen
 HIDDEN_ACHIEVEMENT	Verborgener Erfolg
 SHOW	Zeigen
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Geprüft auf Build {tested} — wenn etwas nicht stimmt, `doctor` in der Konsole ausführen
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Geprüft auf Build {tested}. Wenn etwas nicht stimmt, `doctor` in der Konsole ausführen
 ADMIRATION	Bewunderung
 AMAZEMENT	Begeisterung
 ECSTASY	Ekstase
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	Verbleibende Schlusssteine, in dieser Reihenfolge: {keys
 MORE_WITH_A_LATER_DEADLINE	Spätere Fristen: {count}
 GO_TO_PAGE	{page} öffnen ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Hier ist nichts mehr übrig, das die Mod kennt.
-COUNTS_ONLY_OPEN_A_LINE	Nur Anzahlen — tippe auf eine Zeile, um die Seite zu öffnen.
+COUNTS_ONLY_OPEN_A_LINE	Nur Anzahlen. Tippe auf eine Zeile, um die Seite zu öffnen.
 LEDGER_QUEST_PLACES	Quest-Orte: {count}
 LEDGER_HANDOVERS	Möglich zu übergeben: {count}
 LEDGER_PUZZLES	Rätsel: {count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	NPCs mit mehr zu erzählen: {count}
 OTHER_REGIONS_CARD	Andere Regionen
 NOTHING_LEFT_ELSEWHERE	In anderen Regionen ist nichts mehr übrig, das die Mod kennt.
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	Wo du jetzt am meisten tun kannst, zuerst: Übergaben und Schlösser, die deine Stäbe öffnen.
-TRIP_ROW	{place} — jetzt: {doable} · übrig: {left}
+TRIP_ROW	{place} (jetzt: {doable} · übrig: {left})
 MINUTES_AGO	vor {count} Min.
 HOURS_AGO	vor {count} Std.
 LYMBIC_LOCKS	Lymbische Schlösser
-THE_RODS_EACH_LOCK_TAKES	Die Stäbe, die jedes Schloss braucht — Schlösser, die deine Stäbe schon öffnen, zuerst. Tippe auf ein Schloss oder einen fehlenden Stab, um dorthin geführt zu werden.
-LOCK_OPENS_NOW	{place} — jetzt zu öffnen
+THE_RODS_EACH_LOCK_TAKES	Die Stäbe, die jedes Schloss braucht. Schlösser, die deine Stäbe schon öffnen, kommen zuerst. Tippe auf ein Schloss oder einen fehlenden Stab, um dorthin geführt zu werden.
+LOCK_OPENS_NOW	{place}: jetzt zu öffnen
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — in {place}
-ROD_MISSING_NOWHERE	✗ {rod} — kein Fundort mehr in der Erfassung
+ROD_MISSING_AT	✗ {rod} (in {place})
+ROD_MISSING_NOWHERE	✗ {rod}: kein Fundort mehr in der Erfassung
 LOCKS_IN_OTHER_REGIONS	Schlösser in anderen Regionen: {count}
 CLUES_TAB	Hinweise
 FIND_A_CLUE	Hinweis suchen
-CLUE_TEXT_NOT_READ_YET	Die Texte des Datenpads sind noch nicht gelesen — sie werden gelesen, sobald du die Kontrolle über den Helden hast (oder `doctor locale` in der Konsole).
+CLUE_TEXT_NOT_READ_YET	Die Texte des Datenpads sind noch nicht gelesen. Sie werden gelesen, sobald du die Kontrolle über den Helden hast (oder `doctor locale` in der Konsole).
 SEARCH_CLUES_HINT	Ein Name oder ein Wort (Schlüssel, Victor, Tunnel …)
 CLUES_KNOWN	Du weißt {facts} Dinge über {subjects} Einträge des Datenpads.
 NO_CLUE_MATCHES	Nichts, was du weißt, passt dazu.
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	Gegenstände bei dir: {items}
 CLUES_FOR_QUEST	Hinweise: {quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	Hinweise zur verfolgten Quest
 NO_QUEST_FOLLOWED_CLUES	Verfolge auf der Quest-Seite eine Quest, dann sammeln sich ihre Hinweise hier.
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Noch keine Datenpad-Einträge für diese Quest — gute Taten, Mysterien und Zeitschleifen folgen eigenen Schritten, nicht dem Datenpad.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Noch keine Datenpad-Einträge für diese Quest. Gute Taten, Mysterien und Zeitschleifen folgen eigenen Schritten, nicht dem Datenpad.
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Tippe auf einen Eintrag, um zu sehen, was du darüber weißt.
+A_WEAPON	eine Waffe
+A_DEFENSIVE_GEAR	eine Verteidigungsausrüstung
+SHARD_BUDGET	Splitter-Budget
+TIMELOOPS_OPEN	Zeitschleifen offen: {open}/{all}
+TIMELOOPS_OPEN_HOVER	Solange eine Zeitschleife offen ist, kehren ihre Gegner zurück. Sind alle geschlossen, sind deine Splitter alles, was es noch gibt.
+SHARD_SIZES_HOVER	Ein Splitter hat die Größe des Gegners, der ihn fallen ließ: klein von Stufe 1, mittel von Stufe 2, groß von Stufe 3. Größen lassen sich nicht umwandeln; drei neutrale Splitter ergeben einen eines Gefühls derselben Größe.
+NEUTRAL	Neutral
+SHARD_SMALL	Klein
+SHARD_MEDIUM	Mittel
+SHARD_LARGE	Groß
+ENOUGH	Reicht
+SHORT_BY	{shards} fehlen
+COST_HOVER	Kostet noch: {shards}
+NOT_HELD_YET	Nicht vorhanden: {items}

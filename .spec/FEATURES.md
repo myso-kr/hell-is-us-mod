@@ -189,6 +189,32 @@ than four cards (PANEL.md §1).
   - a search: a word or a name over every known line (an entry's name matches all its lines) and the
     items held, in any case.
   Measured: 29 entries and 255 lines known in the save examined.
-- Not built yet from JOURNEY.md: the chest rewards and the timeloop prisms (§4 research), the shard
-  budget, Haze links.
+- **Shard budget** (§3.6, `src/guide/budget.rs`), at the top of the Collect page's achievements card:
+  - The recipes are the game's: every `CraftRecipe` under `Gameplay/Crafting/` (`recipes.json`, 174:
+    84 weapon upgrades, 60 defensive gear imbues, 12 shard infusions, 18 consumables). A recipe takes an
+    item and shards and makes the next grade; a few grades have a second recipe (`…_Recipe02_DA`, from a
+    `Level10` item). Shards are a feeling (`Neutral`, `Rage`…) and a tier (G01–G03); three neutral shards
+    infuse into one of a feeling within a tier.
+  - Held items and their counts come from the inventory (a stack's count is the u32 after its
+    `ItemData` pointer, as the stock cheat reads it).
+  - For each upgrade achievement not yet earned: the cheapest way, by the recipes, from the items held
+    (Dijkstra over items, a feeling's shard weighing three neutral ones). *Good Vibrations*: one weapon
+    of each of the four types to grade 5; *Accessorizing*: one defensive gear to grade 4; *To the Teeth*:
+    two weapons at 5 and two gears at 4.
+  - Kept short (the achievements card was too wordy): the shards held as a size × feeling table; one
+    line per achievement with a chip on the right ("Covered", or "Large 700 short", counted in neutral
+    shards); under it the upgrades in one line ("Ecstasy Twin Axes 4→5 · …"); a weapon type not held
+    in amber. The full cost is the name's hover text; the shard sizes are the heading's.
+  - The heading's right side says how many timeloops are still open. Its hover explains why it matters:
+    once all are closed the enemies stop coming back and the shards held are all there will be.
+  - The achievement list: the name with progress on the right, the condition under it in small text
+    (the condition stays visible: it is what the player needs).
+  - A hidden achievement (*To the Teeth*) shows its plan only once it is shown, like its text.
+  - Checked against guides (2026-10-03): a shard's size is the dropping enemy's level (small from
+    level 1, medium 2, large 3) and sizes do not convert, so small shards held do not cover a large
+    shortfall; the heading's hover says so. The grade 5 / grade 4 costs the guides give match the recipes read;
+    PowerPyx confirms that cleared timeloops stop enemies respawning, making shards finite.
+  - Measured on the save examined: Good Vibrations costs 50 of each feeling and 100 neutral at G03,
+    700 neutral G03 short; the four weapons are at grade 4.
+- Not built yet from JOURNEY.md: the chest rewards and the timeloop prisms (§4 research), Haze links.
 

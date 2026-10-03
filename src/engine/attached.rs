@@ -45,6 +45,8 @@ struct Guide {
     known_facts: HashSet<String>,
     known_tags: HashSet<String>,
     held: HashSet<String>,
+    /// How many of each the hero holds, by asset name — shards by the stack.
+    counts: HashMap<String, u32>,
     saved: HashSet<String>,
     name_cache: HashMap<u32, String>,
     fact_keys: HashMap<String, String>,
@@ -295,7 +297,8 @@ impl Attached {
             g.known_facts = k.facts.iter().map(|&i| name(i)).collect();
             crate::i18n::set_known(&g.known_facts);
             g.known_tags = k.tags.iter().map(|&i| name(i)).collect();
-            g.held = self.held_items();
+            g.counts = self.held_counts();
+            g.held = g.counts.keys().cloned().collect();
             g.saved = saved_guids(m, n, save);
             g.fact_keys = g.quests.fact_keys();
         }
@@ -345,19 +348,23 @@ impl Attached {
         }
     }
 
-    /// The item assets the hero holds, by name.
-    fn held_items(&self) -> HashSet<String> {
+    /// The item assets the hero holds, by name, and how many: a stack's count is the
+    /// u32 right after its `ItemData` pointer (cheat/extras.rs reads it the same way).
+    fn held_counts(&self) -> HashMap<String, u32> {
         let (m, n) = (&self.game, &self.anchors.names);
-        let Ok(inv) = self.inventory() else { return HashSet::new() };
-        let Some(items) = n.field(m, inv, "Items") else { return HashSet::new() };
-        crate::actors::array(m, inv + items.offset as u64, 4096)
-            .into_iter()
-            .filter_map(|item| {
-                let data = n.field(m, item, "ItemData")?;
-                let def = crate::mem::read_u64(m, item + data.offset as u64).filter(|&p| crate::mem::plausible(p))?;
-                n.object(m, def)
-            })
-            .collect()
+        let mut out = HashMap::new();
+        let Ok(inv) = self.inventory() else { return out };
+        let Some(items) = n.field(m, inv, "Items") else { return out };
+        for item in crate::actors::array(m, inv + items.offset as u64, 4096) {
+            let Some(data) = n.field(m, item, "ItemData") else { continue };
+            let at = item + data.offset as u64;
+            let Some(def) = crate::mem::read_u64(m, at).filter(|&p| crate::mem::plausible(p)) else { continue };
+            let Some(name) = n.object(m, def) else { continue };
+            // A count no stack could hold is not a count: the layout moved; it is still held.
+            let count = crate::mem::read_u32(m, at + 8).filter(|&c| (1..=100_000).contains(&c)).unwrap_or(1);
+            *out.entry(name).or_insert(0) += count;
+        }
+        out
     }
 
     /// The collectibles' counts here and everywhere, and the NPCs with more to tell.
@@ -472,6 +479,19 @@ impl Attached {
         items.sort();
         items.dedup();
         crate::clues::Clues { subjects, items, text: lang.names.has_facts() }
+    }
+
+    /// What the three upgrade achievements still cost in shards (JOURNEY.md §3.6).
+    pub fn budget(&self) -> crate::budget::Budget {
+        let mut g = self.guide.borrow_mut();
+        g.fresh();
+        let g = &mut *g;
+        let tables =
+            g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
+        if tables.recipes.is_empty() {
+            return Default::default();
+        }
+        crate::budget::budget(&tables.recipes, &g.counts)
     }
 
     /// Every Lymbic lock, with the rods held and where the missing ones are (JOURNEY.md §3.3).

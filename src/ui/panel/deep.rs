@@ -92,9 +92,10 @@ fn vault_dials(class: &str, a: &Answer) -> Option<Vec<u8>> {
 }
 
 impl Panel {
-    /// Steam's achievements in the game's language: how many, the ones left with
-    /// their progress, a hidden one's text only once unlocked or asked for.
-    pub(super) fn achievements_card(&mut self, t: &mut Tui) {
+    /// Steam's achievements in the game's language: how many, the shard budget of the
+    /// upgrade ones, then each achievement left: its name with progress on the right and
+    /// its condition under it; a hidden one's only once unlocked or asked for.
+    pub(super) fn achievements_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         if self.achievements.as_ref().is_none_or(|(at, _)| at.elapsed() >= std::time::Duration::from_secs(10)) {
             self.achievements =
                 Some((std::time::Instant::now(), crate::game::achievements::load(&crate::i18n::culture())));
@@ -106,38 +107,156 @@ impl Panel {
                 note(t, tr!("STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND"));
                 return;
             }
+            self.budget_block(t, &list, snap);
+            block(t, |ui| ui.separator());
             tw::switch(t, &mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO"));
             for a in list.iter().filter(|a| self.show_unlocked || !a.unlocked) {
-                let id = {
-                    use std::hash::{Hash, Hasher};
-                    let mut h = std::collections::hash_map::DefaultHasher::new();
-                    a.api.hash(&mut h);
-                    h.finish()
-                };
+                let id = id_of(&a.api);
                 let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
-                let progress = a
-                    .progress
-                    .filter(|(_, of)| *of > 1)
-                    .map(|(v, of)| format!("  {}/{of}", v.min(of)))
-                    .unwrap_or_default();
+                let progress = a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| format!("{}/{of}", v.min(of)));
+                // The name with progress on the right; under it the condition, which is
+                // what the player needs to read (a hidden one's only once shown).
                 tw::item(t, |t| {
                     t.style(tw::row(INLINE)).add(|t| {
                         let head = if secret {
                             tr!("HIDDEN_ACHIEVEMENT").to_string()
                         } else {
-                            format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name)
+                            format!("{}{}", if a.unlocked { "✓ " } else { "" }, a.name)
                         };
-                        text(t, RichText::new(head).color(if a.unlocked { DIM } else { super::super::theme::TEXT }));
+                        let colour = if a.unlocked { DIM } else { super::super::theme::TEXT };
+                        text(t, RichText::new(head).color(colour));
+                        if let Some(p) = progress.filter(|_| !secret) {
+                            w(t, |ui| ui.label(RichText::new(p).small().color(DIM)));
+                        }
                         if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
                             self.revealed.insert(id);
                         }
                     });
                     if !secret {
-                        text(t, RichText::new(format!("    {}", a.desc)).color(DIM).small());
+                        note(t, a.desc.clone());
                     }
                 });
             }
         });
+    }
+
+    /// The shard budget (.spec/JOURNEY.md §3.6), kept short: the shards held as a size ×
+    /// feeling table, then one line per upgrade achievement not yet earned with the
+    /// upgrades it still takes and a chip saying whether the shards held cover it. The
+    /// why (timeloops, shard sizes, the cost in full) is in hover text. A hidden
+    /// achievement's plan waits until it is shown, as its text does.
+    fn budget_block(&mut self, t: &mut Tui, list: &[crate::game::achievements::Achievement], snap: Option<&Snapshot>) {
+        use super::super::theme::TEXT;
+        let Some(budget) = snap.map(|s| s.budget.clone()).filter(|b| !b.plans.is_empty()) else { return };
+        let plans: Vec<_> = budget
+            .plans
+            .iter()
+            .filter_map(|p| Some((p, list.iter().find(|a| a.api == p.api)?)))
+            .filter(|(_, a)| !a.unlocked && (!a.hidden || self.revealed.contains(&id_of(&a.api))))
+            .collect();
+        if plans.is_empty() {
+            return;
+        }
+        const FEELINGS: [&str; 5] = ["Neutral", "Ecstasy", "Grief", "Rage", "Terror"];
+        let feeling = |f: &str| match f {
+            "Neutral" => tr!("NEUTRAL"),
+            "Ecstasy" => tr!("ECSTASY"),
+            "Grief" => tr!("GRIEF"),
+            "Rage" => tr!("RAGE"),
+            _ => tr!("TERROR"),
+        };
+        let size = |tier: u8| match tier {
+            1 => tr!("SHARD_SMALL"),
+            2 => tr!("SHARD_MEDIUM"),
+            _ => tr!("SHARD_LARGE"),
+        };
+        let shards = |list: &crate::budget::Shards| {
+            list.iter()
+                .map(|((f, tier), n)| format!("{} {} {n}", size(*tier), feeling(f)))
+                .collect::<Vec<_>>()
+                .join(" · ")
+        };
+
+        // The heading: the title, and the timeloops still open on the right.
+        let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
+        let closed = journal
+            .iter()
+            .filter(|q| q.kind == crate::quests::Kind::Timeloop && q.status == crate::quests::Status::Completed)
+            .count();
+        let all = snap.map_or(0, |s| s.secret_totals[2]);
+        t.style(tw::row(INLINE)).add(|t| {
+            block(t, |ui| {
+                ui.label(RichText::new(tr!("SHARD_BUDGET")).strong()).on_hover_text(tr!("SHARD_SIZES_HOVER"))
+            });
+            if all > 0 {
+                let open = all.saturating_sub(closed);
+                let label = RichText::new(trf!("TIMELOOPS_OPEN", open = open, all = all)).small();
+                w(t, |ui| {
+                    ui.label(label.color(if open > 0 { DIM } else { WAIT })).on_hover_text(tr!("TIMELOOPS_OPEN_HOVER"))
+                });
+            }
+        });
+
+        // Shards held: sizes down, feelings across.
+        block(t, |ui| {
+            egui::Grid::new("shards-held").spacing(egui::vec2(super::super::theme::BLOCK, 2.0)).show(ui, |ui| {
+                ui.label("");
+                for f in FEELINGS {
+                    ui.label(RichText::new(feeling(f)).color(DIM).small());
+                }
+                ui.end_row();
+                for tier in 1..=3u8 {
+                    ui.label(RichText::new(size(tier)).color(DIM).small());
+                    for f in FEELINGS {
+                        let n = budget.held.get(&(f.to_string(), tier)).copied().unwrap_or(0);
+                        ui.label(RichText::new(n.to_string()).small().color(if n == 0 { DIM } else { TEXT }));
+                    }
+                    ui.end_row();
+                }
+            });
+        });
+
+        // One line per achievement: its name and a chip; under it, the upgrades.
+        for (p, a) in plans {
+            tw::item(t, |t| {
+                t.style(tw::row(INLINE)).add(|t| {
+                    let name = block(t, |ui| ui.label(RichText::new(&a.name)));
+                    if !p.cost.is_empty() {
+                        name.on_hover_text(trf!("COST_HOVER", shards = shards(&p.cost)));
+                    }
+                    let (chip, colour) = if p.short.is_empty() {
+                        (tr!("ENOUGH").to_string(), OK)
+                    } else {
+                        let short: Vec<String> =
+                            p.short.iter().map(|(tier, n)| format!("{} {n}", size(*tier))).collect();
+                        (trf!("SHORT_BY", shards = short.join(" · ")), WAIT)
+                    };
+                    w(t, |ui| ui.label(RichText::new(chip).small().color(colour)));
+                });
+                let steps: Vec<String> = p
+                    .steps
+                    .iter()
+                    .map(|s| {
+                        format!("{} {}→{}", crate::i18n::item(&s.item).unwrap_or_else(|| s.item.clone()), s.grade, s.to)
+                    })
+                    .collect();
+                if !steps.is_empty() {
+                    note(t, steps.join(" · "));
+                }
+                let missing: Vec<String> = p
+                    .missing
+                    .iter()
+                    .map(|m| match m.as_str() {
+                        "Weapon" => tr!("A_WEAPON").to_string(),
+                        "DefensiveGear" => tr!("A_DEFENSIVE_GEAR").to_string(),
+                        kind => crate::i18n::item(&format!("{kind}_Neutral_Grade_01_DA")).unwrap_or(kind.to_string()),
+                    })
+                    .collect();
+                if !missing.is_empty() {
+                    text(t, RichText::new(trf!("NOT_HELD_YET", items = missing.join(" · "))).small().color(WAIT));
+                }
+            });
+        }
     }
 
     /// Every puzzle of the worlds (the survey): this region's left first — dials and

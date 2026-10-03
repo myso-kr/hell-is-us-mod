@@ -13,7 +13,8 @@ Decisions and history for the eframe/egui panel's layout, styling and console. T
   `src/ui/panel/mod.rs`); beyond that the body scrolls.
 - **Look:** palette, corner radii and egui visuals live in one place, `src/ui/theme.rs` (§3). Spacing uses
   four values on a 4 px scale (§4). The website (`docs/`) uses the same palette.
-- **Sidebar:** game status, hero gate, game data status; tool tabs, then the cheat groups — each
+- **Sidebar:** game status, hero gate, game data status; **Now** on its own at the top (no group);
+  then the tool tabs, then the cheat groups — each
   group folds under its heading (▾/▸). Tools start open; cheats start folded unless the panel opens on
   a cheat page. The cheats heading counts the cheats on. The console is described in §6.
 - **Tool tabs** (2026-10-03, at most four cards a page): **Now** (previously, before you go on, this
@@ -107,6 +108,9 @@ work out which of two alike buttons does what.
 | Act | A normal-size button | Apply, Save, Back up now, Clear trail, Got it, Open page, Back to auto, Undo |
 | On/off | A switch (`toggle`), as tall as a line of body text so a top-aligned label sits on its first line. A choice among values is a segmented row. | Settings, list filters, keeping cheats on |
 
+- Explanations go in hover text, not on the card: a card shows the state (numbers, a status chip),
+  the why is one hover away. UI text avoids the em-dash; a colon, parentheses or two sentences read
+  better in every language the panel ships (2026-10-03).
 - A line carries at most one button. A line with nowhere to go (a puzzle solved, a vault opened, a rod
   held) is drawn by the same `tw::line` as a disabled selectable: the same padding and height, so text
   and spacing match the pressable lines (a frameless button has no padding and would not).

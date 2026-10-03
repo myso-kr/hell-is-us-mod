@@ -5,7 +5,7 @@ MOVEMENT	Передвижение
 ITEMS	Предметы
 KEEP_HEALTH_CAP_AT_MAXIMUM	Здоровье не убывает (предел на максимуме)
 INFINITE_STAMINA	Бесконечная выносливость
-GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Призрак (для разведки — пока включено, атаковать нельзя)
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Призрак (для разведки; пока включено, атаковать нельзя)
 INFINITE_LYMBIC_ENERGY	Бесконечная лимбическая энергия
 NO_LYMBIC_COST	Без затрат лимбической энергии
 NO_SKILL_COOLDOWN	Без перезарядки навыков
@@ -24,11 +24,11 @@ HAND_OVER	Передать: {item}
 TALK_GOAL	Поговорить: {npc}
 ITEM	Предмет: {items}
 NEW_FACTS	Новых фактов: {count}
-NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · нужно условие (ключ, головоломка — просто прийти мало)
+NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · нужно условие (ключ, головоломка; просто прийти мало)
 UNTIL_THE_END_OF_ACT_1	До конца 1-го акта
 BEFORE_THE_THIRD_KEYSTONE	До третьего ключ-камня
 GOOD_DEED_CLOSING_SOON	Срок истекает: благое дело {deed} ({deadline})
-GOOD_DEEDS_CLOSING_SOON_SEE_THE	Истекают сроки благих дел: {n} — см. вкладку «Задания»
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	Истекают сроки благих дел: {n}. См. вкладку «Задания»
 MAIN	Основное {n}
 GOOD_DEED	Благое дело
 MYSTERY	Тайна
@@ -99,9 +99,9 @@ SUPPLIES	Припасы
 ENEMY_LOOT_BOX	Ящик с добычей врага
 DOOR	Дверь
 DRONE_TRANSLATION	Перевод дрона
-TYPE_A_COMMAND_HELP_LISTS_THEM	Введите команду — `help` покажет список, ↑/↓ — история, Esc — остановить
-HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	Один hiumod открывает ещё одну панель — добавьте команду (help)
-THE_LAST_COMMAND_IS_STILL_RUNNING	Предыдущая команда ещё выполняется (Esc — остановить)
+TYPE_A_COMMAND_HELP_LISTS_THEM	Введите команду: `help` покажет список, ↑/↓ листают историю, Esc останавливает
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	Один hiumod открывает ещё одну панель. Добавьте команду (help)
+THE_LAST_COMMAND_IS_STILL_RUNNING	Предыдущая команда ещё выполняется (Esc остановит)
 EXECUTABLE_NOT_FOUND	Исполняемый файл не найден: {e}
 COULD_NOT_RUN	Не удалось запустить: {e}
 DONE_CODE	(завершено: код {c})
@@ -111,12 +111,12 @@ COMMAND_HELP	Команда (help)
 MAP_PIN	Метка на карте
 PICKED_IN_THE_PANEL	Выбрано в панели
 NEEDED_HERE	Нужно здесь: {h}
-NEEDED_IN_OTHER_REGIONS_TAKE_THE	Нужно в других регионах: {a} — поездка на БТР
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	Нужно в других регионах: {a} (поездка на БТР)
 NEEDED_HERE_IN_OTHER_REGIONS	Нужно: здесь {h} · в других регионах {a}
 POSITION_SAVED	Позиция {slot} сохранена ({x:.0}, {y:.0}, {z:.0})
 MOVED_TO_POSITION	Переход на позицию {slot}
 COLLECTION	Коллекция
-NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Базы обследования нет — один раз выполните `doctor survey` в консоли
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Базы обследования нет. Один раз выполните `doctor survey` в консоли
 COUNTS_WHAT_LIES_IN_THE_WORLD	Считаются только предметы в мире (без наград NPC и магазинов) · здесь / всего
 COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · всего {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Благие дела · Тайны · Временные петли
@@ -156,23 +156,23 @@ COMPASS_AND_HEADING	Компас и направление
 COMPASS_F	Компас (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Вверху по центру экрана
 GUIDE	Навигация
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Автонавигация — постоянно ведёт к следующей цели отслеживаемого задания
-WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Реальный маршрут (A*) — в обход рельефа, воды и стен; компас указывает на следующий поворот
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Автонавигация: постоянно ведёт к следующей цели отслеживаемого задания
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Реальный маршрут (A*) в обход рельефа, воды и стен; компас указывает на следующий поворот
 NEXT_GOAL	Следующая цель ▶
-THIS_GOAL_IS_DONE_OR_OUT	Эта цель выполнена или сейчас недоступна — пропустить и перейти к следующей (до конца сеанса)
-PICKED_BY_HAND_KEPT_UNTIL_IT	Выбрана вручную — остаётся, пока не будет выполнена
+THIS_GOAL_IS_DONE_OR_OUT	Эта цель выполнена или сейчас недоступна. Пропустить и перейти к следующей (до конца сеанса)
+PICKED_BY_HAND_KEPT_UNTIL_IT	Выбрана вручную, остаётся до выполнения
 BACK_TO_AUTO	Вернуть авто
-NO_WALKING_ROUTE_IT_MAY_BE	⚠ Пешего пути нет — возможно, за закрытой дверью, головоломкой или ключом. Ведёт до доступного места, дальше — жёлтый пунктир
-AUTO_GUIDE_IS_OFF_TURN_ON	Автонавигация выключена — включите переключатель выше или выберите в «Куда идти»
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ Пешего пути нет: возможно, за закрытой дверью, головоломкой или ключом. Ведёт до доступного места, дальше жёлтый пунктир
+AUTO_GUIDE_IS_OFF_TURN_ON	Автонавигация выключена. Включите переключатель выше или выберите в «Куда идти»
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Рядом не нашлось ничего нового
-NO_QUEST_GOAL_IN_REGION	В этом регионе нет целей отслеживаемого задания — в других регионах: {elsewhere} (поездка на БТР)
+NO_QUEST_GOAL_IN_REGION	В этом регионе нет целей отслеживаемого задания. В других регионах: {elsewhere} (поездка на БТР)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Все оставшиеся цели пропущены
-NO_QUEST_GOAL_NEARBY	Рядом нет целей отслеживаемого задания — выберите вручную в «Куда идти»
+NO_QUEST_GOAL_NEARBY	Рядом нет целей отслеживаемого задания. Выберите вручную в «Куда идти»
 GOALS_SKIPPED	Пропущено целей: {count}
 UNDO	Отменить
 PLACES	Куда идти ({count})
 DISPLAY	Отображение
-UP_IS	Верх —
+UP_IS	Ориентация
 NORTH_N	Север (N)
 CAMERA	Камера
 RADIUS	Радиус
@@ -191,7 +191,7 @@ DETAILS_CLOSED	Подробнее ▼
 DETAILS_HIDDEN	Подробнее ▼ (скрыто: {h})
 MAP_PINS_AND_TRAIL	Метки на карте и пройденный путь
 NEW_PIN_F	Новая метка (F{key})
-NO_PINS_IN_THIS_REGION_PRESS	В этом регионе нет меток — нажмите F{key} у запертой двери или головоломки
+NO_PINS_IN_THIS_REGION_PRESS	В этом регионе нет меток. Нажмите F{key} у запертой двери или головоломки
 REMOVE_THIS_PIN	Удалить эту метку
 THIS_REGION	Этот регион
 TRAIL_POINTS_PINS	Пройденный путь: {trail} точек · меток: {count}
@@ -209,19 +209,19 @@ COLLECT	Сбор
 SAVES	Сохранения
 DEBUG	Отладка
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Снова включено читов с прошлого раза: {count}
-CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Закрыть — вернуть исходные значения и выйти
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Закрыть: вернуть исходные значения и выйти
 HIDE_OPENS_IT_AGAIN	Скрыть (откроется снова клавишей `)
 CONSOLE_OPEN	Консоль ▾
 CONSOLE_CLOSED	Консоль ▸
 CLI_CONSOLE	Консоль CLI
 GAME	Игра
 CONNECTED_V_PID	● Подключено\nv{version} · PID {pid}
-LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Запуск — подключится, когда игра будет готова
-NOT_CONNECTED	○ Нет подключения — {e}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Запуск (подключится, когда игра будет готова)
+NOT_CONNECTED	○ Нет подключения: {e}
 STARTING	Запуск…
 HERO_GATE	Шлюз героя
-OPEN_IN_CONTROL	● Открыт — управление есть
-GATE_CLOSED_WHY	○ Закрыт — {e}
+OPEN_IN_CONTROL	● Открыт, управление есть
+GATE_CLOSED_WHY	○ Закрыт: {e}
 GATE_CLOSED	○ Закрыт
 CHEATS	Читы
 TOOLS	Инструменты
@@ -229,28 +229,28 @@ RESTORE_ALL	Всё вернуть ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Сохранять включённые читы на следующий раз
 NEXT_RUN_ONCE_THE_HERO_CAN	При следующем запуске, когда героем можно будет управлять, включённые сейчас читы включатся снова.
 WRITES_ONLY_WHILE_THE_HERO_IS	Значения записываются, только пока героем можно управлять · достижения не блокируются
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Трекер заданий — справа по центру экрана
-READING_THE_QUESTS_THEY_APPEAR_A	Задания читаются — появятся через несколько секунд после загрузки игры
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Трекер заданий: справа по центру экрана
+READING_THE_QUESTS_THEY_APPEAR_A	Задания читаются. Появятся через несколько секунд после загрузки игры
 MAIN_STORY_AUTO_NOW	Основной сюжет (авто): {quest}
 MAIN_STORY_AUTO	Основной сюжет (авто)
 CLUES	 · подсказки {got}/{all}
 DONE_FAILED	Выполнено: {done} · провалено: {failed}
-NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Нужно: базы обследования нет — один раз выполните `hiumod doctor survey`, и заполнятся предметы и NPC всех регионов
-NEEDED_LEFT	Нужно — осталось {left} / {all}
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Нужно: базы обследования нет. Один раз выполните `hiumod doctor survey`, и заполнятся предметы и NPC всех регионов
+NEEDED_LEFT	Нужно: осталось {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	Другие регионы (поездка на БТР): {regions}
 MISSABLE_GOOD_DEEDS	Легко упустить: благие дела
 EVERY_GOOD_DEED_WITH_A_DEADLINE	Все благие дела со сроком выполнены или просрочены
 SOON	Скоро
 LATER	Позже
 NOT_STARTED	 (не начато)
-DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Просрочено сроков: {passed} — эти благие дела, скорее всего, провалены
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Просрочено сроков: {passed}. Эти благие дела, скорее всего, провалены
 KEYSTONE_ORDER	Порядок ключ-камней
 BEFORE_THE_NEXT_KEYSTONE	Перед следующим ключ-камнем: {deeds}
 THINGS_TO_HAND_OVER	Что можно передать
 NO_ONE_WANTS_AN_ITEM_YOU	Сейчас никому не нужны ваши предметы
 THINGS_TO_HAND_OVER_COUNT	Что можно передать ({count})
-PEOPLE_WHO_WANT_AN_ITEM_YOU	Те, кому нужен ваш предмет — передайте его через «Торговать» в разговоре
-TAKE_THE_APC	{place} — поездка на БТР
+PEOPLE_WHO_WANT_AN_ITEM_YOU	Те, кому нужен ваш предмет. Передайте его через «Торговать» в разговоре
+TAKE_THE_APC	{place} (поездка на БТР)
 SAVE_BACKUPS	Резервные копии сохранений
 COPIES_THE_SAVE_FILES_EACH_TIME	Копирует файлы сохранения при каждом сохранении игры (последние {count})
 NO_BACKUPS_YET	Резервных копий пока нет
@@ -266,24 +266,24 @@ MIN_AGO	{minutes} мин назад
 H_AGO	{hours} ч назад
 DAYS_AGO	{count} дн. назад
 GUIDING	 · ведёт
-THIS_QUEST_HAS_NO_GOAL_IN	В этом регионе нет целей этого задания — ведёт к ближайшей цели другого задания
-THIS_ENTRY_HAS_NO_GOAL_IN	В этом регионе нет целей этой записи — продолжается в другом месте
-PAST_A_CLOSED_DOOR_OR_PUZZLE	За закрытой дверью или головоломкой — ведёт до доступного места; сначала поищите рядом записку, ключ или устройство
+THIS_QUEST_HAS_NO_GOAL_IN	В этом регионе нет целей этого задания. Ведёт к ближайшей цели другого задания
+THIS_ENTRY_HAS_NO_GOAL_IN	В этом регионе нет целей этой записи. Продолжение в другом месте
+PAST_A_CLOSED_DOOR_OR_PUZZLE	За закрытой дверью или головоломкой. Ведёт до доступного места; сначала поищите рядом записку, ключ или устройство
 PLACE_TO_EXAMINE	Место для осмотра
 DEADLINE_ACT1	До конца 1-го акта
-DEADLINE_DIANA_MEDICINE	До конца 1-го акта: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — лекарство, пока она не уехала на грузовике, иначе она умрёт
+DEADLINE_DIANA_MEDICINE	До конца 1-го акта, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name}: лекарство, пока она не уехала на грузовике, иначе она умрёт
 DEADLINE_JUDITH_BABY	До конца 1-го акта ({g:Facts_Shared/Universal_Location_LymbicForge}): бутылочка для ребёнка ({g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}), иначе ребёнок умрёт
-DEADLINE_HALIE_PICTURE	Этап: {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}. До изменений: {g:Facts_VillageOfJova/Name_Real} — иначе {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} умрёт
-DEADLINE_VIOLINIST	До этапа: {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — иначе {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} умрёт
+DEADLINE_HALIE_PICTURE	Этап: {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}. До изменений: {g:Facts_VillageOfJova/Name_Real}, иначе {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} умрёт
+DEADLINE_VIOLINIST	До этапа: {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, иначе {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} умрёт
 DUE_QUEST03_JOVA	Этап: {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}. До изменений: {g:Facts_VillageOfJova/Name_Real}
-DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — до первого ухода оттуда
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda}: до первого ухода оттуда
 DUE_TALJU_TRUCK	До отъезда эвакуационного грузовика ({g:Facts_Shared/Universal_Location_Talju})
 DEADLINE_TALJU_TRUCK	До отъезда эвакуационного грузовика ({g:Facts_Shared/Universal_Location_Talju})
-KEYSTONE_ORDER_ADVICE	Рекомендуемый порядок: сначала {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} (часть предметов есть только здесь: {g:Facts_Shared/Universal_Location_Talju}) — с каждым ключ-камнем проходит время, и благие дела могут закрыться
+KEYSTONE_ORDER_ADVICE	Рекомендуемый порядок: сначала {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} (часть предметов есть только здесь: {g:Facts_Shared/Universal_Location_Talju}). С каждым ключ-камнем проходит время, и благие дела могут закрыться
 DEADLINE_THIRD_KEYSTONE	До установки третьего ключ-камня
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name}: {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name}: {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	Указатель не читается
 THE_GAME_IS_NOT_RUNNING	Игра не запущена
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	Инвентарь героя не найден
@@ -292,17 +292,17 @@ NO_WORLDSETTINGS_PAUSER	Нет WorldSettings.Pauser
 NO_SAVE_STATE_FOUND	Состояние сохранения не найдено
 THE_SAVE_STATE_COULD_NOT_BE	Не удалось прочитать состояние сохранения
 ACTORS_NOT_SCANNED_YET	Акторы ещё не просканированы
-THE_GAME_EXITED_CHEATS_OFF	Игра завершена — читы выключены
+THE_GAME_EXITED_CHEATS_OFF	Игра завершена, читы выключены
 NO_SUCH_SLOT	Такого слота нет
 NOTHING_SAVED_IN_THAT_SLOT	В этом слоте ничего не сохранено
 ORIGINAL_VALUES_RESTORED	Исходные значения восстановлены
 WRITE_FAILED	Ошибка записи
-NO_HELL_IS_US_INSTALL_FOUND	Установка Hell Is Us не найдена в библиотеках Steam — укажите --game-dir
+NO_HELL_IS_US_INSTALL_FOUND	Установка Hell Is Us не найдена в библиотеках Steam. Укажите --game-dir
 UNEXPECTED_EXECUTABLE_PATH	Неожиданный путь к исполняемому файлу
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	У пешки нет AbilitySystemComponent
 NO_PLAYER_CONTROLLER	Нет контроллера игрока
-NO_PAWN_LOADING_OR_A_CINEMATIC	Нет пешки — загрузка или кат-сцена?
-THE_CONTROLLED_PAWN_IS_NOT_THE	Управляемая пешка — не герой
+NO_PAWN_LOADING_OR_A_CINEMATIC	Нет пешки. Загрузка или кат-сцена?
+THE_CONTROLLED_PAWN_IS_NOT_THE	Управляемая пешка не является героем
 NO_ABILITY_SYSTEM	Нет системы способностей
 NO_LEVEL	Нет уровня
 NO_WORLD	Нет мира
@@ -310,59 +310,59 @@ WORLD_NAME_UNREADABLE	Имя мира не читается
 NO_ROOT_COMPONENT	Нет корневого компонента
 LOCATION_UNREADABLE	Позиция не читается
 ROTATION_UNREADABLE	Поворот не читается
-THE_POSE_IS_NOT_A_NUMBER	Поза — не число
+THE_POSE_IS_NOT_A_NUMBER	Поза не является числом
 GENGINE_IS_EMPTY	GEngine пуст
 NO_GAMEENGINE_FOUND_IN_THE_GAME	GameEngine не найден в образе игры (ещё запускается?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Ни одна известная раскладка FField не читает GameEngine.GameInstance — структура движка изменилась
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Ни одна известная раскладка FField не читает GameEngine.GameInstance. Структура движка изменилась
 ATTRIBUTE_SET_ARRAY_UNREADABLE	Массив наборов атрибутов не читается
 ATTRIBUTE_SET_COUNT_UNREADABLE	Число наборов атрибутов не читается
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	Не удалось назвать ни один атрибут — пул имён или структура классов не подходит к этой сборке
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	Не удалось назвать ни один атрибут. Пул имён или структура классов не подходит к этой сборке
 FIELD_UNREADABLE	Поле не читается
 ATTRIBUTE_UNREADABLE	Атрибут не читается
 REFUSING_A_NON_FINITE_VALUE	Нечисловое значение не записывается
 NO_ATTRIBUTE_COULD_BE_READ	Нет читаемых атрибутов
 MINIMAP_ERROR	Миникарта: {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Не удалось запомнить исходные значения — читы выключены: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Не удалось запомнить исходные значения, читы выключены: {e}
 SLOT_RANGE	{name}: допустимо 1..={max}
 SAVED_IN_ANOTHER_REGION	Сохранено в другом регионе ({world})
 COULD_NOT_RESTORE	Не удалось восстановить: {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Не удалось восстановить: {what} — позже выполните `hiumod restore`
-CANNOT_BE_SET_ONE_OF	`{id}` нельзя задать — доступно: {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Не удалось восстановить: {what}. Позже выполните `hiumod restore`
+CANNOT_BE_SET_ONE_OF	`{id}` нельзя задать. Доступно: {choices}
 CHEAT_SET_RANGE	{id}: допустимо 0..={max}
-UNKNOWN_CHEAT_ONE_OF	Неизвестный чит `{id}` — доступно: {choices}
+UNKNOWN_CHEAT_ONE_OF	Неизвестный чит `{id}`. Доступно: {choices}
 TAKES_NO_VALUE	{id} не принимает значение
 CHEAT_RANGE	{id}: допустимо {min}..={max}
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id} записывается один раз — используйте `set {id} <значение>`, а не hold
-NO_IN_THE_INVENTORY_PICK_ONE	В инвентаре нет {class} — сначала подберите один
-LINE_IS_NO_ATTRIBUTE_THIS_VERSION	Строка {line}: {set}.{name} — неизвестный этой версии атрибут
-NO_HELL_IS_US_INSTALL_AT	В {dir} нет установки Hell Is Us — укажите --game-dir
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} записывается один раз. Используйте `set {id} <значение>`, а не hold
+NO_IN_THE_INVENTORY_PICK_ONE	В инвентаре нет {class}. Сначала подберите один
+LINE_IS_NO_ATTRIBUTE_THIS_VERSION	Строка {line}: эта версия не знает атрибута {set}.{name}
+NO_HELL_IS_US_INSTALL_AT	В {dir} нет установки Hell Is Us. Укажите --game-dir
 CANNOT_OPEN_THE_GAME_PROCESS	Не удаётся открыть процесс игры: {error}
 PROCESS_SNAPSHOT_FAILED	Не удалось получить список процессов: {error}
 CANNOT_LIST_THE_GAMES_MODULES	Не удаётся получить список модулей игры: {error}
 NO_PROPERTY	Нет свойства {name}
-THE_PAWN_IS_A_NOT_THE	Пешка — {classes}, а не герой — сначала загрузите сохранение
+THE_PAWN_IS_A_NOT_THE	Пешка не герой, а {classes}. Сначала загрузите сохранение
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	Массив наборов атрибутов выглядит неверно (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	Атрибуты не совпадают по vtable ({n}/{total} на 0x{vt})
-INSTALL_STEAM_BUILD	{ok} установка {dir} — сборка Steam {build}
+INSTALL_STEAM_BUILD	{ok} установка {dir} (сборка Steam {build})
 INSTALL	{ok} установка: {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} процесс {pid} — база 0x{base}, образ 0x{size} байт
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} процесс {pid}: база 0x{base}, образ 0x{size} байт
 NAME_POOL_0X	{ok} пул имён +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} раскладка FField: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} игрок: {e}
 HERO	{ok} герой: {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} цепочка: GEngine {path} → контроллер +0x{pawn} пешка → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   шлюз героя: открыт — запись разрешена
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   шлюз героя: открыт, запись разрешена
 OK_POSE_YAW	ok   поза: ({x:.0}, {y:.0}, {z:.0}) рыскание {yaw:.1}
 FAIL_POSE	FAIL поза: {e}
-OK_MINIMAP_THINGS_IN_MS	ok   объекты миникарты: {n} за {ms} мс — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   объекты миникарты: {n} за {ms} мс ({kinds})
 FAIL_MINIMAP_THINGS	FAIL объекты миникарты: {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   навигация: известно фактов {facts}, тегов {tags}; в процессе: {open} — мест {places} за {ms} мс (задание {quest}, секрет {secret}, подсказка {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   навигация: известно фактов {facts}, тегов {tags}; в процессе: {open}; мест {places} за {ms} мс (задание {quest}, секрет {secret}, подсказка {clue})
 FAIL_GUIDE	FAIL навигация: {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} атрибуты: {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} атрибуты: наборов {sets}, атрибутов по имени {count}, vtable +0x{vt}
 ATTRIBUTE_COUNT	атрибутов: {n}
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} таблица читов: все {n} названных атрибутов есть в игре
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} таблица читов: нет в игре — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} таблица читов: нет в игре ({missing})
 PLAYER_WORKS	игрок: работает
 PLAYER_DOES_NOT_WORK	игрок: НЕ РАБОТАЕТ
 WRITTEN_TO	Записано в {path}
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Маппинги: структур и кла�
 RUNNING	Запуск: {tool} {args}
 SURVEY_WRITTEN_TO	Результат обзора: {path}
 THE_GAMES_TEXT_WRITTEN_TO	Текст игры: {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	Структур и классов {structs}, перечислений {enums} — {kb} КБ, записано в {path}
-WATCHING_OBJECT_S_FOR_S_CTRL	Наблюдение за объектами ({n}) в течение {secs} с — Ctrl+C останавливает
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	Структур и классов {structs}, перечислений {enums} ({kb} КБ), записано в {path}
+WATCHING_OBJECT_S_FOR_S_CTRL	Наблюдение за объектами ({n}) в течение {secs} с. Ctrl+C останавливает
 OF_PLACES_NOW_HOLD	Мест из {all}, где теперь {v}: {kept}
-PLACES_HOLD_CHANGE_IT_IN_GAME	Мест со значением {v}: {n} — измените его в игре, затем `doctor scan next <новое значение>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	Исходных значений от прежнего hold: {n} — сохраняются они, а не текущие
-HOLDING_CTRL_C_TO_STOP_AND	Удержание: {cheats} — Ctrl+C останавливает и всё возвращает
+PLACES_HOLD_CHANGE_IT_IN_GAME	Мест со значением {v}: {n}. Измените его в игре, затем `doctor scan next <новое значение>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	Исходных значений от прежнего hold: {n}. Сохраняются они, а не текущие
+HOLDING_CTRL_C_TO_STOP_AND	Удержание: {cheats}. Ctrl+C останавливает и всё возвращает
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	Если процесс будет убит, `hiumod restore` всё вернёт
 APPLYING	Применение
 NOTHING_TO_RESTORE	Нечего восстанавливать
@@ -389,9 +389,9 @@ TIMELOOP_LEFT	    Временная петля {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	В радиусе 40 м нет головоломок с дисками, кодовой панелью или размещением предметов
 GROUPS_ENEMIES	{place}: групп {left}/{all} · врагов: {enemies}
 NEAREST	Ближайшее
-READS_THE_ANSWER_THE_GAME_HOLDS	Читает ответ, который знает игра — не нажимайте, если хотите решить сами
+READS_THE_ANSWER_THE_GAME_HOLDS	Читает ответ, который знает игра. Не нажимайте, если хотите решить сами
 PUZZLES_NEARBY	Головоломки рядом ({n})
-NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Нет таблицы залов — один раз выполните `doctor survey` в консоли
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Нет таблицы залов. Один раз выполните `doctor survey` в консоли
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Залы запретного знания {done}/{all}
 ENEMY_GROUPS_LEFT	Осталось групп врагов {left}/{all}
 ENEMY_GROUP_LEFT	Осталась группа врагов
@@ -399,10 +399,10 @@ DIAL_TURN_STEPS_NOW	Диск {n}: повернуть на {k} (сейчас {now
 DIAL_RIGHT	Диск {n}: верно
 SHOW_ANSWER	Показать ответ
 HIDE	Скрыть
-NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	Нет таблицы спаунеров — один раз выполните `doctor survey` в консоли
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	Нет таблицы спаунеров. Один раз выполните `doctor survey` в консоли
 RESEARCH_PROGRESS	Исследование {n}/{need}
 OPENED	Открыто ✓
-VAULT_RESEARCH_HINT	Передайте предметы исследования в БТР — {g:Facts_Tania/Tania_Real_Name} откроет сведения о залах · сейчас исследований: {n}
+VAULT_RESEARCH_HINT	Передайте предметы исследования в БТР, и {g:Facts_Tania/Tania_Real_Name} откроет сведения о залах · сейчас исследований: {n}
 COUNTED_BY_ENEMY_GROUP_SPAWNER_A	Счёт по группам врагов (спаунерам) · группа, записанная в сохранении, считается побеждённой
 KNOWN	Известно
 SHOW_CODE	Показать код
@@ -413,18 +413,18 @@ DIGIT_CODE	Код из {n} цифр
 ITEM_COUNT	Предметов: {n}
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Позиции (слева, с 1): {list}
 PUZZLE_LIST_LEFT_HERE	Список головоломок · здесь осталось {left}
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Нет списка головоломок — один раз выполните `doctor survey` в консоли
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Нет списка головоломок. Один раз выполните `doctor survey` в консоли
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Показывать и двери на ключ, и размещение предметов
 UNSOLVED_PUZZLE	Нерешённая головоломка
 VAULT_DOOR	Дверь хранилища
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Рядом головоломка — ответ на вкладке «Головоломки» панели
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Рядом головоломка. Ответ на вкладке «Головоломки» панели
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Предметы исследований: нажмите строку «Исследования» в «Коллекции», чтобы идти к ближайшему
 ACHIEVEMENTS	Достижения {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Кэш достижений Steam не найден (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Показывать и полученные
 HIDDEN_ACHIEVEMENT	Скрытое достижение
 SHOW	Показать
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Проверено на сборке {tested} — если что-то не так, выполните `doctor` в консоли
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Проверено на сборке {tested}. Если что-то не так, выполните `doctor` в консоли
 ADMIRATION	Восхищение
 AMAZEMENT	Удивление
 ECSTASY	Счастье
@@ -437,14 +437,14 @@ LOAD_POSITION	Перейти
 GAME_DATA	Данные игры
 READING_THE_GAMES_MAPS	◐ Чтение карт игры… (около 2 мин)
 READING_THE_GAMES_TEXT	◐ Чтение текстов игры…
-INSTALLING_NET_8_WINGET	◐ Установка .NET 8 через winget — Windows может запросить разрешение
+INSTALLING_NET_8_WINGET	◐ Установка .NET 8 через winget. Windows может запросить разрешение
 INSTALLING_NET_8_MODS_FOLDER	◐ Установка .NET 8 в папку Mods…
 READING_FAILED	✕ Ошибка чтения: {e}
 GAME_DATA_READY	● Готово
 INSTALL_FAILED	✕ Ошибка установки: {e}
 THE_SURVEY_NEEDS_THE_NET_8_RUNTIME	Для данных путеводителя нужна среда .NET 8.
 INSTALL_NET_8	Установить .NET 8
-INSTALL_NET_8_HOW	Сначала пакет Microsoft через winget (Windows запросит разрешение); если не выйдет — в папку Mods игры, только для вас, без прав администратора.
+INSTALL_NET_8_HOW	Сначала пакет Microsoft через winget (Windows запросит разрешение); если не выйдет, то в папку Mods игры, только для вас, без прав администратора.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Чтение начнётся, когда вы будете управлять героем
 WAITING_FOR_THE_GAME	Ожидание игры
 NOW	Сейчас
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	Оставшиеся краеугольные камни
 MORE_WITH_A_LATER_DEADLINE	С более поздним сроком: {count}
 GO_TO_PAGE	Открыть «{page}» ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Здесь не осталось ничего, о чём знает мод.
-COUNTS_ONLY_OPEN_A_LINE	Только числа — нажмите строку, чтобы открыть её вкладку.
+COUNTS_ONLY_OPEN_A_LINE	Только числа. Нажмите строку, чтобы открыть её вкладку.
 LEDGER_QUEST_PLACES	Места заданий: {count}
 LEDGER_HANDOVERS	Можно передать сейчас: {count}
 LEDGER_PUZZLES	Головоломки: {count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	NPC, которым есть что рассказать: {count}
 OTHER_REGIONS_CARD	Другие регионы
 NOTHING_LEFT_ELSEWHERE	В других регионах не осталось ничего, о чём знает мод.
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	Сначала там, где сейчас можно сделать больше всего: передачи и замки, которые открывают ваши стержни.
-TRIP_ROW	{place} — сейчас: {doable} · осталось: {left}
+TRIP_ROW	{place} (сейчас: {doable} · осталось: {left})
 MINUTES_AGO	{count} мин назад
 HOURS_AGO	{count} ч назад
 LYMBIC_LOCKS	Лимбические замки
 THE_RODS_EACH_LOCK_TAKES	Стержни, которые нужны каждому замку; сначала те, что ваши стержни уже открывают. Нажмите на замок или недостающий стержень, чтобы вас туда провели.
-LOCK_OPENS_NOW	{place} — открывается сейчас
+LOCK_OPENS_NOW	{place}: открывается сейчас
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — место: {place}
-ROD_MISSING_NOWHERE	✗ {rod} — в обследовании не осталось, где его взять
+ROD_MISSING_AT	✗ {rod} (место: {place})
+ROD_MISSING_NOWHERE	✗ {rod}: в обследовании не осталось, где его взять
 LOCKS_IN_OTHER_REGIONS	Замки в других регионах: {count}
 CLUES_TAB	Улики
 FIND_A_CLUE	Найти улику
-CLUE_TEXT_NOT_READ_YET	Тексты планшета ещё не прочитаны — они читаются, как только герой под вашим управлением (или `doctor locale` в консоли).
+CLUE_TEXT_NOT_READ_YET	Тексты планшета ещё не прочитаны. Они читаются, как только герой под вашим управлением (или `doctor locale` в консоли).
 SEARCH_CLUES_HINT	Имя или слово (ключ, Виктор, тоннель…)
 CLUES_KNOWN	Вы знаете {facts} фактов о {subjects} записях планшета.
 NO_CLUE_MATCHES	Ничего из того, что вы знаете, не подходит.
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	Предметы при вас: {items}
 CLUES_FOR_QUEST	Улики: {quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	Улики отслеживаемого задания
 NO_QUEST_FOLLOWED_CLUES	Отслеживайте задание на вкладке «Задания», и его улики соберутся здесь.
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Для этого задания ещё нет записей планшета — добрые дела, тайны и временные петли идут своими шагами, а не через планшет.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Для этого задания ещё нет записей планшета. Добрые дела, тайны и временные петли идут своими шагами, а не через планшет.
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Нажмите на запись, чтобы увидеть, что вы о ней знаете.
+A_WEAPON	оружие
+A_DEFENSIVE_GEAR	защитное снаряжение
+SHARD_BUDGET	Бюджет осколков
+TIMELOOPS_OPEN	Открыто временных петель: {open}/{all}
+TIMELOOPS_OPEN_HOVER	Пока временная петля открыта, её враги возвращаются. Когда закрыты все, ваши осколки останутся единственными.
+SHARD_SIZES_HOVER	Размер осколка зависит от уровня врага, который его оставил: малый с 1-го, средний со 2-го, крупный с 3-го. Размеры не превращаются друг в друга; три нейтральных осколка вливаются в один осколок эмоции того же размера.
+NEUTRAL	Нейтральный
+SHARD_SMALL	Малый
+SHARD_MEDIUM	Средний
+SHARD_LARGE	Крупный
+ENOUGH	Хватает
+SHORT_BY	Не хватает: {shards}
+COST_HOVER	Ещё стоит: {shards}
+NOT_HELD_YET	Нет: {items}

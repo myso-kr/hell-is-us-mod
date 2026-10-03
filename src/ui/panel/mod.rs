@@ -153,6 +153,9 @@ impl Tool {
         Tool::Debug,
     ];
 
+    /// Above the groups in the sidebar, in none.
+    const TOP: [Tool; 1] = [Tool::Now];
+
     /// Its name in settings.txt.
     fn id(self) -> &'static str {
         match self {
@@ -548,9 +551,16 @@ impl Panel {
             }
         };
         ui.spacing_mut().item_spacing.y = 2.0;
+        // The pages a player opens first stand alone at the top, in no group.
+        for tool in Tool::TOP {
+            if item(ui, self.tool == Some(tool), tool.label().to_string()) {
+                self.tool = Some(tool);
+            }
+        }
+        ui.add_space(super::theme::BLOCK);
         heading(ui, &mut self.tools_open, tr!("TOOLS").to_string());
         if self.tools_open {
-            for tool in Tool::ALL {
+            for tool in Tool::ALL.into_iter().filter(|t| !Tool::TOP.contains(t)) {
                 if item(ui, self.tool == Some(tool), tool.label().to_string()) {
                     self.tool = Some(tool);
                 }

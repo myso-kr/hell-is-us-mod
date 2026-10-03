@@ -28,7 +28,7 @@ NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · 行くだけでは不十分（鍵・パズル
 UNTIL_THE_END_OF_ACT_1	第1幕の終わりまで
 BEFORE_THE_THIRD_KEYSTONE	3つ目のキーストーンの前
 GOOD_DEED_CLOSING_SOON	期限間近の善行: {deed}（{deadline}）
-GOOD_DEEDS_CLOSING_SOON_SEE_THE	期限間近の善行 {n}件 — クエストタブで確認
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	期限間近の善行 {n}件（クエストタブで確認）
 MAIN	メイン {n}
 GOOD_DEED	善行
 MYSTERY	ミステリー
@@ -99,8 +99,8 @@ SUPPLIES	補給品
 ENEMY_LOOT_BOX	敵の戦利品箱
 DOOR	扉
 DRONE_TRANSLATION	ドローン翻訳
-TYPE_A_COMMAND_HELP_LISTS_THEM	コマンドを入力 — `help` で一覧、↑/↓ で履歴、Esc で実行中止
-HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod だけではパネルがもう1つ開きます — コマンドを付けてください（help）
+TYPE_A_COMMAND_HELP_LISTS_THEM	コマンドを入力（`help` で一覧、↑/↓ で履歴、Esc で実行中止）
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod だけではパネルがもう1つ開きます。コマンドを付けてください（help）
 THE_LAST_COMMAND_IS_STILL_RUNNING	前のコマンドがまだ実行中です（Esc で中止）
 EXECUTABLE_NOT_FOUND	実行ファイルが見つかりません: {e}
 COULD_NOT_RUN	実行できません: {e}
@@ -111,12 +111,12 @@ COMMAND_HELP	コマンド (help)
 MAP_PIN	地図ピン
 PICKED_IN_THE_PANEL	パネルで選んだ場所
 NEEDED_HERE	必要なもの: このエリア {h}件
-NEEDED_IN_OTHER_REGIONS_TAKE_THE	必要なもの: 他のエリア {a}件 — APCで移動
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	必要なもの: 他のエリア {a}件（APCで移動）
 NEEDED_HERE_IN_OTHER_REGIONS	必要なもの: このエリア {h}件 · 他のエリア {a}件
 POSITION_SAVED	位置 {slot} を保存 ({x:.0}, {y:.0}, {z:.0})
 MOVED_TO_POSITION	位置 {slot} へ移動
 COLLECTION	収集状況
-NO_SURVEY_DB_RUN_DOCTOR_SURVEY	調査DBがありません — コンソールで `doctor survey` を一度実行してください
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	調査DBがありません。コンソールで `doctor survey` を一度実行してください
 COUNTS_WHAT_LIES_IN_THE_WORLD	ワールドに置かれたものだけを数えます（NPCの報酬・店は除く） · このエリア / 全体
 COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · 全体 {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	善行 · ミステリー · タイムループ
@@ -156,18 +156,18 @@ COMPASS_AND_HEADING	コンパス · 方向
 COMPASS_F	コンパス (F{key})
 TOP_CENTRE_OF_THE_SCREEN	画面上部中央
 GUIDE	ガイド
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	自動ガイド — 追跡中のクエストの次の目標へ案内し続ける
-WALKING_ROUTE_A_AROUND_TERRAIN_WATER	実際の移動経路 (A*) — 地形・水・壁を迂回する道。コンパスは次の曲がり角を指す
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	自動ガイド：追跡中のクエストの次の目標へ案内し続ける
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	実際の移動経路 (A*)：地形・水・壁を迂回する道。コンパスは次の曲がり角を指す
 NEXT_GOAL	次の目標 ▶
-THIS_GOAL_IS_DONE_OR_OUT	この目標は終了済み、または今は行けない — 飛ばして次の目標へ（今回の起動中のみ）
-PICKED_BY_HAND_KEPT_UNTIL_IT	手動で選んだ目標 — 終わるまで維持
+THIS_GOAL_IS_DONE_OR_OUT	この目標は終了済み、または今は行けない。飛ばして次の目標へ（今回の起動中のみ）
+PICKED_BY_HAND_KEPT_UNTIL_IT	手動で選んだ目標：終わるまで維持
 BACK_TO_AUTO	自動に戻す
-NO_WALKING_ROUTE_IT_MAY_BE	⚠ 歩いて行ける道がありません — 閉じた扉・パズル・鍵の先かもしれません。行ける所まで案内し、残りは黄色の点線
-AUTO_GUIDE_IS_OFF_TURN_ON	自動ガイドがオフです — 上のスイッチをオンにするか、「行き先」から選んでください
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ 歩いて行ける道がありません。閉じた扉・パズル・鍵の先かもしれません。行ける所まで案内し、残りは黄色の点線
+AUTO_GUIDE_IS_OFF_TURN_ON	自動ガイドがオフです。上のスイッチをオンにするか、「行き先」から選んでください
 NOTHING_NEW_TO_GET_FOUND_NEARBY	この近くに新しく得られるものが見つかりません
-NO_QUEST_GOAL_IN_REGION	このエリアには追跡中のクエストの目標がありません — 他のエリアに {elsewhere}件（APCで移動）
+NO_QUEST_GOAL_IN_REGION	このエリアには追跡中のクエストの目標がありません。他のエリアに {elsewhere}件（APCで移動）
 EVERY_REMAINING_GOAL_WAS_SKIPPED	残りの目標をすべて飛ばしました
-NO_QUEST_GOAL_NEARBY	追跡中のクエストの目標がこの近くにありません — 「行き先」から選べます
+NO_QUEST_GOAL_NEARBY	追跡中のクエストの目標がこの近くにありません。「行き先」から選べます
 GOALS_SKIPPED	飛ばした目標 {count}件
 UNDO	元に戻す
 PLACES	行き先 ({count})
@@ -191,7 +191,7 @@ DETAILS_CLOSED	詳細 ▼
 DETAILS_HIDDEN	詳細 ▼（{h}件非表示）
 MAP_PINS_AND_TRAIL	地図ピン · 通った道
 NEW_PIN_F	新規ピン (F{key})
-NO_PINS_IN_THIS_REGION_PRESS	このエリアにピンがありません — 施錠された扉やパズルの前で F{key} を押すと立てられます
+NO_PINS_IN_THIS_REGION_PRESS	このエリアにピンがありません。施錠された扉やパズルの前で F{key} を押すと立てられます
 REMOVE_THIS_PIN	このピンを削除
 THIS_REGION	このエリア
 TRAIL_POINTS_PINS	通った道 {trail}点 · ピン {count}件
@@ -209,19 +209,19 @@ COLLECT	収集
 SAVES	セーブ
 DEBUG	デバッグ
 TURNED_CHEATS_FROM_LAST_TIME_BACK	前回オンにしていたチート {count}件を再びオンにしました
-CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	閉じる — 元の値に戻して終了
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	閉じる（元の値に戻して終了）
 HIDE_OPENS_IT_AGAIN	隠す（` キーで再表示）
 CONSOLE_OPEN	コンソール ▾
 CONSOLE_CLOSED	コンソール ▸
 CLI_CONSOLE	CLIコンソール
 GAME	ゲーム
 CONNECTED_V_PID	● 接続中\nv{version} · PID {pid}
-LAUNCHING_CONNECTS_ONCE_IT_IS_UP	起動中 — 起動し次第、自動で接続
-NOT_CONNECTED	○ 未接続 — {e}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	起動中（起動し次第、自動で接続）
+NOT_CONNECTED	○ 未接続：{e}
 STARTING	開始中…
 HERO_GATE	主人公ゲート
-OPEN_IN_CONTROL	● 開 — 操作中
-GATE_CLOSED_WHY	○ 閉 — {e}
+OPEN_IN_CONTROL	● 開（操作中）
+GATE_CLOSED_WHY	○ 閉：{e}
 GATE_CLOSED	○ 閉
 CHEATS	チート
 TOOLS	ツール
@@ -229,28 +229,28 @@ RESTORE_ALL	すべて元に戻す ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	次回もオンのチートを維持
 NEXT_RUN_ONCE_THE_HERO_CAN	次回の起動時、主人公を操作できるようになったら、今オンのチートを再びオンにします。
 WRITES_ONLY_WHILE_THE_HERO_IS	主人公を操作している間だけ値を書き込みます · 実績はブロックされません
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	クエストトラッカー — 画面右中央
-READING_THE_QUESTS_THEY_APPEAR_A	クエストを読み込み中です — ゲームの読み込み後、数秒で表示されます
-MAIN_STORY_AUTO_NOW	メインストーリー自動 — {quest}
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	クエストトラッカー（画面右中央）
+READING_THE_QUESTS_THEY_APPEAR_A	クエストを読み込み中です。ゲームの読み込み後、数秒で表示されます
+MAIN_STORY_AUTO_NOW	メインストーリー自動：{quest}
 MAIN_STORY_AUTO	メインストーリー自動
 CLUES	 · 手がかり {got}/{all}
 DONE_FAILED	完了 {done}件 · 失敗 {failed}件
-NEEDED_NO_SURVEY_DB_RUN_HIUMOD	必要なもの: 調査DBなし — `hiumod doctor survey` を一度実行すると、全エリアのアイテム・NPCの位置が埋まります
-NEEDED_LEFT	必要なもの — 残り {left} / {all}
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	必要なもの: 調査DBなし。`hiumod doctor survey` を一度実行すると、全エリアのアイテム・NPCの位置が埋まります
+NEEDED_LEFT	必要なもの（残り {left} / {all}）
 OTHER_REGIONS_TAKE_THE_APC	他のエリア（APCで移動）: {regions}
 MISSABLE_GOOD_DEEDS	見逃しやすい善行
 EVERY_GOOD_DEED_WITH_A_DEADLINE	期限のある善行はすべて完了、または期限切れです
 SOON	間近
 LATER	後で
 NOT_STARTED	 （未開始）
-DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	すでに過ぎた期限 {passed}件 — その善行は失敗している可能性が高いです
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	すでに過ぎた期限 {passed}件。その善行は失敗している可能性が高いです
 KEYSTONE_ORDER	キーストーンの順序
 BEFORE_THE_NEXT_KEYSTONE	次のキーストーンの前に: {deeds}
 THINGS_TO_HAND_OVER	渡せるもの
 NO_ONE_WANTS_AN_ITEM_YOU	今持っているアイテムを欲しがっている人はいません
 THINGS_TO_HAND_OVER_COUNT	渡せるもの ({count})
-PEOPLE_WHO_WANT_AN_ITEM_YOU	持っているアイテムを欲しがっている人 — 会話の「交換する」で渡します
-TAKE_THE_APC	{place} — APCで移動
+PEOPLE_WHO_WANT_AN_ITEM_YOU	持っているアイテムを欲しがっている人：会話の「交換する」で渡します
+TAKE_THE_APC	{place}（APCで移動）
 SAVE_BACKUPS	セーブのバックアップ
 COPIES_THE_SAVE_FILES_EACH_TIME	ゲームが保存するたびにセーブファイルをコピーします（直近 {count}件）
 NO_BACKUPS_YET	まだバックアップがありません
@@ -266,24 +266,24 @@ MIN_AGO	{minutes}分前
 H_AGO	{hours}時間前
 DAYS_AGO	{count}日前
 GUIDING	 · 案内中
-THIS_QUEST_HAS_NO_GOAL_IN	このエリアにはこのクエストの目標がありません — 近くの別のクエスト目標へ案内
-THIS_ENTRY_HAS_NO_GOAL_IN	このエリアにはこの項目の目標がありません — 他のエリアで進行
-PAST_A_CLOSED_DOOR_OR_PUZZLE	閉じた扉・パズルの先 — 行ける所まで案内。まず近くのメモ・鍵・装置を探して
+THIS_QUEST_HAS_NO_GOAL_IN	このエリアにはこのクエストの目標がありません。近くの別のクエスト目標へ案内
+THIS_ENTRY_HAS_NO_GOAL_IN	このエリアにはこの項目の目標がありません。他のエリアで進行
+PAST_A_CLOSED_DOOR_OR_PUZZLE	閉じた扉・パズルの先：行ける所まで案内。まず近くのメモ・鍵・装置を探して
 PLACE_TO_EXAMINE	調べる場所
 DEADLINE_ACT1	第1幕の終わりまで
-DEADLINE_DIANA_MEDICINE	第1幕の終わりまで: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name}に薬を渡す（トラックで去る前に） — 間に合わないと死亡
-DEADLINE_JUDITH_BABY	第1幕の終わり（{g:Facts_Shared/Universal_Location_LymbicForge}）まで: {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}の赤ん坊に哺乳瓶を渡す — 間に合わないと赤ん坊が死亡
-DEADLINE_HALIE_PICTURE	{g:Facts_VillageOfJova/Name_Real}が変わる前（{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}の間） — 逃すと{g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name}が死亡
-DEADLINE_VIOLINIST	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}の前 — 逃すと{g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name}が死亡
-DUE_QUEST03_JOVA	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}進行中 — {g:Facts_VillageOfJova/Name_Real}が変わる前
-DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — 初めて離れる前
+DEADLINE_DIANA_MEDICINE	第1幕の終わりまで: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name}に薬を渡す（トラックで去る前に）。間に合わないと死亡
+DEADLINE_JUDITH_BABY	第1幕の終わり（{g:Facts_Shared/Universal_Location_LymbicForge}）まで: {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}の赤ん坊に哺乳瓶を渡す。間に合わないと赤ん坊が死亡
+DEADLINE_HALIE_PICTURE	{g:Facts_VillageOfJova/Name_Real}が変わる前（{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}の間）：逃すと{g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name}が死亡
+DEADLINE_VIOLINIST	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}の前：逃すと{g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name}が死亡
+DUE_QUEST03_JOVA	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}進行中、{g:Facts_VillageOfJova/Name_Real}が変わる前
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda}を初めて離れる前
 DUE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju}の避難トラックが出発する前
 DEADLINE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju}の避難トラックが出発する前
-KEYSTONE_ORDER_ADVICE	推奨順序（まず{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: 一部のアイテムは{g:Facts_Shared/Universal_Location_Talju}にしかありません） — キーストーンを置くたびに時間が進み、善行が失効することがあります
+KEYSTONE_ORDER_ADVICE	推奨順序（まず{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: 一部のアイテムは{g:Facts_Shared/Universal_Location_Talju}にしかありません）。キーストーンを置くたびに時間が進み、善行が失効することがあります
 DEADLINE_THIRD_KEYSTONE	3つ目のキーストーンを置く前
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name}：{g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name}：{g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}：{g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	ポインターを読み取れません
 THE_GAME_IS_NOT_RUNNING	ゲームが実行されていません
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	主人公のインベントリが見つかりません
@@ -292,16 +292,16 @@ NO_WORLDSETTINGS_PAUSER	WorldSettings.Pauser がありません
 NO_SAVE_STATE_FOUND	セーブ状態が見つかりません
 THE_SAVE_STATE_COULD_NOT_BE	セーブ状態を読み取れませんでした
 ACTORS_NOT_SCANNED_YET	まだアクターをスキャンしていません
-THE_GAME_EXITED_CHEATS_OFF	ゲームが終了しました — チートをオフにしました
+THE_GAME_EXITED_CHEATS_OFF	ゲームが終了したため、チートをオフにしました
 NO_SUCH_SLOT	そのスロットはありません
 NOTHING_SAVED_IN_THAT_SLOT	そのスロットには何も保存されていません
 ORIGINAL_VALUES_RESTORED	元の値に戻しました
 WRITE_FAILED	書き込みに失敗しました
-NO_HELL_IS_US_INSTALL_FOUND	Steam ライブラリに Hell Is Us のインストールが見つかりません — --game-dir で指定してください
+NO_HELL_IS_US_INSTALL_FOUND	Steam ライブラリに Hell Is Us のインストールが見つかりません。--game-dir で指定してください
 UNEXPECTED_EXECUTABLE_PATH	想定外の実行ファイルのパス
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	ポーンに AbilitySystemComponent がありません
 NO_PLAYER_CONTROLLER	プレイヤーコントローラーがありません
-NO_PAWN_LOADING_OR_A_CINEMATIC	ポーンがありません — ロード中かカットシーン中かもしれません
+NO_PAWN_LOADING_OR_A_CINEMATIC	ポーンがありません。ロード中かカットシーン中かもしれません
 THE_CONTROLLED_PAWN_IS_NOT_THE	操作中のポーンが主人公ではありません
 NO_ABILITY_SYSTEM	アビリティシステムがありません
 NO_LEVEL	レベルがありません
@@ -313,56 +313,56 @@ ROTATION_UNREADABLE	向きを読み取れません
 THE_POSE_IS_NOT_A_NUMBER	位置・向きの値が数値ではありません
 GENGINE_IS_EMPTY	GEngine が空です
 NO_GAMEENGINE_FOUND_IN_THE_GAME	ゲームイメージに GameEngine が見つかりません (起動中ですか?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	既知の FField レイアウトでは GameEngine.GameInstance を読み取れません — エンジン構造が変わりました
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	既知の FField レイアウトでは GameEngine.GameInstance を読み取れません。エンジン構造が変わりました
 ATTRIBUTE_SET_ARRAY_UNREADABLE	属性セット配列を読み取れません
 ATTRIBUTE_SET_COUNT_UNREADABLE	属性セット数を読み取れません
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	属性名を1つも読み取れませんでした — 名前プールまたはクラス構造がこのビルドと合いません
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	属性名を1つも読み取れませんでした。名前プールまたはクラス構造がこのビルドと合いません
 FIELD_UNREADABLE	フィールドを読み取れません
 ATTRIBUTE_UNREADABLE	属性を読み取れません
 REFUSING_A_NON_FINITE_VALUE	有限でない値は書き込みません
 NO_ATTRIBUTE_COULD_BE_READ	読み取れる属性がありません
 MINIMAP_ERROR	ミニマップ: {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	元の値を記録できませんでした — チートをオフにしました: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	元の値を記録できなかったため、チートをオフにしました: {e}
 SLOT_RANGE	{name}: 1..={max} の範囲
 SAVED_IN_ANOTHER_REGION	別のエリアで保存されました ({world})
 COULD_NOT_RESTORE	元に戻せませんでした: {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	元に戻せませんでした: {what} — 後で `hiumod restore` を実行してください
-CANNOT_BE_SET_ONE_OF	`{id}` は値を設定できません — 設定可能: {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	元に戻せませんでした: {what}。後で `hiumod restore` を実行してください
+CANNOT_BE_SET_ONE_OF	`{id}` は値を設定できません。設定可能: {choices}
 CHEAT_SET_RANGE	{id}: 0..={max} の範囲
-UNKNOWN_CHEAT_ONE_OF	不明なチート `{id}` — 使用可能: {choices}
+UNKNOWN_CHEAT_ONE_OF	不明なチート `{id}`。使用可能: {choices}
 TAKES_NO_VALUE	{id} には値を指定できません
 CHEAT_RANGE	{id}: {min}..={max} の範囲
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id} は一度だけ書き込む値です — hold ではなく `set {id} <値>` を使ってください
-NO_IN_THE_INVENTORY_PICK_ONE	インベントリに {class} がありません — まず1つ拾ってください
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} は一度だけ書き込む値です。hold ではなく `set {id} <値>` を使ってください
+NO_IN_THE_INVENTORY_PICK_ONE	インベントリに {class} がありません。まず1つ拾ってください
 LINE_IS_NO_ATTRIBUTE_THIS_VERSION	{line} 行目: {set}.{name} はこのバージョンにない属性です
-NO_HELL_IS_US_INSTALL_AT	{dir} に Hell Is Us のインストールがありません — --game-dir で指定してください
+NO_HELL_IS_US_INSTALL_AT	{dir} に Hell Is Us のインストールがありません。--game-dir で指定してください
 CANNOT_OPEN_THE_GAME_PROCESS	ゲームプロセスを開けません: {error}
 PROCESS_SNAPSHOT_FAILED	プロセス一覧を取得できませんでした: {error}
 CANNOT_LIST_THE_GAMES_MODULES	ゲームのモジュール一覧を取得できません: {error}
 NO_PROPERTY	プロパティ {name} がありません
-THE_PAWN_IS_A_NOT_THE	ポーンが主人公ではなく {classes} です — 先にセーブを読み込んでください
+THE_PAWN_IS_A_NOT_THE	ポーンが主人公ではなく {classes} です。先にセーブを読み込んでください
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	属性セット配列が不正です (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	属性の vtable が一致しません ({n}/{total}、0x{vt})
-INSTALL_STEAM_BUILD	{ok} インストール {dir} — Steam ビルド {build}
+INSTALL_STEAM_BUILD	{ok} インストール {dir}（Steam ビルド {build}）
 INSTALL	{ok} インストール: {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} プロセス {pid} — ベース 0x{base}、イメージ 0x{size} バイト
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} プロセス {pid}：ベース 0x{base}、イメージ 0x{size} バイト
 NAME_POOL_0X	{ok} 名前プール +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} FField レイアウト: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} プレイヤー: {e}
 HERO	{ok} 主人公: {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} チェーン: GEngine {path} → コントローラ +0x{pawn} ポーン → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   主人公ゲート: 開 — 書き込み可
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   主人公ゲート: 開（書き込み可）
 OK_POSE_YAW	ok   位置: ({x:.0}, {y:.0}, {z:.0}) 向き {yaw:.1}
 FAIL_POSE	FAIL 位置: {e}
-OK_MINIMAP_THINGS_IN_MS	ok   ミニマップ対象: {n}個、{ms} ms — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   ミニマップ対象: {n}個、{ms} ms（{kinds}）
 FAIL_MINIMAP_THINGS	FAIL ミニマップ対象: {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   ガイド: 既知の事実 {facts}件、タグ {tags}件; 進行中: {open} — 場所 {places}か所、{ms} ms (クエスト {quest}、秘密 {secret}、手がかり {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   ガイド: 既知の事実 {facts}件、タグ {tags}件; 進行中: {open}、場所 {places}か所、{ms} ms (クエスト {quest}、秘密 {secret}、手がかり {clue})
 FAIL_GUIDE	FAIL ガイド: {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} 属性: {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} 属性: セット {sets}個、名前で見つけた属性 {count}個、vtable +0x{vt}
 ATTRIBUTE_COUNT	属性 {n}個
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} チート表: 記載されている {n}個の属性はすべてゲーム内にあります
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} チート表: ゲーム内にありません — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} チート表: ゲーム内にありません（{missing}）
 PLAYER_WORKS	プレイヤー: 動作する
 PLAYER_DOES_NOT_WORK	プレイヤー: 動作しない
 WRITTEN_TO	{path} に書き込みました
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	マッピング: 構造体・クラス {struc
 RUNNING	実行: {tool} {args}
 SURVEY_WRITTEN_TO	調査結果: {path}
 THE_GAMES_TEXT_WRITTEN_TO	ゲームのテキスト: {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	構造体・クラス {structs}個、列挙型 {enums}個 — {kb} KB、{path} に書き込みました
-WATCHING_OBJECT_S_FOR_S_CTRL	オブジェクト {n}個を {secs}秒間監視 — Ctrl+C で停止
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	構造体・クラス {structs}個、列挙型 {enums}個（{kb} KB）を {path} に書き込みました
+WATCHING_OBJECT_S_FOR_S_CTRL	オブジェクト {n}個を {secs}秒間監視（Ctrl+C で停止）
 OF_PLACES_NOW_HOLD	{all}か所中 {kept}か所が現在 {v}
-PLACES_HOLD_CHANGE_IT_IN_GAME	{n}か所が {v} — ゲーム内で値を変えてから `doctor scan next <新しい値>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	以前の hold が残した元の値 {n}個 — 現在の値ではなくそれを維持
-HOLDING_CTRL_C_TO_STOP_AND	保持中: {cheats} — Ctrl+C で停止して元に戻す
+PLACES_HOLD_CHANGE_IT_IN_GAME	{n}か所が {v}。ゲーム内で値を変えてから `doctor scan next <新しい値>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	以前の hold が残した元の値 {n}個（現在の値ではなくそれを維持）
+HOLDING_CTRL_C_TO_STOP_AND	保持中: {cheats}（Ctrl+C で停止して元に戻す）
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	強制終了された場合は `hiumod restore` で元に戻せます
 APPLYING	適用中
 NOTHING_TO_RESTORE	元に戻すものはありません
@@ -389,9 +389,9 @@ TIMELOOP_LEFT	    タイムループ {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m以内にダイヤル・キーパッド・アイテム配置のパズルはありません
 GROUPS_ENEMIES	{place}: {left}/{all} グループ · 敵 {enemies}
 NEAREST	最寄り
-READS_THE_ANSWER_THE_GAME_HOLDS	ゲームが持つ正解を読み取ります — 自力で解きたい場合は押さないでください
+READS_THE_ANSWER_THE_GAME_HOLDS	ゲームが持つ正解を読み取ります。自力で解きたい場合は押さないでください
 PUZZLES_NEARBY	近くのパズル ({n})
-NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	金庫の表がありません — コンソールで `doctor survey` を一度実行してください
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	金庫の表がありません。コンソールで `doctor survey` を一度実行してください
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	禁断の知識の間 {done}/{all}
 ENEMY_GROUPS_LEFT	残りの敵グループ {left}/{all}
 ENEMY_GROUP_LEFT	残りの敵グループ
@@ -399,7 +399,7 @@ DIAL_TURN_STEPS_NOW	ダイヤル {n}: {k}目盛り回す（現在 {now} → {wan
 DIAL_RIGHT	ダイヤル {n}: 正解
 SHOW_ANSWER	答えを見る
 HIDE	隠す
-NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	スポナーの表がありません — コンソールで `doctor survey` を一度実行してください
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	スポナーの表がありません。コンソールで `doctor survey` を一度実行してください
 RESEARCH_PROGRESS	調査 {n}/{need}
 OPENED	開放済み ✓
 VAULT_RESEARCH_HINT	APCの{g:Facts_Tania/Tania_Real_Name}に調査アイテムを渡すと、この間の情報が解放されます · 現在の調査 {n}個
@@ -413,18 +413,18 @@ DIGIT_CODE	{n}桁のコード
 ITEM_COUNT	アイテム{n}個
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	ダイヤル位置（左から、1から）: {list}
 PUZZLE_LIST_LEFT_HERE	パズル一覧・この地域の残り{left}
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	パズル一覧がありません — コンソールで `doctor survey` を一度実行してください
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	パズル一覧がありません。コンソールで `doctor survey` を一度実行してください
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	鍵の扉・アイテム設置パズルも表示
 UNSOLVED_PUZZLE	未解決のパズル
 VAULT_DOOR	金庫の扉
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	近くにパズル — 答えはパネルのパズルタブにあります
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	近くにパズルがあります。答えはパネルのパズルタブにあります
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	調査アイテム: 「収集状況」の調査の行を押すと、近い順に案内します
 ACHIEVEMENTS	実績 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam の実績キャッシュが見つかりません (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	解除済みも表示
 HIDDEN_ACHIEVEMENT	隠し実績
 SHOW	表示
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ 確認済みのビルドは {tested} — おかしければコンソールで `doctor` を実行してください
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ 確認済みのビルドは {tested}。おかしければコンソールで `doctor` を実行してください
 ADMIRATION	感嘆
 AMAZEMENT	驚嘆
 ECSTASY	至福
@@ -437,7 +437,7 @@ LOAD_POSITION	移動
 GAME_DATA	ゲームデータ
 READING_THE_GAMES_MAPS	◐ ゲームのマップを読み込み中…（約2分）
 READING_THE_GAMES_TEXT	◐ ゲームのテキストを読み込み中…
-INSTALLING_NET_8_WINGET	◐ winget で .NET 8 をインストール中 — Windows が許可を求める場合があります
+INSTALLING_NET_8_WINGET	◐ winget で .NET 8 をインストール中（Windows が許可を求める場合があります）
 INSTALLING_NET_8_MODS_FOLDER	◐ Mods フォルダーに .NET 8 をインストール中…
 READING_FAILED	✕ 読み込み失敗：{e}
 GAME_DATA_READY	● 準備完了
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	残りのキーストーン（推奨順）：{keystones}
 MORE_WITH_A_LATER_DEADLINE	期限がまだ先のもの：{count}
 GO_TO_PAGE	{page}を開く ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	この地域でMODが把握している残りはありません。
-COUNTS_ONLY_OPEN_A_LINE	件数のみ表示 — 行を押すとそのタブが開きます。
+COUNTS_ONLY_OPEN_A_LINE	件数のみ表示。行を押すとそのタブが開きます。
 LEDGER_QUEST_PLACES	クエストの場所：{count}
 LEDGER_HANDOVERS	今渡せるもの：{count}
 LEDGER_PUZZLES	パズル：{count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	話を聞けるNPC：{count}
 OTHER_REGIONS_CARD	ほかの地域
 NOTHING_LEFT_ELSEWHERE	ほかの地域でMODが把握している残りはありません。
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	今そこでできることが多い順：受け渡しと、手持ちのロッドで開くロック。
-TRIP_ROW	{place} — 今：{doable} · 残り：{left}
+TRIP_ROW	{place}（今：{doable} · 残り：{left}）
 MINUTES_AGO	{count}分前
 HOURS_AGO	{count}時間前
 LYMBIC_LOCKS	リムビックロック
-THE_RODS_EACH_LOCK_TAKES	ロックごとに必要なロッド — 手持ちのロッドで開けられるロックが先に並びます。ロックや足りないロッドの行を押すと、そこへ案内します。
-LOCK_OPENS_NOW	{place} — 今開けられる
+THE_RODS_EACH_LOCK_TAKES	ロックごとに必要なロッドです。手持ちのロッドで開けられるロックが先に並びます。ロックや足りないロッドの行を押すと、そこへ案内します。
+LOCK_OPENS_NOW	{place}：今開けられる
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — {place}
-ROD_MISSING_NOWHERE	✗ {rod} — 調査記録に入手場所が残っていない
+ROD_MISSING_AT	✗ {rod}：{place}
+ROD_MISSING_NOWHERE	✗ {rod}：調査記録に入手場所が残っていない
 LOCKS_IN_OTHER_REGIONS	ほかの地域のロック：{count}
 CLUES_TAB	手がかり
 FIND_A_CLUE	手がかりを探す
-CLUE_TEXT_NOT_READ_YET	データパッドの文章はまだ読み込んでいません — 主人公を操作できるようになると読み込みます（コンソールの `doctor locale` でも可）。
+CLUE_TEXT_NOT_READ_YET	データパッドの文章はまだ読み込んでいません。主人公を操作できるようになると読み込みます（コンソールの `doctor locale` でも可）。
 SEARCH_CLUES_HINT	名前や言葉（鍵、ヴィクター、トンネル…）
 CLUES_KNOWN	データパッドの項目 {subjects} 件について {facts} 件のことを知っています。
 NO_CLUE_MATCHES	知っていることの中に一致するものはありません。
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	持っているアイテム：{items}
 CLUES_FOR_QUEST	手がかり：{quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	追跡中のクエストの手がかり
 NO_QUEST_FOLLOWED_CLUES	クエストタブでクエストを追跡すると、その手がかりがここに集まります。
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	このクエストのデータパッド項目はまだありません — 善行・ミステリー・タイムループはデータパッドではなく、それぞれの段階で進みます。
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	このクエストのデータパッド項目はまだありません。善行・ミステリー・タイムループはデータパッドではなく、それぞれの段階で進みます。
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	項目を押すと、知っている内容が表示されます。
+A_WEAPON	武器
+A_DEFENSIVE_GEAR	防具
+SHARD_BUDGET	破片の見積もり
+TIMELOOPS_OPEN	タイムループ {open}/{all} 開放中
+TIMELOOPS_OPEN_HOVER	タイムループが開いている間は、敵が再出現し続けます。すべて閉じると、その時点の破片がすべてになります。
+SHARD_SIZES_HOVER	破片の大きさは落とした敵のレベルで決まります。レベル1は小、レベル2は中、レベル3は大です。大きさ同士は変換できず、同じ大きさの中立の破片3個で感情の破片1個に注入します。
+NEUTRAL	中立
+SHARD_SMALL	小
+SHARD_MEDIUM	中
+SHARD_LARGE	大
+ENOUGH	足りる
+SHORT_BY	{shards} 不足
+COST_HOVER	残りのコスト：{shards}
+NOT_HELD_YET	未所持：{items}

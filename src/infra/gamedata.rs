@@ -19,6 +19,9 @@ const NO_WINDOW: u32 = 0x0800_0000;
 pub enum Kind {
     Survey,
     Locale,
+    /// Only the game's own tables (`doctor tables`): what a survey made before a table
+    /// existed lacks.
+    Tables,
 }
 
 impl Kind {
@@ -26,6 +29,7 @@ impl Kind {
         match self {
             Kind::Survey => "survey",
             Kind::Locale => "locale",
+            Kind::Tables => "tables",
         }
     }
 }
@@ -74,7 +78,11 @@ fn needed(survey: &Path, locale: &Path, build: &str) -> Option<Kind> {
         _ => {}
     }
     // facts.tsv came later (the clue board): a locale without it is read again.
-    (!locale.join("names.tsv").exists() || !locale.join("facts.tsv").exists()).then_some(Kind::Locale)
+    if !locale.join("names.tsv").exists() || !locale.join("facts.tsv").exists() {
+        return Some(Kind::Locale);
+    }
+    // recipes.json came later (the shard budget): only the tables are read for it.
+    (!survey.join("recipes.json").exists()).then_some(Kind::Tables)
 }
 
 /// Run `doctor <kind>` in the background (one at a time); a survey that succeeds is
@@ -151,6 +159,8 @@ mod tests {
         std::fs::write(l.join("names.tsv"), "").unwrap();
         assert_eq!(needed(&s, &l, "100"), Some(Kind::Locale), "a locale from before facts.tsv");
         std::fs::write(l.join("facts.tsv"), "").unwrap();
+        assert_eq!(needed(&s, &l, "100"), Some(Kind::Tables), "a survey from before recipes.json");
+        std::fs::write(s.join("recipes.json"), "[]").unwrap();
         assert_eq!(needed(&s, &l, "100"), None);
     }
 }

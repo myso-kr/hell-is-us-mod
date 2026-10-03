@@ -5,7 +5,7 @@ MOVEMENT	Movement
 ITEMS	Items
 KEEP_HEALTH_CAP_AT_MAXIMUM	Keep health at max
 INFINITE_STAMINA	Infinite stamina
-GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Ghost (for exploring — you can't attack while it's on)
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Ghost (for exploring; you can't attack while it's on)
 INFINITE_LYMBIC_ENERGY	Infinite Lymbic energy
 NO_LYMBIC_COST	No Lymbic cost
 NO_SKILL_COOLDOWN	No skill cooldown
@@ -28,7 +28,7 @@ NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · needs a key or puzzle first
 UNTIL_THE_END_OF_ACT_1	Until the end of Act 1
 BEFORE_THE_THIRD_KEYSTONE	Before the third keystone
 GOOD_DEED_CLOSING_SOON	Good deed closing soon: {deed} ({deadline})
-GOOD_DEEDS_CLOSING_SOON_SEE_THE	Good deeds closing soon: {n} — see the Quests tab
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	Good deeds closing soon: {n}. See the Quests tab
 MAIN	Main {n}
 GOOD_DEED	Good deed
 MYSTERY	Mystery
@@ -99,8 +99,8 @@ SUPPLIES	Supplies
 ENEMY_LOOT_BOX	Enemy loot box
 DOOR	Door
 DRONE_TRANSLATION	Drone translation
-TYPE_A_COMMAND_HELP_LISTS_THEM	Type a command — `help` lists them, ↑/↓ for history, Esc stops a run
-HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod alone opens another panel — add a command (see help)
+TYPE_A_COMMAND_HELP_LISTS_THEM	Type a command. `help` lists them, ↑/↓ for history, Esc stops a run
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod alone opens another panel. Add a command (see help)
 THE_LAST_COMMAND_IS_STILL_RUNNING	The last command is still running (Esc stops it)
 EXECUTABLE_NOT_FOUND	Executable not found: {e}
 COULD_NOT_RUN	Could not run: {e}
@@ -111,12 +111,12 @@ COMMAND_HELP	Command (help)
 MAP_PIN	Map pin
 PICKED_IN_THE_PANEL	Picked in the panel
 NEEDED_HERE	Needed: {h} here
-NEEDED_IN_OTHER_REGIONS_TAKE_THE	Needed: {a} in other regions — take the APC
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	Needed: {a} in other regions (take the APC)
 NEEDED_HERE_IN_OTHER_REGIONS	Needed: {h} here · {a} in other regions
 POSITION_SAVED	Position {slot} saved ({x:.0}, {y:.0}, {z:.0})
 MOVED_TO_POSITION	Moved to position {slot}
 COLLECTION	Collection
-NO_SURVEY_DB_RUN_DOCTOR_SURVEY	No survey DB — run `doctor survey` once in the console
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	No survey DB. Run `doctor survey` once in the console
 COUNTS_WHAT_LIES_IN_THE_WORLD	Counts items found in the world (not NPC rewards or shops) · here / all
 COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · all {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Good Deeds · Mysteries · Timeloops
@@ -156,18 +156,18 @@ COMPASS_AND_HEADING	Compass and Heading
 COMPASS_F	Compass (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Top center of the screen
 GUIDE	Guide
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Auto guide — keeps guiding to the followed quest's next goal
-WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Walking route (A*) — around terrain, water and walls; the compass points at the next turn
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Auto guide: keeps guiding to the followed quest's next goal
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Walking route (A*): around terrain, water and walls; the compass points at the next turn
 NEXT_GOAL	Next goal ▶
-THIS_GOAL_IS_DONE_OR_OUT	This goal is done or out of reach — skip to the next one (this session)
-PICKED_BY_HAND_KEPT_UNTIL_IT	Picked by hand — kept until it is done
+THIS_GOAL_IS_DONE_OR_OUT	This goal is done or out of reach. Skip to the next one (this session)
+PICKED_BY_HAND_KEPT_UNTIL_IT	Picked by hand: kept until it is done
 BACK_TO_AUTO	Back to auto
-NO_WALKING_ROUTE_IT_MAY_BE	⚠ No walking route — it may lie past a closed door, puzzle or key. Guiding as far as possible; the yellow dashed line shows the rest
-AUTO_GUIDE_IS_OFF_TURN_ON	Auto guide is off — turn on the switch above or pick from 'Places'
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ No walking route. It may lie past a closed door, puzzle or key. Guiding as far as possible; the yellow dashed line shows the rest
+AUTO_GUIDE_IS_OFF_TURN_ON	Auto guide is off. Turn on the switch above or pick from 'Places'
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Nothing new to collect nearby
-NO_QUEST_GOAL_IN_REGION	The followed quest has no goal in this region — {elsewhere} in other regions (take the APC)
+NO_QUEST_GOAL_IN_REGION	The followed quest has no goal in this region; {elsewhere} in other regions (take the APC)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Every remaining goal was skipped
-NO_QUEST_GOAL_NEARBY	The followed quest has no goal nearby — pick one from 'Places'
+NO_QUEST_GOAL_NEARBY	The followed quest has no goal nearby. Pick one from 'Places'
 GOALS_SKIPPED	Goals skipped: {count}
 UNDO	Undo
 PLACES	Places ({count})
@@ -191,7 +191,7 @@ DETAILS_CLOSED	Details ▼
 DETAILS_HIDDEN	Details ▼ ({h} hidden)
 MAP_PINS_AND_TRAIL	Map Pins and Trail
 NEW_PIN_F	New pin (F{key})
-NO_PINS_IN_THIS_REGION_PRESS	No pins in this region — press F{key} at a locked door or puzzle to place one
+NO_PINS_IN_THIS_REGION_PRESS	No pins in this region. Press F{key} at a locked door or puzzle to place one
 REMOVE_THIS_PIN	Remove this pin
 THIS_REGION	This region
 TRAIL_POINTS_PINS	Trail: {trail} points · Pins: {count}
@@ -209,19 +209,19 @@ COLLECT	Collect
 SAVES	Saves
 DEBUG	Debug
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Restored cheats from last session: {count}
-CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Close — restore original values and exit
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Close: restore original values and exit
 HIDE_OPENS_IT_AGAIN	Hide (` opens it again)
 CONSOLE_OPEN	Console ▾
 CONSOLE_CLOSED	Console ▸
 CLI_CONSOLE	CLI console
 GAME	Game
 CONNECTED_V_PID	● Connected\nv{version} · PID {pid}
-LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Launching — connects once it is up
-NOT_CONNECTED	○ Not connected — {e}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Launching: connects once it is up
+NOT_CONNECTED	○ Not connected: {e}
 STARTING	Starting…
 HERO_GATE	Hero gate
-OPEN_IN_CONTROL	● Open — in control
-GATE_CLOSED_WHY	○ Closed — {e}
+OPEN_IN_CONTROL	● Open: in control
+GATE_CLOSED_WHY	○ Closed: {e}
 GATE_CLOSED	○ Closed
 CHEATS	Cheats
 TOOLS	Tools
@@ -229,13 +229,13 @@ RESTORE_ALL	Restore all ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Keep these cheats on next time
 NEXT_RUN_ONCE_THE_HERO_CAN	Next launch, once you control the hero, the cheats now on are turned back on.
 WRITES_ONLY_WHILE_THE_HERO_IS	Applies only while you control the hero · achievements still unlock
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest tracker — right middle of the screen
-READING_THE_QUESTS_THEY_APPEAR_A	Reading quests — they appear a few seconds after the game loads
-MAIN_STORY_AUTO_NOW	Main story, automatic — {quest}
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest tracker (right middle of the screen)
+READING_THE_QUESTS_THEY_APPEAR_A	Reading quests. They appear a few seconds after the game loads
+MAIN_STORY_AUTO_NOW	Main story, automatic: {quest}
 MAIN_STORY_AUTO	Main story, automatic
 CLUES	 · clues {got}/{all}
 DONE_FAILED	{done} done · {failed} failed
-NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Needed: no survey DB — run `hiumod doctor survey` once to fill in items and NPCs in every region
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Needed: no survey DB. Run `hiumod doctor survey` once to fill in items and NPCs in every region
 NEEDED_LEFT	Needed: {left}/{all} left
 OTHER_REGIONS_TAKE_THE_APC	Other regions (take the APC): {regions}
 MISSABLE_GOOD_DEEDS	Missable Good Deeds
@@ -243,14 +243,14 @@ EVERY_GOOD_DEED_WITH_A_DEADLINE	Every good deed with a deadline is done or past
 SOON	Soon
 LATER	Later
 NOT_STARTED	 (not started)
-DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Deadlines passed: {passed} — those good deeds have likely failed
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Deadlines passed: {passed}. Those good deeds have likely failed
 KEYSTONE_ORDER	Keystone Order
 BEFORE_THE_NEXT_KEYSTONE	Before the next keystone: {deeds}
 THINGS_TO_HAND_OVER	Things to Hand Over
 NO_ONE_WANTS_AN_ITEM_YOU	Nothing to Hand Over
 THINGS_TO_HAND_OVER_COUNT	Things to Hand Over ({count})
-PEOPLE_WHO_WANT_AN_ITEM_YOU	People who want an item you hold — hand it over via "Trade" in their dialogue
-TAKE_THE_APC	{place} — take the APC
+PEOPLE_WHO_WANT_AN_ITEM_YOU	People who want an item you hold: hand it over via "Trade" in their dialogue
+TAKE_THE_APC	{place} (take the APC)
 SAVE_BACKUPS	Save Backups
 COPIES_THE_SAVE_FILES_EACH_TIME	Copies the save files each time the game saves (the last {count})
 NO_BACKUPS_YET	No backups yet
@@ -266,24 +266,24 @@ MIN_AGO	{minutes} min ago
 H_AGO	{hours}h ago
 DAYS_AGO	{count} d ago
 GUIDING	 · guiding
-THIS_QUEST_HAS_NO_GOAL_IN	This quest has no goal in this region — guiding to the nearest other quest goal
-THIS_ENTRY_HAS_NO_GOAL_IN	This entry has no goal in this region — it continues elsewhere
-PAST_A_CLOSED_DOOR_OR_PUZZLE	Past a closed door or puzzle — guiding as far as it goes; look for a note, key or device nearby first
+THIS_QUEST_HAS_NO_GOAL_IN	This quest has no goal in this region. Guiding to the nearest other quest goal
+THIS_ENTRY_HAS_NO_GOAL_IN	This entry has no goal in this region. It continues elsewhere
+PAST_A_CLOSED_DOOR_OR_PUZZLE	Past a closed door or puzzle. Guiding as far as it goes; look for a note, key or device nearby first
 PLACE_TO_EXAMINE	Place to examine
 DEADLINE_ACT1	Before the end of Act 1
-DEADLINE_DIANA_MEDICINE	Before the end of Act 1: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — bring the medicine before she leaves on the truck, or she dies
+DEADLINE_DIANA_MEDICINE	Before the end of Act 1: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name}. Bring the medicine before she leaves on the truck, or she dies
 DEADLINE_JUDITH_BABY	Before the end of Act 1 ({g:Facts_Shared/Universal_Location_LymbicForge}): the bottle for {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}'s baby, or the baby dies
-DEADLINE_HALIE_PICTURE	During {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, before {g:Facts_VillageOfJova/Name_Real} changes — or {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} dies
-DEADLINE_VIOLINIST	Before {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — or {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} dies
+DEADLINE_HALIE_PICTURE	During {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, before {g:Facts_VillageOfJova/Name_Real} changes, or {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} dies
+DEADLINE_VIOLINIST	Before {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, or {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} dies
 DUE_QUEST03_JOVA	During {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, before {g:Facts_VillageOfJova/Name_Real} changes
-DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — before leaving it the first time
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda}, before leaving it the first time
 DUE_TALJU_TRUCK	Before the {g:Facts_Shared/Universal_Location_Talju} evacuation truck leaves
 DEADLINE_TALJU_TRUCK	Before the {g:Facts_Shared/Universal_Location_Talju} evacuation truck leaves
-KEYSTONE_ORDER_ADVICE	Suggested order ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} first: some items are only in {g:Facts_Shared/Universal_Location_Talju}) — each keystone advances time, and good deeds can close
+KEYSTONE_ORDER_ADVICE	Suggested order ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} first: some items are only in {g:Facts_Shared/Universal_Location_Talju}). Each keystone advances time, and good deeds can close
 DEADLINE_THIRD_KEYSTONE	Before placing the third keystone
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name}: {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name}: {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	Pointer unreadable
 THE_GAME_IS_NOT_RUNNING	The game is not running
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	The hero's inventory was not found
@@ -292,16 +292,16 @@ NO_WORLDSETTINGS_PAUSER	No WorldSettings.Pauser
 NO_SAVE_STATE_FOUND	No save state found
 THE_SAVE_STATE_COULD_NOT_BE	The save state could not be read
 ACTORS_NOT_SCANNED_YET	Actors not scanned yet
-THE_GAME_EXITED_CHEATS_OFF	The game exited — cheats off
+THE_GAME_EXITED_CHEATS_OFF	The game exited; cheats off
 NO_SUCH_SLOT	No such slot
 NOTHING_SAVED_IN_THAT_SLOT	Nothing saved in that slot
 ORIGINAL_VALUES_RESTORED	Original values restored
 WRITE_FAILED	Write failed
-NO_HELL_IS_US_INSTALL_FOUND	No Hell Is Us install found in any Steam library — pass --game-dir
+NO_HELL_IS_US_INSTALL_FOUND	No Hell Is Us install found in any Steam library. Pass --game-dir
 UNEXPECTED_EXECUTABLE_PATH	Unexpected executable path
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	The pawn holds no AbilitySystemComponent
 NO_PLAYER_CONTROLLER	No player controller
-NO_PAWN_LOADING_OR_A_CINEMATIC	No pawn — loading, or a cinematic?
+NO_PAWN_LOADING_OR_A_CINEMATIC	No pawn. Loading, or a cinematic?
 THE_CONTROLLED_PAWN_IS_NOT_THE	The controlled pawn is not the hero
 NO_ABILITY_SYSTEM	No ability system
 NO_LEVEL	No level
@@ -313,56 +313,56 @@ ROTATION_UNREADABLE	Rotation unreadable
 THE_POSE_IS_NOT_A_NUMBER	The pose is not a number
 GENGINE_IS_EMPTY	GEngine is empty
 NO_GAMEENGINE_FOUND_IN_THE_GAME	No GameEngine found in the game image (still starting up?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	No known FField layout reads GameEngine.GameInstance — the engine layout changed
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	No known FField layout reads GameEngine.GameInstance. The engine layout changed
 ATTRIBUTE_SET_ARRAY_UNREADABLE	Attribute set array unreadable
 ATTRIBUTE_SET_COUNT_UNREADABLE	Attribute set count unreadable
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	No attribute could be named — the name pool or class layout does not fit this build
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	No attribute could be named. The name pool or class layout does not fit this build
 FIELD_UNREADABLE	Field unreadable
 ATTRIBUTE_UNREADABLE	Attribute unreadable
 REFUSING_A_NON_FINITE_VALUE	Refusing a non-finite value
 NO_ATTRIBUTE_COULD_BE_READ	No attribute could be read
 MINIMAP_ERROR	Minimap: {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Could not record the original values — cheats off: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Could not record the original values. Cheats off: {e}
 SLOT_RANGE	{name} takes 1..={max}
 SAVED_IN_ANOTHER_REGION	Saved in another region ({world})
 COULD_NOT_RESTORE	Could not restore: {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Could not restore: {what} — run `hiumod restore` later
-CANNOT_BE_SET_ONE_OF	`{id}` cannot be set — choose from: {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Could not restore: {what}. Run `hiumod restore` later
+CANNOT_BE_SET_ONE_OF	`{id}` cannot be set. Choose from: {choices}
 CHEAT_SET_RANGE	{id} takes 0..={max}
-UNKNOWN_CHEAT_ONE_OF	Unknown cheat `{id}` — choose from: {choices}
+UNKNOWN_CHEAT_ONE_OF	Unknown cheat `{id}`. Choose from: {choices}
 TAKES_NO_VALUE	{id} takes no value
 CHEAT_RANGE	{id} takes {min}..={max}
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id} is written once — use `set {id} <value>` instead of hold
-NO_IN_THE_INVENTORY_PICK_ONE	No {class} in the inventory — pick one up first
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} is written once. Use `set {id} <value>` instead of hold
+NO_IN_THE_INVENTORY_PICK_ONE	No {class} in the inventory. Pick one up first
 LINE_IS_NO_ATTRIBUTE_THIS_VERSION	Line {line}: {set}.{name} is not an attribute this version recognizes
-NO_HELL_IS_US_INSTALL_AT	No Hell Is Us install at {dir} — pass --game-dir
+NO_HELL_IS_US_INSTALL_AT	No Hell Is Us install at {dir}. Pass --game-dir
 CANNOT_OPEN_THE_GAME_PROCESS	Cannot open the game process: {error}
 PROCESS_SNAPSHOT_FAILED	Process snapshot failed: {error}
 CANNOT_LIST_THE_GAMES_MODULES	Cannot list the game's modules: {error}
 NO_PROPERTY	No property {name}
-THE_PAWN_IS_A_NOT_THE	The pawn is {classes}, not the hero — load a save first
+THE_PAWN_IS_A_NOT_THE	The pawn is {classes}, not the hero. Load a save first
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	The attribute set array looks wrong (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	Attributes do not agree on a vtable ({n}/{total} on 0x{vt})
-INSTALL_STEAM_BUILD	{ok} install {dir} — Steam build {build}
+INSTALL_STEAM_BUILD	{ok} install {dir} (Steam build {build})
 INSTALL	{ok} install: {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} process {pid} — base 0x{base}, image 0x{size} bytes
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} process {pid}: base 0x{base}, image 0x{size} bytes
 NAME_POOL_0X	{ok} name pool +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} FField layout: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} player: {e}
 HERO	{ok} hero: {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} chain: GEngine {path} → controller +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   hero gate: open — writes allowed
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   hero gate: open, writes allowed
 OK_POSE_YAW	ok   pose: ({x:.0}, {y:.0}, {z:.0}) yaw {yaw:.1}
 FAIL_POSE	FAIL pose: {e}
-OK_MINIMAP_THINGS_IN_MS	ok   minimap things: {n} in {ms} ms — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   minimap things: {n} in {ms} ms ({kinds})
 FAIL_MINIMAP_THINGS	FAIL minimap things: {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   guide: knows {facts} facts, {tags} tags; open: {open} — {places} places in {ms} ms (quest {quest}, secret {secret}, clue {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   guide: knows {facts} facts, {tags} tags; open: {open}; {places} places in {ms} ms (quest {quest}, secret {secret}, clue {clue})
 FAIL_GUIDE	FAIL guide: {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} attributes: {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} attributes: {sets} sets, {count} attributes by name, vtable +0x{vt}
 ATTRIBUTE_COUNT	Attributes: {n}
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} cheat table: all {n} attributes it names are in the game
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} cheat table: not in the game — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} cheat table: not in the game ({missing})
 PLAYER_WORKS	player: works
 PLAYER_DOES_NOT_WORK	player: DOES NOT WORK
 WRITTEN_TO	Written to {path}
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Mappings: {structs} structs and classes, {enu
 RUNNING	Running {tool} {args}
 SURVEY_WRITTEN_TO	Survey written to {path}
 THE_GAMES_TEXT_WRITTEN_TO	The game's text written to {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} structs and classes, {enums} enums — {kb} KB, written to {path}
-WATCHING_OBJECT_S_FOR_S_CTRL	Watching {n} object(s) for {secs} s — Ctrl+C stops
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} structs and classes, {enums} enums ({kb} KB), written to {path}
+WATCHING_OBJECT_S_FOR_S_CTRL	Watching {n} object(s) for {secs} s. Ctrl+C stops
 OF_PLACES_NOW_HOLD	{kept} of {all} places now hold {v}
-PLACES_HOLD_CHANGE_IT_IN_GAME	{n} places hold {v} — change it in game, then `doctor scan next <new value>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	Originals left by an earlier hold: {n} — keeping those, not the current values
-HOLDING_CTRL_C_TO_STOP_AND	Holding {cheats} — Ctrl+C to stop and put things back
+PLACES_HOLD_CHANGE_IT_IN_GAME	{n} places hold {v}. Change it in game, then `doctor scan next <new value>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	Originals left by an earlier hold: {n}. Keeping those, not the current values
+HOLDING_CTRL_C_TO_STOP_AND	Holding {cheats}. Ctrl+C to stop and put things back
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	If this is killed instead, `hiumod restore` puts things back
 APPLYING	Applying
 NOTHING_TO_RESTORE	Nothing to restore
@@ -389,9 +389,9 @@ TIMELOOP_LEFT	    Timeloop {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	No dial, keypad or item placement puzzle within 40 m
 GROUPS_ENEMIES	{place}: {left}/{all} groups · {enemies} enemies
 NEAREST	Nearest
-READS_THE_ANSWER_THE_GAME_HOLDS	Reads the answer the game holds — don't press if you want to solve it yourself
+READS_THE_ANSWER_THE_GAME_HOLDS	Reads the answer the game holds. Don't press if you want to solve it yourself
 PUZZLES_NEARBY	Puzzles Nearby ({n})
-NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	No vault table — run `doctor survey` once in the console
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	No vault table. Run `doctor survey` once in the console
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Vaults of Forbidden Knowledge {done}/{all}
 ENEMY_GROUPS_LEFT	Enemy Groups Left {left}/{all}
 ENEMY_GROUP_LEFT	Enemy group left
@@ -399,7 +399,7 @@ DIAL_TURN_STEPS_NOW	Dial {n}: turn by {k} (now {now} → {want})
 DIAL_RIGHT	Dial {n}: right
 SHOW_ANSWER	Show answer
 HIDE	Hide
-NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	No spawner table — run `doctor survey` once in the console
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	No spawner table. Run `doctor survey` once in the console
 RESEARCH_PROGRESS	Research {n}/{need}
 OPENED	Opened ✓
 VAULT_RESEARCH_HINT	Give research items to {g:Facts_Tania/Tania_Real_Name} in the APC to unlock vault info · research now {n}
@@ -413,18 +413,18 @@ DIGIT_CODE	{n}-digit code
 ITEM_COUNT	Items: {n}
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Dial positions (from the left, counting from 1): {list}
 PUZZLE_LIST_LEFT_HERE	Puzzle List · {left} Left Here
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	No puzzle list — run `doctor survey` once in the console
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	No puzzle list. Run `doctor survey` once in the console
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Show key doors and item placements too
 UNSOLVED_PUZZLE	Unsolved puzzle
 VAULT_DOOR	Vault door
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzzle nearby — the answer is in the panel's Puzzles tab
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzzle nearby. The answer is in the panel's Puzzles tab
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Research items: select Research under 'Collection' to be guided to the nearest
 ACHIEVEMENTS	Achievements {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam's achievement cache was not found (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Show unlocked ones too
 HIDDEN_ACHIEVEMENT	Hidden achievement
 SHOW	Show
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Checked on build {tested} — if something is off, run `doctor` in the console
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Checked on build {tested}. If something is off, run `doctor` in the console
 ADMIRATION	Admiration
 AMAZEMENT	Amazement
 ECSTASY	Ecstasy
@@ -437,7 +437,7 @@ LOAD_POSITION	Go
 GAME_DATA	Game data
 READING_THE_GAMES_MAPS	◐ Reading the game's maps… (about 2 min)
 READING_THE_GAMES_TEXT	◐ Reading the game's text…
-INSTALLING_NET_8_WINGET	◐ Installing .NET 8 with winget — Windows may ask for permission
+INSTALLING_NET_8_WINGET	◐ Installing .NET 8 with winget. Windows may ask for permission
 INSTALLING_NET_8_MODS_FOLDER	◐ Installing .NET 8 into the Mods folder…
 READING_FAILED	✕ Reading failed: {e}
 GAME_DATA_READY	● Ready
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	Keystones left, in order: {keystones}
 MORE_WITH_A_LATER_DEADLINE	Later deadlines: {count}
 GO_TO_PAGE	Open {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Nothing left here that the mod knows of.
-COUNTS_ONLY_OPEN_A_LINE	Counts only — press a line to open its page.
+COUNTS_ONLY_OPEN_A_LINE	Counts only. Press a line to open its page.
 LEDGER_QUEST_PLACES	Quest places: {count}
 LEDGER_HANDOVERS	Hand-overs you can make: {count}
 LEDGER_PUZZLES	Puzzles: {count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	NPCs with more to tell: {count}
 OTHER_REGIONS_CARD	Other Regions
 NOTHING_LEFT_ELSEWHERE	Nothing left in other regions that the mod knows of.
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	Most you can do there now first: hand-overs, and locks your rods open.
-TRIP_ROW	{place} — now: {doable} · left: {left}
+TRIP_ROW	{place} (now: {doable} · left: {left})
 MINUTES_AGO	{count} min ago
 HOURS_AGO	{count} h ago
 LYMBIC_LOCKS	Lymbic Locks
-THE_RODS_EACH_LOCK_TAKES	The rods each lock takes — locks your rods already open come first. Press a lock or a missing rod to be guided there.
-LOCK_OPENS_NOW	{place} — opens now
+THE_RODS_EACH_LOCK_TAKES	The rods each lock takes. Locks your rods already open come first. Press a lock or a missing rod to be guided there.
+LOCK_OPENS_NOW	{place}: opens now
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — in {place}
-ROD_MISSING_NOWHERE	✗ {rod} — no pickup left in the survey
+ROD_MISSING_AT	✗ {rod} (in {place})
+ROD_MISSING_NOWHERE	✗ {rod}: no pickup left in the survey
 LOCKS_IN_OTHER_REGIONS	Locks in other regions: {count}
 CLUES_TAB	Clues
 FIND_A_CLUE	Find a Clue
-CLUE_TEXT_NOT_READ_YET	The Datapad's text has not been read yet — it is read once the hero is in control (or `doctor locale` in the console).
+CLUE_TEXT_NOT_READ_YET	The Datapad's text has not been read yet. It is read once the hero is in control (or `doctor locale` in the console).
 SEARCH_CLUES_HINT	A name or a word (key, Victor, tunnel…)
 CLUES_KNOWN	You know {facts} things about {subjects} Datapad entries.
 NO_CLUE_MATCHES	Nothing you know matches.
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	Items you hold: {items}
 CLUES_FOR_QUEST	Clues: {quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	Clues of the Followed Quest
 NO_QUEST_FOLLOWED_CLUES	Follow a quest on the Quests page to gather its clues here.
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	No Datapad entries for this quest yet — good deeds, mysteries and timeloops go by their own steps, not the Datapad.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	No Datapad entries for this quest yet. Good deeds, mysteries and timeloops go by their own steps, not the Datapad.
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Press an entry for what you know of it.
+A_WEAPON	a weapon
+A_DEFENSIVE_GEAR	a defensive gear
+SHARD_BUDGET	Shard Budget
+TIMELOOPS_OPEN	Timeloops open {open}/{all}
+TIMELOOPS_OPEN_HOVER	While a timeloop is open, its enemies keep coming back. Once all are closed, the shards you have are all there will be.
+SHARD_SIZES_HOVER	Shards come in the size of the enemy that dropped them: small from level 1, medium from level 2, large from level 3. Sizes don't convert; three neutral shards infuse into one of a feeling of the same size.
+NEUTRAL	Neutral
+SHARD_SMALL	Small
+SHARD_MEDIUM	Medium
+SHARD_LARGE	Large
+ENOUGH	Covered
+SHORT_BY	{shards} short
+COST_HOVER	Still costs: {shards}
+NOT_HELD_YET	Not held: {items}

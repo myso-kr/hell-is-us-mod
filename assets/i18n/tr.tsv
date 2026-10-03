@@ -5,7 +5,7 @@ MOVEMENT	Hareket
 ITEMS	Eşyalar
 KEEP_HEALTH_CAP_AT_MAXIMUM	Canı koru (üst sınır maksimumda)
 INFINITE_STAMINA	Sonsuz dayanıklılık
-GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Hayalet (keşif için — açıkken saldıramazsın)
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Hayalet (keşif için; açıkken saldıramazsın)
 INFINITE_LYMBIC_ENERGY	Sonsuz Limbik enerji
 NO_LYMBIC_COST	Limbik maliyeti yok
 NO_SKILL_COOLDOWN	Yetenek bekleme süresi yok
@@ -24,11 +24,11 @@ HAND_OVER	Teslim et: {item}
 TALK_GOAL	Konuş: {npc}
 ITEM	Eşya: {items}
 NEW_FACTS	{count} yeni bilgi
-NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · bir şey gerekli (anahtar, bulmaca — oraya gitmek yetmez)
+NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · bir şey gerekli (anahtar, bulmaca; oraya gitmek yetmez)
 UNTIL_THE_END_OF_ACT_1	1. Perde sonuna kadar
 BEFORE_THE_THIRD_KEYSTONE	Üçüncü Kilit Taşından önce
 GOOD_DEED_CLOSING_SOON	İyilik süresi doluyor: {deed} ({deadline})
-GOOD_DEEDS_CLOSING_SOON_SEE_THE	İyilik süresi doluyor: {n} — Görevler sekmesine bak
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	İyilik süresi doluyor: {n}. Görevler sekmesine bak
 MAIN	Ana {n}
 GOOD_DEED	İyilik
 MYSTERY	Gizem
@@ -99,8 +99,8 @@ SUPPLIES	Malzemeler
 ENEMY_LOOT_BOX	Düşman ganimet sandığı
 DOOR	Kapı
 DRONE_TRANSLATION	Drone çevirisi
-TYPE_A_COMMAND_HELP_LISTS_THEM	Bir komut yaz — `help` listeyi gösterir, ↑/↓ geçmiş, Esc çalışmayı durdurur
-HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	Tek başına hiumod bir panel daha açar — bir komut ekle (help)
+TYPE_A_COMMAND_HELP_LISTS_THEM	Bir komut yaz: `help` listeyi gösterir, ↑/↓ geçmiş, Esc çalışmayı durdurur
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	Tek başına hiumod bir panel daha açar. Bir komut ekle (help)
 THE_LAST_COMMAND_IS_STILL_RUNNING	Son komut hâlâ çalışıyor (Esc durdurur)
 EXECUTABLE_NOT_FOUND	Çalıştırılabilir dosya bulunamadı: {e}
 COULD_NOT_RUN	Çalıştırılamadı: {e}
@@ -111,12 +111,12 @@ COMMAND_HELP	Komut (help)
 MAP_PIN	Harita iğnesi
 PICKED_IN_THE_PANEL	Panelden seçildi
 NEEDED_HERE	Gereken: burada {h}
-NEEDED_IN_OTHER_REGIONS_TAKE_THE	Gereken: diğer bölgelerde {a} — ZPT ile git
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	Gereken: diğer bölgelerde {a} (ZPT ile git)
 NEEDED_HERE_IN_OTHER_REGIONS	Gereken: burada {h} · diğer bölgelerde {a}
 POSITION_SAVED	Konum kaydedildi: {slot} ({x:.0}, {y:.0}, {z:.0})
 MOVED_TO_POSITION	Konuma gidildi: {slot}
 COLLECTION	Koleksiyon
-NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Keşif veri tabanı yok — konsolda bir kez `doctor survey` çalıştır
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Keşif veri tabanı yok. Konsolda bir kez `doctor survey` çalıştır
 COUNTS_WHAT_LIES_IN_THE_WORLD	Yalnızca dünyada duranları sayar (NPC ödülleri ve dükkânlar hariç) · bu bölge / tümü
 COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · tümü {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	İyilikler · Gizemler · Zaman Döngüleri
@@ -156,18 +156,18 @@ COMPASS_AND_HEADING	Pusula ve yön
 COMPASS_F	Pusula (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Ekranın üst ortası
 GUIDE	Rehber
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Otomatik rehber — takip edilen görevin sıradaki hedefine yönlendirir
-WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Gerçek yürüme rotası (A*) — arazi, su ve duvarların çevresinden; pusula sıradaki dönüşü gösterir
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Otomatik rehber: takip edilen görevin sıradaki hedefine yönlendirir
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Gerçek yürüme rotası (A*): arazi, su ve duvarların çevresinden; pusula sıradaki dönüşü gösterir
 NEXT_GOAL	Sıradaki hedef ▶
-THIS_GOAL_IS_DONE_OR_OUT	Bu hedef bitti ya da şu an ulaşılamıyor — atlayıp sıradakine geç (bu oturumda)
-PICKED_BY_HAND_KEPT_UNTIL_IT	Elle seçildi — bitene kadar korunur
+THIS_GOAL_IS_DONE_OR_OUT	Bu hedef bitti ya da şu an ulaşılamıyor. Atlayıp sıradakine geç (bu oturumda)
+PICKED_BY_HAND_KEPT_UNTIL_IT	Elle seçildi, bitene kadar korunur
 BACK_TO_AUTO	Otomatiğe dön
-NO_WALKING_ROUTE_IT_MAY_BE	⚠ Yürünebilir yol yok — kapalı kapının, bulmacanın ya da anahtarın ardında olabilir. Gidilebilen yere kadar yönlendirir; gerisi sarı kesikli çizgi
-AUTO_GUIDE_IS_OFF_TURN_ON	Otomatik rehber kapalı — yukarıdaki anahtarı aç ya da 'Yerler'den seç
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ Yürünebilir yol yok. Kapalı kapının, bulmacanın ya da anahtarın ardında olabilir. Gidilebilen yere kadar yönlendirir; gerisi sarı kesikli çizgi
+AUTO_GUIDE_IS_OFF_TURN_ON	Otomatik rehber kapalı. Yukarıdaki anahtarı aç ya da 'Yerler'den seç
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Yakında alınacak yeni bir şey bulunamadı
-NO_QUEST_GOAL_IN_REGION	Takip edilen görevin bu bölgede hedefi yok — diğer bölgelerde: {elsewhere} (ZPT ile git)
+NO_QUEST_GOAL_IN_REGION	Takip edilen görevin bu bölgede hedefi yok. Diğer bölgelerde: {elsewhere} (ZPT ile git)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Kalan tüm hedefler atlandı
-NO_QUEST_GOAL_NEARBY	Takip edilen görevin yakında hedefi yok — 'Yerler'den kendin seç
+NO_QUEST_GOAL_NEARBY	Takip edilen görevin yakında hedefi yok. 'Yerler'den kendin seç
 GOALS_SKIPPED	{count} hedef atlandı
 UNDO	Geri al
 PLACES	Yerler ({count})
@@ -191,7 +191,7 @@ DETAILS_CLOSED	Ayrıntı ▼
 DETAILS_HIDDEN	Ayrıntı ▼ ({h} gizli)
 MAP_PINS_AND_TRAIL	Harita iğneleri ve iz
 NEW_PIN_F	Yeni iğne (F{key})
-NO_PINS_IN_THIS_REGION_PRESS	Bu bölgede iğne yok — kilitli kapı ya da bulmaca önünde F{key} ile iğne koy
+NO_PINS_IN_THIS_REGION_PRESS	Bu bölgede iğne yok. Kilitli kapı ya da bulmaca önünde F{key} ile iğne koy
 REMOVE_THIS_PIN	Bu iğneyi sil
 THIS_REGION	Bu bölge
 TRAIL_POINTS_PINS	İz {trail} nokta · {count} iğne
@@ -209,19 +209,19 @@ COLLECT	Toplama
 SAVES	Kayıtlar
 DEBUG	Hata ayıklama
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Geçen seferki {count} hile yeniden açıldı
-CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Kapat — orijinal değerleri geri yükler ve çıkar
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Kapat: orijinal değerleri geri yükler ve çıkar
 HIDE_OPENS_IT_AGAIN	Gizle (` tuşu yeniden açar)
 CONSOLE_OPEN	Konsol ▾
 CONSOLE_CLOSED	Konsol ▸
 CLI_CONSOLE	CLI konsolu
 GAME	Oyun
 CONNECTED_V_PID	● Bağlı\nv{version} · PID {pid}
-LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Başlatılıyor — açılınca otomatik bağlanır
-NOT_CONNECTED	○ Bağlı değil — {e}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Başlatılıyor, açılınca otomatik bağlanır
+NOT_CONNECTED	○ Bağlı değil: {e}
 STARTING	Başlıyor…
 HERO_GATE	Kahraman kapısı
-OPEN_IN_CONTROL	● Açık — kontrol sende
-GATE_CLOSED_WHY	○ Kapalı — {e}
+OPEN_IN_CONTROL	● Açık, kontrol sende
+GATE_CLOSED_WHY	○ Kapalı: {e}
 GATE_CLOSED	○ Kapalı
 CHEATS	Hileler
 TOOLS	Araçlar
@@ -229,28 +229,28 @@ RESTORE_ALL	Hepsini geri yükle ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Bu hileleri bir sonraki sefer de açık tut
 NEXT_RUN_ONCE_THE_HERO_CAN	Bir sonraki çalıştırmada kahramanı kontrol edebildiğinde, şu an açık olan hileler yeniden açılır.
 WRITES_ONLY_WHILE_THE_HERO_IS	Yalnızca kahraman kontrol edilirken değer yazar · başarımlar engellenmez
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Görev takipçisi — ekranın sağ ortası
-READING_THE_QUESTS_THEY_APPEAR_A	Görevler okunuyor — oyun yüklendikten birkaç saniye sonra görünür
-MAIN_STORY_AUTO_NOW	Ana hikâye, otomatik — {quest}
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Görev takipçisi: ekranın sağ ortası
+READING_THE_QUESTS_THEY_APPEAR_A	Görevler okunuyor. Oyun yüklendikten birkaç saniye sonra görünür
+MAIN_STORY_AUTO_NOW	Ana hikâye, otomatik: {quest}
 MAIN_STORY_AUTO	Ana hikâye, otomatik
 CLUES	 · ipuçları {got}/{all}
 DONE_FAILED	{done} tamamlandı · {failed} başarısız
-NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Gereken: keşif veri tabanı yok — tüm bölgelerdeki eşya ve NPC'leri doldurmak için bir kez `hiumod doctor survey` çalıştır
-NEEDED_LEFT	Gereken — {left} / {all} kaldı
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Gereken: keşif veri tabanı yok. Tüm bölgelerdeki eşya ve NPC'leri doldurmak için bir kez `hiumod doctor survey` çalıştır
+NEEDED_LEFT	Gereken: {left} / {all} kaldı
 OTHER_REGIONS_TAKE_THE_APC	Diğer bölgeler (ZPT ile git): {regions}
 MISSABLE_GOOD_DEEDS	Kaçırılabilecek İyilikler
 EVERY_GOOD_DEED_WITH_A_DEADLINE	Süreli tüm İyilikler ya tamamlandı ya da süresi geçti
 SOON	Yakın
 LATER	Sonra
 NOT_STARTED	 (başlamadı)
-DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Süresi geçen İyilik: {passed} — büyük olasılıkla başarısız oldu
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Süresi geçen İyilik: {passed}. Büyük olasılıkla başarısız oldu
 KEYSTONE_ORDER	Kilit Taşı sırası
 BEFORE_THE_NEXT_KEYSTONE	Sonraki Kilit Taşından önce: {deeds}
 THINGS_TO_HAND_OVER	Verilebilecek eşyalar
 NO_ONE_WANTS_AN_ITEM_YOU	Şu an elindeki eşyayı isteyen kimse yok
 THINGS_TO_HAND_OVER_COUNT	Verilebilecek eşyalar ({count})
-PEOPLE_WHO_WANT_AN_ITEM_YOU	Elindeki eşyayı isteyen kişiler — konuşmada "Ticaret Yap" ile ver
-TAKE_THE_APC	{place} — ZPT ile git
+PEOPLE_WHO_WANT_AN_ITEM_YOU	Elindeki eşyayı isteyen kişiler. Konuşmada "Ticaret Yap" ile ver
+TAKE_THE_APC	{place} (ZPT ile git)
 SAVE_BACKUPS	Kayıt yedekleri
 COPIES_THE_SAVE_FILES_EACH_TIME	Oyun her kaydettiğinde kayıt dosyalarını kopyalar (son {count})
 NO_BACKUPS_YET	Henüz yedek yok
@@ -266,24 +266,24 @@ MIN_AGO	{minutes} dk önce
 H_AGO	{hours} sa önce
 DAYS_AGO	{count} gün önce
 GUIDING	 · yönlendiriyor
-THIS_QUEST_HAS_NO_GOAL_IN	Bu bölgede bu görevin hedefi yok — en yakın diğer görev hedefine yönlendiriyor
-THIS_ENTRY_HAS_NO_GOAL_IN	Bu bölgede bu girdinin hedefi yok — başka bir bölgede devam ediyor
-PAST_A_CLOSED_DOOR_OR_PUZZLE	Kapalı kapı ya da bulmacanın ardında — gidilebilen yere kadar yönlendirir; önce yakındaki not, anahtar veya düzeneğe bak
+THIS_QUEST_HAS_NO_GOAL_IN	Bu bölgede bu görevin hedefi yok. En yakın diğer görev hedefine yönlendiriyor
+THIS_ENTRY_HAS_NO_GOAL_IN	Bu bölgede bu girdinin hedefi yok. Başka bir bölgede devam ediyor
+PAST_A_CLOSED_DOOR_OR_PUZZLE	Kapalı kapı ya da bulmacanın ardında. Gidilebilen yere kadar yönlendirir; önce yakındaki not, anahtar veya düzeneğe bak
 PLACE_TO_EXAMINE	İncelenecek yer
 DEADLINE_ACT1	1. perdenin sonuna kadar
-DEADLINE_DIANA_MEDICINE	1. perdenin sonundan önce: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — kamyonla gitmeden ilacı, yoksa ölür
+DEADLINE_DIANA_MEDICINE	1. perdenin sonundan önce, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name}: kamyonla gitmeden ilacı ver, yoksa ölür
 DEADLINE_JUDITH_BABY	1. perdenin sonundan ({g:Facts_Shared/Universal_Location_LymbicForge}) önce: {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name} adlı kişinin bebeğine biberon, yoksa bebek ölür
-DEADLINE_HALIE_PICTURE	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında, {g:Facts_VillageOfJova/Name_Real} değişmeden önce — yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} ölür
-DEADLINE_VIOLINIST	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} öncesinde — yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} ölür
-DUE_QUEST03_JOVA	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında — {g:Facts_VillageOfJova/Name_Real} değişmeden önce
-DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — ilk kez ayrılmadan önce
+DEADLINE_HALIE_PICTURE	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında, {g:Facts_VillageOfJova/Name_Real} değişmeden önce; yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} ölür
+DEADLINE_VIOLINIST	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} öncesinde; yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} ölür
+DUE_QUEST03_JOVA	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında, {g:Facts_VillageOfJova/Name_Real} değişmeden önce
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda}: ilk kez ayrılmadan önce
 DUE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju} tahliye kamyonu kalkmadan önce
 DEADLINE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju} tahliye kamyonu kalkmadan önce
-KEYSTONE_ORDER_ADVICE	Önerilen sıra (önce {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: bazı eşyalar yalnızca {g:Facts_Shared/Universal_Location_Talju} bölgesinde) — her kilit taşında zaman geçer ve iyilikler kapanabilir
+KEYSTONE_ORDER_ADVICE	Önerilen sıra (önce {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: bazı eşyalar yalnızca {g:Facts_Shared/Universal_Location_Talju} bölgesinde). Her kilit taşında zaman geçer ve iyilikler kapanabilir
 DEADLINE_THIRD_KEYSTONE	Üçüncü kilit taşını yerleştirmeden önce
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name}: {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name}: {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	İşaretçi okunamadı
 THE_GAME_IS_NOT_RUNNING	Oyun çalışmıyor
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	Kahramanın envanteri bulunamadı
@@ -292,16 +292,16 @@ NO_WORLDSETTINGS_PAUSER	WorldSettings.Pauser yok
 NO_SAVE_STATE_FOUND	Kayıt durumu bulunamadı
 THE_SAVE_STATE_COULD_NOT_BE	Kayıt durumu okunamadı
 ACTORS_NOT_SCANNED_YET	Aktörler henüz taranmadı
-THE_GAME_EXITED_CHEATS_OFF	Oyun kapandı — hileler kapalı
+THE_GAME_EXITED_CHEATS_OFF	Oyun kapandı, hileler kapalı
 NO_SUCH_SLOT	Böyle bir yuva yok
 NOTHING_SAVED_IN_THAT_SLOT	Bu yuvada kayıtlı bir şey yok
 ORIGINAL_VALUES_RESTORED	Özgün değerler geri yüklendi
 WRITE_FAILED	Yazma başarısız
-NO_HELL_IS_US_INSTALL_FOUND	Hiçbir Steam kitaplığında Hell Is Us kurulumu bulunamadı — --game-dir ile belirt
+NO_HELL_IS_US_INSTALL_FOUND	Hiçbir Steam kitaplığında Hell Is Us kurulumu bulunamadı. --game-dir ile belirt
 UNEXPECTED_EXECUTABLE_PATH	Beklenmeyen çalıştırılabilir dosya yolu
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	Piyonda AbilitySystemComponent yok
 NO_PLAYER_CONTROLLER	Oyuncu denetleyicisi yok
-NO_PAWN_LOADING_OR_A_CINEMATIC	Piyon yok — yükleniyor mu, ara sahne mi?
+NO_PAWN_LOADING_OR_A_CINEMATIC	Piyon yok. Yükleniyor mu, ara sahne mi?
 THE_CONTROLLED_PAWN_IS_NOT_THE	Kontrol edilen piyon kahraman değil
 NO_ABILITY_SYSTEM	Yetenek sistemi yok
 NO_LEVEL	Seviye yok
@@ -313,56 +313,56 @@ ROTATION_UNREADABLE	Yön okunamadı
 THE_POSE_IS_NOT_A_NUMBER	Poz bir sayı değil
 GENGINE_IS_EMPTY	GEngine boş
 NO_GAMEENGINE_FOUND_IN_THE_GAME	Oyun imajında GameEngine bulunamadı (hâlâ başlıyor mu?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Bilinen hiçbir FField düzeni GameEngine.GameInstance değerini okuyamıyor — motor yapısı değişti
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Bilinen hiçbir FField düzeni GameEngine.GameInstance değerini okuyamıyor. Motor yapısı değişti
 ATTRIBUTE_SET_ARRAY_UNREADABLE	Öznitelik kümesi dizisi okunamadı
 ATTRIBUTE_SET_COUNT_UNREADABLE	Öznitelik kümesi sayısı okunamadı
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	Hiçbir öznitelik adlandırılamadı — ad havuzu veya sınıf yapısı bu sürümle uyuşmuyor
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	Hiçbir öznitelik adlandırılamadı. Ad havuzu veya sınıf yapısı bu sürümle uyuşmuyor
 FIELD_UNREADABLE	Alan okunamadı
 ATTRIBUTE_UNREADABLE	Öznitelik okunamadı
 REFUSING_A_NON_FINITE_VALUE	Sonlu olmayan değer yazılmaz
 NO_ATTRIBUTE_COULD_BE_READ	Okunabilir öznitelik yok
 MINIMAP_ERROR	Mini harita: {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Özgün değerler kaydedilemedi — hileler kapalı: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Özgün değerler kaydedilemedi, hileler kapalı: {e}
 SLOT_RANGE	{name}: 1..={max} aralığında olmalı
 SAVED_IN_ANOTHER_REGION	Başka bir bölgede kaydedildi ({world})
 COULD_NOT_RESTORE	Geri yüklenemedi: {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Geri yüklenemedi: {what} — sonra `hiumod restore` çalıştır
-CANNOT_BE_SET_ONE_OF	`{id}` ayarlanamaz — seçenekler: {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Geri yüklenemedi: {what}. Sonra `hiumod restore` çalıştır
+CANNOT_BE_SET_ONE_OF	`{id}` ayarlanamaz. Seçenekler: {choices}
 CHEAT_SET_RANGE	{id}: 0..={max} aralığında olmalı
-UNKNOWN_CHEAT_ONE_OF	Bilinmeyen hile `{id}` — seçenekler: {choices}
+UNKNOWN_CHEAT_ONE_OF	Bilinmeyen hile `{id}`. Seçenekler: {choices}
 TAKES_NO_VALUE	{id} değer almaz
 CHEAT_RANGE	{id}: {min}..={max} aralığında olmalı
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id} bir kez yazılır — hold yerine `set {id} <değer>` kullan
-NO_IN_THE_INVENTORY_PICK_ONE	Envanterde {class} yok — önce bir tane al
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} bir kez yazılır. Hold yerine `set {id} <değer>` kullan
+NO_IN_THE_INVENTORY_PICK_ONE	Envanterde {class} yok. Önce bir tane al
 LINE_IS_NO_ATTRIBUTE_THIS_VERSION	{line}. satır: {set}.{name} bu sürümün bildiği bir öznitelik değil
-NO_HELL_IS_US_INSTALL_AT	{dir} konumunda Hell Is Us kurulumu yok — --game-dir ile belirt
+NO_HELL_IS_US_INSTALL_AT	{dir} konumunda Hell Is Us kurulumu yok. --game-dir ile belirt
 CANNOT_OPEN_THE_GAME_PROCESS	Oyun işlemi açılamadı: {error}
 PROCESS_SNAPSHOT_FAILED	İşlem listesi alınamadı: {error}
 CANNOT_LIST_THE_GAMES_MODULES	Oyun modülleri listelenemedi: {error}
 NO_PROPERTY	{name} özelliği yok
-THE_PAWN_IS_A_NOT_THE	Piyon kahraman değil, {classes} — önce bir kayıt yükle
+THE_PAWN_IS_A_NOT_THE	Piyon kahraman değil, {classes}. Önce bir kayıt yükle
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	Öznitelik kümesi dizisi hatalı görünüyor (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	Öznitelikler vtable üzerinde uyuşmuyor ({n}/{total}, 0x{vt})
-INSTALL_STEAM_BUILD	{ok} kurulum {dir} — Steam derlemesi {build}
+INSTALL_STEAM_BUILD	{ok} kurulum {dir} (Steam derlemesi {build})
 INSTALL	{ok} kurulum: {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} işlem {pid} — taban 0x{base}, imaj 0x{size} bayt
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} işlem {pid}: taban 0x{base}, imaj 0x{size} bayt
 NAME_POOL_0X	{ok} ad havuzu +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} FField düzeni: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} oyuncu: {e}
 HERO	{ok} kahraman: {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} zincir: GEngine {path} → denetleyici +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   kahraman geçidi: açık — yazmaya izin var
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   kahraman geçidi: açık, yazmaya izin var
 OK_POSE_YAW	ok   poz: ({x:.0}, {y:.0}, {z:.0}) yön {yaw:.1}
 FAIL_POSE	FAIL poz: {e}
-OK_MINIMAP_THINGS_IN_MS	ok   mini harita nesneleri: {n} adet, {ms} ms — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   mini harita nesneleri: {n} adet, {ms} ms ({kinds})
 FAIL_MINIMAP_THINGS	FAIL mini harita nesneleri: {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   rehber: {facts} bilgi, {tags} etiket biliyor; devam eden: {open} — {places} yer, {ms} ms (görev {quest}, sır {secret}, ipucu {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   rehber: {facts} bilgi, {tags} etiket biliyor; devam eden: {open}; {places} yer, {ms} ms (görev {quest}, sır {secret}, ipucu {clue})
 FAIL_GUIDE	FAIL rehber: {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} öznitelikler: {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} öznitelikler: {sets} set, ada göre bulunan {count} öznitelik, vtable +0x{vt}
 ATTRIBUTE_COUNT	{n} öznitelik
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} hile tablosu: adı geçen {n} özniteliğin hepsi oyunda var
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} hile tablosu: oyunda yok — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} hile tablosu: oyunda yok ({missing})
 PLAYER_WORKS	oyuncu: çalışıyor
 PLAYER_DOES_NOT_WORK	oyuncu: ÇALIŞMIYOR
 WRITTEN_TO	{path} dosyasına yazıldı
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Eşlemeler: {structs} yapı ve sınıf, {enum
 RUNNING	Çalıştırılıyor: {tool} {args}
 SURVEY_WRITTEN_TO	Keşif verisi yazıldı: {path}
 THE_GAMES_TEXT_WRITTEN_TO	Oyun metni yazıldı: {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} yapı ve sınıf, {enums} enum — {kb} KB, {path} dosyasına yazıldı
-WATCHING_OBJECT_S_FOR_S_CTRL	{n} nesne {secs} sn izleniyor — Ctrl+C durdurur
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} yapı ve sınıf, {enums} enum ({kb} KB) {path} dosyasına yazıldı
+WATCHING_OBJECT_S_FOR_S_CTRL	{n} nesne {secs} sn izleniyor. Ctrl+C durdurur
 OF_PLACES_NOW_HOLD	{all} yerin {kept} tanesi artık {v} değerini tutuyor
-PLACES_HOLD_CHANGE_IT_IN_GAME	{n} yerde {v} değeri var — oyunda değiştir, sonra `doctor scan next <yeni değer>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	Önceki bir hold'un bıraktığı {n} özgün değer — mevcut değerler değil, bunlar korunuyor
-HOLDING_CTRL_C_TO_STOP_AND	Tutuluyor: {cheats} — Ctrl+C durdurur ve geri alır
+PLACES_HOLD_CHANGE_IT_IN_GAME	{n} yerde {v} değeri var. Oyunda değiştir, sonra `doctor scan next <yeni değer>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	Önceki bir hold'un bıraktığı {n} özgün değer korunuyor, mevcut değerler değil
+HOLDING_CTRL_C_TO_STOP_AND	Tutuluyor: {cheats}. Ctrl+C durdurur ve geri alır
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	Bunun yerine sonlandırılırsa `hiumod restore` her şeyi geri alır
 APPLYING	Uygulanıyor
 NOTHING_TO_RESTORE	Geri alınacak bir şey yok
@@ -389,9 +389,9 @@ TIMELOOP_LEFT	    Zaman Döngüsü {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m içinde kadran, tuş takımı veya eşya yerleştirme bulmacası yok
 GROUPS_ENEMIES	{place}: {left}/{all} grup · {enemies} düşman
 NEAREST	En yakın
-READS_THE_ANSWER_THE_GAME_HOLDS	Oyunun bildiği cevabı okur — kendin çözmek istiyorsan basma
+READS_THE_ANSWER_THE_GAME_HOLDS	Oyunun bildiği cevabı okur. Kendin çözmek istiyorsan basma
 PUZZLES_NEARBY	Yakındaki bulmacalar ({n})
-NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Mahzen tablosu yok — konsolda bir kez `doctor survey` çalıştır
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Mahzen tablosu yok. Konsolda bir kez `doctor survey` çalıştır
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Yasak Bilgi Mahzenleri {done}/{all}
 ENEMY_GROUPS_LEFT	Kalan düşman grupları {left}/{all}
 ENEMY_GROUP_LEFT	Kalan düşman grubu
@@ -399,7 +399,7 @@ DIAL_TURN_STEPS_NOW	Kadran {n}: {k} adım çevir (şimdi {now} → {want})
 DIAL_RIGHT	Kadran {n}: doğru
 SHOW_ANSWER	Cevabı göster
 HIDE	Gizle
-NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	Spawner tablosu yok — konsolda bir kez `doctor survey` çalıştır
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	Spawner tablosu yok. Konsolda bir kez `doctor survey` çalıştır
 RESEARCH_PROGRESS	Araştırma {n}/{need}
 OPENED	Açıldı ✓
 VAULT_RESEARCH_HINT	Mahzen bilgilerini açmak için araştırma eşyalarını ZPT'de {g:Facts_Tania/Tania_Real_Name} adlı kişiye ver · araştırma: {n}
@@ -413,18 +413,18 @@ DIGIT_CODE	{n} haneli kod
 ITEM_COUNT	{n} eşya
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Kadran konumları (soldan, 1'den başlar): {list}
 PUZZLE_LIST_LEFT_HERE	Bulmaca listesi · burada {left} kaldı
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Bulmaca listesi yok — konsolda bir kez `doctor survey` çalıştır
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Bulmaca listesi yok. Konsolda bir kez `doctor survey` çalıştır
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Anahtarlı kapıları ve eşya yerleştirmeyi de göster
 UNSOLVED_PUZZLE	Çözülmemiş bulmaca
 VAULT_DOOR	Mahzen kapısı
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Yakında bulmaca — cevap panelin Bulmacalar sekmesinde
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Yakında bulmaca: cevap panelin Bulmacalar sekmesinde
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Araştırma eşyaları: 'Koleksiyon' altındaki Araştırma satırına bas, en yakına götürür
 ACHIEVEMENTS	Başarımlar {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam başarım önbelleği bulunamadı (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Açılanları da göster
 HIDDEN_ACHIEVEMENT	Gizli başarım
 SHOW	Göster
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ {tested} sürümünde denendi — bir sorun varsa konsolda `doctor` çalıştır
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ {tested} sürümünde denendi. Bir sorun varsa konsolda `doctor` çalıştır
 ADMIRATION	Hayranlık
 AMAZEMENT	Şaşkınlık
 ECSTASY	Coşku
@@ -437,7 +437,7 @@ LOAD_POSITION	Git
 GAME_DATA	Oyun verisi
 READING_THE_GAMES_MAPS	◐ Oyunun haritaları okunuyor… (yaklaşık 2 dk)
 READING_THE_GAMES_TEXT	◐ Oyunun metinleri okunuyor…
-INSTALLING_NET_8_WINGET	◐ .NET 8 winget ile kuruluyor — Windows izin isteyebilir
+INSTALLING_NET_8_WINGET	◐ .NET 8 winget ile kuruluyor. Windows izin isteyebilir
 INSTALLING_NET_8_MODS_FOLDER	◐ .NET 8 Mods klasörüne kuruluyor…
 READING_FAILED	✕ Okuma başarısız: {e}
 GAME_DATA_READY	● Hazır
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	Kalan kilit taşları, sırasıyla: {keystones}
 MORE_WITH_A_LATER_DEADLINE	Daha sonra süresi dolanlar: {count}
 GO_TO_PAGE	Aç: {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Burada modun bildiği kalan bir şey yok.
-COUNTS_ONLY_OPEN_A_LINE	Yalnızca sayılar — sayfasını açmak için bir satıra basın.
+COUNTS_ONLY_OPEN_A_LINE	Yalnızca sayılar. Sayfasını açmak için bir satıra basın.
 LEDGER_QUEST_PLACES	Görev yerleri: {count}
 LEDGER_HANDOVERS	Şimdi teslim edilebilir: {count}
 LEDGER_PUZZLES	Bulmacalar: {count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	Anlatacakları kalan NPC: {count}
 OTHER_REGIONS_CARD	Diğer bölgeler
 NOTHING_LEFT_ELSEWHERE	Diğer bölgelerde modun bildiği kalan bir şey yok.
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	Önce şimdi en çok şey yapabileceğiniz yer: teslimler ve çubuklarınızın açtığı kilitler.
-TRIP_ROW	{place} — şimdi: {doable} · kalan: {left}
+TRIP_ROW	{place} (şimdi: {doable} · kalan: {left})
 MINUTES_AGO	{count} dk önce
 HOURS_AGO	{count} sa önce
 LYMBIC_LOCKS	Limbik kilitler
-THE_RODS_EACH_LOCK_TAKES	Her kilidin istediği çubuklar — çubuklarınızın zaten açtığı kilitler önce gelir. Oraya yönlendirilmek için bir kilide ya da eksik bir çubuğa basın.
-LOCK_OPENS_NOW	{place} — şimdi açılabilir
+THE_RODS_EACH_LOCK_TAKES	Her kilidin istediği çubuklar. Çubuklarınızın zaten açtığı kilitler önce gelir. Oraya yönlendirilmek için bir kilide ya da eksik bir çubuğa basın.
+LOCK_OPENS_NOW	{place}: şimdi açılabilir
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — yer: {place}
-ROD_MISSING_NOWHERE	✗ {rod} — taramada alınacak yer kalmadı
+ROD_MISSING_AT	✗ {rod} (yer: {place})
+ROD_MISSING_NOWHERE	✗ {rod}: taramada alınacak yer kalmadı
 LOCKS_IN_OTHER_REGIONS	Diğer bölgelerdeki kilitler: {count}
 CLUES_TAB	İpuçları
 FIND_A_CLUE	İpucu bul
-CLUE_TEXT_NOT_READ_YET	Veri Tableti metinleri henüz okunmadı — kahramanın kontrolü sizde olduğunda okunur (ya da konsolda `doctor locale`).
+CLUE_TEXT_NOT_READ_YET	Veri Tableti metinleri henüz okunmadı. Kahramanın kontrolü sizde olduğunda okunur (ya da konsolda `doctor locale`).
 SEARCH_CLUES_HINT	Bir ad ya da sözcük (anahtar, Victor, tünel…)
 CLUES_KNOWN	{subjects} Veri Tableti kaydı hakkında {facts} şey biliyorsunuz.
 NO_CLUE_MATCHES	Bildiklerinizden eşleşen bir şey yok.
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	Üzerinizdeki eşyalar: {items}
 CLUES_FOR_QUEST	İpuçları: {quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	Takip edilen görevin ipuçları
 NO_QUEST_FOLLOWED_CLUES	Görevler sekmesinde bir görevi takip edin; ipuçları burada toplanır.
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Bu görev için henüz Veri Tableti kaydı yok — iyilikler, gizemler ve zaman döngüleri Veri Tableti ile değil, kendi adımlarıyla ilerler.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Bu görev için henüz Veri Tableti kaydı yok. İyilikler, gizemler ve zaman döngüleri Veri Tableti ile değil, kendi adımlarıyla ilerler.
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Bildiklerinizi görmek için bir kayda basın.
+A_WEAPON	bir silah
+A_DEFENSIVE_GEAR	bir savunma ekipmanı
+SHARD_BUDGET	Parça bütçesi
+TIMELOOPS_OPEN	Açık zaman döngüleri: {open}/{all}
+TIMELOOPS_OPEN_HOVER	Bir zaman döngüsü açık kaldıkça düşmanları geri gelir. Hepsi kapanınca elinizdeki parçalar son parçalardır.
+SHARD_SIZES_HOVER	Bir parçanın boyutu onu düşüren düşmanın seviyesine göredir: 1. seviyeden küçük, 2.den orta, 3.ten büyük. Boyutlar birbirine dönüşmez; aynı boyuttan üç nötr parça bir duygu parçasına aşılanır.
+NEUTRAL	Nötr
+SHARD_SMALL	Küçük
+SHARD_MEDIUM	Orta
+SHARD_LARGE	Büyük
+ENOUGH	Yeterli
+SHORT_BY	{shards} eksik
+COST_HOVER	Kalan maliyet: {shards}
+NOT_HELD_YET	Yok: {items}

@@ -33,6 +33,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - **Clues:** a new page with the followed quest's Datapad entries — who and what it involves, and
   what you know of each — and a search over everything you know and hold, in the game's language.
   The game's text is read once more for it (`facts.tsv`).
+- **Shard budget:** the achievements card shows what *Good Vibrations*, *Accessorizing* and *To the
+  Teeth* still cost in shards by the game's own recipes, from the weapons and gear you hold, whether
+  your shards cover it, and how many timeloops are still open. The game's crafting table is read once
+  more for it (`recipes.json`, `doctor tables`).
 - **Completion board:** opening a sort in the collection card shows how many are left in each other
   region, most first.
 

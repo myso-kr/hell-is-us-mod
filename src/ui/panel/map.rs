@@ -34,7 +34,7 @@ impl Panel {
                 0 => self.collection_card(t, guard, snap),
                 1 => self.hollows_card(t, guard, snap),
                 2 => self.stories_card(t, guard, snap),
-                _ => self.achievements_card(t),
+                _ => self.achievements_card(t, snap),
             }),
             Some(Tool::Quests) => tw::masonry(t, "quests", cols, 4, |t, i| match i {
                 0 => self.quests_card(t, guard, snap),

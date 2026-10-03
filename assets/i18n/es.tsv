@@ -5,7 +5,7 @@ MOVEMENT	Movimiento
 ITEMS	Objetos
 KEEP_HEALTH_CAP_AT_MAXIMUM	Mantener salud (límite al máximo)
 INFINITE_STAMINA	Resistencia infinita
-GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Fantasma (para explorar — no permite atacar)
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Fantasma (para explorar, no permite atacar)
 INFINITE_LYMBIC_ENERGY	Energía límbica infinita
 NO_LYMBIC_COST	Sin coste límbico
 NO_SKILL_COOLDOWN	Sin recarga de habilidades
@@ -24,11 +24,11 @@ HAND_OVER	Entregar: {item}
 TALK_GOAL	Hablar: {npc}
 ITEM	Objeto: {items}
 NEW_FACTS	{count} datos nuevos
-NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · requiere algo (llave, puzle… — ir allí no basta)
+NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · requiere algo (llave, puzle…; ir allí no basta)
 UNTIL_THE_END_OF_ACT_1	Hasta el final del acto 1
 BEFORE_THE_THIRD_KEYSTONE	Antes de la tercera llave
 GOOD_DEED_CLOSING_SOON	Buena obra a punto de expirar: {deed} ({deadline})
-GOOD_DEEDS_CLOSING_SOON_SEE_THE	Buenas obras a punto de expirar: {n} — mira la pestaña Misiones
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	Buenas obras a punto de expirar: {n}. Mira la pestaña Misiones
 MAIN	Principal {n}
 GOOD_DEED	Buena obra
 MYSTERY	Misterio
@@ -99,8 +99,8 @@ SUPPLIES	Suministros
 ENEMY_LOOT_BOX	Cofre de botín enemigo
 DOOR	Puerta
 DRONE_TRANSLATION	Traducción del dron
-TYPE_A_COMMAND_HELP_LISTS_THEM	Escribe un comando — `help` los lista, ↑/↓ historial, Esc detiene
-HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod solo abre otro panel — añade un comando (help)
+TYPE_A_COMMAND_HELP_LISTS_THEM	Escribe un comando: `help` los lista, ↑/↓ historial, Esc detiene
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod solo abre otro panel. Añade un comando (help)
 THE_LAST_COMMAND_IS_STILL_RUNNING	El último comando sigue en ejecución (Esc lo detiene)
 EXECUTABLE_NOT_FOUND	Ejecutable no encontrado: {e}
 COULD_NOT_RUN	No se pudo ejecutar: {e}
@@ -111,12 +111,12 @@ COMMAND_HELP	Comando (help)
 MAP_PIN	Marca de mapa
 PICKED_IN_THE_PANEL	Elegido en el panel
 NEEDED_HERE	Necesario: {h} aquí
-NEEDED_IN_OTHER_REGIONS_TAKE_THE	Necesario: {a} en otras regiones — usa el blindado
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	Necesario: {a} en otras regiones (usa el blindado)
 NEEDED_HERE_IN_OTHER_REGIONS	Necesario: {h} aquí · {a} en otras regiones
 POSITION_SAVED	Posición {slot} guardada ({x:.0}, {y:.0}, {z:.0})
 MOVED_TO_POSITION	Movido a la posición {slot}
 COLLECTION	Progreso de colección
-NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Sin BD de estudio — ejecuta `doctor survey` una vez en la consola
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Sin BD de estudio. Ejecuta `doctor survey` una vez en la consola
 COUNTS_WHAT_LIES_IN_THE_WORLD	Solo cuenta lo que hay en el mundo (no recompensas de PNJ ni tiendas) · aquí / total
 COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · total {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Buenas obras · Misterios · Bucles temporales
@@ -156,18 +156,18 @@ COMPASS_AND_HEADING	Brújula y rumbo
 COMPASS_F	Brújula (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Arriba y al centro de la pantalla
 GUIDE	Guía
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guía automática — sigue guiando al siguiente objetivo de la misión seguida
-WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Ruta a pie (A*) — rodea terreno, agua y paredes; la brújula señala el próximo giro
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guía automática: sigue guiando al siguiente objetivo de la misión seguida
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Ruta a pie (A*): rodea terreno, agua y paredes; la brújula señala el próximo giro
 NEXT_GOAL	Siguiente objetivo ▶
-THIS_GOAL_IS_DONE_OR_OUT	Este objetivo está hecho o fuera de alcance — sáltalo al siguiente (durante esta sesión)
-PICKED_BY_HAND_KEPT_UNTIL_IT	Elegido a mano — se mantiene hasta completarlo
+THIS_GOAL_IS_DONE_OR_OUT	Este objetivo está hecho o fuera de alcance. Sáltalo al siguiente (durante esta sesión)
+PICKED_BY_HAND_KEPT_UNTIL_IT	Elegido a mano: se mantiene hasta completarlo
 BACK_TO_AUTO	A automático
-NO_WALKING_ROUTE_IT_MAY_BE	⚠ No hay ruta a pie — puede estar tras una puerta cerrada, un puzle o una llave. Guía hasta donde llega; el resto es la línea amarilla discontinua
-AUTO_GUIDE_IS_OFF_TURN_ON	La guía automática está desactivada — activa el interruptor de arriba o elige en «Lugares»
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ No hay ruta a pie. Puede estar tras una puerta cerrada, un puzle o una llave. Guía hasta donde llega; el resto es la línea amarilla discontinua
+AUTO_GUIDE_IS_OFF_TURN_ON	La guía automática está desactivada. Activa el interruptor de arriba o elige en «Lugares»
 NOTHING_NEW_TO_GET_FOUND_NEARBY	No se encontró nada nuevo que obtener cerca
-NO_QUEST_GOAL_IN_REGION	La misión seguida no tiene objetivos en esta región — {elsewhere} en otras regiones (usa el blindado)
+NO_QUEST_GOAL_IN_REGION	La misión seguida no tiene objetivos en esta región. {elsewhere} en otras regiones (usa el blindado)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Se saltaron todos los objetivos restantes
-NO_QUEST_GOAL_NEARBY	La misión seguida no tiene objetivos cerca — elige uno en «Lugares»
+NO_QUEST_GOAL_NEARBY	La misión seguida no tiene objetivos cerca. Elige uno en «Lugares»
 GOALS_SKIPPED	{count} objetivos saltados
 UNDO	Deshacer
 PLACES	Lugares ({count})
@@ -191,7 +191,7 @@ DETAILS_CLOSED	Detalles ▼
 DETAILS_HIDDEN	Detalles ▼ ({h} ocultos)
 MAP_PINS_AND_TRAIL	Marcas de mapa y rastro
 NEW_PIN_F	Nueva marca (F{key})
-NO_PINS_IN_THIS_REGION_PRESS	No hay marcas en esta región — pulsa F{key} ante una puerta cerrada o puzle para colocar una
+NO_PINS_IN_THIS_REGION_PRESS	No hay marcas en esta región. Pulsa F{key} ante una puerta cerrada o puzle para colocar una
 REMOVE_THIS_PIN	Quitar esta marca
 THIS_REGION	Esta región
 TRAIL_POINTS_PINS	Rastro {trail} puntos · {count} marcas
@@ -209,19 +209,19 @@ COLLECT	Colección
 SAVES	Partidas
 DEBUG	Depuración
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Se reactivaron {count} trucos de la vez anterior
-CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Cerrar — restaura los valores originales y sale
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Cerrar: restaura los valores originales y sale
 HIDE_OPENS_IT_AGAIN	Ocultar (` lo vuelve a abrir)
 CONSOLE_OPEN	Consola ▾
 CONSOLE_CLOSED	Consola ▸
 CLI_CONSOLE	Consola CLI
 GAME	Juego
 CONNECTED_V_PID	● Conectado\nv{version} · PID {pid}
-LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Iniciando — conecta en cuanto esté listo
-NOT_CONNECTED	○ Sin conexión — {e}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Iniciando. Se conecta en cuanto esté listo
+NOT_CONNECTED	○ Sin conexión: {e}
 STARTING	Iniciando…
 HERO_GATE	Puerta del héroe
-OPEN_IN_CONTROL	● Abierta — con control
-GATE_CLOSED_WHY	○ Cerrada — {e}
+OPEN_IN_CONTROL	● Abierta, con control
+GATE_CLOSED_WHY	○ Cerrada: {e}
 GATE_CLOSED	○ Cerrada
 CHEATS	Trucos
 TOOLS	Herramientas
@@ -229,28 +229,28 @@ RESTORE_ALL	Restaurar todo ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Mantener estos trucos la próxima vez
 NEXT_RUN_ONCE_THE_HERO_CAN	La próxima vez, al poder controlar al héroe, se reactivan los trucos activos ahora.
 WRITES_ONLY_WHILE_THE_HERO_IS	Solo escribe valores mientras controlas al héroe · no bloquea logros
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Rastreador de misiones — centro derecha de la pantalla
-READING_THE_QUESTS_THEY_APPEAR_A	Leyendo las misiones — aparecen unos segundos después de cargar el juego
-MAIN_STORY_AUTO_NOW	Historia principal automática — {quest}
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Rastreador de misiones (centro derecha de la pantalla)
+READING_THE_QUESTS_THEY_APPEAR_A	Leyendo las misiones. Aparecen unos segundos después de cargar el juego
+MAIN_STORY_AUTO_NOW	Historia principal automática: {quest}
 MAIN_STORY_AUTO	Historia principal automática
 CLUES	 · pistas {got}/{all}
 DONE_FAILED	{done} hechas · {failed} fallidas
-NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Necesario: sin BD de estudio — ejecuta `hiumod doctor survey` una vez para rellenar objetos y PNJ de todas las regiones
-NEEDED_LEFT	Necesario — quedan {left} / {all}
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Necesario: sin BD de estudio. Ejecuta `hiumod doctor survey` una vez para rellenar objetos y PNJ de todas las regiones
+NEEDED_LEFT	Necesario: quedan {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	Otras regiones (usa el blindado): {regions}
 MISSABLE_GOOD_DEEDS	Buenas obras que se pueden perder
 EVERY_GOOD_DEED_WITH_A_DEADLINE	Todas las buenas obras con plazo están hechas o vencidas
 SOON	Pronto
 LATER	Más tarde
 NOT_STARTED	 (sin empezar)
-DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	{passed} plazos ya vencidos — esas buenas obras probablemente fallaron
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	{passed} plazos ya vencidos. Esas buenas obras probablemente fallaron
 KEYSTONE_ORDER	Orden de las llaves
 BEFORE_THE_NEXT_KEYSTONE	Antes de la próxima llave: {deeds}
 THINGS_TO_HAND_OVER	Cosas para entregar
 NO_ONE_WANTS_AN_ITEM_YOU	Nadie quiere un objeto que tengas ahora
 THINGS_TO_HAND_OVER_COUNT	Cosas para entregar ({count})
-PEOPLE_WHO_WANT_AN_ITEM_YOU	Gente que quiere un objeto que tienes — entrégalo con «Comerciar» en su charla
-TAKE_THE_APC	{place} — usa el blindado
+PEOPLE_WHO_WANT_AN_ITEM_YOU	Gente que quiere un objeto que tienes. Entrégalo con «Comerciar» en su charla
+TAKE_THE_APC	{place} (usa el blindado)
 SAVE_BACKUPS	Copias de partidas
 COPIES_THE_SAVE_FILES_EACH_TIME	Copia los archivos de partida cada vez que el juego guarda (las últimas {count})
 NO_BACKUPS_YET	Aún no hay copias
@@ -266,24 +266,24 @@ MIN_AGO	hace {minutes} min
 H_AGO	hace {hours} h
 DAYS_AGO	hace {count} d
 GUIDING	 · guiando
-THIS_QUEST_HAS_NO_GOAL_IN	Esta misión no tiene objetivo en esta región — guiando al objetivo de otra misión más cercana
-THIS_ENTRY_HAS_NO_GOAL_IN	Esta entrada no tiene objetivo en esta región — continúa en otro lugar
-PAST_A_CLOSED_DOOR_OR_PUZZLE	Tras una puerta cerrada o puzle — guía hasta donde llega; busca antes una nota, llave o dispositivo cerca
+THIS_QUEST_HAS_NO_GOAL_IN	Esta misión no tiene objetivo en esta región. Guiando al objetivo de otra misión más cercana
+THIS_ENTRY_HAS_NO_GOAL_IN	Esta entrada no tiene objetivo en esta región. Continúa en otro lugar
+PAST_A_CLOSED_DOOR_OR_PUZZLE	Tras una puerta cerrada o puzle. Guía hasta donde llega; busca antes una nota, llave o dispositivo cerca
 PLACE_TO_EXAMINE	Lugar por examinar
 DEADLINE_ACT1	Antes del final del acto 1
-DEADLINE_DIANA_MEDICINE	Antes del final del acto 1: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — la medicina antes de que se vaya en el camión, o morirá
+DEADLINE_DIANA_MEDICINE	Antes del final del acto 1: la medicina para {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} antes de que se vaya en el camión, o morirá
 DEADLINE_JUDITH_BABY	Antes del final del acto 1 ({g:Facts_Shared/Universal_Location_LymbicForge}): el biberón para el bebé de {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}, o el bebé morirá
-DEADLINE_HALIE_PICTURE	Misión {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, antes de que {g:Facts_VillageOfJova/Name_Real} cambie — o {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} morirá
-DEADLINE_VIOLINIST	Antes de la misión {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — o {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} morirá
+DEADLINE_HALIE_PICTURE	Misión {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, antes de que {g:Facts_VillageOfJova/Name_Real} cambie, o {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} morirá
+DEADLINE_VIOLINIST	Antes de la misión {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, o {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} morirá
 DUE_QUEST03_JOVA	Misión {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, antes de que {g:Facts_VillageOfJova/Name_Real} cambie
-DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — antes de salir por primera vez
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda}, antes de salir por primera vez
 DUE_TALJU_TRUCK	Antes de que salga el camión de evacuación de {g:Facts_Shared/Universal_Location_Talju}
 DEADLINE_TALJU_TRUCK	Antes de que salga el camión de evacuación de {g:Facts_Shared/Universal_Location_Talju}
-KEYSTONE_ORDER_ADVICE	Orden recomendado ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} primero: algunos objetos solo están en {g:Facts_Shared/Universal_Location_Talju}) — el tiempo pasa con cada llave y las buenas obras pueden cerrarse
+KEYSTONE_ORDER_ADVICE	Orden recomendado ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} primero: algunos objetos solo están en {g:Facts_Shared/Universal_Location_Talju}). El tiempo pasa con cada llave y las buenas obras pueden cerrarse
 DEADLINE_THIRD_KEYSTONE	Antes de colocar la tercera llave
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name}: {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name}: {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	Puntero ilegible
 THE_GAME_IS_NOT_RUNNING	El juego no está en ejecución
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	No se encontró el inventario del protagonista
@@ -292,16 +292,16 @@ NO_WORLDSETTINGS_PAUSER	Sin WorldSettings.Pauser
 NO_SAVE_STATE_FOUND	No se encontró el estado de guardado
 THE_SAVE_STATE_COULD_NOT_BE	No se pudo leer el estado de guardado
 ACTORS_NOT_SCANNED_YET	Aún no se han escaneado los actores
-THE_GAME_EXITED_CHEATS_OFF	El juego se cerró — trucos desactivados
+THE_GAME_EXITED_CHEATS_OFF	El juego se cerró. Trucos desactivados
 NO_SUCH_SLOT	No existe esa ranura
 NOTHING_SAVED_IN_THAT_SLOT	No hay nada guardado en esa ranura
 ORIGINAL_VALUES_RESTORED	Valores originales restaurados
 WRITE_FAILED	Error de escritura
-NO_HELL_IS_US_INSTALL_FOUND	No se encontró Hell Is Us en ninguna biblioteca de Steam — indícalo con --game-dir
+NO_HELL_IS_US_INSTALL_FOUND	No se encontró Hell Is Us en ninguna biblioteca de Steam. Indícalo con --game-dir
 UNEXPECTED_EXECUTABLE_PATH	Ruta de ejecutable inesperada
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	El pawn no tiene AbilitySystemComponent
 NO_PLAYER_CONTROLLER	Sin controlador de jugador
-NO_PAWN_LOADING_OR_A_CINEMATIC	Sin pawn — ¿cargando o en una escena?
+NO_PAWN_LOADING_OR_A_CINEMATIC	Sin pawn: ¿cargando o en una escena?
 THE_CONTROLLED_PAWN_IS_NOT_THE	El pawn controlado no es el protagonista
 NO_ABILITY_SYSTEM	Sin sistema de habilidades
 NO_LEVEL	Sin nivel
@@ -313,56 +313,56 @@ ROTATION_UNREADABLE	Rotación ilegible
 THE_POSE_IS_NOT_A_NUMBER	La pose no es un número
 GENGINE_IS_EMPTY	GEngine está vacío
 NO_GAMEENGINE_FOUND_IN_THE_GAME	No se encontró GameEngine en la imagen del juego (¿aún iniciando?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Ningún diseño de FField conocido lee GameEngine.GameInstance — cambió la estructura del motor
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Ningún diseño de FField conocido lee GameEngine.GameInstance. Cambió la estructura del motor
 ATTRIBUTE_SET_ARRAY_UNREADABLE	Matriz de conjuntos de atributos ilegible
 ATTRIBUTE_SET_COUNT_UNREADABLE	Número de conjuntos de atributos ilegible
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	No se pudo nombrar ningún atributo — el grupo de nombres o la estructura de clases no encaja con esta versión
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	No se pudo nombrar ningún atributo. El grupo de nombres o la estructura de clases no encaja con esta versión
 FIELD_UNREADABLE	Campo ilegible
 ATTRIBUTE_UNREADABLE	Atributo ilegible
 REFUSING_A_NON_FINITE_VALUE	Se rechaza un valor no finito
 NO_ATTRIBUTE_COULD_BE_READ	No se pudo leer ningún atributo
 MINIMAP_ERROR	Minimapa: {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	No se pudieron guardar los valores originales — trucos desactivados: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	No se pudieron guardar los valores originales. Trucos desactivados: {e}
 SLOT_RANGE	{name}: admite 1..={max}
 SAVED_IN_ANOTHER_REGION	Guardado en otra región ({world})
 COULD_NOT_RESTORE	No se pudo restaurar: {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	No se pudo restaurar: {what} — ejecuta `hiumod restore` más tarde
-CANNOT_BE_SET_ONE_OF	`{id}` no se puede fijar — una de: {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	No se pudo restaurar: {what}. Ejecuta `hiumod restore` más tarde
+CANNOT_BE_SET_ONE_OF	`{id}` no se puede fijar. Elige entre: {choices}
 CHEAT_SET_RANGE	{id}: admite 0..={max}
-UNKNOWN_CHEAT_ONE_OF	Truco desconocido `{id}` — uno de: {choices}
+UNKNOWN_CHEAT_ONE_OF	Truco desconocido `{id}`. Elige entre: {choices}
 TAKES_NO_VALUE	{id} no admite valor
 CHEAT_RANGE	{id}: admite {min}..={max}
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id} se escribe una vez — usa `set {id} <valor>`, no hold
-NO_IN_THE_INVENTORY_PICK_ONE	No hay {class} en el inventario — recoge uno primero
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} se escribe una vez. Usa `set {id} <valor>`, no hold
+NO_IN_THE_INVENTORY_PICK_ONE	No hay {class} en el inventario. Recoge uno primero
 LINE_IS_NO_ATTRIBUTE_THIS_VERSION	Línea {line}: {set}.{name} no es un atributo conocido en esta versión
-NO_HELL_IS_US_INSTALL_AT	No hay instalación de Hell Is Us en {dir} — indícalo con --game-dir
+NO_HELL_IS_US_INSTALL_AT	No hay instalación de Hell Is Us en {dir}. Indícalo con --game-dir
 CANNOT_OPEN_THE_GAME_PROCESS	No se puede abrir el proceso del juego: {error}
 PROCESS_SNAPSHOT_FAILED	Falló la lista de procesos: {error}
 CANNOT_LIST_THE_GAMES_MODULES	No se pueden listar los módulos del juego: {error}
 NO_PROPERTY	No existe la propiedad {name}
-THE_PAWN_IS_A_NOT_THE	El pawn es {classes}, no el protagonista — carga una partida primero
+THE_PAWN_IS_A_NOT_THE	El pawn es {classes}, no el protagonista. Carga una partida primero
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	La matriz de conjuntos de atributos parece incorrecta (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	Los atributos no coinciden en la vtable ({n}/{total} en 0x{vt})
-INSTALL_STEAM_BUILD	{ok} instalación {dir} — compilación de Steam {build}
+INSTALL_STEAM_BUILD	{ok} instalación {dir} (compilación de Steam {build})
 INSTALL	{ok} instalación: {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} proceso {pid} — base 0x{base}, imagen 0x{size} bytes
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} proceso {pid}: base 0x{base}, imagen 0x{size} bytes
 NAME_POOL_0X	{ok} pool de nombres +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} diseño de FField: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} jugador: {e}
 HERO	{ok} héroe: {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} cadena: GEngine {path} → controlador +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   puerta del héroe: abierta — escritura permitida
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   puerta del héroe: abierta, escritura permitida
 OK_POSE_YAW	ok   pose: ({x:.0}, {y:.0}, {z:.0}) guiñada {yaw:.1}
 FAIL_POSE	FAIL pose: {e}
-OK_MINIMAP_THINGS_IN_MS	ok   objetos del minimapa: {n} en {ms} ms — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   objetos del minimapa: {n} en {ms} ms ({kinds})
 FAIL_MINIMAP_THINGS	FAIL objetos del minimapa: {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   guía: conoce {facts} hechos, {tags} etiquetas; en curso: {open} — {places} lugares en {ms} ms (misión {quest}, secreto {secret}, pista {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   guía: conoce {facts} hechos, {tags} etiquetas; en curso: {open}; {places} lugares en {ms} ms (misión {quest}, secreto {secret}, pista {clue})
 FAIL_GUIDE	FAIL guía: {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} atributos: {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} atributos: {sets} conjuntos, {count} atributos por nombre, vtable +0x{vt}
 ATTRIBUTE_COUNT	{n} atributos
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} tabla de trucos: los {n} atributos que nombra están en el juego
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} tabla de trucos: no está en el juego — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} tabla de trucos: no está en el juego ({missing})
 PLAYER_WORKS	jugador: funciona
 PLAYER_DOES_NOT_WORK	jugador: NO FUNCIONA
 WRITTEN_TO	Escrito en {path}
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Mapeos: {structs} structs y clases, {enums} e
 RUNNING	Ejecutando {tool} {args}
 SURVEY_WRITTEN_TO	Survey escrito en {path}
 THE_GAMES_TEXT_WRITTEN_TO	Texto del juego escrito en {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} structs y clases, {enums} enums — {kb} KB, escrito en {path}
-WATCHING_OBJECT_S_FOR_S_CTRL	Observando {n} objeto(s) durante {secs} s — Ctrl+C para detener
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} structs y clases, {enums} enums: {kb} KB, escrito en {path}
+WATCHING_OBJECT_S_FOR_S_CTRL	Observando {n} objeto(s) durante {secs} s. Ctrl+C para detener
 OF_PLACES_NOW_HOLD	{kept} de {all} lugares ahora contienen {v}
-PLACES_HOLD_CHANGE_IT_IN_GAME	{n} lugares contienen {v} — cámbialo en el juego y luego `doctor scan next <valor nuevo>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	{n} original(es) dejados por un hold anterior — se mantienen esos, no los valores actuales
-HOLDING_CTRL_C_TO_STOP_AND	Manteniendo {cheats} — Ctrl+C para detener y restaurar
+PLACES_HOLD_CHANGE_IT_IN_GAME	{n} lugares contienen {v}. Cámbialo en el juego y luego `doctor scan next <valor nuevo>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	{n} original(es) dejados por un hold anterior. Se mantienen esos, no los valores actuales
+HOLDING_CTRL_C_TO_STOP_AND	Manteniendo {cheats}. Ctrl+C para detener y restaurar
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	Si se cierra a la fuerza, `hiumod restore` lo restaura todo
 APPLYING	Aplicando
 NOTHING_TO_RESTORE	Nada que restaurar
@@ -389,9 +389,9 @@ TIMELOOP_LEFT	    Bucle temporal {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	No hay ningún puzle de diales, teclado o colocación de objetos a menos de 40 m
 GROUPS_ENEMIES	{place}: {left}/{all} grupos · {enemies} enemigos
 NEAREST	Más cercano
-READS_THE_ANSWER_THE_GAME_HOLDS	Lee la respuesta que tiene el juego — no lo pulses si quieres resolverlo tú
+READS_THE_ANSWER_THE_GAME_HOLDS	Lee la respuesta que tiene el juego. No lo pulses si quieres resolverlo tú
 PUZZLES_NEARBY	Puzles cercanos ({n})
-NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	No hay tabla de cámaras — ejecuta `doctor survey` una vez en la consola
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	No hay tabla de cámaras. Ejecuta `doctor survey` una vez en la consola
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Cámaras de conocimiento prohibido {done}/{all}
 ENEMY_GROUPS_LEFT	Grupos de enemigos restantes {left}/{all}
 ENEMY_GROUP_LEFT	Grupo de enemigos restante
@@ -399,7 +399,7 @@ DIAL_TURN_STEPS_NOW	Dial {n}: girar {k} pasos (ahora {now} → {want})
 DIAL_RIGHT	Dial {n}: correcto
 SHOW_ANSWER	Ver respuesta
 HIDE	Ocultar
-NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	No hay tabla de spawners — ejecuta `doctor survey` una vez en la consola
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	No hay tabla de spawners. Ejecuta `doctor survey` una vez en la consola
 RESEARCH_PROGRESS	Investigación {n}/{need}
 OPENED	Abierto ✓
 VAULT_RESEARCH_HINT	Entrega objetos de investigación a {g:Facts_Tania/Tania_Real_Name} en el blindado para desbloquear información de las cámaras · investigación actual {n}
@@ -413,18 +413,18 @@ DIGIT_CODE	Código de {n} dígitos
 ITEM_COUNT	Objetos: {n}
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Posiciones (desde la izquierda, desde 1): {list}
 PUZZLE_LIST_LEFT_HERE	Lista de puzles · quedan {left} aquí
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	No hay lista de puzles — ejecuta `doctor survey` una vez en la consola
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	No hay lista de puzles. Ejecuta `doctor survey` una vez en la consola
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Mostrar también puertas con llave y colocación de objetos
 UNSOLVED_PUZZLE	Puzle sin resolver
 VAULT_DOOR	Puerta de cámara
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzle cerca — la respuesta está en la pestaña Puzles del panel
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzle cerca: la respuesta está en la pestaña Puzles del panel
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objetos de investigación: pulsa la línea Investigación en «Colección» para ir al más cercano
 ACHIEVEMENTS	Logros {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	No se encontró la caché de logros de Steam (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Mostrar también los desbloqueados
 HIDDEN_ACHIEVEMENT	Logro oculto
 SHOW	Ver
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Comprobado en la versión {tested} — si algo falla, ejecuta `doctor` en la consola
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Comprobado en la versión {tested}. Si algo falla, ejecuta `doctor` en la consola
 ADMIRATION	Admiración
 AMAZEMENT	Asombro
 ECSTASY	Éxtasis
@@ -473,16 +473,16 @@ LEDGER_STORIES	PNJ con algo más que contar: {count}
 OTHER_REGIONS_CARD	Otras regiones
 NOTHING_LEFT_ELSEWHERE	No queda nada en otras regiones que el mod conozca.
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	Primero donde más puedes hacer ahora: entregas y cerraduras que abren tus varas.
-TRIP_ROW	{place} — ahora: {doable} · quedan: {left}
+TRIP_ROW	{place} (ahora: {doable} · quedan: {left})
 MINUTES_AGO	hace {count} min
 HOURS_AGO	hace {count} h
 LYMBIC_LOCKS	Cerraduras límbicas
 THE_RODS_EACH_LOCK_TAKES	Las varas que pide cada cerradura; primero las que tus varas ya abren. Pulsa una cerradura o una vara que falte para que te guíe hasta allí.
-LOCK_OPENS_NOW	{place} — se abre ya
+LOCK_OPENS_NOW	{place}: se abre ya
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — en {place}
-ROD_MISSING_NOWHERE	✗ {rod} — no queda dónde conseguirla en el registro
+ROD_MISSING_AT	✗ {rod} (en {place})
+ROD_MISSING_NOWHERE	✗ {rod}: no queda dónde conseguirla en el registro
 LOCKS_IN_OTHER_REGIONS	Cerraduras en otras regiones: {count}
 CLUES_TAB	Pistas
 FIND_A_CLUE	Buscar una pista
@@ -498,3 +498,17 @@ CLUES_FOR_THE_FOLLOWED_QUEST	Pistas de la misión seguida
 NO_QUEST_FOLLOWED_CLUES	Sigue una misión en la pestaña Misiones para reunir aquí sus pistas.
 NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Todavía no hay entradas de la tablet para esta misión: las buenas acciones, los misterios y los bucles temporales avanzan por sus propios pasos, no por la tablet.
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Pulsa una entrada para ver lo que sabes de ella.
+A_WEAPON	un arma
+A_DEFENSIVE_GEAR	un equipo defensivo
+SHARD_BUDGET	Presupuesto de fragmentos
+TIMELOOPS_OPEN	Bucles temporales abiertos: {open}/{all}
+TIMELOOPS_OPEN_HOVER	Mientras un bucle temporal siga abierto, sus enemigos vuelven. Cuando se cierran todos, los fragmentos que tengas serán todos.
+SHARD_SIZES_HOVER	Un fragmento tiene el tamaño del enemigo que lo soltó: pequeño del nivel 1, mediano del 2, grande del 3. Los tamaños no se convierten; tres fragmentos neutros se infunden en uno de una emoción del mismo tamaño.
+NEUTRAL	Neutro
+SHARD_SMALL	Pequeño
+SHARD_MEDIUM	Mediano
+SHARD_LARGE	Grande
+ENOUGH	Suficiente
+SHORT_BY	Faltan {shards}
+COST_HOVER	Aún cuesta: {shards}
+NOT_HELD_YET	No lo tienes: {items}

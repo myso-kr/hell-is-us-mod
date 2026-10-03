@@ -48,6 +48,7 @@ struct Derived {
     catalogue: Arc<Vec<(crate::survey::Placed, bool)>>,
     locks: Arc<Vec<crate::survey::Lock>>,
     clues: Arc<crate::clues::Clues>,
+    budget: Arc<crate::budget::Budget>,
 }
 
 /// Puzzles this near the hero (cm) are read and shown.
@@ -143,6 +144,7 @@ impl Engine {
             catalogue: Default::default(),
             locks: Default::default(),
             clues: Default::default(),
+            budget: Default::default(),
             deadlines: Default::default(),
             handovers: Default::default(),
             needs: Default::default(),
@@ -190,6 +192,7 @@ impl Engine {
                                 catalogue: Arc::new(a.catalogue()),
                                 locks: Arc::new(a.locks()),
                                 clues: Arc::new(a.clues()),
+                                budget: Arc::new(a.budget()),
                                 puzzles: Arc::new(here.map(|h| a.puzzles(h, PUZZLE_REACH)).unwrap_or_default()),
                                 needs: Arc::new(a.needs(&journal)),
                                 handovers: Arc::new(a.handovers()),
@@ -216,6 +219,7 @@ impl Engine {
                             snap.catalogue = d.catalogue.clone();
                             snap.locks = d.locks.clone();
                             snap.clues = d.clues.clone();
+                            snap.budget = d.budget.clone();
                         }
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();

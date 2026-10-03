@@ -7,9 +7,11 @@ that are not loaded around the hero. One run of `tools/survey` (C# .NET 8 + CUE4
   something out (pickups, devices, markers), NPCs and their conversations, hand-overs, puzzles
   (dials, keypads, item placements) and vault doors, with position and save GUID (§3–§7).
 - `Mods\survey\flows.json` — the conversations NPCs run and what their nodes hand out.
-- `Mods\survey\spawners.json` and `vaults.json` — the game's own spawner and vault tables
-  (see `FEATURES.md §3`, F7 and F8; read by `src/guide/tables.rs`).
-- `Mods\locale\` — the game's text for every culture, plus `names.tsv` (see `I18N.md §2`).
+- `Mods\survey\spawners.json`, `vaults.json` and `recipes.json` — the game's own spawner, vault and
+  crafting tables (see `FEATURES.md §3`, F7, F8 and §6; read by `src/guide/tables.rs`). `doctor tables`
+  writes only these, in seconds; a survey without `recipes.json` gets it that way from the panel.
+- `Mods\locale\` — the game's text for every culture, plus `names.tsv` and `facts.tsv` (see
+  `I18N.md §2`).
 
 Live puzzle answers near the hero are read from memory, not from the survey (`src/read/puzzles.rs`,
 `FEATURES.md §3`, F6). Since §8 the survey runs on its own; nobody needs to type a command.

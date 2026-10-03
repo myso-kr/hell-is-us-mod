@@ -5,6 +5,8 @@
 //!   GUID) has been beaten — checked against the live enemies in play.
 //! - `vaults.json` — the six Vaults of Forbidden Knowledge: name, region, clue, the
 //!   research entries that unlock them and their four-symbol code (F7).
+//! - `recipes.json` — every crafting recipe: the item it takes, the shards, what it
+//!   makes (the shard budget, budget.rs).
 
 use serde_json::Value;
 use std::collections::{BTreeMap, HashSet};
@@ -29,10 +31,21 @@ pub struct Vault {
     pub code: Vec<u8>,
 }
 
+/// A crafting recipe: `from` and the shards in `needs` make `to` (item asset names).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Recipe {
+    /// `UpgradeWeapon`, `ImbueDefensiveGear`, `InfuseShard`, `Consumables`.
+    pub kind: String,
+    pub from: String,
+    pub needs: Vec<(String, u32)>,
+    pub to: String,
+}
+
 #[derive(Default, Debug)]
 pub struct Tables {
     pub spawners: BTreeMap<String, Vec<Spawner>>,
     pub vaults: Vec<Vault>,
+    pub recipes: Vec<Recipe>,
 }
 
 /// One world's Hollows: spawners and enemies left of all, per timeloop too, and where
@@ -93,6 +106,22 @@ impl Tables {
                     .collect();
                 t.spawners.insert(world, list);
             }
+        }
+        if let Some(Value::Array(list)) = read("recipes.json") {
+            t.recipes = list
+                .iter()
+                .map(|r| Recipe {
+                    kind: r["kind"].as_str().unwrap_or_default().to_string(),
+                    from: r["from"].as_str().unwrap_or_default().to_string(),
+                    needs: r["needs"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .filter_map(|n| Some((n[0].as_str()?.to_string(), n[1].as_u64()? as u32)))
+                        .collect(),
+                    to: r["to"].as_str().unwrap_or_default().to_string(),
+                })
+                .collect();
         }
         if let Some(Value::Array(vaults)) = read("vaults.json") {
             t.vaults = vaults

@@ -5,7 +5,7 @@ MOVEMENT	이동
 ITEMS	아이템
 KEEP_HEALTH_CAP_AT_MAXIMUM	체력 최대치 유지
 INFINITE_STAMINA	기력 무한
-GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	고스트 (탐험용 — 켜 두면 공격 불가)
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	고스트 (탐험용, 켜 두면 공격 불가)
 INFINITE_LYMBIC_ENERGY	림빅 에너지 무한
 NO_LYMBIC_COST	림빅 소모 없음
 NO_SKILL_COOLDOWN	스킬 재사용 대기시간 없음
@@ -28,7 +28,7 @@ NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · 추가 조건 필요 (열쇠·퍼즐 등, 가
 UNTIL_THE_END_OF_ACT_1	1막 끝까지
 BEFORE_THE_THIRD_KEYSTONE	세 번째 키스톤 전
 GOOD_DEED_CLOSING_SOON	마감 임박 선행: {deed} ({deadline})
-GOOD_DEEDS_CLOSING_SOON_SEE_THE	마감 임박 선행 {n}개 — 퀘스트 탭에서 확인
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	마감 임박 선행 {n}개 (퀘스트 탭에서 확인)
 MAIN	메인 {n}
 GOOD_DEED	선행
 MYSTERY	미스터리
@@ -99,8 +99,8 @@ SUPPLIES	보급품
 ENEMY_LOOT_BOX	적 전리품 상자
 DOOR	문
 DRONE_TRANSLATION	드론 번역
-TYPE_A_COMMAND_HELP_LISTS_THEM	명령을 입력하세요 — `help`로 목록, ↑/↓ 이전 명령, Esc로 실행 중지
-HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod만 입력하면 패널이 하나 더 열립니다 — 명령을 붙여 주세요 (help)
+TYPE_A_COMMAND_HELP_LISTS_THEM	명령을 입력하세요. `help`로 목록, ↑/↓ 이전 명령, Esc로 실행 중지
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod만 입력하면 패널이 하나 더 열립니다. 명령을 붙여 주세요 (help)
 THE_LAST_COMMAND_IS_STILL_RUNNING	이전 명령이 아직 실행 중입니다 (Esc로 중지)
 EXECUTABLE_NOT_FOUND	실행 파일을 찾을 수 없습니다: {e}
 COULD_NOT_RUN	실행하지 못했습니다: {e}
@@ -111,12 +111,12 @@ COMMAND_HELP	명령 (help)
 MAP_PIN	지도 핀
 PICKED_IN_THE_PANEL	패널에서 고른 곳
 NEEDED_HERE	필요한 것: 이 지역 {h}곳
-NEEDED_IN_OTHER_REGIONS_TAKE_THE	필요한 것: 다른 지역 {a}곳 — 장갑차로 이동
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	필요한 것: 다른 지역 {a}곳 (장갑차로 이동)
 NEEDED_HERE_IN_OTHER_REGIONS	필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳
 POSITION_SAVED	위치 {slot} 저장 ({x:.0}, {y:.0}, {z:.0})
 MOVED_TO_POSITION	이동 완료: 위치 {slot}
 COLLECTION	수집 진행도
-NO_SURVEY_DB_RUN_DOCTOR_SURVEY	조사 DB가 없습니다 — 콘솔에서 `doctor survey`를 한 번 실행하세요
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	조사 DB가 없습니다. 콘솔에서 `doctor survey`를 한 번 실행하세요
 COUNTS_WHAT_LIES_IN_THE_WORLD	월드에 놓인 것만 셉니다 (NPC 보상·상점 제외) · 이 지역 / 전체
 COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · 전체 {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	선행 · 미스터리 · 타임루프
@@ -156,18 +156,18 @@ COMPASS_AND_HEADING	나침반 · 방향
 COMPASS_F	나침반 (F{key})
 TOP_CENTRE_OF_THE_SCREEN	화면 상단 중앙
 GUIDE	안내
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	자동 안내 — 추적 중인 퀘스트의 다음 목표로 계속 안내합니다
-WALKING_ROUTE_A_AROUND_TERRAIN_WATER	이동 경로 (A*) — 지형·물·벽을 우회하며, 나침반이 다음 꺾이는 곳을 가리킵니다
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	자동 안내: 추적 중인 퀘스트의 다음 목표로 계속 안내합니다
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	이동 경로 (A*): 지형·물·벽을 우회하며, 나침반이 다음 꺾이는 곳을 가리킵니다
 NEXT_GOAL	다음 목표 ▶
-THIS_GOAL_IS_DONE_OR_OUT	끝났거나 갈 수 없는 목표 — 건너뛰고 다음 목표로 (이번 실행 동안만)
-PICKED_BY_HAND_KEPT_UNTIL_IT	직접 고른 목표 — 끝날 때까지 유지
+THIS_GOAL_IS_DONE_OR_OUT	끝났거나 갈 수 없는 목표: 건너뛰고 다음 목표로 (이번 실행 동안만)
+PICKED_BY_HAND_KEPT_UNTIL_IT	직접 고른 목표: 끝날 때까지 유지
 BACK_TO_AUTO	자동으로
-NO_WALKING_ROUTE_IT_MAY_BE	⚠ 걸어서 닿는 길이 없습니다 — 닫힌 문·퍼즐·열쇠 너머일 수 있습니다. 닿는 곳까지만 안내하고 나머지는 노란 점선입니다
-AUTO_GUIDE_IS_OFF_TURN_ON	자동 안내가 꺼져 있습니다 — 위 스위치를 켜거나 '갈 곳'에서 고르세요
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ 걸어서 닿는 길이 없습니다. 닫힌 문·퍼즐·열쇠 너머일 수 있습니다. 닿는 곳까지만 안내하고 나머지는 노란 점선입니다
+AUTO_GUIDE_IS_OFF_TURN_ON	자동 안내가 꺼져 있습니다. 위 스위치를 켜거나 '갈 곳'에서 고르세요
 NOTHING_NEW_TO_GET_FOUND_NEARBY	근처에 새로 얻을 만한 곳이 없습니다
-NO_QUEST_GOAL_IN_REGION	이 지역에는 추적 중인 퀘스트의 목표가 없습니다 — 다른 지역 {elsewhere}곳 (장갑차로 이동)
+NO_QUEST_GOAL_IN_REGION	이 지역에는 추적 중인 퀘스트의 목표가 없습니다. 다른 지역에 {elsewhere}곳 있습니다 (장갑차로 이동)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	남은 목표를 모두 건너뛰었습니다
-NO_QUEST_GOAL_NEARBY	근처에 추적 중인 퀘스트의 목표가 없습니다 — '갈 곳'에서 직접 고를 수 있습니다
+NO_QUEST_GOAL_NEARBY	근처에 추적 중인 퀘스트의 목표가 없습니다. '갈 곳'에서 직접 고를 수 있습니다
 GOALS_SKIPPED	건너뛴 목표 {count}개
 UNDO	되돌리기
 PLACES	갈 곳 ({count})
@@ -191,7 +191,7 @@ DETAILS_CLOSED	세부 ▼
 DETAILS_HIDDEN	세부 ▼ ({h}개 숨김)
 MAP_PINS_AND_TRAIL	지도 핀 · 지나온 길
 NEW_PIN_F	새 핀 (F{key})
-NO_PINS_IN_THIS_REGION_PRESS	이 지역에 핀이 없습니다 — 잠긴 문이나 퍼즐 앞에서 F{key} 키를 누르면 핀이 생깁니다
+NO_PINS_IN_THIS_REGION_PRESS	이 지역에 핀이 없습니다. 잠긴 문이나 퍼즐 앞에서 F{key} 키를 누르면 핀이 생깁니다
 REMOVE_THIS_PIN	이 핀 삭제
 THIS_REGION	이 지역
 TRAIL_POINTS_PINS	지나온 길 {trail}점 · 핀 {count}개
@@ -209,19 +209,19 @@ COLLECT	수집
 SAVES	세이브
 DEBUG	디버그
 TURNED_CHEATS_FROM_LAST_TIME_BACK	지난번에 켜 둔 치트 {count}개를 다시 켰습니다
-CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	닫기 — 원래 값으로 되돌리고 종료
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	닫기 (원래 값으로 되돌리고 종료)
 HIDE_OPENS_IT_AGAIN	숨기기 (` 키로 다시 열기)
 CONSOLE_OPEN	콘솔 ▾
 CONSOLE_CLOSED	콘솔 ▸
 CLI_CONSOLE	CLI 콘솔
 GAME	게임
 CONNECTED_V_PID	● 연결됨\nv{version} · PID {pid}
-LAUNCHING_CONNECTS_ONCE_IT_IS_UP	실행 중 — 켜지면 자동으로 연결됩니다
-NOT_CONNECTED	○ 연결 안 됨 — {e}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	실행 중입니다. 켜지면 자동으로 연결됩니다
+NOT_CONNECTED	○ 연결 안 됨: {e}
 STARTING	시작 중…
 HERO_GATE	주인공 게이트
-OPEN_IN_CONTROL	● 열림 — 조작 중
-GATE_CLOSED_WHY	○ 닫힘 — {e}
+OPEN_IN_CONTROL	● 열림 (조작 중)
+GATE_CLOSED_WHY	○ 닫힘: {e}
 GATE_CLOSED	○ 닫힘
 CHEATS	치트
 TOOLS	도구
@@ -229,28 +229,28 @@ RESTORE_ALL	모두 원래대로 ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	다음에도 켜 둔 치트 유지
 NEXT_RUN_ONCE_THE_HERO_CAN	다음 실행 때 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다.
 WRITES_ONLY_WHILE_THE_HERO_IS	주인공을 조작하는 동안에만 값을 적용합니다 · 업적은 차단되지 않습니다
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	퀘스트 추적기 — 화면 오른쪽 가운데
-READING_THE_QUESTS_THEY_APPEAR_A	퀘스트를 읽는 중입니다 — 게임을 불러온 뒤 몇 초 지나면 표시됩니다
-MAIN_STORY_AUTO_NOW	메인 스토리 자동 — {quest}
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	퀘스트 추적기 (화면 오른쪽 가운데)
+READING_THE_QUESTS_THEY_APPEAR_A	퀘스트를 읽는 중입니다. 게임을 불러온 뒤 몇 초 지나면 표시됩니다
+MAIN_STORY_AUTO_NOW	메인 스토리 자동: {quest}
 MAIN_STORY_AUTO	메인 스토리 자동
 CLUES	 · 단서 {got}/{all}
 DONE_FAILED	완료 {done}개 · 실패 {failed}개
-NEEDED_NO_SURVEY_DB_RUN_HIUMOD	필요한 것: 조사 DB 없음 — `hiumod doctor survey`를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다
-NEEDED_LEFT	필요한 것 — 남은 {left} / {all}
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	필요한 것: 조사 DB가 없습니다. `hiumod doctor survey`를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다
+NEEDED_LEFT	필요한 것 (남은 {left} / {all})
 OTHER_REGIONS_TAKE_THE_APC	다른 지역 (장갑차로 이동): {regions}
 MISSABLE_GOOD_DEEDS	놓치기 쉬운 선행
 EVERY_GOOD_DEED_WITH_A_DEADLINE	마감이 있는 선행은 모두 끝났거나 지났습니다
 SOON	임박
 LATER	나중
 NOT_STARTED	 (시작 전)
-DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	이미 지난 마감 {passed}개 — 해당 선행은 실패했을 가능성이 높습니다
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	이미 지난 마감 {passed}개: 해당 선행은 실패했을 가능성이 높습니다
 KEYSTONE_ORDER	키스톤 순서
 BEFORE_THE_NEXT_KEYSTONE	다음 키스톤 전에: {deeds}
 THINGS_TO_HAND_OVER	건네줄 수 있는 것
 NO_ONE_WANTS_AN_ITEM_YOU	지금 가진 아이템을 원하는 사람이 없습니다
 THINGS_TO_HAND_OVER_COUNT	건네줄 수 있는 것 ({count})
-PEOPLE_WHO_WANT_AN_ITEM_YOU	가진 아이템을 원하는 사람 — 대화의 '거래'로 건넵니다
-TAKE_THE_APC	{place} — 장갑차로 이동
+PEOPLE_WHO_WANT_AN_ITEM_YOU	가진 아이템을 원하는 사람: 대화의 '거래'로 건넵니다
+TAKE_THE_APC	{place} (장갑차로 이동)
 SAVE_BACKUPS	세이브 백업
 COPIES_THE_SAVE_FILES_EACH_TIME	게임이 저장할 때마다 세이브 파일을 복사해 둡니다 (최근 {count}개)
 NO_BACKUPS_YET	아직 백업이 없습니다
@@ -266,24 +266,24 @@ MIN_AGO	{minutes}분 전
 H_AGO	{hours}시간 전
 DAYS_AGO	{count}일 전
 GUIDING	 · 안내 중
-THIS_QUEST_HAS_NO_GOAL_IN	이 지역에는 이 퀘스트의 목표가 없습니다 — 가까운 다른 퀘스트 목표로 안내합니다
-THIS_ENTRY_HAS_NO_GOAL_IN	이 지역에는 이 항목의 목표가 없습니다 — 다른 지역에서 이어집니다
-PAST_A_CLOSED_DOOR_OR_PUZZLE	닫힌 문·퍼즐 너머입니다 — 닿는 곳까지 안내합니다. 근처의 쪽지·열쇠·장치를 먼저 찾아보세요
+THIS_QUEST_HAS_NO_GOAL_IN	이 지역에는 이 퀘스트의 목표가 없습니다. 가까운 다른 퀘스트 목표로 안내합니다
+THIS_ENTRY_HAS_NO_GOAL_IN	이 지역에는 이 항목의 목표가 없습니다. 다른 지역에서 이어집니다
+PAST_A_CLOSED_DOOR_OR_PUZZLE	닫힌 문·퍼즐 너머입니다. 닿는 곳까지 안내합니다. 근처의 쪽지·열쇠·장치를 먼저 찾아보세요
 PLACE_TO_EXAMINE	살펴볼 곳
 DEADLINE_ACT1	1막 끝 전
-DEADLINE_DIANA_MEDICINE	1막 끝 전 — {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name}: 트럭이 떠나기 전에 약을 전달하지 않으면 사망
-DEADLINE_JUDITH_BABY	1막 끝({g:Facts_Shared/Universal_Location_LymbicForge}) 전 — {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}의 아기에게 젖병을 주지 않으면 아기 사망
-DEADLINE_HALIE_PICTURE	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중, {g:Facts_VillageOfJova/Name_Real} 상황이 바뀌기 전 — 놓치면 {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} 사망
-DEADLINE_VIOLINIST	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 전 — 놓치면 {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} 사망
-DUE_QUEST03_JOVA	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 — {g:Facts_VillageOfJova/Name_Real} 변화 전
-DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전
+DEADLINE_DIANA_MEDICINE	1막 끝 전, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name}: 트럭이 떠나기 전에 약을 전달하지 않으면 사망
+DEADLINE_JUDITH_BABY	1막 끝({g:Facts_Shared/Universal_Location_LymbicForge}) 전까지 {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}의 아기에게 젖병을 주지 않으면 아기 사망
+DEADLINE_HALIE_PICTURE	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중, {g:Facts_VillageOfJova/Name_Real} 상황이 바뀌기 전: 놓치면 {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} 사망
+DEADLINE_VIOLINIST	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 전: 놓치면 {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} 사망
+DUE_QUEST03_JOVA	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중, {g:Facts_VillageOfJova/Name_Real} 변화 전
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda}, 처음 떠나기 전
 DUE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju} 대피 트럭 출발 전
 DEADLINE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju} 대피 트럭이 떠나기 전
-KEYSTONE_ORDER_ADVICE	권장 순서 ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 먼저: 일부 아이템이 {g:Facts_Shared/Universal_Location_Talju}에만 있음) — 키스톤마다 시간이 흘러 선행을 놓칠 수 있습니다
+KEYSTONE_ORDER_ADVICE	권장 순서 ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 먼저: 일부 아이템이 {g:Facts_Shared/Universal_Location_Talju}에만 있음). 키스톤마다 시간이 흘러 선행을 놓칠 수 있습니다
 DEADLINE_THIRD_KEYSTONE	세 번째 키스톤을 놓기 전
-KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name}: {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name}: {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
 POINTER_UNREADABLE	포인터를 읽을 수 없음
 THE_GAME_IS_NOT_RUNNING	게임이 실행 중이 아닙니다
 THE_HEROS_INVENTORY_WAS_NOT_FOUND	주인공의 인벤토리를 찾지 못함
@@ -292,16 +292,16 @@ NO_WORLDSETTINGS_PAUSER	WorldSettings.Pauser 없음
 NO_SAVE_STATE_FOUND	세이브 상태를 찾지 못함
 THE_SAVE_STATE_COULD_NOT_BE	세이브 상태를 읽지 못함
 ACTORS_NOT_SCANNED_YET	아직 액터를 훑지 않음
-THE_GAME_EXITED_CHEATS_OFF	게임이 종료됨 — 치트 꺼짐
+THE_GAME_EXITED_CHEATS_OFF	게임이 종료되어 치트를 껐습니다
 NO_SUCH_SLOT	그런 슬롯이 없음
 NOTHING_SAVED_IN_THAT_SLOT	그 슬롯에 저장된 것이 없음
 ORIGINAL_VALUES_RESTORED	원래 값으로 되돌림
 WRITE_FAILED	쓰기 실패
-NO_HELL_IS_US_INSTALL_FOUND	Steam 라이브러리에서 Hell Is Us 설치를 찾지 못함 — --game-dir로 지정하세요
+NO_HELL_IS_US_INSTALL_FOUND	Steam 라이브러리에서 Hell Is Us 설치를 찾지 못함. --game-dir로 지정하세요
 UNEXPECTED_EXECUTABLE_PATH	예상과 다른 실행 파일 경로
 THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	폰에 AbilitySystemComponent가 없음
 NO_PLAYER_CONTROLLER	플레이어 컨트롤러 없음
-NO_PAWN_LOADING_OR_A_CINEMATIC	폰 없음 — 로딩 중이거나 컷신 재생 중일 수 있음
+NO_PAWN_LOADING_OR_A_CINEMATIC	폰 없음 (로딩 중이거나 컷신 재생 중일 수 있음)
 THE_CONTROLLED_PAWN_IS_NOT_THE	조작 중인 폰이 주인공이 아님
 NO_ABILITY_SYSTEM	어빌리티 시스템 없음
 NO_LEVEL	레벨 없음
@@ -313,56 +313,56 @@ ROTATION_UNREADABLE	방향을 읽을 수 없음
 THE_POSE_IS_NOT_A_NUMBER	위치·방향 값이 숫자가 아님
 GENGINE_IS_EMPTY	GEngine이 비어 있음
 NO_GAMEENGINE_FOUND_IN_THE_GAME	게임 이미지에서 GameEngine을 찾지 못함 (아직 시작 중?)
-NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	알려진 FField 레이아웃으로 GameEngine.GameInstance를 읽지 못함 — 엔진 구조가 바뀜
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	알려진 FField 레이아웃으로 GameEngine.GameInstance를 읽지 못함 (엔진 구조가 바뀜)
 ATTRIBUTE_SET_ARRAY_UNREADABLE	속성 세트 배열을 읽을 수 없음
 ATTRIBUTE_SET_COUNT_UNREADABLE	속성 세트 개수를 읽을 수 없음
-NO_ATTRIBUTE_COULD_BE_NAMED_THE	속성 이름을 하나도 읽지 못함 — 이름 풀이나 클래스 구조가 이 빌드와 맞지 않음
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	속성 이름을 하나도 읽지 못함 (이름 풀이나 클래스 구조가 이 빌드와 맞지 않음)
 FIELD_UNREADABLE	필드를 읽을 수 없음
 ATTRIBUTE_UNREADABLE	속성을 읽을 수 없음
 REFUSING_A_NON_FINITE_VALUE	유한하지 않은 값은 쓰지 않음
 NO_ATTRIBUTE_COULD_BE_READ	읽을 수 있는 속성이 없음
 MINIMAP_ERROR	미니맵: {e}
-COULD_NOT_RECORD_THE_ORIGINAL_VALUES	원래 값을 기록하지 못함 — 치트 꺼짐: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	원래 값을 기록하지 못해 치트를 껐습니다: {e}
 SLOT_RANGE	{name}: 1..={max} 범위
 SAVED_IN_ANOTHER_REGION	다른 지역에서 저장됨 ({world})
 COULD_NOT_RESTORE	되돌리지 못함: {what}
-COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	되돌리지 못함: {what} — 나중에 `hiumod restore`를 실행하세요
-CANNOT_BE_SET_ONE_OF	`{id}`: 값을 정할 수 없음 — 가능한 것: {choices}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	되돌리지 못함: {what}. 나중에 `hiumod restore`를 실행하세요
+CANNOT_BE_SET_ONE_OF	`{id}`: 값을 정할 수 없음. 가능한 것: {choices}
 CHEAT_SET_RANGE	{id}: 0..={max} 범위
-UNKNOWN_CHEAT_ONE_OF	모르는 치트 `{id}` — 가능한 것: {choices}
+UNKNOWN_CHEAT_ONE_OF	모르는 치트 `{id}`. 가능한 것: {choices}
 TAKES_NO_VALUE	{id}: 값을 받지 않음
 CHEAT_RANGE	{id}: {min}..={max} 범위
-IS_WRITTEN_ONCE_USE_SET_VALUE	{id}: 한 번만 쓰는 값 — hold 대신 `set {id} <값>`을 쓰세요
-NO_IN_THE_INVENTORY_PICK_ONE	인벤토리에 {class} 없음 — 먼저 하나 주우세요
-LINE_IS_NO_ATTRIBUTE_THIS_VERSION	{line}번째 줄: {set}.{name} — 이 버전에 없는 속성
-NO_HELL_IS_US_INSTALL_AT	{dir}: Hell Is Us 설치를 찾지 못함 — --game-dir로 지정하세요
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id}: 한 번만 쓰는 값입니다. hold 대신 `set {id} <값>`을 쓰세요
+NO_IN_THE_INVENTORY_PICK_ONE	인벤토리에 {class} 없음. 먼저 하나 주우세요
+LINE_IS_NO_ATTRIBUTE_THIS_VERSION	{line}번째 줄: {set}.{name} 속성이 이 버전에 없음
+NO_HELL_IS_US_INSTALL_AT	{dir}: Hell Is Us 설치를 찾지 못함. --game-dir로 지정하세요
 CANNOT_OPEN_THE_GAME_PROCESS	게임 프로세스를 열 수 없음: {error}
 PROCESS_SNAPSHOT_FAILED	프로세스 목록을 얻지 못함: {error}
 CANNOT_LIST_THE_GAMES_MODULES	게임 모듈 목록을 얻지 못함: {error}
 NO_PROPERTY	속성 없음: {name}
-THE_PAWN_IS_A_NOT_THE	폰이 주인공이 아님: {classes} — 먼저 세이브를 불러오세요
+THE_PAWN_IS_A_NOT_THE	폰이 주인공이 아님: {classes}. 먼저 세이브를 불러오세요
 THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	속성 세트 배열이 이상함 (num={num}, data=0x{data})
 ATTRIBUTES_DO_NOT_AGREE_ON_A	속성들의 vtable 이 일치하지 않음 ({n}/{total}, 0x{vt})
-INSTALL_STEAM_BUILD	{ok} 설치 {dir} — Steam 빌드 {build}
+INSTALL_STEAM_BUILD	{ok} 설치 {dir} (Steam 빌드 {build})
 INSTALL	{ok} 설치: {e}
-PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} 프로세스 {pid} — 베이스 0x{base}, 이미지 0x{size} 바이트
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} 프로세스 {pid}: 베이스 0x{base}, 이미지 0x{size} 바이트
 NAME_POOL_0X	{ok} 이름 풀 +0x{at}
 FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} FField 레이아웃: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
 PLAYER	{ok} 플레이어: {e}
 HERO	{ok} 주인공: {classes}
 CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} 체인: GEngine {path} → 컨트롤러 +0x{pawn} 폰 → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   주인공 게이트: 열림 — 쓰기 허용
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   주인공 게이트: 열림 (쓰기 허용)
 OK_POSE_YAW	ok   위치: ({x:.0}, {y:.0}, {z:.0}) 방향 {yaw:.1}
 FAIL_POSE	FAIL 위치: {e}
-OK_MINIMAP_THINGS_IN_MS	ok   미니맵 대상: {n}개, {ms} ms — {kinds}
+OK_MINIMAP_THINGS_IN_MS	ok   미니맵 대상: {n}개, {ms} ms ({kinds})
 FAIL_MINIMAP_THINGS	FAIL 미니맵 대상: {e}
-OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open} — 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open}, 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})
 FAIL_GUIDE	FAIL 안내: {e}
 DOCTOR_ATTRIBUTES_FAIL	{ok} 속성: {e}
 ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} 속성: 세트 {sets}개, 이름으로 찾은 속성 {count}개, vtable +0x{vt}
 ATTRIBUTE_COUNT	속성 {n}개
 CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} 치트 표: 이름이 나오는 속성 {n}개가 모두 게임에 있음
-CHEAT_TABLE_NOT_IN_THE_GAME	{ok} 치트 표: 게임에 없음 — {missing}
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} 치트 표: 게임에 없음 ({missing})
 PLAYER_WORKS	플레이어: 정상
 PLAYER_DOES_NOT_WORK	플레이어: 작동 안 함
 WRITTEN_TO	저장함: {path}
@@ -372,12 +372,12 @@ MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	매핑: 구조체·클래스 {structs}개, �
 RUNNING	실행: {tool} {args}
 SURVEY_WRITTEN_TO	조사 결과: {path}
 THE_GAMES_TEXT_WRITTEN_TO	게임 텍스트: {path}
-STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	구조체·클래스 {structs}개, 열거형 {enums}개 — {kb} KB, 저장함: {path}
-WATCHING_OBJECT_S_FOR_S_CTRL	객체 {n}개를 {secs}초 동안 감시 — Ctrl+C로 중지
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	구조체·클래스 {structs}개, 열거형 {enums}개 ({kb} KB) 저장함: {path}
+WATCHING_OBJECT_S_FOR_S_CTRL	객체 {n}개를 {secs}초 동안 감시 (Ctrl+C로 중지)
 OF_PLACES_NOW_HOLD	{all}곳 중 {kept}곳의 값이 {v}
-PLACES_HOLD_CHANGE_IT_IN_GAME	값이 {v}인 곳 {n}곳 — 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`
-ORIGINAL_S_LEFT_BY_AN_EARLIER	이전 hold가 남긴 원래 값 {n}개 — 현재 값이 아닌 이 값을 유지
-HOLDING_CTRL_C_TO_STOP_AND	유지 중: {cheats} — Ctrl+C로 중지하고 되돌림
+PLACES_HOLD_CHANGE_IT_IN_GAME	값이 {v}인 곳 {n}곳. 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	이전 hold가 남긴 원래 값 {n}개 (현재 값이 아닌 이 값을 유지)
+HOLDING_CTRL_C_TO_STOP_AND	유지 중: {cheats} (Ctrl+C로 중지하고 되돌림)
 IF_THIS_IS_KILLED_INSTEAD_HIUMOD	강제 종료되면 `hiumod restore`로 되돌릴 수 있음
 APPLYING	적용 중
 NOTHING_TO_RESTORE	되돌릴 것이 없음
@@ -389,9 +389,9 @@ TIMELOOP_LEFT	    타임루프 {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다
 GROUPS_ENEMIES	{place}: {left}/{all} 무리 · 적 {enemies}
 NEAREST	가장 가까운 곳
-READS_THE_ANSWER_THE_GAME_HOLDS	게임이 가진 정답을 읽습니다 — 직접 풀고 싶다면 누르지 마세요
+READS_THE_ANSWER_THE_GAME_HOLDS	게임이 가진 정답을 읽습니다. 직접 풀고 싶다면 누르지 마세요
 PUZZLES_NEARBY	근처 퍼즐 ({n})
-NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	금고 표가 없습니다 — 콘솔에서 `doctor survey`를 한 번 실행하세요
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	금고 표가 없습니다. 콘솔에서 `doctor survey`를 한 번 실행하세요
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	금지된 지식의 금고 {done}/{all}
 ENEMY_GROUPS_LEFT	남은 적 무리 {left}/{all}
 ENEMY_GROUP_LEFT	남은 적 무리
@@ -399,7 +399,7 @@ DIAL_TURN_STEPS_NOW	다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})
 DIAL_RIGHT	다이얼 {n}: 맞음
 SHOW_ANSWER	답 보기
 HIDE	숨기기
-NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	스포너 표가 없습니다 — 콘솔에서 `doctor survey`를 한 번 실행하세요
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	스포너 표가 없습니다. 콘솔에서 `doctor survey`를 한 번 실행하세요
 RESEARCH_PROGRESS	연구 {n}/{need}
 OPENED	열림 ✓
 VAULT_RESEARCH_HINT	장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 열립니다 · 현재 {n}개
@@ -413,18 +413,18 @@ DIGIT_CODE	{n}자리 코드
 ITEM_COUNT	물건 {n}개
 DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	다이얼 위치 (왼쪽부터, 1부터): {list}
 PUZZLE_LIST_LEFT_HERE	퍼즐 목록 · 이 지역 남은 {left}
-NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey`를 한 번 실행하세요
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	퍼즐 목록이 없습니다. 콘솔에서 `doctor survey`를 한 번 실행하세요
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	열쇠·물건 놓기 퍼즐도 보기
 UNSOLVED_PUZZLE	안 푼 퍼즐
 VAULT_DOOR	금고 문
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	근처에 퍼즐 — 답은 패널의 퍼즐 탭에
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	근처에 퍼즐이 있습니다. 답은 패널의 퍼즐 탭에 있습니다
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	연구 아이템은 '수집 진행도'의 연구 아이템 줄을 누르면 가까운 것부터 안내합니다
 ACHIEVEMENTS	업적 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	달성한 업적도 보기
 HIDDEN_ACHIEVEMENT	숨겨진 업적
 SHOW	보기
-CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ 확인된 빌드: {tested} — 이상하면 콘솔에서 `doctor`를 실행하세요
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ 확인된 빌드: {tested}. 이상하면 콘솔에서 `doctor`를 실행하세요
 ADMIRATION	감탄
 AMAZEMENT	놀람
 ECSTASY	희열
@@ -437,7 +437,7 @@ LOAD_POSITION	이동
 GAME_DATA	게임 데이터
 READING_THE_GAMES_MAPS	◐ 게임 지도 읽는 중… (약 2분)
 READING_THE_GAMES_TEXT	◐ 게임 텍스트 읽는 중…
-INSTALLING_NET_8_WINGET	◐ winget으로 .NET 8 설치 중 — Windows가 권한을 물을 수 있습니다
+INSTALLING_NET_8_WINGET	◐ winget으로 .NET 8 설치 중 (Windows가 권한을 물을 수 있습니다)
 INSTALLING_NET_8_MODS_FOLDER	◐ Mods 폴더에 .NET 8 설치 중…
 READING_FAILED	✕ 읽기 실패: {e}
 GAME_DATA_READY	● 준비됨
@@ -461,7 +461,7 @@ KEYSTONES_LEFT_IN_ORDER	남은 키스톤, 권장 순서: {keystones}
 MORE_WITH_A_LATER_DEADLINE	마감이 나중인 것: {count}
 GO_TO_PAGE	{page} 열기 ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	이 지역에서 모드가 아는 남은 것이 없습니다.
-COUNTS_ONLY_OPEN_A_LINE	개수만 보여 줍니다 — 줄을 누르면 그 탭이 열립니다.
+COUNTS_ONLY_OPEN_A_LINE	개수만 보여 줍니다. 줄을 누르면 그 탭이 열립니다.
 LEDGER_QUEST_PLACES	퀘스트 장소: {count}
 LEDGER_HANDOVERS	지금 건넬 수 있는 것: {count}
 LEDGER_PUZZLES	퍼즐: {count}
@@ -473,20 +473,20 @@ LEDGER_STORIES	들을 이야기가 남은 NPC: {count}
 OTHER_REGIONS_CARD	다른 지역
 NOTHING_LEFT_ELSEWHERE	다른 지역에서 모드가 아는 남은 것이 없습니다.
 SORTED_BY_WHAT_YOU_CAN_DO_THERE	지금 그곳에서 할 수 있는 일이 많은 순: 건네주기, 가진 막대로 여는 잠금.
-TRIP_ROW	{place} — 지금: {doable} · 남음: {left}
+TRIP_ROW	{place} (지금: {doable} · 남음: {left})
 MINUTES_AGO	{count}분 전
 HOURS_AGO	{count}시간 전
 LYMBIC_LOCKS	림빅 잠금
-THE_RODS_EACH_LOCK_TAKES	잠금마다 필요한 막대 — 가진 막대로 이미 열 수 있는 잠금이 먼저 나옵니다. 잠금이나 빠진 막대 줄을 누르면 그곳으로 안내합니다.
-LOCK_OPENS_NOW	{place} — 지금 열 수 있음
+THE_RODS_EACH_LOCK_TAKES	잠금마다 필요한 막대입니다. 가진 막대로 이미 열 수 있는 잠금이 먼저 나옵니다. 잠금이나 빠진 막대 줄을 누르면 그곳으로 안내합니다.
+LOCK_OPENS_NOW	{place}: 지금 열 수 있음
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
-ROD_MISSING_AT	✗ {rod} — 위치: {place}
-ROD_MISSING_NOWHERE	✗ {rod} — 조사 기록에 남은 획득처 없음
+ROD_MISSING_AT	✗ {rod} (위치: {place})
+ROD_MISSING_NOWHERE	✗ {rod}: 조사 기록에 남은 획득처 없음
 LOCKS_IN_OTHER_REGIONS	다른 지역의 잠금: {count}
 CLUES_TAB	단서
 FIND_A_CLUE	단서 찾기
-CLUE_TEXT_NOT_READ_YET	데이터패드 글을 아직 읽지 않았습니다 — 주인공을 조작할 수 있게 되면 읽습니다 (콘솔에서 `doctor locale`도 됩니다).
+CLUE_TEXT_NOT_READ_YET	데이터패드 글을 아직 읽지 않았습니다. 주인공을 조작할 수 있게 되면 읽습니다 (콘솔에서 `doctor locale`도 됩니다).
 SEARCH_CLUES_HINT	이름이나 낱말 (열쇠, 빅터, 터널…)
 CLUES_KNOWN	데이터패드 항목 {subjects}개에 대해 {facts}가지를 알고 있습니다.
 NO_CLUE_MATCHES	아는 것 중에 맞는 것이 없습니다.
@@ -496,5 +496,19 @@ HELD_ITEMS_MATCHING	가진 아이템: {items}
 CLUES_FOR_QUEST	단서: {quest}
 CLUES_FOR_THE_FOLLOWED_QUEST	따라가는 퀘스트의 단서
 NO_QUEST_FOLLOWED_CLUES	퀘스트 탭에서 퀘스트를 따라가면 그 단서가 여기에 모입니다.
-NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	이 퀘스트의 데이터패드 항목이 아직 없습니다 — 선행·미스터리·타임루프는 데이터패드가 아니라 각자의 단계로 진행됩니다.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	이 퀘스트의 데이터패드 항목이 아직 없습니다. 선행·미스터리·타임루프는 데이터패드가 아니라 각자의 단계로 진행됩니다.
 PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	항목을 누르면 아는 내용이 나옵니다.
+A_WEAPON	무기
+A_DEFENSIVE_GEAR	방어구
+SHARD_BUDGET	파편 예산
+TIMELOOPS_OPEN	타임루프 {open}/{all} 열림
+TIMELOOPS_OPEN_HOVER	타임루프가 열려 있는 동안에는 적이 계속 다시 나옵니다. 모두 닫으면 그때 가진 파편이 전부입니다.
+SHARD_SIZES_HOVER	파편 크기는 떨어뜨린 적의 레벨로 정해집니다. 1레벨은 소형, 2레벨은 중형, 3레벨은 대형입니다. 크기끼리는 바꿀 수 없고, 같은 크기의 중성 파편 3개로 감정 파편 1개를 주입합니다.
+NEUTRAL	중성
+SHARD_SMALL	소형
+SHARD_MEDIUM	중형
+SHARD_LARGE	대형
+ENOUGH	충분
+SHORT_BY	{shards} 부족
+COST_HOVER	남은 비용: {shards}
+NOT_HELD_YET	없음: {items}

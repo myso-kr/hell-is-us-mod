@@ -60,6 +60,8 @@ pub struct Snapshot {
     pub locks: Arc<Vec<crate::survey::Lock>>,
     /// The clue board: the Datapad by entry, and the items held (clues.rs).
     pub clues: Arc<crate::clues::Clues>,
+    /// The shard budget of the upgrade achievements (budget.rs); empty without recipes.
+    pub budget: Arc<crate::budget::Budget>,
     /// Saved positions: (world, where).
     pub slots: [Option<(String, [f64; 3])>; SLOTS],
 }

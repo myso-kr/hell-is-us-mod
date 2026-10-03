@@ -210,6 +210,27 @@ static class Tables
             }
         File.WriteAllText(Path.Combine(outDir, "vaults.json"), vaults.ToString(Formatting.Indented));
         Console.Error.WriteLine($"vaults: {vaults.Count}");
+
+        // recipes.json — every crafting recipe (`CraftRecipe`): the item it takes, the
+        // shards and their counts, what it makes. The shard budget follows them.
+        string Asset(JToken? r) => (r?["ObjectPath"]?.ToString() ?? "").Split('/').Last().Split('.')[0];
+        var recipes = new JArray();
+        foreach (var path in provider.Files.Keys.Where(p => p.StartsWith("HellIsUs/Content/Gameplay/Crafting/") && p.EndsWith("_Recipe_DA.uasset") || p.Contains("/Gameplay/Crafting/") && p.Contains("_Recipe0") && p.EndsWith(".uasset")).OrderBy(p => p))
+            foreach (var e in Exports(path[..^".uasset".Length]).Where(x => x["Type"]?.ToString() == "CraftRecipe"))
+            {
+                var p = e["Properties"];
+                if (p == null) continue;
+                recipes.Add(new JObject
+                {
+                    ["recipe"] = e["Name"],
+                    ["kind"] = (p["RecipeCategory"]?["TagName"]?.ToString() ?? "").Split('.').Last(),
+                    ["from"] = Asset(p["MainIngredient"]?["IngredientBase"]),
+                    ["needs"] = new JArray((p["Ingredients"] as JArray ?? []).Select(i => new JArray(Asset(i["IngredientBase"]), i["Quantity"]))),
+                    ["to"] = Asset((p["ResultingCrafts"] as JArray)?.FirstOrDefault()),
+                });
+            }
+        File.WriteAllText(Path.Combine(outDir, "recipes.json"), recipes.ToString(Formatting.Indented));
+        Console.Error.WriteLine($"recipes: {recipes.Count}");
     }
 }
 
