@@ -30,9 +30,7 @@ impl Baking {
                 self.from = Some(from);
             }
         }
-        // The big map spans the screen: as far sideways as its radius times the
-        // screen's shape (up to ultrawide).
-        let half = state.radius_m.max(state.big_radius_m * 2.5) * 100.0 + RELIEF_SPARE;
+        let half = state.radius_m.max(state.big_radius_m) * 100.0 + RELIEF_SPARE;
         let stale = self.done.as_ref().is_none_or(|r| {
             let (c, h) = r.extent();
             (p[0] - c[0]).hypot(p[1] - c[1]) > RELIEF_MOVED

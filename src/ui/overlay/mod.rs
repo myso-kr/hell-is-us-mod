@@ -126,7 +126,8 @@ pub fn run(shared: Arc<Shared>) {
     };
     let mut icon_px = shared.map.lock().unwrap().icon_px;
     let mut icons = make(icon_px);
-    let mut icons_half = make((icon_px / 2).max(8));
+    // Half-size icons for the Map page's big-map preview, which is drawn small.
+    let mut icons_small = make((icon_px / 2).max(8));
     let mut was = [false; 4];
     let mut route = route::Route::default();
     let mut baking = bake::Baking::default();
@@ -184,7 +185,7 @@ pub fn run(shared: Arc<Shared>) {
         if state.icon_px != icon_px {
             icon_px = state.icon_px;
             icons = make(icon_px);
-            icons_half = make((icon_px / 2).max(8));
+            icons_small = make((icon_px / 2).max(8));
         }
         let keys = state.keys();
         let mut now = [false; 4];
@@ -284,25 +285,26 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 // The big map, as it covers the game window, made small.
                 if let Some((_, gr)) = game_window(game) {
+                    // Drawn straight at the preview's size (the game window's shape), not
+                    // at the screen's and made small: a fraction of the work.
                     let (gw, gh) = ((gr.right - gr.left).max(2) as usize, (gr.bottom - gr.top).max(2) as usize);
-                    let mut half = Canvas::new(gw / 2, gh / 2);
-                    let mut full = Canvas::new(gw, gh);
+                    let w = PREVIEW_BIG_W.min(gw) & !1;
+                    let h = (gh * w / gw).max(2) & !1;
+                    let mut half = Canvas::new(w / 2, h / 2);
+                    let mut small = Canvas::new(w, h);
                     big_frame(
                         &mut half,
-                        &mut full,
+                        &mut small,
                         &state,
                         world,
                         (p, yaw),
                         &things,
-                        icons_half.as_ref(),
+                        icons_small.as_ref(),
                         &footprints,
                         &goals,
                         &Default::default(),
                         relief.as_deref(),
                     );
-                    let w = PREVIEW_BIG_W.min(gw);
-                    let h = (gh * w / gw).max(1);
-                    let mut small = crate::raster::downscale(&full, w, h);
                     if state.big_alpha < 100 {
                         // Premultiplied: every channel scales with the opacity.
                         let a = state.big_alpha as u32;
@@ -380,7 +382,7 @@ pub fn run(shared: Arc<Shared>) {
                                 world,
                                 (p, yaw),
                                 &things,
-                                icons_half.as_ref(),
+                                icons.as_ref(),
                                 &footprints,
                                 &goals,
                                 &path,
@@ -498,7 +500,7 @@ pub fn run(shared: Arc<Shared>) {
 
 /// One frame of the big map into `full` (the game window's size): drawn at half size
 /// into `half`, faded toward its edges and doubled. The radius reaches the window's
-/// top and bottom; its sides show as much more as the screen is wide.
+/// short side, the map a circle that fades out within it.
 #[allow(clippy::too_many_arguments)]
 fn big_frame(
     half: &mut Canvas,
@@ -513,16 +515,20 @@ fn big_frame(
     path: &crate::pathfind::Path,
     relief: Option<&crate::relief::Relief>,
 ) {
-    let view = View {
+    let view = |cv: &Canvas| View {
         center: p,
         yaw_deg: yaw,
         heading_up: false,
-        scale: (half.h as f32 / 2.0) / (state.big_radius_m * 100.0),
+        scale: crate::raster::map_radius(cv, true) / (state.big_radius_m * 100.0),
         north_deg: state.north_yaw,
         outline: state.big_outline,
         full: true,
     };
-    draw_map(half, state, world, &view, things, icons, footprints, goals, path, relief);
-    crate::raster::fade_edges(half);
+    // The ground (the most work, and soft anyway) at half size, doubled; the lines and
+    // icons over it at full size, so they stay sharp.
+    crate::raster::draw_ground(half, state, &view(half), relief);
     crate::raster::upscale2(half, full);
+    let r = crate::raster::map_radius(full, true);
+    crate::raster::draw_above(full, state, world, &view(full), things, icons, footprints, goals, path, r);
+    crate::raster::fade_edges(full);
 }

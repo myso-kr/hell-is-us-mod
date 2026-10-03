@@ -21,6 +21,9 @@ const NEAR: f32 = 500.0;
 
 pub type Point = [f32; 3];
 
+/// The big map's largest radius (m).
+pub const BIG_RADIUS_MAX: f32 = 500.0;
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct MapState {
     /// Which map is up: none, the minimap, or the big map — and which of those the
@@ -312,7 +315,8 @@ impl MapState {
                 }
                 ["big_radius", v] => {
                     if let Some(r) = v.parse::<f32>().ok().filter(|r| (50.0..=2000.0).contains(r)) {
-                        s.big_radius_m = r;
+                        // At most BIG_RADIUS_MAX: a setting saved larger is brought down.
+                        s.big_radius_m = r.min(BIG_RADIUS_MAX);
                     }
                 }
                 ["guide_auto", v] => s.guide_auto = v == "true",
@@ -582,7 +586,7 @@ mod tests {
             goal_tiers: 0b101,
             display: Display::Big,
             cycle: 0b011,
-            big_radius_m: 400.0,
+            big_radius_m: 300.0,
             big_alpha: 60,
             big_outline: false,
             mini_outline: true,

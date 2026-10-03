@@ -229,11 +229,20 @@ with gaps between them, as Diablo's and Path of Exile's maps do.
   cleared, so three quarters of the ground is gap; kept dots are drawn 1.7× stronger so the ground
   still reads. The trail, route, icons, pins and the hero mark are drawn after it and stay solid.
 - **The big map over the whole screen** (2026-10-04): its canvas is the game window, centred on the
-  hero, the radius reaching the top and bottom; it fades from full strength at 45 % of the way to the
-  edge to nothing at the edge, along an ellipse of the screen's shape (`raster.rs` `fade_edges`), as
-  Diablo's and Path of Exile's overlay maps do. `View::full`: no disc, rim or north mark, nothing cut
-  at a circle. Drawn at half size and doubled bilinearly (`upscale2`), a quarter of the work; icons
-  are rasterised at half size for it. The relief is baked 2.5 radii out for the screen's width.
+  hero, the radius reaching 86 % of the way to the short side (`FULL_FILL`, a margin above and
+  below); it is a circle that fades from full strength at 45 % of its radius to nothing at its edge
+  (`raster.rs` `fade_edges`), as Diablo's and Path of Exile's overlay maps do. Not an ellipse of the
+  screen's shape: on a wide screen its sides reached 2.4 radii and were cut off. `View::full`: no
+  disc, rim or north mark. The ground (`draw_ground`: disc and relief, most of the work and soft
+  anyway) is drawn at half size and doubled (`upscale2`: weights 9/3/3/1, integer, rows in
+  parallel); everything over it (`draw_above`: edges, dots, trail, icons, route) at full size, so
+  lines, icons and the gaps between dots stay sharp (doubled, the dots blurred into a haze). Dots
+  grow with the canvas (2 px on a 1440 px screen). The fade mask is cached per size. The radius is
+  at most 500 m (`BIG_RADIUS_MAX`): wider, the map's drawn area looked too small.
+- **The ground is cached** (`raster.rs` `GROUND`): the disc and relief depend only on where the map
+  stands and how it is drawn, so while the hero stands still (or moves under a pixel) the last
+  frame's ground of that size is copied instead of drawn. Measured on 3440×1440 before the cache:
+  draw 22–24 ms, fade 1.1 ms (23 ms before the mask cache), double 8 ms (18–23 ms before).
 - **Two previews** on the Map page: the big map as it covers the game window (made small,
   `raster::downscale`) and the minimap beside its settings; the preview no longer follows the
   display mode.

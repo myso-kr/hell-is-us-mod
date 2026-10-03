@@ -27,9 +27,13 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   (click to show or hide, right-click to quit, which restores the originals as × does).
 - The panel stays inside the screen when moved, restored or grown; the console's command line is no
   longer cut off; the console, and its button in the panel's header, show only over a game menu.
-- The map preview has a legend of its lines and colours, as drawn with the settings now.
-- The big map covers the whole screen, centred on the hero and fading out toward the edges; the Map
-  page previews both maps side by side.
+- The Map page has a legend card of the maps' lines and colours, as drawn with the settings now.
+- The big map covers the whole screen, centred on the hero and fading out toward the edges; its
+  radius, at most 500 m, is measured to the screen's short side with a margin above and below, and
+  its lines, icons and dots are drawn at full resolution. The minimap and big map cards
+  each preview their own map.
+- The big map costs far less to draw: its ground is reused while the hero stands still, and the
+  edge fade and the doubling are cached and spread over threads.
 - The panel and its tray icon carry the mod's mark instead of Windows' generic icon.
 - Long lists can be grouped: places by kind, achievements by kind (story, deeds and mysteries,
   combat, gear, research and collections).

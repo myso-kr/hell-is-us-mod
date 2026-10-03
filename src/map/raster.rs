@@ -303,19 +303,23 @@ fn line_cover(v: f32, slope2: f32, base: f32, spacing: f32, half: f32) -> f32 {
     1.0 - off / (slope2.sqrt() * half)
 }
 
-/// The ground as dots: every other pixel on every other row is kept, the rest cleared,
+/// The ground as dots: a square dot in each cell of a grid, the rest of the cell cleared,
 /// so three quarters of the map is gap and the game shows through. A kept dot is drawn
-/// stronger, so the ground still reads at a quarter of the ink. Run after the ground
-/// layers (disc, relief, terrain) and before anything that must stay solid.
+/// stronger, so the ground still reads at a quarter of the ink. The dot grows with the
+/// canvas (1 px on a small one, 2 px on a 1440 px tall screen) so it reads as a dot, not
+/// as a fine mesh. Run after the ground layers (disc, relief, terrain) and before
+/// anything that must stay solid.
 fn dots(cv: &mut Canvas) {
     const BOOST: u32 = 170; // percent
+    let dot = (cv.h / 600).clamp(1, 3);
+    let pitch = dot * 2;
     let w = cv.w;
     for (i, px) in cv.px.iter_mut().enumerate() {
         if *px == 0 {
             continue;
         }
         let (x, y) = (i % w, i / w);
-        if x % 2 != 0 || y % 2 != 0 {
+        if x % pitch >= dot || y % pitch >= dot {
             *px = 0;
             continue;
         }
@@ -363,7 +367,12 @@ fn fill_convex(class: &mut [u8], w: usize, h: usize, p: &[(f32, f32)], k: u8) {
     }
 }
 
+/// A ground layer kept for reuse: its canvas size, what it was drawn from, its pixels.
+type Ground = ((usize, usize), u64, Vec<u32>);
+
 thread_local! {
+    /// The ground (disc and relief) last drawn at each size, by what it was drawn from.
+    static GROUND: std::cell::RefCell<Vec<Ground>> = const { std::cell::RefCell::new(Vec::new()) };
     /// The map's empty disc at the last size drawn, per thread.
     static BASE: std::cell::RefCell<Option<(u8, Canvas)>> = const { std::cell::RefCell::new(None) };
 }
@@ -383,11 +392,50 @@ pub fn draw_map(
     route: &Path,
     relief: Option<&Relief>,
 ) {
+    let r = draw_ground(cv, state, view, relief);
+    draw_above(cv, state, world, view, things, icons, footprints, goals, route, r);
+}
+
+/// The map's radius on a canvas (px): a full-screen map's circle leaves `FULL_FILL` of the
+/// short side's half, so the screen keeps a margin above and below it.
+pub fn map_radius(cv: &Canvas, full: bool) -> f32 {
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
-    // Full: the circle the map is cut to holds the whole canvas, so nothing is cut.
-    let r = if view.full { (cx * cx + cy * cy).sqrt() + 2.0 } else { cx.min(cy) - 14.0 };
-    let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
-    let [ground, lines, marks] = state.opacity;
+    if full {
+        cx.min(cy) * FULL_FILL
+    } else {
+        cx.min(cy) - 14.0
+    }
+}
+
+/// How much of the short side's half a full-screen map's circle takes.
+pub const FULL_FILL: f32 = 0.86;
+
+/// The ground under everything (the disc and the relief) into `cv`; the map's radius.
+pub fn draw_ground(cv: &mut Canvas, state: &MapState, view: &View, relief: Option<&Relief>) -> f32 {
+    let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
+    let r = map_radius(cv, view.full);
+    let [ground, lines, _] = state.opacity;
+    // The ground (disc and relief) depends only on where the map stands and how it is
+    // drawn: while the hero stands still (or moves under a pixel) it is copied from the
+    // last frame of that size instead of drawn again — the relief is most of a frame.
+    let key = relief.filter(|_| state.relief != ReliefMode::Off).map(|rel| {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        let (px, py) = view.project([0.0, 0.0, 0.0]);
+        ((px.round() as i64, py.round() as i64), view.scale.to_bits(), view.north_deg.to_bits()).hash(&mut h);
+        (view.heading_up, view.heading_up.then(|| view.yaw_deg.to_bits()), view.outline, view.full).hash(&mut h);
+        (state.relief.key(), ground, lines, rel.z.as_ptr() as usize, rel.feet.to_bits()).hash(&mut h);
+        h.finish()
+    });
+    if let Some(k) = key {
+        let hit = GROUND.with(|g| {
+            let g = g.borrow();
+            g.iter().find(|(size, kk, _)| *size == (cv.w, cv.h) && *kk == k).map(|(_, _, px)| cv.px.copy_from_slice(px))
+        });
+        if hit.is_some() {
+            return r;
+        }
+    }
     // The empty disc is the same every frame at a size: drawn once, then copied. As
     // outlines, there is no disc: the background stays clear.
     if view.outline {
@@ -415,6 +463,38 @@ pub fn draw_map(
     if let Some(rel) = relief.filter(|_| state.relief != ReliefMode::Off) {
         draw_relief(cv, state.relief, view, rel, r, view.outline, state.opacity);
     }
+    if let Some(k) = key {
+        GROUND.with(|g| {
+            let mut g = g.borrow_mut();
+            g.retain(|(size, _, _)| *size != (cv.w, cv.h));
+            g.push(((cv.w, cv.h), k, cv.px.clone()));
+            // A few sizes are drawn on this thread: the minimap, the big map, previews.
+            if g.len() > 4 {
+                g.remove(0);
+            }
+        });
+    }
+    r
+}
+
+/// Everything over the ground: the terrain's edges, the dots, the trail, pins, things,
+/// goals and the route, the rim, north and the hero.
+#[allow(clippy::too_many_arguments)]
+pub fn draw_above(
+    cv: &mut Canvas,
+    state: &MapState,
+    world: &str,
+    view: &View,
+    things: &[Thing],
+    icons: Option<&Icons>,
+    footprints: &[Footprint],
+    goals: &[Goal],
+    route: &Path,
+    r: f32,
+) {
+    let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
+    let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
+    let [ground, lines, marks] = state.opacity;
 
     if state.terrain {
         // Feet are about 90 cm below the capsule's centre.
@@ -820,58 +900,95 @@ pub fn legend(state: &MapState, outline: bool) -> Vec<(Swatch, Rgba, &'static st
 }
 
 /// The big map's soft edge: everything keeps its full strength out to `INNER` of the
-/// way to the canvas's edge (an ellipse with the canvas's own shape), then fades to
-/// nothing at the edge, as Diablo's and Path of Exile's overlay maps do.
+/// way to the edge of a circle as wide as the canvas's short side, then fades to nothing
+/// there, as Diablo's and Path of Exile's overlay maps do. A circle, not an ellipse of
+/// the screen's shape: on a wide screen the sides would reach past what the game has
+/// loaded and be cut off. Worked out once per size (per thread), multiplied each frame.
 pub fn fade_edges(cv: &mut Canvas) {
     const INNER: f32 = 0.45;
-    let (w, h) = (cv.w, cv.h);
-    let (cx, cy) = (w as f32 / 2.0, h as f32 / 2.0);
-    for y in 0..h {
-        let dy = (y as f32 + 0.5 - cy) / cy;
-        for x in 0..w {
-            let px = &mut cv.px[y * w + x];
-            if *px == 0 {
-                continue;
-            }
-            let dx = (x as f32 + 0.5 - cx) / cx;
-            let t = ((dx * dx + dy * dy).sqrt() - INNER) / (1.0 - INNER);
-            if t <= 0.0 {
-                continue;
-            }
-            let k = if t >= 1.0 { 0.0 } else { 1.0 - t * t * (3.0 - 2.0 * t) };
-            let k = (k * 256.0) as u32;
-            let c = |shift: u32| (((*px >> shift) & 0xFF) * k / 256) << shift;
-            *px = c(24) | c(16) | c(8) | c(0);
-        }
+    thread_local! {
+        static MASK: std::cell::RefCell<(usize, usize, Vec<u16>)> = const { std::cell::RefCell::new((0, 0, Vec::new())) };
     }
+    let (w, h) = (cv.w, cv.h);
+    MASK.with(|m| {
+        let mut m = m.borrow_mut();
+        if (m.0, m.1) != (w, h) {
+            let (cx, cy) = (w as f32 / 2.0, h as f32 / 2.0);
+            let rad = cx.min(cy) * FULL_FILL;
+            let mut k = vec![256u16; w * h];
+            for y in 0..h {
+                let dy = (y as f32 + 0.5 - cy) / rad;
+                for x in 0..w {
+                    let dx = (x as f32 + 0.5 - cx) / rad;
+                    let t = ((dx * dx + dy * dy).sqrt() - INNER) / (1.0 - INNER);
+                    k[y * w + x] = if t <= 0.0 {
+                        256
+                    } else if t >= 1.0 {
+                        0
+                    } else {
+                        ((1.0 - t * t * (3.0 - 2.0 * t)) * 256.0) as u16
+                    };
+                }
+            }
+            *m = (w, h, k);
+        }
+        let mask = &m.2;
+        let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
+        let rows = h.div_ceil(workers).max(1);
+        std::thread::scope(|scope| {
+            for (band, (out, ks)) in cv.px.chunks_mut(rows * w).zip(mask.chunks(rows * w)).enumerate() {
+                let _ = band;
+                scope.spawn(move || {
+                    for (px, &k) in out.iter_mut().zip(ks) {
+                        if *px == 0 || k == 256 {
+                            continue;
+                        }
+                        let k = k as u32;
+                        let c = |shift: u32| ((((*px >> shift) & 0xFF) * k) >> 8) << shift;
+                        *px = c(24) | c(16) | c(8) | c(0);
+                    }
+                });
+            }
+        });
+    });
 }
 
-/// `src` twice as big each way, bilinear, into `dst` (premultiplied stays premultiplied):
-/// the big map is drawn at half size and shown at full, a quarter of the work.
+/// `src` twice as big each way into `dst` (premultiplied stays premultiplied): the big
+/// map is drawn at half size and shown at full, a quarter of the work. Doubling puts
+/// each output pixel a quarter of a source pixel from its nearest source centre, so
+/// bilinear weights are always 3/4 and 1/4: integer arithmetic, rows in parallel.
 pub fn upscale2(src: &Canvas, dst: &mut Canvas) {
-    let (sw, sh) = (src.w, src.h);
-    for y in 0..dst.h {
-        let fy = ((y as f32 + 0.5) / 2.0 - 0.5).clamp(0.0, (sh - 1) as f32);
-        let (y0, ty) = (fy as usize, fy.fract());
-        let y1 = (y0 + 1).min(sh - 1);
-        for x in 0..dst.w {
-            let fx = ((x as f32 + 0.5) / 2.0 - 0.5).clamp(0.0, (sw - 1) as f32);
-            let (x0, tx) = (fx as usize, fx.fract());
-            let x1 = (x0 + 1).min(sw - 1);
-            let (a, b, c, d) = (src.px[y0 * sw + x0], src.px[y0 * sw + x1], src.px[y1 * sw + x0], src.px[y1 * sw + x1]);
-            if (a | b | c | d) == 0 {
-                dst.px[y * dst.w + x] = 0;
-                continue;
-            }
-            let ch = |p: u32, s: u32| ((p >> s) & 0xFF) as f32;
-            let mix = |s: u32| {
-                let top = ch(a, s) + (ch(b, s) - ch(a, s)) * tx;
-                let bot = ch(c, s) + (ch(d, s) - ch(c, s)) * tx;
-                ((top + (bot - top) * ty).round() as u32).min(255) << s
-            };
-            dst.px[y * dst.w + x] = mix(24) | mix(16) | mix(8) | mix(0);
+    let (sw, sh, dw) = (src.w, src.h, dst.w);
+    let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
+    let rows = dst.h.div_ceil(workers).max(1);
+    std::thread::scope(|scope| {
+        for (k, out) in dst.px.chunks_mut(rows * dw).enumerate() {
+            scope.spawn(move || {
+                for (row, line) in out.chunks_mut(dw).enumerate() {
+                    let y = k * rows + row;
+                    // The nearer source row (weight 3) and the farther (weight 1).
+                    let near_y = (y / 2).min(sh - 1);
+                    let far_y = if y % 2 == 0 { near_y.saturating_sub(1) } else { (near_y + 1).min(sh - 1) };
+                    for (x, o) in line.iter_mut().enumerate() {
+                        let near_x = (x / 2).min(sw - 1);
+                        let far_x = if x % 2 == 0 { near_x.saturating_sub(1) } else { (near_x + 1).min(sw - 1) };
+                        let (a, b) = (src.px[near_y * sw + near_x], src.px[near_y * sw + far_x]);
+                        let (c, d) = (src.px[far_y * sw + near_x], src.px[far_y * sw + far_x]);
+                        if (a | b | c | d) == 0 {
+                            *o = 0;
+                            continue;
+                        }
+                        // Weights 9, 3, 3, 1 (of 16).
+                        let mix = |s: u32| {
+                            let ch = |p: u32| (p >> s) & 0xFF;
+                            ((ch(a) * 9 + ch(b) * 3 + ch(c) * 3 + ch(d) + 8) >> 4) << s
+                        };
+                        *o = mix(24) | mix(16) | mix(8) | mix(0);
+                    }
+                }
+            });
         }
-    }
+    });
 }
 
 /// `src` made `w` × `h` (smaller), each pixel the mean of the source pixels it covers.
