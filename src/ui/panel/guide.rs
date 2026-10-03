@@ -7,9 +7,6 @@ impl Panel {
     pub(super) fn guide_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
-        let dist = |g: &crate::goals::Goal| {
-            here.map_or(f32::MAX, |h| ((g.at[0] - h[0]).powi(2) + (g.at[1] - h[1]).powi(2)).sqrt() / 100.0)
-        };
 
         card(t, tr!("COMPASS_AND_HEADING"), |t| {
             field(t, trf!("COMPASS_F", key = state.compass_key), |t| {
@@ -48,7 +45,11 @@ impl Panel {
                     t.style(tw::row(INLINE)).add(|t| {
                         w(t, |ui| crate::ui::svg::tier(ui, g.tier, 18.0));
                         text(t, RichText::new(&g.label).strong());
-                        w(t, |ui| ui.label(RichText::new(crate::raster::distance(dist(g))).color(DIM)));
+                        w(t, |ui| {
+                            ui.label(
+                                RichText::new(here.map_or(String::new(), |h| crate::raster::span(h, g.at))).color(DIM),
+                            )
+                        });
                         if w(t, |ui| ui.button(tr!("NEXT_GOAL")))
                             .on_hover_text(tr!("THIS_GOAL_IS_DONE_OR_OUT"))
                             .clicked()
@@ -120,7 +121,11 @@ impl Panel {
                         let chosen = state.target == Some(g.id);
                         ui.horizontal(|ui| {
                             crate::ui::svg::tier(ui, g.tier, 16.0);
-                            let label = format!("{}  ({})", g.label, crate::raster::distance(dist(g)));
+                            let label = format!(
+                                "{}  ({})",
+                                g.label,
+                                here.map_or(String::new(), |h| crate::raster::span(h, g.at))
+                            );
                             let button = egui::Button::selectable(chosen, label).truncate();
                             if ui.add(button).on_hover_text(&g.detail).clicked() {
                                 state.target = Some(g.id);

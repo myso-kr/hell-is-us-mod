@@ -173,9 +173,28 @@ pub fn distance(m: f32) -> String {
     }
 }
 
+/// How far a place is from the hero: across, and up or down when that is three metres
+/// or more — a lock under a monument is "3m" away across but nine below. Positions in
+/// centimetres, as the game keeps them.
+pub fn span(from: [f32; 3], to: [f32; 3]) -> String {
+    let across = distance((to[0] - from[0]).hypot(to[1] - from[1]) / 100.0);
+    match (to[2] - from[2]) / 100.0 {
+        up if up >= 3.0 => format!("{across} ↑{up:.0}m"),
+        up if up <= -3.0 => format!("{across} ↓{:.0}m", -up),
+        _ => across,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_span_says_up_or_down_only_when_it_counts() {
+        assert_eq!(span([0.0, 0.0, 0.0], [300.0, 400.0, 100.0]), "5m");
+        assert_eq!(span([0.0, 0.0, 0.0], [300.0, 0.0, -900.0]), "3m ↓9m");
+        assert_eq!(span([0.0, 0.0, 0.0], [0.0, 200_000.0, 1_200.0]), "2.0km ↑12m");
+    }
 
     #[test]
     fn bearings_wrap_to_the_short_way_round() {

@@ -2,7 +2,7 @@
 
 Research into where players of *Hell Is Us* struggle, stage by stage, and the features that would help
 without taking the game's design away from them. Researched 2026-10-03. Built so far: §3.1, §3.3 (rods
-→ locks), §3.4, §3.5 and §3.8 — FEATURES.md §6; the rest is still a proposal.
+→ locks), §3.4, §3.5, §3.8 and §3.9 — FEATURES.md §6; the rest is still a proposal.
 
 The rule every proposal keeps: **answers stay hidden until asked.** The game's identity is "no map, no
 markers"; the mod is for the night a player would rather not be lost, not a replacement for exploring.
@@ -112,8 +112,8 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
 - The achievement categories as one board with counts and the regions where each remaining item is:
   research 45, relics 29, deeds 26, mysteries 46, timeloops 14, drone modules 8, glyphs 25, caps 10,
   vaults 6. Missables marked.
-- Data: collections (F4) by item folder, journal counts, achievements (Steam cache), vaults (F7). Glyph
-  and cap folders need checking in the survey's item paths.
+- Data: collections (F4) by item folder, journal counts, achievements (Steam cache), vaults (F7).
+  Checked: glyphs are the `WeaponModules` folder (the panel's "Lymbic skills"), caps `Cosmetic`.
 - Effort: small to medium.
 
 ## 4. Research needed first

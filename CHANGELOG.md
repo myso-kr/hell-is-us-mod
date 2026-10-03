@@ -28,6 +28,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - **Lymbic locks:** the rods each lock takes and which you hold; each missing rod shows how far its
   pickup is (up or down too); press a lock or a missing rod to be guided there.
 - **Previously:** where the last session ended and the quest you were following.
+- **Height:** every distance in the panel's lists shows ↑/↓ when the place is 3 m or more above or
+  below you.
+- **Completion board:** opening a sort in the collection card shows how many are left in each other
+  region, most first.
 
 ## 0.1.0 — 2026-10-03
 

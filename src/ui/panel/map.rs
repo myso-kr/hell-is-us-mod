@@ -182,7 +182,7 @@ impl Panel {
             }
         });
 
-        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         card(t, tr!("MAP_PINS_AND_TRAIL"), |t| match &world {
             Some(wd) => {
                 // The kind the marker key gives the next pin.
@@ -207,9 +207,7 @@ impl Panel {
                 for i in order {
                     let Some(m) = state.markers.get(wd).and_then(|l| l.get(i)).cloned() else { continue };
                     let id = m.id(wd);
-                    let far = here.map_or(String::new(), |h| {
-                        crate::raster::distance((m.at[0] - h[0]).hypot(m.at[1] - h[1]) / 100.0)
-                    });
+                    let far = here.map_or(String::new(), |h| crate::raster::span(h, m.at));
                     let mut note_text = m.note.clone();
                     let mut kind = m.kind;
                     t.style(tw::row(INLINE)).add(|t| {

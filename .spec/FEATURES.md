@@ -168,10 +168,17 @@ than four cards (PANEL.md §1).
   survey, a duplicated panel counted once), with each rod held (✓) or missing (✗). A missing rod shows
   where its nearest pickup not taken is — the distance in this region, the region name elsewhere. A
   lock's line and each missing rod's line are pressed to be guided there (the line guided to stays
-  marked); pressing is the asking, so there is no extra reveal step and no separate buttons. Some rods lie
-  in other Lymbic chests. Distances add ↑/↓ when the height differs by 3 m or more — one Acasa lock
-  sits 9 m under the monument it is "3 m" from. Locks the rods held already open come first; locks
-  elsewhere that cannot open yet are only counted.
+  marked); pressing is the asking, so there is no extra reveal step and no separate buttons. Some rods
+  lie in other Lymbic chests. Locks the rods held already open come first; locks elsewhere that cannot
+  open yet are only counted.
+- **Height in every distance:** a list's distance adds ↑/↓ when the place is 3 m or more above or below
+  (`raster::span`) — one Acasa lock sits 9 m under the monument it is "3 m" from. The compass already
+  marks height with its own arrow; this brings the panel's lists (guide target, places, quest needs,
+  hand-overs, collectibles, puzzles, pins, locks) in line.
+- **Completion board** (§3.9): not a page of its own. The Collect page's collection card already
+  counts every sort (glyphs are its "Lymbic skills", caps its "Caps"); opening a sort now lists, under
+  the nearest left here, how many are left in each other region, most first. Good deeds, mysteries and
+  timeloops stay on the Quests page, vaults on the Puzzles page.
 - Not built yet from JOURNEY.md: the chest rewards and the timeloop prisms (§4 research), the clue
-  board, the completion board, the shard budget, Haze links.
+  board, the shard budget, Haze links.
 

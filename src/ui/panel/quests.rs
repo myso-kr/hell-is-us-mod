@@ -52,7 +52,7 @@ impl Panel {
                 .unwrap_or_default();
             let here_world =
                 snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
-            let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+            let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
             let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
             if needs.is_empty() {
                 note(t, tr!("NEEDED_NO_SURVEY_DB_RUN_HIUMOD"));
@@ -64,11 +64,12 @@ impl Panel {
                     needs.iter().filter(|x| !x.done && Some(&x.world) == here_world.as_ref()).collect();
                 let d = |x: &crate::survey::Need| here.map_or(0.0, |h| (x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0);
                 mine.sort_by(|a, b| d(a).total_cmp(&d(b)));
+                let far = |x: &crate::survey::Need| here.map_or(String::new(), |h| crate::raster::span(h, x.at));
                 for x in mine.iter().take(8) {
                     let label = match x.what.as_str() {
-                        "" => format!("{} ({})", x.label, crate::raster::distance(d(x))),
-                        w if w == x.label => format!("{w} ({})", crate::raster::distance(d(x))),
-                        w => format!("{w} — {} ({})", x.label, crate::raster::distance(d(x))),
+                        "" => format!("{} ({})", x.label, far(x)),
+                        w if w == x.label => format!("{w} ({})", far(x)),
+                        w => format!("{w} — {} ({})", x.label, far(x)),
                     };
                     // A person to talk to, or a thing to take.
                     let npc = x.label.starts_with(trf!("TALK_NPC", p = "").as_str());
@@ -173,16 +174,14 @@ impl Panel {
             return;
         }
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
-        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         card(t, &trf!("THINGS_TO_HAND_OVER_COUNT", count = list.len()), |t| {
             note(t, tr!("PEOPLE_WHO_WANT_AN_ITEM_YOU"));
             for x in list.iter() {
                 let same = Some(&x.world) == here_world.as_ref();
                 let place = if same {
-                    here.map_or(String::new(), |h| {
-                        crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0)
-                    })
+                    here.map_or(String::new(), |h| crate::raster::span(h, x.at))
                 } else {
                     trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world))
                 };

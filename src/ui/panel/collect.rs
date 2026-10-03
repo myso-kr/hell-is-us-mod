@@ -4,8 +4,9 @@ use super::super::theme::INLINE;
 use super::*;
 
 impl Panel {
-    /// Collectibles placed in the worlds: taken here and everywhere, and the nearest
-    /// left here, per sort (survey.rs `collection`).
+    /// Collectibles placed in the worlds: taken here and everywhere per sort; opened, the
+    /// nearest left here and how many are left in each other region — the completion
+    /// board (.spec/JOURNEY.md §3.9) without a page of its own.
     pub(super) fn collection_card(
         &mut self,
         t: &mut Tui,
@@ -14,7 +15,8 @@ impl Panel {
     ) {
         let list = snap.map(|s| s.collection.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
-        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         card(t, tr!("COLLECTION"), |t| {
             if list.is_empty() {
                 note(t, tr!("NO_SURVEY_DB_RUN_DOCTOR_SURVEY"));
@@ -47,9 +49,7 @@ impl Panel {
                         });
                     }
                     for x in left.iter().take(8) {
-                        let far = here.map_or(String::new(), |h| {
-                            crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0)
-                        });
+                        let far = here.map_or(String::new(), |h| crate::raster::span(h, x.at));
                         let sort = crate::survey::collect_sort(c.label);
                         if tw::pick_with(
                             t,
@@ -62,6 +62,15 @@ impl Panel {
                         ) {
                             guide_to(state, &goals, x);
                         }
+                    }
+                    // Where the rest are, most first.
+                    let mut rest: Vec<&(String, usize)> =
+                        c.left_by_world.iter().filter(|(w, _)| Some(w) != here_world.as_ref()).collect();
+                    rest.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+                    let elsewhere: Vec<String> =
+                        rest.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
+                    if !elsewhere.is_empty() {
+                        note(t, trf!("OTHER_REGIONS", regions = elsewhere.join(" · ")));
                     }
                 }
             }
@@ -99,7 +108,7 @@ impl Panel {
         let list = snap.map(|s| s.stories.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
-        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         card(t, &trf!("NPCS_WITH_MORE_TO_TELL", count = list.len()), |t| {
             note(t, tr!("PEOPLE_WHOSE_TALK_CAN_STILL_GIVE"));
             let mut mine: Vec<&crate::survey::Need> =
@@ -110,8 +119,7 @@ impl Panel {
                 });
             }
             for x in mine.iter().take(10) {
-                let far = here
-                    .map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0));
+                let far = here.map_or(String::new(), |h| crate::raster::span(h, x.at));
                 if tw::pick_with(
                     t,
                     state.target == Some(x.id),

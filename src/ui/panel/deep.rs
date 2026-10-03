@@ -152,7 +152,7 @@ impl Panel {
         let list = snap.map(|s| s.catalogue.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
-        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         let shown =
             |p: &crate::survey::Placed, placements: bool| placements || p.kind != crate::puzzles::Kind::Placement;
         let mine: Vec<&(crate::survey::Placed, bool)> = list
@@ -171,7 +171,7 @@ impl Panel {
             rows.sort_by(|a, b| a.1.cmp(&b.1).then(far(&a.0).total_cmp(&far(&b.0))));
             for (p, solved) in rows.iter().take(30) {
                 let id = p.id();
-                let dist = here.map_or(String::new(), |_| crate::raster::distance(far(p) / 100.0));
+                let dist = here.map_or(String::new(), |h| crate::raster::span(h, p.at));
                 let head = format!(
                     "{} · {} · {} ({dist}){}",
                     crate::i18n::tr(p.kind.label()),
@@ -228,7 +228,7 @@ impl Panel {
             .and_then(|s| s.world.clone())
             .map(|w| crate::survey::Survey::world_of(&w).to_string())
             .unwrap_or_default();
-        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         card(t, &trf!("PUZZLES_NEARBY", n = list.len()), |t| {
             if list.is_empty() {
                 note(t, tr!("NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT"));
@@ -236,8 +236,7 @@ impl Panel {
             }
             note(t, tr!("READS_THE_ANSWER_THE_GAME_HOLDS"));
             for p in list.iter() {
-                let far = here
-                    .map_or(String::new(), |h| crate::raster::distance((p.at[0] - h[0]).hypot(p.at[1] - h[1]) / 100.0));
+                let far = here.map_or(String::new(), |h| crate::raster::span(h, p.at));
                 let name = crate::goals::pretty(&p.class);
                 let head =
                     format!("{} · {name} ({far}){}", crate::i18n::tr(p.kind.label()), if p.solved { " ✓" } else { "" });
@@ -430,7 +429,7 @@ impl Panel {
                     // The card is this region's: a lock here goes by its distance, one
                     // elsewhere (shown only when it opens) by its region.
                     let name = match pos.filter(|_| Some(l.world.as_str()) == here.as_deref()) {
-                        Some(p) => format!("{} ({})", tr!("LYMBIC_LOCK"), span(p, l.at)),
+                        Some(p) => format!("{} ({})", tr!("LYMBIC_LOCK"), crate::raster::span(p, l.at)),
                         None if Some(l.world.as_str()) == here.as_deref() => tr!("LYMBIC_LOCK").to_string(),
                         None => crate::i18n::place(&l.world),
                     };
@@ -462,7 +461,9 @@ impl Panel {
                                 trf!("ROD_MISSING_AT", rod = name, place = crate::i18n::place(&s.world))
                             }
                             Some(s) => match pos {
-                                Some(p) => trf!("ROD_MISSING", rod = format!("{name} ({})", span(p, s.at))),
+                                Some(p) => {
+                                    trf!("ROD_MISSING", rod = format!("{name} ({})", crate::raster::span(p, s.at)))
+                                }
                                 None => trf!("ROD_MISSING", rod = name),
                             },
                         };
@@ -497,17 +498,6 @@ fn reveal(t: &mut Tui, revealed: &mut std::collections::HashSet<u64>, id: u64, s
         } else {
             revealed.insert(id);
         }
-    }
-}
-
-/// How far a place is: across, and up or down when that is three metres or more — a
-/// lock under a monument is "3m" away across but nine below.
-fn span(from: [f32; 3], to: [f32; 3]) -> String {
-    let across = (to[0] - from[0]).hypot(to[1] - from[1]) / 100.0;
-    match (to[2] - from[2]) / 100.0 {
-        up if up >= 3.0 => format!("{across:.0}m ↑{up:.0}m"),
-        up if up <= -3.0 => format!("{across:.0}m ↓{:.0}m", -up),
-        _ => format!("{across:.0}m"),
     }
 }
 
