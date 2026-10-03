@@ -24,7 +24,7 @@ pub const CARD: f32 = 372.0;
 /// `w-full`: a root as wide as the room it is given. A root left `auto` is laid out
 /// as CSS does — fit to its content — and its cards fold to one narrow column.
 pub fn full(s: Style) -> Style {
-    Style { size: Size { width: percent(1.0), height: auto() }, ..s }
+    Style { size: Size { width: percent(1.0_f32), height: auto() }, ..s }
 }
 
 /// How wide a page of `cards` side-by-side cards is (px).
@@ -50,7 +50,7 @@ fn gap(px: f32) -> Size<taffy::LengthPercentage> {
 pub fn col(px: f32) -> Style {
     Style {
         display: Display::Grid,
-        grid_template_columns: vec![taffy::style_helpers::minmax(length(0.0), fr(1.0))],
+        grid_template_columns: vec![taffy::style_helpers::minmax(length(0.0_f32), fr(1.0_f32))],
         align_items: Some(AlignItems::Start),
         justify_items: Some(AlignItems::Stretch),
         gap: gap(px),
@@ -79,8 +79,8 @@ pub fn grow(s: Style) -> Style {
     Style {
         flex_grow: 1.0,
         flex_shrink: 1.0,
-        flex_basis: length(0.0),
-        min_size: Size { width: length(0.0), height: auto() },
+        flex_basis: length(0.0_f32),
+        min_size: Size { width: length(0.0_f32), height: auto() },
         ..s
     }
 }
@@ -132,7 +132,7 @@ pub fn place(heights: &[f32], columns: usize) -> Vec<Vec<usize>> {
 pub fn sidebar(side: f32, px: f32) -> Style {
     Style {
         display: Display::Grid,
-        grid_template_columns: vec![length(side), fr(1.0)],
+        grid_template_columns: vec![length(side), fr(1.0_f32)],
         align_items: Some(AlignItems::Start),
         gap: gap(px),
         ..Default::default()
@@ -146,7 +146,7 @@ pub fn block<T>(tui: &mut Tui, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
     // narrower at in the frame before cannot hold it there; in a column (a grid, see
     // `col`) it is stretched across and grow means nothing.
     tui.style(Style {
-        min_size: Size { width: length(0.0), height: auto() },
+        min_size: Size { width: length(0.0_f32), height: auto() },
         flex_grow: 1.0,
         flex_shrink: 1.0,
         ..Default::default()
@@ -242,7 +242,7 @@ pub fn field<T>(tui: &mut Tui, label: impl Into<RichText>, body: impl FnOnce(&mu
     let label = label.into();
     tui.style(Style { align_items: Some(AlignItems::Center), ..row(super::theme::BLOCK) }).add(|tui| {
         tui.style(Style {
-            flex_basis: percent(0.42),
+            flex_basis: percent(0.42_f32),
             flex_shrink: 0.0,
             min_size: Size { width: length(LABEL_MIN), height: auto() },
             max_size: Size { width: length(LABEL_MAX), height: auto() },
@@ -334,7 +334,7 @@ mod tests {
     fn grow_gives_back_its_width() {
         let s = grow(row(6.0));
         assert_eq!(s.flex_grow, 1.0);
-        assert_eq!(s.min_size.width, length(0.0));
+        assert_eq!(s.min_size.width, length(0.0_f32));
         assert_eq!(s.flex_direction, FlexDirection::Row);
     }
 }
