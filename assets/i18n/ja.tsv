@@ -478,7 +478,6 @@ MINUTES_AGO	{count}分前
 HOURS_AGO	{count}時間前
 LYMBIC_LOCKS	リムビックロック
 THE_RODS_EACH_LOCK_TAKES	ロックごとに必要なロッドです。手持ちのロッドで開けられるロックが先に並びます。ロックや足りないロッドの行を押すと、そこへ案内します。
-LOCK_OPENS_NOW	{place}：今開けられる
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod}：{place}
@@ -512,3 +511,32 @@ ENOUGH	足りる
 SHORT_BY	{shards} 不足
 COST_HOVER	残りのコスト：{shards}
 NOT_HELD_YET	未所持：{items}
+HELP	ヘルプ
+HELP_PAGES	ページ
+HELP_CHEATS_ARE_FOLDED	チートはサイドバーの一番下にたたまれています。そこで開いてください。
+HELP_START	はじめに
+HELP_STEP_GAME	ゲームを起動してセーブデータをロードしてください。パネルが自動で見つけます。
+HELP_STEP_STATUS	「{gate}」が緑になれば、MODがゲームを読み取っています。
+HELP_STEP_QUEST	「{quests}」タブでクエストを選ぶと、コンパスとミニマップが次の目標へ案内します。
+HELP_STEP_ANSWERS	答えは押すまで隠れたままです。見て回るだけではネタバレになりません。
+HELP_KEY_PANEL	このパネルの表示・非表示
+HELP_KEYS_CHANGE_ON_MAP	キーは「{map}」タブで変更できます。
+HELP_TROUBLE	困ったときは
+HELP_Q_NO_DATA	「ゲームデータ」が準備できていない
+HELP_A_NO_DATA	主人公を操作できるようになると読み込みます。.NET 8を求められたら「{install}」を押してください。
+HELP_Q_RESTORE	チートを切る
+HELP_A_RESTORE	パネルを×で閉じるか、「{restore}」を押してください。どちらも元の値に戻します。
+HELP_Q_UPDATE	ゲームの更新後
+HELP_A_UPDATE	ゲームデータは自動で読み直します。おかしい場合はコンソールで `doctor` を実行してください。
+HELP_Q_REPORT	問題を報告する
+HELP_A_REPORT	「{debug}」タブからログフォルダを開けます。hiumod.log と verify.txt を添付してください。
+ABOUT_NOW	続きと、この地域の残り
+ABOUT_MAP	ミニマップ、大きな地図、ピン
+ABOUT_GUIDE	コンパス、次の行き先
+ABOUT_QUESTS	クエスト、取り逃しやすい善行、受け渡し
+ABOUT_CLUES	知っている手がかりを検索
+ABOUT_PUZZLES	パズルの答え、リムビックロック、金庫
+ABOUT_COLLECT	収集品、敵の群れ、実績
+ABOUT_SAVES	セーブのバックアップ
+ABOUT_DEBUG	ログ、チートの点検
+OPENS_NOW	今開けられる

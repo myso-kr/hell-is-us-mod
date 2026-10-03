@@ -478,7 +478,6 @@ MINUTES_AGO	{count} dk önce
 HOURS_AGO	{count} sa önce
 LYMBIC_LOCKS	Limbik kilitler
 THE_RODS_EACH_LOCK_TAKES	Her kilidin istediği çubuklar. Çubuklarınızın zaten açtığı kilitler önce gelir. Oraya yönlendirilmek için bir kilide ya da eksik bir çubuğa basın.
-LOCK_OPENS_NOW	{place}: şimdi açılabilir
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (yer: {place})
@@ -512,3 +511,32 @@ ENOUGH	Yeterli
 SHORT_BY	{shards} eksik
 COST_HOVER	Kalan maliyet: {shards}
 NOT_HELD_YET	Yok: {items}
+HELP	Yardım
+HELP_PAGES	Sayfalar
+HELP_CHEATS_ARE_FOLDED	Hileler kenar çubuğunun en altında katlı durur. Oradan açın.
+HELP_START	İlk adımlar
+HELP_STEP_GAME	Oyunu başlatıp bir kayıt yükleyin. Panel onu kendisi bulur.
+HELP_STEP_STATUS	“{gate}” yeşile döndüğünde mod oyunu okuyor demektir.
+HELP_STEP_QUEST	“{quests}” sekmesinde bir görev seçin. Pusula ve mini harita sizi sonraki hedefe götürür.
+HELP_STEP_ANSWERS	Cevaplar siz istemedikçe gizli kalır. Etrafa bakmak hiçbir şeyi ele vermez.
+HELP_KEY_PANEL	Bu paneli aç veya gizle
+HELP_KEYS_CHANGE_ON_MAP	Tuşları “{map}” sekmesinden değiştirebilirsiniz.
+HELP_TROUBLE	Bir sorun olursa
+HELP_Q_NO_DATA	“Oyun verisi” hazır değil
+HELP_A_NO_DATA	Kahramanın kontrolü size geçince okunur. .NET 8 isterse “{install}” düğmesine basın.
+HELP_Q_RESTORE	Hileleri kapatmak
+HELP_A_RESTORE	Paneli × ile kapatın ya da “{restore}” düğmesine basın. İkisi de özgün değerleri geri yükler.
+HELP_Q_UPDATE	Oyun güncellemesinden sonra
+HELP_A_UPDATE	Oyun verisi kendiliğinden yeniden okunur. Bir tuhaflık varsa konsolda `doctor` çalıştırın.
+HELP_Q_REPORT	Sorun bildirmek
+HELP_A_REPORT	“{debug}” sekmesi günlük klasörünü açar. hiumod.log ve verify.txt dosyalarını ekleyin.
+ABOUT_NOW	kaldığınız yer, burada kalanlar
+ABOUT_MAP	mini harita, büyük harita, işaretler
+ABOUT_GUIDE	pusula, sonra nereye
+ABOUT_QUESTS	görevler, kaçırılabilecek iyilikler, teslimler
+ABOUT_CLUES	bildikleriniz, aranabilir
+ABOUT_PUZZLES	cevaplar, limbik kilitler, mahzenler
+ABOUT_COLLECT	koleksiyon parçaları, düşman grupları, başarımlar
+ABOUT_SAVES	kayıt yedekleri
+ABOUT_DEBUG	günlükler, hile denetimi
+OPENS_NOW	Şimdi açılır

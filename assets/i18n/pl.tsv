@@ -478,7 +478,6 @@ MINUTES_AGO	{count} min temu
 HOURS_AGO	{count} godz. temu
 LYMBIC_LOCKS	Zamki limbiczne
 THE_RODS_EACH_LOCK_TAKES	Pręty, których wymaga każdy zamek. Najpierw te, które twoje pręty już otwierają. Kliknij zamek lub brakujący pręt, by cię tam poprowadzić.
-LOCK_OPENS_NOW	{place}: można otworzyć teraz
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (miejsce: {place})
@@ -512,3 +511,32 @@ ENOUGH	Wystarczy
 SHORT_BY	Brakuje {shards}
 COST_HOVER	Jeszcze kosztuje: {shards}
 NOT_HELD_YET	Brak: {items}
+HELP	Pomoc
+HELP_PAGES	Strony
+HELP_CHEATS_ARE_FOLDED	Kody są zwinięte na dole paska bocznego. Rozwiń je tam.
+HELP_START	Pierwsze kroki
+HELP_STEP_GAME	Uruchom grę i wczytaj zapis. Panel znajdzie go sam.
+HELP_STEP_STATUS	Gdy „{gate}” zmieni kolor na zielony, mod czyta grę.
+HELP_STEP_QUEST	W zakładce „{quests}” wybierz zadanie. Kompas i minimapa poprowadzą cię do kolejnego celu.
+HELP_STEP_ANSWERS	Odpowiedzi pozostają ukryte, dopóki o nie nie poprosisz. Samo rozglądanie się niczego nie zdradza.
+HELP_KEY_PANEL	Otwórz lub ukryj ten panel
+HELP_KEYS_CHANGE_ON_MAP	Klawisze zmienisz w zakładce „{map}”.
+HELP_TROUBLE	Gdy coś jest nie tak
+HELP_Q_NO_DATA	„Dane gry” nie są gotowe
+HELP_A_NO_DATA	Są wczytywane, gdy przejmiesz kontrolę nad bohaterem. Jeśli wymaga .NET 8, kliknij „{install}”.
+HELP_Q_RESTORE	Wyłączanie kodów
+HELP_A_RESTORE	Zamknij panel przyciskiem × albo kliknij „{restore}”. Oba przywracają oryginalne wartości.
+HELP_Q_UPDATE	Po aktualizacji gry
+HELP_A_UPDATE	Dane gry zostaną wczytane ponownie same. Jeśli coś wygląda źle, uruchom `doctor` w konsoli.
+HELP_Q_REPORT	Zgłaszanie problemu
+HELP_A_REPORT	Zakładka „{debug}” otwiera folder dzienników. Dołącz hiumod.log i verify.txt.
+ABOUT_NOW	gdzie skończyłeś, co tu zostało
+ABOUT_MAP	minimapa, duża mapa, znaczniki
+ABOUT_GUIDE	kompas, dokąd dalej
+ABOUT_QUESTS	zadania, dobre uczynki do przegapienia, przekazania
+ABOUT_CLUES	co wiesz, z wyszukiwaniem
+ABOUT_PUZZLES	odpowiedzi, zamki limbiczne, skarbce
+ABOUT_COLLECT	znajdźki, grupy wrogów, osiągnięcia
+ABOUT_SAVES	kopie zapisów
+ABOUT_DEBUG	dzienniki, sprawdzanie kodów
+OPENS_NOW	Do otwarcia

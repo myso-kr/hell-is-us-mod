@@ -8,6 +8,7 @@ mod debug;
 mod deep;
 mod groups;
 mod guide;
+mod help;
 mod map;
 mod now;
 mod quests;
@@ -130,6 +131,7 @@ fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Tool {
     Now,
+    Help,
     Map,
     Guide,
     Quests,
@@ -141,8 +143,9 @@ enum Tool {
 }
 
 impl Tool {
-    const ALL: [Tool; 9] = [
+    const ALL: [Tool; 10] = [
         Tool::Now,
+        Tool::Help,
         Tool::Map,
         Tool::Guide,
         Tool::Quests,
@@ -154,12 +157,13 @@ impl Tool {
     ];
 
     /// Above the groups in the sidebar, in none.
-    const TOP: [Tool; 1] = [Tool::Now];
+    const TOP: [Tool; 2] = [Tool::Now, Tool::Help];
 
     /// Its name in settings.txt.
     fn id(self) -> &'static str {
         match self {
             Tool::Now => "now",
+            Tool::Help => "help",
             Tool::Map => "map",
             Tool::Guide => "guide",
             Tool::Quests => "quests",
@@ -174,6 +178,7 @@ impl Tool {
     fn label(self) -> &'static str {
         match self {
             Tool::Now => tr!("NOW"),
+            Tool::Help => tr!("HELP"),
             Tool::Map => tr!("MAP"),
             Tool::Guide => tr!("GUIDE"),
             Tool::Quests => tr!("QUESTS"),
@@ -182,6 +187,22 @@ impl Tool {
             Tool::Collect => tr!("COLLECT"),
             Tool::Saves => tr!("SAVES"),
             Tool::Debug => tr!("DEBUG"),
+        }
+    }
+
+    /// What the page is for, in a few words (the help page).
+    fn about(self) -> &'static str {
+        match self {
+            Tool::Now => tr!("ABOUT_NOW"),
+            Tool::Help => "",
+            Tool::Map => tr!("ABOUT_MAP"),
+            Tool::Guide => tr!("ABOUT_GUIDE"),
+            Tool::Quests => tr!("ABOUT_QUESTS"),
+            Tool::Clues => tr!("ABOUT_CLUES"),
+            Tool::Puzzles => tr!("ABOUT_PUZZLES"),
+            Tool::Collect => tr!("ABOUT_COLLECT"),
+            Tool::Saves => tr!("ABOUT_SAVES"),
+            Tool::Debug => tr!("ABOUT_DEBUG"),
         }
     }
 }
@@ -661,6 +682,7 @@ impl Panel {
             Some(Tool::Collect) | Some(Tool::Quests) | Some(Tool::Puzzles) => 4,
             Some(Tool::Map) => 3,
             Some(Tool::Guide) | Some(Tool::Clues) => 2,
+            Some(Tool::Help) => 4,
             Some(Tool::Saves) => 2,
             Some(Tool::Debug) => 1,
             None if self.tab == Group::Movement => 3,

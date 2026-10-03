@@ -478,7 +478,6 @@ MINUTES_AGO	vor {count} Min.
 HOURS_AGO	vor {count} Std.
 LYMBIC_LOCKS	Lymbische Schlösser
 THE_RODS_EACH_LOCK_TAKES	Die Stäbe, die jedes Schloss braucht. Schlösser, die deine Stäbe schon öffnen, kommen zuerst. Tippe auf ein Schloss oder einen fehlenden Stab, um dorthin geführt zu werden.
-LOCK_OPENS_NOW	{place}: jetzt zu öffnen
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (in {place})
@@ -512,3 +511,32 @@ ENOUGH	Reicht
 SHORT_BY	{shards} fehlen
 COST_HOVER	Kostet noch: {shards}
 NOT_HELD_YET	Nicht vorhanden: {items}
+HELP	Hilfe
+HELP_PAGES	Seiten
+HELP_CHEATS_ARE_FOLDED	Die Cheats sind unten in der Seitenleiste eingeklappt. Öffne sie dort.
+HELP_START	Erste Schritte
+HELP_STEP_GAME	Starte das Spiel und lade einen Spielstand. Das Panel findet es von selbst.
+HELP_STEP_STATUS	Wird „{gate}“ grün, liest die Mod das Spiel.
+HELP_STEP_QUEST	Wähle auf der Seite „{quests}“ eine Quest. Kompass und Minikarte führen dich zum nächsten Ziel.
+HELP_STEP_ANSWERS	Lösungen bleiben verborgen, bis du sie anforderst. Umsehen verrät nichts.
+HELP_KEY_PANEL	Dieses Panel öffnen oder ausblenden
+HELP_KEYS_CHANGE_ON_MAP	Die Tasten änderst du auf der Seite „{map}“.
+HELP_TROUBLE	Wenn etwas nicht stimmt
+HELP_Q_NO_DATA	„Spieldaten“ sind nicht bereit
+HELP_A_NO_DATA	Sie werden gelesen, sobald du den Helden steuerst. Fragt es nach .NET 8, tippe auf „{install}“.
+HELP_Q_RESTORE	Cheats ausschalten
+HELP_A_RESTORE	Schließe das Panel mit × oder tippe auf „{restore}“. Beides stellt die Originalwerte wieder her.
+HELP_Q_UPDATE	Nach einem Spiel-Update
+HELP_A_UPDATE	Die Spieldaten werden von selbst neu gelesen. Wirkt etwas falsch, führe `doctor` in der Konsole aus.
+HELP_Q_REPORT	Ein Problem melden
+HELP_A_REPORT	Die Seite „{debug}“ öffnet den Log-Ordner. Hänge hiumod.log und verify.txt an.
+ABOUT_NOW	wo du aufgehört hast, was hier übrig ist
+ABOUT_MAP	Minikarte, große Karte, Markierungen
+ABOUT_GUIDE	Kompass, wohin als Nächstes
+ABOUT_QUESTS	Quests, verpassbare Taten, Übergaben
+ABOUT_CLUES	was du weißt, durchsuchbar
+ABOUT_PUZZLES	Lösungen, lymbische Schlösser, Grüfte
+ABOUT_COLLECT	Sammelobjekte, Gegnergruppen, Erfolge
+ABOUT_SAVES	Spielstand-Sicherungen
+ABOUT_DEBUG	Logs, Cheat-Prüfung
+OPENS_NOW	Jetzt zu öffnen

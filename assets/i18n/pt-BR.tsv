@@ -478,7 +478,6 @@ MINUTES_AGO	há {count} min
 HOURS_AGO	há {count} h
 LYMBIC_LOCKS	Travas límbicas
 THE_RODS_EACH_LOCK_TAKES	As hastes que cada trava pede (primeiro as que suas hastes já abrem). Clique numa trava ou numa haste que falta para ser guiado até lá.
-LOCK_OPENS_NOW	{place}: abre agora
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (em {place})
@@ -512,3 +511,32 @@ ENOUGH	Suficiente
 SHORT_BY	Faltam {shards}
 COST_HOVER	Ainda custa: {shards}
 NOT_HELD_YET	Não tem: {items}
+HELP	Ajuda
+HELP_PAGES	Páginas
+HELP_CHEATS_ARE_FOLDED	As trapaças ficam recolhidas no fim da barra lateral. Abra-as lá.
+HELP_START	Primeiros passos
+HELP_STEP_GAME	Inicie o jogo e carregue um save. O painel o encontra sozinho.
+HELP_STEP_STATUS	Quando “{gate}” ficar verde, o mod está lendo o jogo.
+HELP_STEP_QUEST	Na aba “{quests}”, escolha uma missão. A bússola e o minimapa guiam você ao próximo objetivo.
+HELP_STEP_ANSWERS	As respostas ficam ocultas até você pedir. Só olhar não dá spoiler.
+HELP_KEY_PANEL	Abrir ou ocultar este painel
+HELP_KEYS_CHANGE_ON_MAP	As teclas mudam na aba “{map}”.
+HELP_TROUBLE	Se algo der errado
+HELP_Q_NO_DATA	“Dados do jogo” não estão prontos
+HELP_A_NO_DATA	Eles são lidos assim que você controla o herói. Se pedir .NET 8, clique em “{install}”.
+HELP_Q_RESTORE	Desligar trapaças
+HELP_A_RESTORE	Feche o painel com × ou clique em “{restore}”. Os dois devolvem os valores originais.
+HELP_Q_UPDATE	Depois de uma atualização do jogo
+HELP_A_UPDATE	Os dados do jogo são relidos sozinhos. Se algo parecer errado, rode `doctor` no console.
+HELP_Q_REPORT	Relatar um problema
+HELP_A_REPORT	A aba “{debug}” abre a pasta de logs. Anexe hiumod.log e verify.txt.
+ABOUT_NOW	onde você parou, o que resta aqui
+ABOUT_MAP	minimapa, mapa grande, marcadores
+ABOUT_GUIDE	bússola, para onde ir
+ABOUT_QUESTS	missões, boas ações que se perdem, entregas
+ABOUT_CLUES	o que você sabe, com busca
+ABOUT_PUZZLES	respostas, travas límbicas, câmaras
+ABOUT_COLLECT	colecionáveis, grupos de inimigos, conquistas
+ABOUT_SAVES	backups de saves
+ABOUT_DEBUG	logs, verificação das trapaças
+OPENS_NOW	Abre agora

@@ -236,30 +236,84 @@ pub fn text(tui: &mut Tui, text: impl Into<RichText>) {
 
 /// A titled card: `flex flex-col gap-2 p-4 border rounded`, the accent bar beside its title.
 pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> T {
-    // A raised panel with rounded corners and an accent bar down its left edge.
+    // A raised panel with rounded corners. No accent rail: the accent marks what is
+    // chosen or live, and a mark on every card would mean nothing.
     fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
         let rect = container.full_container();
-        let p = ui.painter();
-        p.rect(
+        ui.painter().rect(
             rect,
             super::theme::R_CARD,
             super::theme::CARD,
             egui::Stroke::new(1.0, super::theme::EDGE),
             egui::StrokeKind::Inside,
         );
-        let bar = egui::Rect::from_min_size(rect.min + egui::vec2(1.0, super::theme::PAD - 1.0), egui::vec2(3.0, 18.0));
-        p.rect_filled(bar, 1.5, ACCENT);
     }
     tui.style(Style { padding: length(super::theme::PAD), ..col(super::theme::INLINE) })
         .add_with_background_ui(background, |tui, _| {
-            w(tui, |ui| ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE)));
+            // The header: the title over a hairline as wide as the card's content.
+            block(tui, |ui| {
+                ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE));
+                let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 5.0), egui::Sense::hover());
+                ui.painter().hline(rect.x_range(), rect.bottom() - 0.5, egui::Stroke::new(1.0, super::theme::EDGE));
+            });
             body(tui)
         })
         .main
 }
 
-/// The cards' accent bar: the theme's accent.
-pub const ACCENT: Color32 = super::theme::ACCENT;
+/// What a chip says about a state: done or fine, waiting on something, wrong or about
+/// to be lost, chosen or live, or just a label.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Tone {
+    Ok,
+    Wait,
+    Bad,
+    Accent,
+    Quiet,
+}
+
+impl Tone {
+    fn colour(self) -> Color32 {
+        match self {
+            Tone::Ok => super::theme::OK,
+            Tone::Wait => super::theme::WAIT,
+            Tone::Bad => super::theme::BAD,
+            Tone::Accent => super::theme::ACCENT,
+            Tone::Quiet => super::theme::DIM,
+        }
+    }
+}
+
+/// A state as a pill: its colour's text on a faint wash of it — the panel's one way to
+/// show a state at a glance (can open now, covered, soon, opened…).
+pub fn pill(ui: &mut egui::Ui, text: impl Into<String>, tone: Tone) -> egui::Response {
+    let c = tone.colour();
+    egui::Frame::new()
+        .fill(c.gamma_multiply(0.14))
+        .stroke(egui::Stroke::new(1.0, c.gamma_multiply(0.35)))
+        .corner_radius(super::theme::R_CHIP)
+        .inner_margin(egui::Margin::symmetric(8, 1))
+        .show(ui, |ui| ui.label(RichText::new(text.into()).small().color(c)))
+        .response
+}
+
+/// `pill` as a node of its own, in a row.
+pub fn chip(tui: &mut Tui, text: impl Into<String>, tone: Tone) {
+    let text = text.into();
+    w(tui, |ui| pill(ui, text, tone));
+}
+
+/// A key as a keycap: `F10`, `` ` ``.
+pub fn keycap(tui: &mut Tui, key: &str) {
+    w(tui, |ui| {
+        egui::Frame::new()
+            .fill(super::theme::CONTROL)
+            .stroke(egui::Stroke::new(1.0, super::theme::EDGE))
+            .corner_radius(super::theme::R_CONTROL)
+            .inner_margin(egui::Margin::symmetric(7, 1))
+            .show(ui, |ui| ui.label(RichText::new(key).monospace().color(super::theme::TITLE)))
+    });
+}
 
 /// A form row: the label in 42 % of the row (72–200 px, wrapping), then the
 /// controls in what is left, wrapping onto a second line rather than overflowing.

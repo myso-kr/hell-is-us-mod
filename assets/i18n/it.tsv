@@ -478,7 +478,6 @@ MINUTES_AGO	{count} min fa
 HOURS_AGO	{count} h fa
 LYMBIC_LOCKS	Blocchi limbici
 THE_RODS_EACH_LOCK_TAKES	Le barre che ogni blocco richiede; prima quelli che le tue barre aprono già. Premi un blocco o una barra mancante per esservi guidato.
-LOCK_OPENS_NOW	{place}: si apre ora
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (a {place})
@@ -512,3 +511,32 @@ ENOUGH	Basta
 SHORT_BY	Mancano {shards}
 COST_HOVER	Costa ancora: {shards}
 NOT_HELD_YET	Non posseduto: {items}
+HELP	Aiuto
+HELP_PAGES	Pagine
+HELP_CHEATS_ARE_FOLDED	I trucchi sono ripiegati in fondo alla barra laterale. Aprili lì.
+HELP_START	Primi passi
+HELP_STEP_GAME	Avvia il gioco e carica un salvataggio. Il pannello lo trova da solo.
+HELP_STEP_STATUS	Quando «{gate}» diventa verde, la mod sta leggendo il gioco.
+HELP_STEP_QUEST	Nella scheda «{quests}» scegli un’indagine. Bussola e minimappa ti guidano all’obiettivo successivo.
+HELP_STEP_ANSWERS	Le risposte restano nascoste finché non le chiedi. Guardarsi intorno non rovina nulla.
+HELP_KEY_PANEL	Apri o nascondi questo pannello
+HELP_KEYS_CHANGE_ON_MAP	I tasti si cambiano nella scheda «{map}».
+HELP_TROUBLE	Se qualcosa non va
+HELP_Q_NO_DATA	«Dati di gioco» non pronti
+HELP_A_NO_DATA	Vengono letti appena controlli il protagonista. Se chiede .NET 8, premi «{install}».
+HELP_Q_RESTORE	Disattivare i trucchi
+HELP_A_RESTORE	Chiudi il pannello con × o premi «{restore}». Entrambi rimettono i valori originali.
+HELP_Q_UPDATE	Dopo un aggiornamento del gioco
+HELP_A_UPDATE	I dati di gioco vengono riletti da soli. Se qualcosa non torna, esegui `doctor` nella console.
+HELP_Q_REPORT	Segnalare un problema
+HELP_A_REPORT	La scheda «{debug}» apre la cartella dei log. Allega hiumod.log e verify.txt.
+ABOUT_NOW	dove eri rimasto, cosa resta qui
+ABOUT_MAP	minimappa, mappa grande, segnaposti
+ABOUT_GUIDE	bussola, dove andare dopo
+ABOUT_QUESTS	indagini, buone azioni da non perdere, consegne
+ABOUT_CLUES	ciò che sai, con ricerca
+ABOUT_PUZZLES	risposte, blocchi limbici, camere
+ABOUT_COLLECT	collezionabili, gruppi di nemici, trofei
+ABOUT_SAVES	copie dei salvataggi
+ABOUT_DEBUG	log, controllo dei trucchi
+OPENS_NOW	Si apre ora

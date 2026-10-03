@@ -478,7 +478,6 @@ MINUTES_AGO	{count}분 전
 HOURS_AGO	{count}시간 전
 LYMBIC_LOCKS	림빅 잠금
 THE_RODS_EACH_LOCK_TAKES	잠금마다 필요한 막대입니다. 가진 막대로 이미 열 수 있는 잠금이 먼저 나옵니다. 잠금이나 빠진 막대 줄을 누르면 그곳으로 안내합니다.
-LOCK_OPENS_NOW	{place}: 지금 열 수 있음
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (위치: {place})
@@ -512,3 +511,32 @@ ENOUGH	충분
 SHORT_BY	{shards} 부족
 COST_HOVER	남은 비용: {shards}
 NOT_HELD_YET	없음: {items}
+HELP	도움말
+HELP_PAGES	페이지
+HELP_CHEATS_ARE_FOLDED	치트는 사이드바 맨 아래에 접혀 있습니다. 거기서 펼치세요.
+HELP_START	처음 쓰는 법
+HELP_STEP_GAME	게임을 켜고 세이브를 불러오세요. 패널이 알아서 찾습니다.
+HELP_STEP_STATUS	'{gate}'가 초록색이 되면 모드가 게임을 읽고 있는 것입니다.
+HELP_STEP_QUEST	'{quests}' 탭에서 퀘스트를 고르세요. 나침반과 미니맵이 다음 목표로 안내합니다.
+HELP_STEP_ANSWERS	답은 누르기 전까지 숨겨져 있습니다. 둘러보기만 해서는 스포일러가 되지 않습니다.
+HELP_KEY_PANEL	이 패널 열기·숨기기
+HELP_KEYS_CHANGE_ON_MAP	단축키는 '{map}' 탭에서 바꿀 수 있습니다.
+HELP_TROUBLE	문제가 생기면
+HELP_Q_NO_DATA	"게임 데이터"가 준비되지 않음
+HELP_A_NO_DATA	주인공을 조작할 수 있게 되면 읽습니다. .NET 8을 요구하면 '{install}' 버튼을 누르세요.
+HELP_Q_RESTORE	치트 끄기
+HELP_A_RESTORE	패널을 ×로 닫거나 '{restore}' 버튼을 누르세요. 둘 다 원래 값으로 되돌립니다.
+HELP_Q_UPDATE	게임 업데이트 뒤
+HELP_A_UPDATE	게임 데이터를 알아서 다시 읽습니다. 이상하면 콘솔에서 `doctor`를 실행하세요.
+HELP_Q_REPORT	문제 알리기
+HELP_A_REPORT	'{debug}' 탭에서 로그 폴더를 열 수 있습니다. hiumod.log와 verify.txt를 첨부해 주세요.
+ABOUT_NOW	이어서 할 일, 이 지역에 남은 것
+ABOUT_MAP	미니맵, 큰 지도, 핀
+ABOUT_GUIDE	나침반, 다음 갈 곳
+ABOUT_QUESTS	퀘스트, 놓치기 쉬운 선행, 건네주기
+ABOUT_CLUES	아는 단서 찾기
+ABOUT_PUZZLES	퍼즐 답, 림빅 잠금, 금고
+ABOUT_COLLECT	수집품, 적 무리, 업적
+ABOUT_SAVES	세이브 백업
+ABOUT_DEBUG	로그, 치트 점검
+OPENS_NOW	지금 열 수 있음

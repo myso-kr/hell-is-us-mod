@@ -478,7 +478,6 @@ MINUTES_AGO	{count} min ago
 HOURS_AGO	{count} h ago
 LYMBIC_LOCKS	Lymbic Locks
 THE_RODS_EACH_LOCK_TAKES	The rods each lock takes. Locks your rods already open come first. Press a lock or a missing rod to be guided there.
-LOCK_OPENS_NOW	{place}: opens now
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (in {place})
@@ -512,3 +511,32 @@ ENOUGH	Covered
 SHORT_BY	{shards} short
 COST_HOVER	Still costs: {shards}
 NOT_HELD_YET	Not held: {items}
+HELP	Help
+HELP_PAGES	Pages
+HELP_CHEATS_ARE_FOLDED	The cheats are at the bottom of the sidebar, folded. Open them there.
+HELP_START	First Steps
+HELP_STEP_GAME	Start the game and load a save. The panel finds it on its own.
+HELP_STEP_STATUS	When "{gate}" turns green, the mod is reading the game.
+HELP_STEP_QUEST	On the {quests} page, pick a quest. The compass and minimap guide you to its next goal.
+HELP_STEP_ANSWERS	Answers stay hidden until you press for them, so nothing is spoiled by looking.
+HELP_KEY_PANEL	Open or hide this panel
+HELP_KEYS_CHANGE_ON_MAP	Change the keys on the {map} page.
+HELP_TROUBLE	If Something Is Off
+HELP_Q_NO_DATA	"Game data" is not ready
+HELP_A_NO_DATA	It is read once the hero is in control. If it asks for .NET 8, press "{install}".
+HELP_Q_RESTORE	Turning cheats off
+HELP_A_RESTORE	Close the panel with its × or press "{restore}". Both put the original values back.
+HELP_Q_UPDATE	After a game update
+HELP_A_UPDATE	The game data is read again on its own. If something looks wrong, run `doctor` in the console.
+HELP_Q_REPORT	Reporting a problem
+HELP_A_REPORT	The {debug} page opens the log folder. Attach hiumod.log and verify.txt.
+ABOUT_NOW	where you left off, what is left here
+ABOUT_MAP	minimap, big map, pins
+ABOUT_GUIDE	compass, where to go next
+ABOUT_QUESTS	journal, missable deeds, hand-overs
+ABOUT_CLUES	what you know, searchable
+ABOUT_PUZZLES	answers, Lymbic locks, vaults
+ABOUT_COLLECT	collectibles, enemy groups, achievements
+ABOUT_SAVES	save backups
+ABOUT_DEBUG	logs, cheat checks
+OPENS_NOW	Opens now

@@ -125,12 +125,12 @@ impl Panel {
             }
             for d in list.iter().filter(|d| d.when != When::Passed) {
                 let (mark, colour) = match d.when {
-                    When::Now => (tr!("SOON"), BAD),
-                    _ => (tr!("LATER"), DIM),
+                    When::Now => (tr!("SOON"), tw::Tone::Bad),
+                    _ => (tr!("LATER"), tw::Tone::Quiet),
                 };
                 tw::item(t, |t| {
                     t.style(tw::row(INLINE)).add(|t| {
-                        w(t, |ui| ui.label(RichText::new(mark).color(colour).small().strong()));
+                        tw::chip(t, mark, colour);
                         let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
                         if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
                             state.quest = Some(d.key.clone());

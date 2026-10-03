@@ -16,6 +16,7 @@ impl Panel {
         let guard = &mut *guard;
         match self.tool {
             Some(Tool::Now) => self.now_tab(t, guard, snap),
+            Some(Tool::Help) => self.help_tab(t, guard),
             Some(Tool::Guide) => tw::masonry(t, "guide", cols, 2, |t, i| match i {
                 0 => self.guide_column(t, guard, snap),
                 _ => self.goals_card(t, guard, snap),

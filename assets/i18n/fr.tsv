@@ -478,7 +478,6 @@ MINUTES_AGO	il y a {count} min
 HOURS_AGO	il y a {count} h
 LYMBIC_LOCKS	Verrous lymbiques
 THE_RODS_EACH_LOCK_TAKES	Les barres que demande chaque verrou. Ceux que vos barres ouvrent déjà viennent en premier. Cliquez sur un verrou ou une barre manquante pour y être guidé.
-LOCK_OPENS_NOW	{place} : ouvrable maintenant
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (à {place})
@@ -512,3 +511,32 @@ ENOUGH	Suffisant
 SHORT_BY	Manque {shards}
 COST_HOVER	Coûte encore : {shards}
 NOT_HELD_YET	Pas en main : {items}
+HELP	Aide
+HELP_PAGES	Pages
+HELP_CHEATS_ARE_FOLDED	Les triches sont repliées en bas de la barre latérale. Ouvrez-les là.
+HELP_START	Premiers pas
+HELP_STEP_GAME	Lancez le jeu et chargez une sauvegarde. Le panneau la trouve tout seul.
+HELP_STEP_STATUS	Quand « {gate} » passe au vert, le mod lit le jeu.
+HELP_STEP_QUEST	Dans l’onglet « {quests} », choisissez une quête. La boussole et la mini-carte vous guident vers l’objectif suivant.
+HELP_STEP_ANSWERS	Les réponses restent cachées tant que vous ne les demandez pas. Regarder ne divulgue rien.
+HELP_KEY_PANEL	Ouvrir ou masquer ce panneau
+HELP_KEYS_CHANGE_ON_MAP	Les touches se changent dans l’onglet « {map} ».
+HELP_TROUBLE	En cas de souci
+HELP_Q_NO_DATA	« Données du jeu » pas prêtes
+HELP_A_NO_DATA	Elles sont lues dès que vous contrôlez le héros. Si .NET 8 est demandé, cliquez sur « {install} ».
+HELP_Q_RESTORE	Désactiver les triches
+HELP_A_RESTORE	Fermez le panneau avec × ou cliquez sur « {restore} ». Les deux remettent les valeurs d’origine.
+HELP_Q_UPDATE	Après une mise à jour du jeu
+HELP_A_UPDATE	Les données du jeu sont relues automatiquement. Si quelque chose cloche, lancez `doctor` dans la console.
+HELP_Q_REPORT	Signaler un problème
+HELP_A_REPORT	L’onglet « {debug} » ouvre le dossier des journaux. Joignez hiumod.log et verify.txt.
+ABOUT_NOW	où vous en étiez, ce qui reste ici
+ABOUT_MAP	mini-carte, grande carte, repères
+ABOUT_GUIDE	boussole, où aller ensuite
+ABOUT_QUESTS	quêtes, bonnes actions à ne pas manquer, remises
+ABOUT_CLUES	ce que vous savez, avec recherche
+ABOUT_PUZZLES	réponses, verrous lymbiques, chambres
+ABOUT_COLLECT	objets à collectionner, groupes d’ennemis, succès
+ABOUT_SAVES	sauvegardes de secours
+ABOUT_DEBUG	journaux, vérification des triches
+OPENS_NOW	Ouvrable

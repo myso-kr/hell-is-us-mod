@@ -98,6 +98,11 @@ All colors and egui visuals are defined in `src/ui/theme.rs`:
 
 ## 5. What can be pressed: four roles, four looks (2026-10-03)
 
+States are shown as **chips** (`tw::chip`/`tw::pill`, a tone's text on a faint wash of it: OK done or
+fine, WAIT waiting, BAD about to be lost, ACCENT chosen or known, Quiet a plain label); keys as
+**keycaps** (`tw::keycap`). Cards have no accent rail any more: the accent marks what is chosen or
+live, so a card's header is its title over a hairline.
+
 Every control belongs to one role, and each role has one look, so a card never makes the player
 work out which of two alike buttons does what.
 

@@ -478,7 +478,6 @@ MINUTES_AGO	hace {count} min
 HOURS_AGO	hace {count} h
 LYMBIC_LOCKS	Cerraduras límbicas
 THE_RODS_EACH_LOCK_TAKES	Las varas que pide cada cerradura; primero las que tus varas ya abren. Pulsa una cerradura o una vara que falte para que te guíe hasta allí.
-LOCK_OPENS_NOW	{place}: se abre ya
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (en {place})
@@ -512,3 +511,32 @@ ENOUGH	Suficiente
 SHORT_BY	Faltan {shards}
 COST_HOVER	Aún cuesta: {shards}
 NOT_HELD_YET	No lo tienes: {items}
+HELP	Ayuda
+HELP_PAGES	Páginas
+HELP_CHEATS_ARE_FOLDED	Los trucos están plegados al final de la barra lateral. Ábrelos allí.
+HELP_START	Primeros pasos
+HELP_STEP_GAME	Inicia el juego y carga una partida. El panel la encuentra solo.
+HELP_STEP_STATUS	Cuando «{gate}» se pone en verde, el mod está leyendo el juego.
+HELP_STEP_QUEST	En la pestaña «{quests}», elige una misión. La brújula y el minimapa te guían al siguiente objetivo.
+HELP_STEP_ANSWERS	Las respuestas quedan ocultas hasta que las pides. Mirar no te destripa nada.
+HELP_KEY_PANEL	Abrir u ocultar este panel
+HELP_KEYS_CHANGE_ON_MAP	Las teclas se cambian en la pestaña «{map}».
+HELP_TROUBLE	Si algo falla
+HELP_Q_NO_DATA	«Datos del juego» no están listos
+HELP_A_NO_DATA	Se leen en cuanto controlas al protagonista. Si pide .NET 8, pulsa «{install}».
+HELP_Q_RESTORE	Desactivar los trucos
+HELP_A_RESTORE	Cierra el panel con × o pulsa «{restore}». Ambos devuelven los valores originales.
+HELP_Q_UPDATE	Tras una actualización del juego
+HELP_A_UPDATE	Los datos del juego se vuelven a leer solos. Si algo parece raro, ejecuta `doctor` en la consola.
+HELP_Q_REPORT	Informar de un problema
+HELP_A_REPORT	La pestaña «{debug}» abre la carpeta de registros. Adjunta hiumod.log y verify.txt.
+ABOUT_NOW	dónde lo dejaste, qué queda aquí
+ABOUT_MAP	minimapa, mapa grande, marcadores
+ABOUT_GUIDE	brújula, adónde ir después
+ABOUT_QUESTS	misiones, buenas acciones que se pierden, entregas
+ABOUT_CLUES	lo que sabes, con búsqueda
+ABOUT_PUZZLES	respuestas, cerraduras límbicas, cámaras
+ABOUT_COLLECT	coleccionables, grupos de enemigos, logros
+ABOUT_SAVES	copias de partidas
+ABOUT_DEBUG	registros, comprobación de trucos
+OPENS_NOW	Se abre ya

@@ -73,7 +73,7 @@ impl Panel {
             for d in &soon {
                 tw::item(t, |t| {
                     t.style(tw::row(INLINE)).add(|t| {
-                        w(t, |ui| ui.label(RichText::new(tr!("SOON")).color(BAD).small().strong()));
+                        tw::chip(t, tr!("SOON"), tw::Tone::Bad);
                         let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
                         if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
                             state.quest = Some(d.key.clone());

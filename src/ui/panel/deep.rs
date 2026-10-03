@@ -190,10 +190,9 @@ impl Panel {
             });
             if all > 0 {
                 let open = all.saturating_sub(closed);
-                let label = RichText::new(trf!("TIMELOOPS_OPEN", open = open, all = all)).small();
-                w(t, |ui| {
-                    ui.label(label.color(if open > 0 { DIM } else { WAIT })).on_hover_text(tr!("TIMELOOPS_OPEN_HOVER"))
-                });
+                let tone = if open > 0 { tw::Tone::Quiet } else { tw::Tone::Wait };
+                let label = trf!("TIMELOOPS_OPEN", open = open, all = all);
+                w(t, |ui| tw::pill(ui, label, tone).on_hover_text(tr!("TIMELOOPS_OPEN_HOVER")));
             }
         });
 
@@ -224,14 +223,13 @@ impl Panel {
                     if !p.cost.is_empty() {
                         name.on_hover_text(trf!("COST_HOVER", shards = shards(&p.cost)));
                     }
-                    let (chip, colour) = if p.short.is_empty() {
-                        (tr!("ENOUGH").to_string(), OK)
+                    if p.short.is_empty() {
+                        tw::chip(t, tr!("ENOUGH"), tw::Tone::Ok);
                     } else {
                         let short: Vec<String> =
                             p.short.iter().map(|(tier, n)| format!("{} {n}", size(*tier))).collect();
-                        (trf!("SHORT_BY", shards = short.join(" · ")), WAIT)
-                    };
-                    w(t, |ui| ui.label(RichText::new(chip).small().color(colour)));
+                        tw::chip(t, trf!("SHORT_BY", shards = short.join(" · ")), tw::Tone::Wait);
+                    }
                 });
                 let steps: Vec<String> = p
                     .steps
@@ -405,10 +403,12 @@ impl Panel {
             for v in list.iter() {
                 let name = crate::i18n::game_text(&v.vault.name);
                 let region = crate::i18n::game_text(&v.vault.region);
-                let status = match v.state {
-                    VaultState::Opened => tr!("OPENED").to_string(),
-                    VaultState::Known => tr!("KNOWN").to_string(),
-                    VaultState::Locked => trf!("RESEARCH_PROGRESS", n = lore, need = v.vault.entries),
+                let (status, tone) = match v.state {
+                    VaultState::Opened => (tr!("OPENED").to_string(), tw::Tone::Ok),
+                    VaultState::Known => (tr!("KNOWN").to_string(), tw::Tone::Accent),
+                    VaultState::Locked => {
+                        (trf!("RESEARCH_PROGRESS", n = lore, need = v.vault.entries), tw::Tone::Quiet)
+                    }
                 };
                 let id = id_of(&v.vault.guid);
                 let icon = |ui: &mut egui::Ui| {
@@ -420,11 +420,12 @@ impl Panel {
                 let on = door.as_ref().map(|_| state.target == Some(id));
                 let revealed = &mut self.revealed;
                 let end = |t: &mut Tui| {
+                    tw::chip(t, status, tone);
                     if shut {
                         reveal(t, revealed, id, tr!("SHOW_CODE"));
                     }
                 };
-                if tw::line(t, on, icon, RichText::new(format!("{name} · {region} — {status}")).color(colour), end) {
+                if tw::line(t, on, icon, RichText::new(format!("{name} · {region}")).color(colour), end) {
                     if let Some((world, at)) = door {
                         let x = crate::survey::Need {
                             world,
@@ -552,14 +553,20 @@ impl Panel {
                         None if Some(l.world.as_str()) == here.as_deref() => tr!("LYMBIC_LOCK").to_string(),
                         None => crate::i18n::place(&l.world),
                     };
-                    let head = if l.openable() { trf!("LOCK_OPENS_NOW", place = name) } else { name };
-                    let head = RichText::new(head).color(if l.openable() { OK } else { super::super::theme::TEXT });
+                    let head = RichText::new(name);
                     // Pressing a line guides there, the one guided to stays marked — the lock
                     // itself, or one of its missing rods below.
                     let icon = |ui: &mut egui::Ui| {
                         crate::ui::svg::sort(ui, crate::actors::Sub::LymbicLock, 18.0);
                     };
-                    if tw::pick_with(t, state.target == Some(l.id), icon, head) {
+                    // A lock the rods held open carries a chip saying so.
+                    let open_now = l.openable();
+                    let end = |t: &mut Tui| {
+                        if open_now {
+                            tw::chip(t, tr!("OPENS_NOW"), tw::Tone::Ok);
+                        }
+                    };
+                    if tw::line(t, Some(state.target == Some(l.id)), icon, head, end) {
                         let x = crate::survey::Need {
                             world: l.world.clone(),
                             id: l.id,
