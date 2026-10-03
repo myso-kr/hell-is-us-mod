@@ -51,6 +51,9 @@ const BIG_EVERY: u32 = 3;
 const HERO_PX: usize = 176;
 const HERO_RADIUS_M: f32 = 120.0;
 const HERO_EVERY: u32 = 20;
+/// The Map page's preview: redrawn this often (frames) while the page shows, so a
+/// setting moved is seen at once.
+const PREVIEW_EVERY: u32 = 4;
 const SAVE_EVERY: Duration = Duration::from_secs(10);
 
 pub fn path() -> std::path::PathBuf {
@@ -226,6 +229,57 @@ pub fn run(shared: Arc<Shared>) {
                 let mut hero = shared.hero.lock().unwrap();
                 let n = hero.as_ref().map_or(0, |h| h.2) + 1;
                 *hero = Some((HERO_PX, cv.px, n));
+            }
+        }
+
+        // The Map page's preview: the map the settings make now, the big map's when that
+        // is the display (its opacity too), else the minimap's.
+        if tick % PREVIEW_EVERY == 0
+            && shared.visible.load(Ordering::SeqCst)
+            && shared.preview_wanted.load(Ordering::SeqCst)
+        {
+            if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
+                let big = state.display == Display::Big;
+                let (radius, heading_up, outline) = if big {
+                    (state.big_radius_m, false, state.big_outline)
+                } else {
+                    (state.radius_m, state.heading_up, state.mini_outline)
+                };
+                let side = MAP_PX as usize;
+                let view = View {
+                    center: p,
+                    yaw_deg: yaw,
+                    heading_up,
+                    scale: (side as f32 / 2.0 - 14.0) / (radius * 100.0),
+                    north_deg: state.north_yaw,
+                    outline,
+                };
+                let relief = baking.relief(&state, p, &obstacles);
+                let goals = hud::with_pins(&goals, &state, world);
+                let mut cv = Canvas::new(side, side);
+                draw_map(
+                    &mut cv,
+                    &state,
+                    world,
+                    &view,
+                    &things,
+                    icons.as_ref(),
+                    &footprints,
+                    &goals,
+                    &Default::default(),
+                    relief.as_deref(),
+                );
+                if big && state.big_alpha < 100 {
+                    // Premultiplied: every channel scales with the opacity.
+                    let a = state.big_alpha as u32;
+                    for px in cv.px.iter_mut() {
+                        let c = |shift: u32| ((*px >> shift & 0xFF) * a / 100) << shift;
+                        *px = c(24) | c(16) | c(8) | c(0);
+                    }
+                }
+                let mut preview = shared.preview.lock().unwrap();
+                let n = preview.as_ref().map_or(0, |h| h.2) + 1;
+                *preview = Some((side, cv.px, n));
             }
         }
 

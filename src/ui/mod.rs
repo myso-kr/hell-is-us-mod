@@ -69,6 +69,11 @@ pub struct Shared {
     /// once a second while the panel shows — (side in px, premultiplied 0xAARRGGBB
     /// pixels, a counter that moves on with each new one).
     pub hero: Mutex<Option<(usize, Vec<u32>, u64)>>,
+    /// panel: the Map page is showing, so the overlay draws `preview`.
+    pub preview_wanted: AtomicBool,
+    /// overlay: the map as the settings draw it now (the minimap's, or the big map's when
+    /// that is the display), for the Map page's preview — (side, pixels, counter).
+    pub preview: Mutex<Option<(usize, Vec<u32>, u64)>>,
     /// hotkey: where the panel is — the player's place for it, kept across runs.
     pub pos: Mutex<Option<(i32, i32)>>,
     pub quit: AtomicBool,

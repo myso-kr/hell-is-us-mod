@@ -234,6 +234,8 @@ pub struct Panel {
     unfolded_collect: Option<&'static str>,
     /// The "now" page's hero map as a texture, and the overlay's counter it was made from.
     hero_tex: Option<(u64, egui::TextureHandle)>,
+    /// The Map page's preview as a texture, likewise.
+    preview_tex: Option<(u64, egui::TextureHandle)>,
     /// The clues page: the word searched for, and the entry opened (its story unit).
     clue_query: String,
     clue_open: Option<String>,
@@ -319,6 +321,7 @@ impl Panel {
             was_visible: false,
             unfolded_collect: None,
             hero_tex: None,
+            preview_tex: None,
             clue_query: String::new(),
             clue_open: None,
             revealed: Default::default(),
@@ -609,6 +612,8 @@ impl Panel {
     /// The page chosen in the sidebar: cards on an auto-fit grid (tw.rs) — side by
     /// side while each can be `CARD_MIN` wide, stacked when not.
     fn page(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+        // The overlay draws the Map page's preview only while that page shows.
+        self.shared.preview_wanted.store(self.tool == Some(Tool::Map), std::sync::atomic::Ordering::SeqCst);
         match self.tab {
             _ if self.tool == Some(Tool::Debug) => block(t, |ui| self.debug_tab(ui, snap)),
             _ if self.tool == Some(Tool::Saves) => {
@@ -683,7 +688,7 @@ impl Panel {
         match self.tool {
             Some(Tool::Now) => self.now_cards(),
             Some(Tool::Collect) | Some(Tool::Quests) | Some(Tool::Puzzles) => 4,
-            Some(Tool::Map) => 3,
+            Some(Tool::Map) => 4,
             Some(Tool::Guide) | Some(Tool::Clues) => 2,
             Some(Tool::Help) => 4,
             Some(Tool::Saves) => 2,

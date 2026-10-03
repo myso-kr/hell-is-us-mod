@@ -549,3 +549,5 @@ GUIDE_NO_ROUTE	Нет пешего маршрута
 BACKUP_AUTO	Авто
 BACKUP_MANUAL	Вручную
 HIDE_IN_MENUS	Скрывать в меню
+PREVIEW	Предпросмотр
+PREVIEW_NEEDS_THE_HERO	Появится, когда вы управляете героем

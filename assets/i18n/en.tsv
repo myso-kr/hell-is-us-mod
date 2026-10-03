@@ -549,3 +549,5 @@ GUIDE_NO_ROUTE	No walking route
 BACKUP_AUTO	Auto
 BACKUP_MANUAL	Manual
 HIDE_IN_MENUS	Hide in menus
+PREVIEW	Preview
+PREVIEW_NEEDS_THE_HERO	Shown once the hero is in play

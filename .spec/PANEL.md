@@ -107,6 +107,10 @@ painter. Heroes: Now (live map, region, KPI tiles), Collect (collectibles, enemy
 secrets as rings), Puzzles (this region's puzzles, Lymbic locks, vaults as rings). Every meter and ring
 shows progress (done of all), so the enemy groups card reads "beaten", not "left".
 
+The Map page's **preview** (2026-10-03): while that page shows (`Shared::preview_wanted`), the
+overlay draws the map with the settings as they are, four times a second: the minimap's radius,
+heading and style, or the big map's radius, style and opacity when that is the display.
+
 Scrolling shows itself (2026-10-03): solid scroll bars whenever there is more (theme.rs; egui's
 default bars float, thin, only on hover) and `tw::scroll` fades the edge that hides content into the
 colour behind it. "Elsewhere" counts are `tw::regions`: a dim label and quiet chips, most first.

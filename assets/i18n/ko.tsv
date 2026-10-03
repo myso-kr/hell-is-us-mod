@@ -549,3 +549,5 @@ GUIDE_NO_ROUTE	걸어서 닿는 길 없음
 BACKUP_AUTO	자동
 BACKUP_MANUAL	수동
 HIDE_IN_MENUS	메뉴에서 숨기기
+PREVIEW	미리보기
+PREVIEW_NEEDS_THE_HERO	주인공을 조작하면 보입니다

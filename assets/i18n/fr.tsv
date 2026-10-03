@@ -549,3 +549,5 @@ GUIDE_NO_ROUTE	Pas d’itinéraire à pied
 BACKUP_AUTO	Auto
 BACKUP_MANUAL	Manuelle
 HIDE_IN_MENUS	Masquer dans les menus
+PREVIEW	Aperçu
+PREVIEW_NEEDS_THE_HERO	S’affiche dès que vous contrôlez le héros
