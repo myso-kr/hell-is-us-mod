@@ -16,11 +16,13 @@ releases, the topic documents for how it works — not here.
 - **Done when:** CI is green, the site answers at `https://myso-kr.github.io/hell-is-us-mod/` in all 12
   languages, and the README renders with its badges.
 
-## 2. Release 0.1.0
+## 2. Releases
 
-- Rename the CHANGELOG heading `Unreleased — 0.1.0` to `0.1.0`, then `git tag v0.1.0` and push the tag.
+- 0.1.0 (2026-10-03) and 0.2.0 (2026-10-04) are released: each by renaming the CHANGELOG heading
+  `Unreleased — X.Y.Z` to `X.Y.Z`, setting Cargo.toml, then `git tag vX.Y.Z` and pushing the tag.
   `release.yml` checks the tag, Cargo.toml and the changelog agree, builds the zip, checks it holds
-  nothing from the game, and publishes it with the verified build and a SHA-256.
+  nothing from the game, and publishes it with the verified build and a SHA-256. Versions follow
+  semver: new features in a minor version while below 1.0, fixes alone in a patch.
 - **Done when:** the release has the zip and its checksum, and the zip, unpacked on a clean machine,
   starts, attaches and reads the game data (including the runtime prompt if .NET 8 is missing).
 

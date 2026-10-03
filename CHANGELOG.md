@@ -6,14 +6,16 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
-## Unreleased — 0.2.0
+## 0.2.0 — 2026-10-04
+
+Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
 
 ### Panel
 
 - A **Now** page, where the panel opens after a break: what was going on last time, the good deeds
   about to be missed, what is left in this region by kind, and which other regions are worth a trip.
-- A **Puzzles** page: puzzles nearby, Lymbic locks, the vaults and the full puzzle list, moved out of
-  the Guide and Collect pages. No page has more than four cards now.
+- A **Puzzles** page: this region's puzzles (those nearby first, with the answer the game holds),
+  Lymbic locks and the vaults, moved out of the Guide and Collect pages.
 - A **Help** page beside Now at the top of the sidebar: first steps, every page in a line (press to
   open it), the keys as set, and what to do when something is off.
 - Dashboard look: the Now page opens on a hero with a live map of the region, its name and six KPI
@@ -66,8 +68,6 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - The map's water now reaches its real shore instead of stopping at the game's water boxes, and
   the big map's ground is drawn as dots with gaps between them so the game shows through (on by
   default); icons, the route and pins stay solid.
-- The Map page opens on a live preview of the map as its settings draw it: the minimap, or the
-  big map with its opacity when that is the display.
 - Scrolling is visible: solid scroll bars and a fade at an edge that hides more. Other regions are
   chips; puzzles and timeloops no longer show internal names.
 - States read at a glance: chips for "opens now", covered or short, soon or later, a vault's state;
@@ -75,8 +75,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - One look per role: press a line to be guided there (no separate Guide buttons), one small
   reveal button at most per line, normal-size action buttons, and switches instead of checkboxes,
   sized to the text beside them.
-- The sidebar lists the tools first and the cheat groups below; both fold under their heading, and
-  the cheats start folded, their heading counting the cheats on.
+- The cheat groups sit below the pages in the sidebar and start folded, their heading counting the
+  cheats on.
 
 ### Guide
 
@@ -91,7 +91,7 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - **Clues:** a new page with the followed quest's Datapad entries — who and what it involves, and
   what you know of each — and a search over everything you know and hold, in the game's language.
   The game's text is read once more for it (`facts.tsv`).
-- **Shard budget:** the achievements card shows what *Good Vibrations*, *Accessorizing* and *To the
+- **Shard budget:** a card on Collect shows what *Good Vibrations*, *Accessorizing* and *To the
   Teeth* still cost in shards by the game's own recipes, from the weapons and gear you hold, whether
   your shards cover it, and how many timeloops are still open. The game's crafting table is read once
   more for it (`recipes.json`, `doctor tables`).

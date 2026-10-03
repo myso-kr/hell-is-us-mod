@@ -38,4 +38,4 @@ the game. `docs/` is the generated website, not documentation.
 Sibling projects: `~/dungeons2-mod` (Minecraft Dungeons II — the same structure, the original),
 `~/combolands-mod` (MelonLoader), `~/big-dragon-mod` (CDP).
 
-Last updated: 2026-10-03 · Steam build 24045435 · hiumod 0.1.0 (unreleased)
+Last updated: 2026-10-04 · Steam build 24045435 · hiumod 0.2.0
