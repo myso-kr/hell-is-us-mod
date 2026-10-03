@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — in {place}
 ROD_MISSING_NOWHERE	✗ {rod} — kein Fundort mehr in der Erfassung
 LOCKS_IN_OTHER_REGIONS	Schlösser in anderen Regionen: {count}
+CLUES_TAB	Hinweise
+FIND_A_CLUE	Hinweis suchen
+CLUE_TEXT_NOT_READ_YET	Die Texte des Datenpads sind noch nicht gelesen — sie werden gelesen, sobald du die Kontrolle über den Helden hast (oder `doctor locale` in der Konsole).
+SEARCH_CLUES_HINT	Ein Name oder ein Wort (Schlüssel, Victor, Tunnel …)
+CLUES_KNOWN	Du weißt {facts} Dinge über {subjects} Einträge des Datenpads.
+NO_CLUE_MATCHES	Nichts, was du weißt, passt dazu.
+MORE_LINES	… und {count} weitere
+MORE_ENTRIES	… und {count} weitere Einträge
+HELD_ITEMS_MATCHING	Gegenstände bei dir: {items}
+CLUES_FOR_QUEST	Hinweise: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Hinweise zur verfolgten Quest
+NO_QUEST_FOLLOWED_CLUES	Verfolge auf der Quest-Seite eine Quest, dann sammeln sich ihre Hinweise hier.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Noch keine Datenpad-Einträge für diese Quest — gute Taten, Mysterien und Zeitschleifen folgen eigenen Schritten, nicht dem Datenpad.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Tippe auf einen Eintrag, um zu sehen, was du darüber weißt.

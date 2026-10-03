@@ -1,8 +1,9 @@
 //! The game's names in the game's language, from its own translations:
 //! `Mods\locale\<culture>.tsv` (namespace, key, text — every line of the game's locres)
 //! and `Mods\locale\names.tsv` (which namespace and key names an item, an NPC, a
-//! region). Both are written by `doctor locale`; without them every lookup is `None`
-//! and the mod falls back to names made from class names.
+//! region), and `Mods\locale\facts.tsv` (the Datapad's facts: their text and story
+//! unit). All are written by `doctor locale`; without them every lookup is `None` and
+//! the mod falls back to names made from class names.
 
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
@@ -27,6 +28,30 @@ pub struct Names {
     /// Every text of the game in this language, by (namespace, key): what a
     /// `{g:namespace/key}` in the mod's words names.
     game: HashMap<(String, String), String>,
+    /// The Datapad's facts that have text, by asset name (`facts.tsv`).
+    facts: HashMap<String, FactRow>,
+}
+
+/// One row of `facts.tsv`: where a fact's text is, and what it is about.
+#[derive(Clone, Debug, PartialEq)]
+struct FactRow {
+    ns: String,
+    key: String,
+    unit: String,
+    track: String,
+    category: String,
+}
+
+/// A fact the hero may know, as the clue board shows it.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Fact {
+    /// The story unit it is about (`VictorGaz`): a Datapad entry.
+    pub unit: String,
+    /// `Info01`, `Desc01`, `Name`…
+    pub track: String,
+    /// The Datapad's section: `Connections`, `Description`, `Location`, `Quest`, `Name`…
+    pub category: String,
+    pub text: String,
 }
 
 /// The namespaces whose texts are looked up by their English source.
@@ -54,7 +79,26 @@ impl Names {
         if let Ok(en) = std::fs::read_to_string(dir.join("en.tsv")) {
             n.add_sources(&en, &text);
         }
+        if let Ok(facts) = std::fs::read_to_string(dir.join("facts.tsv")) {
+            n.facts = parse_facts(&facts);
+        }
         Some(n)
+    }
+
+    /// A fact's text and what it is about, by its asset name.
+    pub fn fact(&self, name: &str) -> Option<Fact> {
+        let r = self.facts.get(name)?;
+        Some(Fact {
+            unit: r.unit.clone(),
+            track: r.track.clone(),
+            category: r.category.clone(),
+            text: self.game_text(&r.ns, &r.key)?,
+        })
+    }
+
+    /// Whether `facts.tsv` was read: without it there is no clue text.
+    pub fn has_facts(&self) -> bool {
+        !self.facts.is_empty()
     }
 
     /// Pair the English text with this language's, line by line of the same key.
@@ -174,6 +218,24 @@ impl Names {
             .or_else(|| best(&mut names.iter().filter(|(f, _)| placeholder(f))))
             .or_else(|| (names.len() == 1).then(|| names[0].1.clone()))
     }
+}
+
+/// `fact  <asset>  ns  key  <unit>  <track>  <category>` rows.
+fn parse_facts(text: &str) -> HashMap<String, FactRow> {
+    text.lines()
+        .filter_map(|l| {
+            let p: Vec<&str> = l.split('\t').collect();
+            let ["fact", name, ns, key, unit, track, category] = p.as_slice() else { return None };
+            let row = FactRow {
+                ns: unescape(ns),
+                key: unescape(key),
+                unit: unit.to_string(),
+                track: unescape(track),
+                category: unescape(category),
+            };
+            Some((unescape(name), row))
+        })
+        .collect()
 }
 
 /// A name fact the game shows before the real name is learned.

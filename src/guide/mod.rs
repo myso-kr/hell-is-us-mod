@@ -1,6 +1,7 @@
 //! Where to go and why: goals, the quest journal, the survey of every world, missable deadlines, what is
-//! left in each region, and the walking route over the obstacle grid.
+//! left in each region, the clues the hero holds, and the walking route over the obstacle grid.
 
+pub mod clues;
 pub mod goals;
 pub mod ledger;
 pub mod missables;

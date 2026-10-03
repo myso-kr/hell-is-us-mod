@@ -2,6 +2,7 @@
 //! read off the cheat table; the panel reads the worker's last snapshot and never
 //! touches the game itself.
 
+mod clues;
 mod collect;
 mod debug;
 mod deep;
@@ -132,6 +133,7 @@ enum Tool {
     Map,
     Guide,
     Quests,
+    Clues,
     Puzzles,
     Collect,
     Saves,
@@ -139,8 +141,17 @@ enum Tool {
 }
 
 impl Tool {
-    const ALL: [Tool; 8] =
-        [Tool::Now, Tool::Map, Tool::Guide, Tool::Quests, Tool::Puzzles, Tool::Collect, Tool::Saves, Tool::Debug];
+    const ALL: [Tool; 9] = [
+        Tool::Now,
+        Tool::Map,
+        Tool::Guide,
+        Tool::Quests,
+        Tool::Clues,
+        Tool::Puzzles,
+        Tool::Collect,
+        Tool::Saves,
+        Tool::Debug,
+    ];
 
     /// Its name in settings.txt.
     fn id(self) -> &'static str {
@@ -149,6 +160,7 @@ impl Tool {
             Tool::Map => "map",
             Tool::Guide => "guide",
             Tool::Quests => "quests",
+            Tool::Clues => "clues",
             Tool::Puzzles => "puzzles",
             Tool::Collect => "collect",
             Tool::Saves => "saves",
@@ -162,6 +174,7 @@ impl Tool {
             Tool::Map => tr!("MAP"),
             Tool::Guide => tr!("GUIDE"),
             Tool::Quests => tr!("QUESTS"),
+            Tool::Clues => tr!("CLUES_TAB"),
             Tool::Puzzles => tr!("PUZZLES"),
             Tool::Collect => tr!("COLLECT"),
             Tool::Saves => tr!("SAVES"),
@@ -195,6 +208,9 @@ pub struct Panel {
     was_visible: bool,
     /// The collectible sort unfolded in the collect tab.
     unfolded_collect: Option<&'static str>,
+    /// The clues page: the word searched for, and the entry opened (its story unit).
+    clue_query: String,
+    clue_open: Option<String>,
     /// Puzzle answers and vault codes asked for, by id (not kept between runs).
     revealed: std::collections::HashSet<u64>,
     /// The puzzle list shows key doors and item placements too.
@@ -276,6 +292,8 @@ impl Panel {
             console: Default::default(),
             was_visible: false,
             unfolded_collect: None,
+            clue_query: String::new(),
+            clue_open: None,
             revealed: Default::default(),
             show_placements: false,
             achievements: None,
@@ -632,7 +650,7 @@ impl Panel {
             Some(Tool::Now) => self.now_cards(),
             Some(Tool::Collect) | Some(Tool::Quests) | Some(Tool::Puzzles) => 4,
             Some(Tool::Map) => 3,
-            Some(Tool::Guide) => 2,
+            Some(Tool::Guide) | Some(Tool::Clues) => 2,
             Some(Tool::Saves) => 2,
             Some(Tool::Debug) => 1,
             None if self.tab == Group::Movement => 3,

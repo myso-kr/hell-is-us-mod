@@ -30,6 +30,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - **Previously:** where the last session ended and the quest you were following.
 - **Height:** every distance in the panel's lists shows ↑/↓ when the place is 3 m or more above or
   below you.
+- **Clues:** a new page with the followed quest's Datapad entries — who and what it involves, and
+  what you know of each — and a search over everything you know and hold, in the game's language.
+  The game's text is read once more for it (`facts.tsv`).
 - **Completion board:** opening a sort in the collection card shows how many are left in each other
   region, most first.
 

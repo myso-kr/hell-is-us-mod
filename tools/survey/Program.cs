@@ -79,14 +79,15 @@ if (opts.TryGetValue("dump", out var dumpPath))
 }
 
 // --locale: every culture's text (the game's locres) to Mods\locale\<culture>.tsv —
-// namespace, key, text — and names.tsv: which text names each item, NPC and region
-// (.spec/I18N.md).
+// namespace, key, text — names.tsv: which text names each item, NPC and region, and
+// facts.tsv: the text of every Datapad fact (.spec/I18N.md).
 if (opts.ContainsKey("locale"))
 {
     var dir = Path.Combine(Path.GetDirectoryName(Need("out"))!, "locale");
     Directory.CreateDirectory(dir);
     Locale.Write(provider, dir);
     Locale.Names(provider, dir, worlds);
+    Locale.Facts(provider, dir);
     return;
 }
 
@@ -612,5 +613,52 @@ static class Locale
         var file = Path.Combine(dir, "names.tsv");
         File.WriteAllLines(file, rows);
         Console.Error.WriteLine($"names: {rows.Count} → {file}");
+    }
+
+    /// facts.tsv — the Datapad's facts that have text, as
+    /// `fact  <asset name>  ns  key  <story unit or quest>  <track>  <category>`:
+    /// what the clue board shows of a known fact, and what it groups the fact under.
+    public static void Facts(DefaultFileProvider provider, string dir)
+    {
+        var rows = new SortedSet<string>(StringComparer.Ordinal);
+        var tableNs = new Dictionary<string, string?>();
+        string FilePath(string objectPath)
+        {
+            var p = objectPath.Split('.')[0];
+            return p.StartsWith("/Game/") ? "HellIsUs/Content/" + p["/Game/".Length..] : p.TrimStart('/');
+        }
+        string? Namespace(string tableId)
+        {
+            if (tableNs.TryGetValue(tableId, out var ns)) return ns;
+            try
+            {
+                var st = provider.LoadPackage(FilePath(tableId)).GetExports().OfType<CUE4Parse.UE4.Assets.Exports.Internationalization.UStringTable>().First();
+                ns = st.StringTable.TableNamespace;
+            }
+            catch { ns = null; }
+            return tableNs[tableId] = ns;
+        }
+        var re = new System.Text.RegularExpressions.Regex(@"^HellIsUs/Content/GameData/(?:StoryUnits|Quests)/([^/]+)/.*TextFact_DA\.uasset$");
+        foreach (var path in provider.Files.Keys)
+        {
+            var m = re.Match(path);
+            if (!m.Success) continue;
+            List<JObject> exports;
+            try { exports = JArray.Parse(JsonConvert.SerializeObject(provider.LoadPackage(path[..^".uasset".Length]).GetExports())).OfType<JObject>().ToList(); }
+            catch (Exception e) { Console.Error.WriteLine($"  {path}: {e.Message}"); continue; }
+            foreach (var e in exports.Where(x => x["Type"]?.ToString() == "StringFactData"))
+            {
+                var p = e["Properties"];
+                if (p?["Description"] is not JObject d || d["Key"]?.ToString() is not { Length: > 0 } key) continue;
+                var ns = d["TableId"]?.ToString() is { Length: > 0 } table ? Namespace(table) : d["Namespace"]?.ToString();
+                if (ns == null) continue;
+                var category = (p["UICategory"]?["TagName"]?.ToString() ?? "").Split('.').Last();
+                rows.Add(string.Join("	", "fact", Esc(e["Name"]!.ToString()), Esc(ns), Esc(key), m.Groups[1].Value,
+                    Esc(p["Track"]?.ToString() ?? ""), Esc(category)));
+            }
+        }
+        var file = Path.Combine(dir, "facts.tsv");
+        File.WriteAllLines(file, rows);
+        Console.Error.WriteLine($"facts: {rows.Count} → {file}");
     }
 }

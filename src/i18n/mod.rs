@@ -88,6 +88,11 @@ pub fn tr(key: &'static str) -> &'static str {
     lang().text.get(key).unwrap_or(key)
 }
 
+/// A Datapad fact's text and story unit, by its asset name (names.rs `facts.tsv`).
+pub fn fact(name: &str) -> Option<names::Fact> {
+    lang().names.fact(name)
+}
+
 /// An item's name, by its data asset's name or path (`/Game/Items/…/Key_Item_DA`).
 pub fn item(asset: &str) -> Option<String> {
     lang().names.item(asset)

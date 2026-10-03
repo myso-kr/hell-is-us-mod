@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — место: {place}
 ROD_MISSING_NOWHERE	✗ {rod} — в обследовании не осталось, где его взять
 LOCKS_IN_OTHER_REGIONS	Замки в других регионах: {count}
+CLUES_TAB	Улики
+FIND_A_CLUE	Найти улику
+CLUE_TEXT_NOT_READ_YET	Тексты планшета ещё не прочитаны — они читаются, как только герой под вашим управлением (или `doctor locale` в консоли).
+SEARCH_CLUES_HINT	Имя или слово (ключ, Виктор, тоннель…)
+CLUES_KNOWN	Вы знаете {facts} фактов о {subjects} записях планшета.
+NO_CLUE_MATCHES	Ничего из того, что вы знаете, не подходит.
+MORE_LINES	… и ещё {count}
+MORE_ENTRIES	… и ещё {count} записей
+HELD_ITEMS_MATCHING	Предметы при вас: {items}
+CLUES_FOR_QUEST	Улики: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Улики отслеживаемого задания
+NO_QUEST_FOLLOWED_CLUES	Отслеживайте задание на вкладке «Задания», и его улики соберутся здесь.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Для этого задания ещё нет записей планшета — добрые дела, тайны и временные петли идут своими шагами, а не через планшет.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Нажмите на запись, чтобы увидеть, что вы о ней знаете.

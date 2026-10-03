@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — {place}
 ROD_MISSING_NOWHERE	✗ {rod} — 調査記録に入手場所が残っていない
 LOCKS_IN_OTHER_REGIONS	ほかの地域のロック：{count}
+CLUES_TAB	手がかり
+FIND_A_CLUE	手がかりを探す
+CLUE_TEXT_NOT_READ_YET	データパッドの文章はまだ読み込んでいません — 主人公を操作できるようになると読み込みます（コンソールの `doctor locale` でも可）。
+SEARCH_CLUES_HINT	名前や言葉（鍵、ヴィクター、トンネル…）
+CLUES_KNOWN	データパッドの項目 {subjects} 件について {facts} 件のことを知っています。
+NO_CLUE_MATCHES	知っていることの中に一致するものはありません。
+MORE_LINES	…ほか {count} 件
+MORE_ENTRIES	…ほか {count} 項目
+HELD_ITEMS_MATCHING	持っているアイテム：{items}
+CLUES_FOR_QUEST	手がかり：{quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	追跡中のクエストの手がかり
+NO_QUEST_FOLLOWED_CLUES	クエストタブでクエストを追跡すると、その手がかりがここに集まります。
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	このクエストのデータパッド項目はまだありません — 善行・ミステリー・タイムループはデータパッドではなく、それぞれの段階で進みます。
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	項目を押すと、知っている内容が表示されます。

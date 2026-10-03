@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — miejsce: {place}
 ROD_MISSING_NOWHERE	✗ {rod} — w spisie nie ma już skąd go wziąć
 LOCKS_IN_OTHER_REGIONS	Zamki w innych regionach: {count}
+CLUES_TAB	Wskazówki
+FIND_A_CLUE	Znajdź wskazówkę
+CLUE_TEXT_NOT_READ_YET	Teksty datapada nie zostały jeszcze odczytane — odczyt nastąpi, gdy przejmiesz kontrolę nad bohaterem (albo `doctor locale` w konsoli).
+SEARCH_CLUES_HINT	Imię lub słowo (klucz, Victor, tunel…)
+CLUES_KNOWN	Wiesz {facts} rzeczy o {subjects} wpisach datapada.
+NO_CLUE_MATCHES	Nic z tego, co wiesz, nie pasuje.
+MORE_LINES	… i {count} więcej
+MORE_ENTRIES	… i {count} wpisów więcej
+HELD_ITEMS_MATCHING	Przedmioty przy tobie: {items}
+CLUES_FOR_QUEST	Wskazówki: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Wskazówki śledzonego zadania
+NO_QUEST_FOLLOWED_CLUES	Śledź zadanie w zakładce Zadania, a jego wskazówki zbiorą się tutaj.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Brak jeszcze wpisów datapada dla tego zadania — dobre uczynki, tajemnice i pętle czasu idą własnymi krokami, nie przez datapad.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Kliknij wpis, by zobaczyć, co o nim wiesz.

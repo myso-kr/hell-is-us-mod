@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — a {place}
 ROD_MISSING_NOWHERE	✗ {rod} — nessun punto di raccolta rimasto nel rilevamento
 LOCKS_IN_OTHER_REGIONS	Blocchi in altre regioni: {count}
+CLUES_TAB	Indizi
+FIND_A_CLUE	Cerca un indizio
+CLUE_TEXT_NOT_READ_YET	I testi del tablet non sono ancora stati letti: vengono letti appena controlli il protagonista (oppure `doctor locale` nella console).
+SEARCH_CLUES_HINT	Un nome o una parola (chiave, Victor, tunnel…)
+CLUES_KNOWN	Sai {facts} cose su {subjects} voci del tablet.
+NO_CLUE_MATCHES	Nulla di ciò che sai corrisponde.
+MORE_LINES	… e altri {count}
+MORE_ENTRIES	… e altre {count} voci
+HELD_ITEMS_MATCHING	Oggetti che hai: {items}
+CLUES_FOR_QUEST	Indizi: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Indizi dell'indagine seguita
+NO_QUEST_FOLLOWED_CLUES	Segui un'indagine nella scheda Indagini per raccoglierne qui gli indizi.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Ancora nessuna voce del tablet per questa indagine: buone azioni, misteri e loop temporali procedono per passi propri, non tramite il tablet.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Premi una voce per vedere cosa ne sai.

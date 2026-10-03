@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — à {place}
 ROD_MISSING_NOWHERE	✗ {rod} — plus aucun emplacement dans le relevé
 LOCKS_IN_OTHER_REGIONS	Verrous dans d’autres régions : {count}
+CLUES_TAB	Indices
+FIND_A_CLUE	Chercher un indice
+CLUE_TEXT_NOT_READ_YET	Les textes de la tablette n’ont pas encore été lus — ils le sont dès que vous contrôlez le héros (ou `doctor locale` dans la console).
+SEARCH_CLUES_HINT	Un nom ou un mot (clé, Victor, tunnel…)
+CLUES_KNOWN	Vous savez {facts} choses sur {subjects} entrées de la tablette.
+NO_CLUE_MATCHES	Rien de ce que vous savez ne correspond.
+MORE_LINES	… et {count} de plus
+MORE_ENTRIES	… et {count} entrées de plus
+HELD_ITEMS_MATCHING	Objets que vous portez : {items}
+CLUES_FOR_QUEST	Indices : {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Indices de la quête suivie
+NO_QUEST_FOLLOWED_CLUES	Suivez une quête dans l’onglet Quêtes pour réunir ici ses indices.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Aucune entrée de la tablette pour cette quête — les bonnes actions, mystères et boucles temporelles suivent leurs propres étapes, pas la tablette.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Cliquez sur une entrée pour voir ce que vous en savez.

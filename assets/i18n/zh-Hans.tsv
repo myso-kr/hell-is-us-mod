@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod}——在{place}
 ROD_MISSING_NOWHERE	✗ {rod}——勘测记录中已无可拾取处
 LOCKS_IN_OTHER_REGIONS	其他地区的锁：{count}
+CLUES_TAB	线索
+FIND_A_CLUE	查找线索
+CLUE_TEXT_NOT_READ_YET	尚未读取数据板的文本——主角可以操控后会读取（也可以在控制台输入 `doctor locale`）。
+SEARCH_CLUES_HINT	名字或词语（钥匙、维克多、隧道……）
+CLUES_KNOWN	你对 {subjects} 个数据板条目知道 {facts} 件事。
+NO_CLUE_MATCHES	你知道的内容中没有匹配项。
+MORE_LINES	……还有 {count} 条
+MORE_ENTRIES	……还有 {count} 个条目
+HELD_ITEMS_MATCHING	持有的物品：{items}
+CLUES_FOR_QUEST	线索：{quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	追踪任务的线索
+NO_QUEST_FOLLOWED_CLUES	在“任务”页追踪一个任务，它的线索会汇集到这里。
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	这个任务还没有数据板条目——善行、谜团和时间回环按各自的步骤推进，不经过数据板。
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	点击条目查看你知道的内容。

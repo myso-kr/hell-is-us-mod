@@ -18,7 +18,8 @@ Decisions and history for the eframe/egui panel's layout, styling and console. T
   a cheat page. The cheats heading counts the cheats on. The console is described in §6.
 - **Tool tabs** (2026-10-03, at most four cards a page): **Now** (previously, before you go on, this
   region, other regions — FEATURES.md §6) · **Map** (map, pins, keys) · **Guide** (compass and guide,
-  places) · **Quests** (journal, missable deeds, hand-overs, secrets) · **Puzzles** (nearby, Lymbic locks,
+  places) · **Quests** (journal, missable deeds, hand-overs, secrets) · **Clues** (the followed quest's
+  Datapad entries, a search over what is known) · **Puzzles** (nearby, Lymbic locks,
   vaults, the full list) · **Collect** (collection, enemy groups, NPC stories, achievements) · **Saves** ·
   **Debug**. The "now" page is where the panel opens after a break of 30 minutes or more.
 - **How to check:** click through every tab and capture the window (RUNBOOK.md, "Checking the panel").

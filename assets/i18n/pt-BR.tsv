@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — em {place}
 ROD_MISSING_NOWHERE	✗ {rod} — nenhum ponto de coleta restante no levantamento
 LOCKS_IN_OTHER_REGIONS	Travas em outras regiões: {count}
+CLUES_TAB	Pistas
+FIND_A_CLUE	Buscar uma pista
+CLUE_TEXT_NOT_READ_YET	Os textos do datapad ainda não foram lidos — eles são lidos assim que você controlar o herói (ou `doctor locale` no console).
+SEARCH_CLUES_HINT	Um nome ou uma palavra (chave, Victor, túnel…)
+CLUES_KNOWN	Você sabe {facts} coisas sobre {subjects} entradas do datapad.
+NO_CLUE_MATCHES	Nada do que você sabe corresponde.
+MORE_LINES	… e mais {count}
+MORE_ENTRIES	… e mais {count} entradas
+HELD_ITEMS_MATCHING	Itens que você tem: {items}
+CLUES_FOR_QUEST	Pistas: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Pistas da missão seguida
+NO_QUEST_FOLLOWED_CLUES	Siga uma missão na aba Missões para reunir aqui as pistas dela.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Ainda não há entradas do datapad para esta missão — boas ações, mistérios e loops temporais seguem as próprias etapas, não o datapad.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Clique numa entrada para ver o que você sabe dela.

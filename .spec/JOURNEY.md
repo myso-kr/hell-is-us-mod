@@ -1,8 +1,8 @@
 # Player journey and the next features
 
 Research into where players of *Hell Is Us* struggle, stage by stage, and the features that would help
-without taking the game's design away from them. Researched 2026-10-03. Built so far: §3.1, §3.3 (rods
-→ locks), §3.4, §3.5, §3.8 and §3.9 — FEATURES.md §6; the rest is still a proposal.
+without taking the game's design away from them. Researched 2026-10-03. Built so far: §3.1, §3.2, §3.3
+(rods → locks), §3.4, §3.5, §3.8 and §3.9 — FEATURES.md §6; the rest is still a proposal.
 
 The rule every proposal keeps: **answers stay hidden until asked.** The game's identity is "no map, no
 markers"; the mod is for the night a player would rather not be lost, not a replacement for exploring.

@@ -20,6 +20,10 @@ impl Panel {
                 0 => self.guide_column(t, guard, snap),
                 _ => self.goals_card(t, guard, snap),
             }),
+            Some(Tool::Clues) => tw::masonry(t, "clues", cols, 2, |t, i| match i {
+                0 => self.quest_clues_card(t, guard, snap),
+                _ => self.find_clue_card(t, snap),
+            }),
             Some(Tool::Puzzles) => tw::masonry(t, "puzzles", cols, 4, |t, i| match i {
                 0 => self.puzzles_card(t, guard, snap),
                 1 => self.locks_card(t, guard, snap),

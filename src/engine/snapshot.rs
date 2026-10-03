@@ -58,6 +58,8 @@ pub struct Snapshot {
     pub catalogue: Arc<Vec<(crate::survey::Placed, bool)>>,
     /// Every Lymbic lock: the rods it takes, held or where to find them (JOURNEY.md §3.3).
     pub locks: Arc<Vec<crate::survey::Lock>>,
+    /// The clue board: the Datapad by entry, and the items held (clues.rs).
+    pub clues: Arc<crate::clues::Clues>,
     /// Saved positions: (world, where).
     pub slots: [Option<(String, [f64; 3])>; SLOTS],
 }

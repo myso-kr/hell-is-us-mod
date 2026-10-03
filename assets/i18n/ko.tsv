@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — 위치: {place}
 ROD_MISSING_NOWHERE	✗ {rod} — 조사 기록에 남은 획득처 없음
 LOCKS_IN_OTHER_REGIONS	다른 지역의 잠금: {count}
+CLUES_TAB	단서
+FIND_A_CLUE	단서 찾기
+CLUE_TEXT_NOT_READ_YET	데이터패드 글을 아직 읽지 않았습니다 — 주인공을 조작할 수 있게 되면 읽습니다 (콘솔에서 `doctor locale`도 됩니다).
+SEARCH_CLUES_HINT	이름이나 낱말 (열쇠, 빅터, 터널…)
+CLUES_KNOWN	데이터패드 항목 {subjects}개에 대해 {facts}가지를 알고 있습니다.
+NO_CLUE_MATCHES	아는 것 중에 맞는 것이 없습니다.
+MORE_LINES	…외 {count}개
+MORE_ENTRIES	…외 항목 {count}개
+HELD_ITEMS_MATCHING	가진 아이템: {items}
+CLUES_FOR_QUEST	단서: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	따라가는 퀘스트의 단서
+NO_QUEST_FOLLOWED_CLUES	퀘스트 탭에서 퀘스트를 따라가면 그 단서가 여기에 모입니다.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	이 퀘스트의 데이터패드 항목이 아직 없습니다 — 선행·미스터리·타임루프는 데이터패드가 아니라 각자의 단계로 진행됩니다.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	항목을 누르면 아는 내용이 나옵니다.

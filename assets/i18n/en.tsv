@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — in {place}
 ROD_MISSING_NOWHERE	✗ {rod} — no pickup left in the survey
 LOCKS_IN_OTHER_REGIONS	Locks in other regions: {count}
+CLUES_TAB	Clues
+FIND_A_CLUE	Find a Clue
+CLUE_TEXT_NOT_READ_YET	The Datapad's text has not been read yet — it is read once the hero is in control (or `doctor locale` in the console).
+SEARCH_CLUES_HINT	A name or a word (key, Victor, tunnel…)
+CLUES_KNOWN	You know {facts} things about {subjects} Datapad entries.
+NO_CLUE_MATCHES	Nothing you know matches.
+MORE_LINES	…and {count} more
+MORE_ENTRIES	…and {count} more entries
+HELD_ITEMS_MATCHING	Items you hold: {items}
+CLUES_FOR_QUEST	Clues: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Clues of the Followed Quest
+NO_QUEST_FOLLOWED_CLUES	Follow a quest on the Quests page to gather its clues here.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	No Datapad entries for this quest yet — good deeds, mysteries and timeloops go by their own steps, not the Datapad.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Press an entry for what you know of it.

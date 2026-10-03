@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — en {place}
 ROD_MISSING_NOWHERE	✗ {rod} — no queda dónde conseguirla en el registro
 LOCKS_IN_OTHER_REGIONS	Cerraduras en otras regiones: {count}
+CLUES_TAB	Pistas
+FIND_A_CLUE	Buscar una pista
+CLUE_TEXT_NOT_READ_YET	Aún no se han leído los textos de la tablet: se leen en cuanto controlas al protagonista (o con `doctor locale` en la consola).
+SEARCH_CLUES_HINT	Un nombre o una palabra (llave, Victor, túnel…)
+CLUES_KNOWN	Sabes {facts} cosas sobre {subjects} entradas de la tablet.
+NO_CLUE_MATCHES	Nada de lo que sabes coincide.
+MORE_LINES	… y {count} más
+MORE_ENTRIES	… y {count} entradas más
+HELD_ITEMS_MATCHING	Objetos que llevas: {items}
+CLUES_FOR_QUEST	Pistas: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Pistas de la misión seguida
+NO_QUEST_FOLLOWED_CLUES	Sigue una misión en la pestaña Misiones para reunir aquí sus pistas.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Todavía no hay entradas de la tablet para esta misión: las buenas acciones, los misterios y los bucles temporales avanzan por sus propios pasos, no por la tablet.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Pulsa una entrada para ver lo que sabes de ella.

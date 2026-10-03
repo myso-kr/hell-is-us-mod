@@ -484,3 +484,17 @@ ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} — yer: {place}
 ROD_MISSING_NOWHERE	✗ {rod} — taramada alınacak yer kalmadı
 LOCKS_IN_OTHER_REGIONS	Diğer bölgelerdeki kilitler: {count}
+CLUES_TAB	İpuçları
+FIND_A_CLUE	İpucu bul
+CLUE_TEXT_NOT_READ_YET	Veri Tableti metinleri henüz okunmadı — kahramanın kontrolü sizde olduğunda okunur (ya da konsolda `doctor locale`).
+SEARCH_CLUES_HINT	Bir ad ya da sözcük (anahtar, Victor, tünel…)
+CLUES_KNOWN	{subjects} Veri Tableti kaydı hakkında {facts} şey biliyorsunuz.
+NO_CLUE_MATCHES	Bildiklerinizden eşleşen bir şey yok.
+MORE_LINES	… ve {count} tane daha
+MORE_ENTRIES	… ve {count} kayıt daha
+HELD_ITEMS_MATCHING	Üzerinizdeki eşyalar: {items}
+CLUES_FOR_QUEST	İpuçları: {quest}
+CLUES_FOR_THE_FOLLOWED_QUEST	Takip edilen görevin ipuçları
+NO_QUEST_FOLLOWED_CLUES	Görevler sekmesinde bir görevi takip edin; ipuçları burada toplanır.
+NO_DATAPAD_ENTRIES_FOR_THIS_QUEST	Bu görev için henüz Veri Tableti kaydı yok — iyilikler, gizemler ve zaman döngüleri Veri Tableti ile değil, kendi adımlarıyla ilerler.
+PRESS_AN_ENTRY_FOR_WHAT_IS_KNOWN	Bildiklerinizi görmek için bir kayda basın.

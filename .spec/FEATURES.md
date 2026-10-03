@@ -179,6 +179,16 @@ than four cards (PANEL.md §1).
   counts every sort (glyphs are its "Lymbic skills", caps its "Caps"); opening a sort now lists, under
   the nearest left here, how many are left in each other region, most first. Good deeds, mysteries and
   timeloops stay on the Quests page, vaults on the Puzzles page.
-- Not built yet from JOURNEY.md: the chest rewards and the timeloop prisms (§4 research), the clue
-  board, the shard budget, Haze links.
+- **Clue board** (§3.2, `src/guide/clues.rs`, a **Clues** page): the Datapad's facts the hero knows,
+  grouped by the entry they are about (a person, a place, a thing — the story unit), in the game's
+  language from `facts.tsv` (I18N.md §2). Two cards:
+  - the followed quest's entries: an entry belongs to a quest when one of its known `Quest` facts reads
+    as the quest's name ("Family Reunion"); pressing an entry opens what is known of it — description,
+    then connections, then where. Good deeds, mysteries and timeloops advance by their own steps, not
+    the Datapad, so they have no entries; the card says so.
+  - a search: a word or a name over every known line (an entry's name matches all its lines) and the
+    items held, in any case.
+  Measured: 29 entries and 255 lines known in the save examined.
+- Not built yet from JOURNEY.md: the chest rewards and the timeloop prisms (§4 research), the shard
+  budget, Haze links.
 

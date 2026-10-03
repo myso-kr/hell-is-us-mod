@@ -458,7 +458,22 @@ impl Attached {
         self.guide.borrow().quests.secrets(crate::quests::Kind::GoodDeed)
     }
 
-    /// NPCs that want an item the hero holds (the survey's trades).
+    /// What the hero knows from the Datapad, by entry, and the items held by name — the
+    /// clue board (JOURNEY.md §3.2).
+    pub fn clues(&self) -> crate::clues::Clues {
+        let g = self.guide.borrow();
+        let lang = crate::i18n::lang();
+        let subjects = crate::clues::subjects(
+            &g.known_facts,
+            |f| lang.names.fact(f),
+            |unit| lang.names.subject(unit, &g.known_facts),
+        );
+        let mut items: Vec<String> = g.held.iter().filter_map(|i| lang.names.item(i)).collect();
+        items.sort();
+        items.dedup();
+        crate::clues::Clues { subjects, items, text: lang.names.has_facts() }
+    }
+
     /// Every Lymbic lock, with the rods held and where the missing ones are (JOURNEY.md §3.3).
     pub fn locks(&self) -> Vec<crate::survey::Lock> {
         let g = self.guide.borrow();
@@ -473,6 +488,7 @@ impl Attached {
         survey.locks(&known)
     }
 
+    /// NPCs that want an item the hero holds (the survey's trades).
     pub fn handovers(&self) -> Vec<crate::survey::Need> {
         let g = self.guide.borrow();
         let Some(survey) = g.survey.as_ref() else { return Vec::new() };

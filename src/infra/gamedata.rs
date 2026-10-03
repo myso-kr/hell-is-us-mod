@@ -73,7 +73,8 @@ fn needed(survey: &Path, locale: &Path, build: &str) -> Option<Kind> {
         }
         _ => {}
     }
-    (!locale.join("names.tsv").exists()).then_some(Kind::Locale)
+    // facts.tsv came later (the clue board): a locale without it is read again.
+    (!locale.join("names.tsv").exists() || !locale.join("facts.tsv").exists()).then_some(Kind::Locale)
 }
 
 /// Run `doctor <kind>` in the background (one at a time); a survey that succeeds is
@@ -148,6 +149,8 @@ mod tests {
         assert_eq!(needed(&s, &l, "100"), Some(Kind::Locale));
         assert_eq!(std::fs::read_to_string(s.join("BUILD")).unwrap(), "100");
         std::fs::write(l.join("names.tsv"), "").unwrap();
+        assert_eq!(needed(&s, &l, "100"), Some(Kind::Locale), "a locale from before facts.tsv");
+        std::fs::write(l.join("facts.tsv"), "").unwrap();
         assert_eq!(needed(&s, &l, "100"), None);
     }
 }
