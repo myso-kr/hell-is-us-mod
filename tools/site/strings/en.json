@@ -55,7 +55,7 @@
   "install_s1_t": "Download",
   "install_s1_d": "Get the latest zip from the Releases page and unpack it anywhere. It only ever writes to the Mods folder in the game directory.",
   "install_s2_t": "Double-click hiumod.exe",
-  "install_s2_d": "It starts the game through Steam if it isn't running and attaches once you're in. Press ` (the key left of 1) to show or hide the panel. Shift+` opens a console for checking things.",
+  "install_s2_d": "It starts the game through Steam if it isn't running and attaches once you're in. Press ` (the key left of 1) to show or hide the panel. Ctrl+` opens a console for checking things.",
   "install_s3_t": "It reads the game once, by itself",
   "install_s3_d": "The first time you control the hero, hiumod reads the game's maps and text into the Mods folder on its own (about two minutes). If the .NET 8 runtime is missing, the panel offers to install it.",
   "faq_title": "Questions",

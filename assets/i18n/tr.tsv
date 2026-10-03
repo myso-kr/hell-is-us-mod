@@ -506,7 +506,7 @@ HELP_A_NO_DATA	Kahramanın kontrolü size geçince okunur. .NET 8 isterse “{in
 HELP_Q_RESTORE	Hileleri kapatmak
 HELP_A_RESTORE	Paneli × ile kapatın ya da “{restore}” düğmesine basın. İkisi de özgün değerleri geri yükler.
 HELP_Q_UPDATE	Oyun güncellemesinden sonra
-HELP_A_UPDATE	Oyun verisi kendiliğinden yeniden okunur. Bir tuhaflık varsa Shift+` ile konsolu açıp `doctor` çalıştırın.
+HELP_A_UPDATE	Oyun verisi kendiliğinden yeniden okunur. Bir tuhaflık varsa Ctrl+` ile konsolu açıp `doctor` çalıştırın.
 HELP_Q_REPORT	Sorun bildirmek
 HELP_A_REPORT	“{debug}” sekmesi günlük klasörünü açar. hiumod.log ve verify.txt dosyalarını ekleyin.
 ABOUT_NOW	kaldığınız yer, burada kalanlar

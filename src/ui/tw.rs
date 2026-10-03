@@ -452,7 +452,7 @@ pub fn keycap(tui: &mut Tui, key: &str) {
 }
 
 /// A key as a keycap in an egui row (HTML's `<kbd>`): the control fill, an edge, the
-/// key in monospace. A chord is its keys joined by "+": `kbd(ui, "Shift")`, "+", `` ` ``.
+/// key in monospace. A chord is its keys joined by "+": `kbd(ui, "Ctrl")`, "+", `` ` ``.
 pub fn kbd(ui: &mut egui::Ui, key: &str) -> egui::Response {
     egui::Frame::new()
         .fill(super::theme::CONTROL)

@@ -506,7 +506,7 @@ HELP_A_NO_DATA	Są wczytywane, gdy przejmiesz kontrolę nad bohaterem. Jeśli wy
 HELP_Q_RESTORE	Wyłączanie kodów
 HELP_A_RESTORE	Zamknij panel przyciskiem × albo kliknij „{restore}”. Oba przywracają oryginalne wartości.
 HELP_Q_UPDATE	Po aktualizacji gry
-HELP_A_UPDATE	Dane gry zostaną wczytane ponownie same. Jeśli coś wygląda źle, otwórz konsolę klawiszami Shift+` i uruchom `doctor`.
+HELP_A_UPDATE	Dane gry zostaną wczytane ponownie same. Jeśli coś wygląda źle, otwórz konsolę klawiszami Ctrl+` i uruchom `doctor`.
 HELP_Q_REPORT	Zgłaszanie problemu
 HELP_A_REPORT	Zakładka „{debug}” otwiera folder dzienników. Dołącz hiumod.log i verify.txt.
 ABOUT_NOW	gdzie skończyłeś, co tu zostało

@@ -10,10 +10,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Changed
 
-- The console opens and closes with <kbd>Shift</kbd>+<kbd>&#96;</kbd> (showing the panel if it is
-  hidden), instead of a header button that appeared only over a game menu. The header shows the
-  panel's and the console's keys as keycaps, written as the keys pressed (` and Shift+`: "~" is
-  another key on some layouts).
+- The console opens and closes with <kbd>Ctrl</kbd>+<kbd>&#96;</kbd> (not Shift, the game's sprint),
+  instead of a header button that appeared only over a game menu. The header shows the panel's and
+  the console's keys as keycaps, written as the keys pressed (` and Ctrl+`: "~" is another key on
+  some layouts).
 - The key pickers no longer offer the game's <kbd>F1</kbd> (HUD) and <kbd>F7</kbd> (photo mode) or
   Steam's <kbd>F12</kbd> (screenshot); a saved key on one goes back to the defaults.
 - The console opens on its own: with the panel hidden it stays hidden, and hiding the panel no longer

@@ -506,7 +506,7 @@ HELP_A_NO_DATA	Eles são lidos assim que você controla o herói. Se pedir .NET 
 HELP_Q_RESTORE	Desligar trapaças
 HELP_A_RESTORE	Feche o painel com × ou clique em “{restore}”. Os dois devolvem os valores originais.
 HELP_Q_UPDATE	Depois de uma atualização do jogo
-HELP_A_UPDATE	Os dados do jogo são relidos sozinhos. Se algo parecer errado, abra o console com Shift+` e rode `doctor`.
+HELP_A_UPDATE	Os dados do jogo são relidos sozinhos. Se algo parecer errado, abra o console com Ctrl+` e rode `doctor`.
 HELP_Q_REPORT	Relatar um problema
 HELP_A_REPORT	A aba “{debug}” abre a pasta de logs. Anexe hiumod.log e verify.txt.
 ABOUT_NOW	onde você parou, o que resta aqui

@@ -506,7 +506,7 @@ HELP_A_NO_DATA	主角可以操控后会读取。如果要求安装 .NET 8，请�
 HELP_Q_RESTORE	关闭作弊
 HELP_A_RESTORE	用 × 关闭面板或点“{restore}”，两者都会恢复原值。
 HELP_Q_UPDATE	游戏更新后
-HELP_A_UPDATE	游戏数据会自动重新读取。若有异常，请按 Shift+` 打开控制台并运行 `doctor`。
+HELP_A_UPDATE	游戏数据会自动重新读取。若有异常，请按 Ctrl+` 打开控制台并运行 `doctor`。
 HELP_Q_REPORT	报告问题
 HELP_A_REPORT	在“{debug}”页可打开日志文件夹，请附上 hiumod.log 和 verify.txt。
 ABOUT_NOW	接着做什么、此地区还剩什么

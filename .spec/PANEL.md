@@ -122,7 +122,7 @@ areas drawn with the settings as they are, in the colours they are drawn with.
 The panel runs **once** (a named mutex; a second start shows the running one and exits) and has a
 **tray icon** (`src/ui/tray.rs`: click shows or hides, right-click menu, Quit closes as × does). It is
 kept inside its monitor's work area (`hotkey.rs` `keep_on_screen`). The console opens and closes with
-Shift+` (§6) and shows while the game or this program has the keyboard.
+Ctrl+` (§6) and shows while the game or this program has the keyboard.
 
 **Each window is handled by its own handle** (2026-10-04, `hotkey.rs` `watch`, every 30 ms), not in
 the panel's frames: egui runs a frame only when something happens in one of its windows, so a
@@ -243,16 +243,18 @@ Requested by the user: move the panel hotkey to `` ` `` (~) and add a console ov
 is ready for input whenever the panel is open.
 
 - **Hotkey:** `VK_OEM_3` (`` ` `` ~), polled, and only honored while the game or the panel has focus.
-- **The console's key** (2026-10-04): **Shift+`**, fixed. It first had a toggle in the panel's header
+- **The console's key** (2026-10-04): **Ctrl+`**, fixed. It first had a toggle in the panel's header
   that showed only over a game menu, which was hard to reach; a key of its own (F8, settable) was
   tried and dropped: the console is for checking things, not for play, so it shares the panel's
-  key with Shift. It toggles `Shared::console_open` in the hotkey thread, shows a hidden panel (the
+  key with a modifier. Shift was first; it is the game's sprint (and Shift+click its charge attack),
+  so a ` pressed while running opened the console: Ctrl, which the game's default controls do not
+  use, since 2026-10-04. It toggles `Shared::console_open` in the hotkey thread, shows a hidden panel (the
   console is drawn by it) and puts the cursor in the input; the header keeps the key as a hint. The
   console shows while it is open and the game or this program has the keyboard.
 - **The console without the panel** (2026-10-04): the console is an egui viewport of the panel's
   window, drawn only while its frames run, and eframe runs none for a hidden window. So with the
   console open the panel is not hidden but parked off the screen (`hotkey::park`, `Shared::parked`):
-  Shift+` opens the console alone, the panel staying out of sight, and ` (or —) hides the panel while
+  Ctrl+` opens the console alone, the panel staying out of sight, and ` (or —) hides the panel while
   the console stays. Closed, the panel goes back to hidden. The backdrop does not move while parked.
 - **Function keys left free** (2026-10-04): the game's defaults use F1 (show the HUD) and F7 (photo
   mode), Steam's F12 takes a screenshot (Game8's and Magic Game World's control lists); the key

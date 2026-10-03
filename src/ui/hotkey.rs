@@ -16,7 +16,7 @@ use std::time::Duration;
 use windows_sys::Win32::Foundation::{BOOL, HWND, LPARAM, RECT};
 use windows_sys::Win32::Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST};
 use windows_sys::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_OEM_3, VK_RBUTTON, VK_SHIFT};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_CONTROL, VK_LBUTTON, VK_OEM_3, VK_RBUTTON};
 use windows_sys::Win32::UI::WindowsAndMessaging::{
     BringWindowToTop, EnumWindows, FindWindowW, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId, IsIconic,
     IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE,
@@ -287,9 +287,9 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
         if down && !was_down {
             let focus = pid_of(unsafe { GetForegroundWindow() });
             if focus == std::process::id() || (game != 0 && focus == game) {
-                let shift = unsafe { GetAsyncKeyState(VK_SHIFT as i32) } as u16 & 0x8000 != 0;
-                if shift {
-                    // Shift+`: the console, a tool for checking things rather than for
+                let ctrl = unsafe { GetAsyncKeyState(VK_CONTROL as i32) } as u16 & 0x8000 != 0;
+                if ctrl {
+                    // Ctrl+`: the console, a tool for checking things rather than for
                     // play, on its own: a hidden panel stays out of sight (parked, so its
                     // frames draw the console), and goes back to hidden when it closes.
                     let open = !shared.console_open.load(Ordering::SeqCst);

@@ -506,7 +506,7 @@ HELP_A_NO_DATA	Elles sont lues dès que vous contrôlez le héros. Si .NET 8 est
 HELP_Q_RESTORE	Désactiver les triches
 HELP_A_RESTORE	Fermez le panneau avec × ou cliquez sur « {restore} ». Les deux remettent les valeurs d’origine.
 HELP_Q_UPDATE	Après une mise à jour du jeu
-HELP_A_UPDATE	Les données du jeu sont relues automatiquement. Si quelque chose cloche, ouvrez la console avec Shift+` et lancez `doctor`.
+HELP_A_UPDATE	Les données du jeu sont relues automatiquement. Si quelque chose cloche, ouvrez la console avec Ctrl+` et lancez `doctor`.
 HELP_Q_REPORT	Signaler un problème
 HELP_A_REPORT	L’onglet « {debug} » ouvre le dossier des journaux. Joignez hiumod.log et verify.txt.
 ABOUT_NOW	où vous en étiez, ce qui reste ici

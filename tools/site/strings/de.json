@@ -55,7 +55,7 @@
   "install_s1_t": "Herunterladen",
   "install_s1_d": "Lade das neueste Zip von der Releases-Seite und entpacke es, wo du willst. Geschrieben wird nur in den Ordner Mods im Spielverzeichnis.",
   "install_s2_t": "hiumod.exe doppelklicken",
-  "install_s2_d": "Läuft das Spiel noch nicht, startet es hiumod über Steam und verbindet sich, sobald du im Spiel bist. Mit ` (die Taste links neben der 1) blendest du das Panel ein und aus. Shift+` öffnet eine Konsole zum Prüfen.",
+  "install_s2_d": "Läuft das Spiel noch nicht, startet es hiumod über Steam und verbindet sich, sobald du im Spiel bist. Mit ` (die Taste links neben der 1) blendest du das Panel ein und aus. Ctrl+` öffnet eine Konsole zum Prüfen.",
   "install_s3_t": "Die Spieldaten liest es selbst",
   "install_s3_d": "Sobald du den Helden zum ersten Mal steuerst, liest hiumod die Karten und Texte des Spiels von selbst in den Mods-Ordner (etwa zwei Minuten). Fehlt die .NET-8-Laufzeit, bietet das Panel an, sie zu installieren.",
   "faq_title": "Fragen",

@@ -526,14 +526,14 @@ impl Panel {
                     hotkey::hide(&self.shared);
                 }
                 // The panel's and the console's keys, as keycaps (`<kbd>`), right to left:
-                // written as the keys pressed, ` and Shift+` — "~" is Shift+` only on some
+                // written as the keys pressed, ` and Ctrl+` — "~" is Ctrl+` only on some
                 // layouts (US, Korean), another key on others (UK, AZERTY).
                 ui.add_space(super::theme::INLINE);
                 let console = if self.console.open { super::theme::ACCENT } else { DIM };
                 ui.label(RichText::new(tr!("CONSOLE")).small().color(console)).on_hover_text(tr!("KEY_LEFT_OF_1"));
                 tw::kbd(ui, "`").on_hover_text(tr!("KEY_LEFT_OF_1"));
                 ui.label(RichText::new("+").small().color(DIM));
-                tw::kbd(ui, "Shift");
+                tw::kbd(ui, "Ctrl");
                 ui.add_space(super::theme::BLOCK);
                 ui.label(RichText::new(tr!("PANEL_KEY_LABEL")).small().color(DIM)).on_hover_text(tr!("KEY_LEFT_OF_1"));
                 tw::kbd(ui, "`").on_hover_text(tr!("KEY_LEFT_OF_1"));

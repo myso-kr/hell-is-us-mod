@@ -506,7 +506,7 @@ HELP_A_NO_DATA	It is read once the hero is in control. If it asks for .NET 8, pr
 HELP_Q_RESTORE	Turning cheats off
 HELP_A_RESTORE	Close the panel with its × or press "{restore}". Both put the original values back.
 HELP_Q_UPDATE	After a game update
-HELP_A_UPDATE	The game data is read again on its own. If something looks wrong, open the console with Shift+` and run `doctor`.
+HELP_A_UPDATE	The game data is read again on its own. If something looks wrong, open the console with Ctrl+` and run `doctor`.
 HELP_Q_REPORT	Reporting a problem
 HELP_A_REPORT	The {debug} page opens the log folder. Attach hiumod.log and verify.txt.
 ABOUT_NOW	where you left off, what is left here

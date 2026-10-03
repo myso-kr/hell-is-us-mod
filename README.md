@@ -75,7 +75,7 @@ Every overlay hides while a game menu is open.
 | Key | |
 |---|---|
 | <kbd>&#96;</kbd> | show or hide the panel |
-| <kbd>Shift</kbd> + <kbd>&#96;</kbd> | open or close the console (for checking things) |
+| <kbd>Ctrl</kbd> + <kbd>&#96;</kbd> | open or close the console (for checking things) |
 | <kbd>F2</kbd> | minimap → big map → off |
 | <kbd>F3</kbd> | compass |
 | <kbd>F4</kbd> | guide to the next goal |

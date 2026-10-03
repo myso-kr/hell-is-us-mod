@@ -434,7 +434,7 @@ pub const ALL_LAYERS: u8 = 0b11_1111;
 const LAYERS_VERSION: u8 = 2;
 
 /// F1–F12 but those the game and Steam hold by default: F1 shows the game's HUD, F7 is
-/// its photo mode, F12 is Steam's screenshot. (The panel is `, the console Shift+`.)
+/// its photo mode, F12 is Steam's screenshot. (The panel is `, the console Ctrl+`.)
 pub fn usable_key(k: u8) -> bool {
     (1..=12).contains(&k) && !TAKEN_KEYS.contains(&k)
 }

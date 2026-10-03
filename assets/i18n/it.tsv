@@ -506,7 +506,7 @@ HELP_A_NO_DATA	Vengono letti appena controlli il protagonista. Se chiede .NET 8,
 HELP_Q_RESTORE	Disattivare i trucchi
 HELP_A_RESTORE	Chiudi il pannello con × o premi «{restore}». Entrambi rimettono i valori originali.
 HELP_Q_UPDATE	Dopo un aggiornamento del gioco
-HELP_A_UPDATE	I dati di gioco vengono riletti da soli. Se qualcosa non torna, apri la console con Shift+` ed esegui `doctor`.
+HELP_A_UPDATE	I dati di gioco vengono riletti da soli. Se qualcosa non torna, apri la console con Ctrl+` ed esegui `doctor`.
 HELP_Q_REPORT	Segnalare un problema
 HELP_A_REPORT	La scheda «{debug}» apre la cartella dei log. Allega hiumod.log e verify.txt.
 ABOUT_NOW	dove eri rimasto, cosa resta qui
