@@ -643,3 +643,17 @@ CONSENT_MAP_YES	Sim, ligar mapa e navegação
 CONSENT_PLACES_YES	Sim, mostre onde estão as coisas
 CONSENT_ANSWERS_YES	Sim, quero poder ver respostas
 CONSENT_CHEATS_YES	Sim, vou usar trapaças
+MOTION	Fundo do painel animado (curvas de nível à deriva, uma rota se fazendo)
+STORY_FOLLOWED	A história que você segue
+LAST_TIME_LINE	Da última vez: {ago}, em {place}
+NEXT_GOAL_LINE	Próximo: {goal} ({far})
+NO_GOAL_YET	Nenhum objetivo ainda: o guia escolhe um quando houver aonde ir.
+DOABLE_NOW	O que dá para fazer aqui agora
+HAND_OVER_LINE	Entregar {what} a {who} ({far})
+LOCK_OPENS_NOW_LINE	Uma fechadura límbica que suas varas abrem ({far})
+NOTHING_TO_DO_HERE_NOW	Nada para entregar ou abrir aqui agora.
+SIDE_IN_PROGRESS	Histórias paralelas em andamento ({count})
+NO_SIDE_IN_PROGRESS	Nenhuma boa ação ou mistério em andamento.
+MORE_N	e mais {n}
+TRIPS_THAT_PAY	Vale a viagem
+TRIP_LINE	Entregas {handovers} · fechaduras abríveis {locks} · faltam {left}

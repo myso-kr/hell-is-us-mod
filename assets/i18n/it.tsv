@@ -643,3 +643,17 @@ CONSENT_MAP_YES	Sì, attiva mappa e navigazione
 CONSENT_PLACES_YES	Sì, mostrami dove sono
 CONSENT_ANSWERS_YES	Sì, voglio poter vedere le soluzioni
 CONSENT_CHEATS_YES	Sì, userò i trucchi
+MOTION	Sfondo del pannello animato (curve di livello che scorrono, un percorso che si cerca)
+STORY_FOLLOWED	La storia che segui
+LAST_TIME_LINE	L’ultima volta: {ago}, a {place}
+NEXT_GOAL_LINE	Prossimo: {goal} ({far})
+NO_GOAL_YET	Nessun obiettivo ancora: la guida ne sceglie uno appena c’è un luogo.
+DOABLE_NOW	Cosa puoi fare qui ora
+HAND_OVER_LINE	Dare {what} a {who} ({far})
+LOCK_OPENS_NOW_LINE	Una serratura limbica che le tue verghe aprono ({far})
+NOTHING_TO_DO_HERE_NOW	Al momento qui non c’è nulla da consegnare o aprire.
+SIDE_IN_PROGRESS	Storie secondarie in corso ({count})
+NO_SIDE_IN_PROGRESS	Nessuna buona azione o mistero in corso.
+MORE_N	e altri {n}
+TRIPS_THAT_PAY	Vale il viaggio
+TRIP_LINE	Consegne {handovers} · serrature apribili {locks} · {left} rimasti

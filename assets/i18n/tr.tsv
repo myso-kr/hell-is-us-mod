@@ -643,3 +643,17 @@ CONSENT_MAP_YES	Evet, harita ve yön bulmayı aç
 CONSENT_PLACES_YES	Evet, nerede olduklarını göster
 CONSENT_ANSWERS_YES	Evet, cevapları görebileyim
 CONSENT_CHEATS_YES	Evet, hile kullanacağım
+MOTION	Hareketli panel arka planı (kayan eş yükselti çizgileri, yolunu bulan bir rota)
+STORY_FOLLOWED	Takip ettiğin hikâye
+LAST_TIME_LINE	Son kez: {ago}, {place}
+NEXT_GOAL_LINE	Sıradaki: {goal} ({far})
+NO_GOAL_YET	Henüz hedef yok: gidilecek bir yer olunca rehber seçer.
+DOABLE_NOW	Burada şimdi yapabileceklerin
+HAND_OVER_LINE	{what} → {who} ({far})
+LOCK_OPENS_NOW_LINE	Çubuklarının açtığı Limbik kilit ({far})
+NOTHING_TO_DO_HERE_NOW	Şu an burada verilecek ya da açılacak bir şey yok.
+SIDE_IN_PROGRESS	Süren yan hikâyeler ({count})
+NO_SIDE_IN_PROGRESS	Süren bir iyilik ya da gizem yok.
+MORE_N	ve {n} tane daha
+TRIPS_THAT_PAY	Gitmeye değer
+TRIP_LINE	Teslim {handovers} · açılabilir kilit {locks} · kalan {left}

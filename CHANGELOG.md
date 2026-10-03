@@ -27,6 +27,17 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   you answer, the mod adds nothing to the game; pages you have not allowed stay in the sidebar,
   greyed. Your answers can be changed any time.
 
+### Changed (panel)
+
+- The Now page is built around what players find hardest: the story you follow with its next goal
+  and last clues (and where you left off), what you can do right here (hand-overs, locks your rods
+  open, the nearest places), the side stories under way, the regions worth a trip and why, and what
+  is about to be missed; the story card spans two columns.
+- Long achievement lists scroll inside their card.
+- The panel's background moves softly: contour lines drifting and a route finding its way, as in the
+  introduction video (can be turned off on the Settings page). Cards are thin, slightly see-through
+  glass.
+
 ### Diagnostics
 
 - The engine logs what the Haze links are read from (`haze probe:` lines in `hiumod.log`): no link

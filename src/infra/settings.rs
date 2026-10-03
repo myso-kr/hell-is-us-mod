@@ -57,11 +57,21 @@ pub struct Settings {
     pub values: BTreeMap<String, f32>,
     /// What the player agreed to; `None` until they chose (then nothing is shown).
     pub consent: Option<Consent>,
+    /// The panel's backdrop moves (contours drifting, a route finding its way).
+    pub motion: bool,
 }
 
 impl Default for Settings {
     fn default() -> Settings {
-        Settings { keep: true, tab: None, pos: None, on: Vec::new(), values: BTreeMap::new(), consent: None }
+        Settings {
+            keep: true,
+            tab: None,
+            pos: None,
+            on: Vec::new(),
+            values: BTreeMap::new(),
+            consent: None,
+            motion: true,
+        }
     }
 }
 
@@ -72,6 +82,7 @@ pub fn parse(text: &str) -> Settings {
         let num = |x: &str| x.parse::<f32>().ok().filter(|v| v.is_finite());
         match f[..] {
             ["keep", v] => s.keep = v == "true",
+            ["motion", v] => s.motion = v == "true",
             ["consent", ref granted @ ..] => {
                 let bits = Consent::NAMES.iter().filter(|(_, n)| granted.contains(n)).fold(0, |b, (bit, _)| b | bit);
                 s.consent = Some(Consent(bits));
@@ -96,7 +107,7 @@ pub fn parse(text: &str) -> Settings {
 }
 
 pub fn render(s: &Settings) -> String {
-    let mut out = format!("keep {}\n", s.keep);
+    let mut out = format!("keep {}\nmotion {}\n", s.keep, s.motion);
     if let Some(c) = s.consent {
         let names: Vec<&str> = Consent::NAMES.iter().filter(|(b, _)| c.has(*b)).map(|(_, n)| *n).collect();
         out += &format!("consent {}\n", names.join(" ")).replace(" \n", "\n");

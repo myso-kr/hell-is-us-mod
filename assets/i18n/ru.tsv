@@ -643,3 +643,17 @@ CONSENT_MAP_YES	Да, включить карту и навигацию
 CONSENT_PLACES_YES	Да, покажите, где что
 CONSENT_ANSWERS_YES	Да, хочу видеть ответы
 CONSENT_CHEATS_YES	Да, буду пользоваться читами
+MOTION	Анимированный фон панели (плывущие горизонтали, ищущий путь маршрут)
+STORY_FOLLOWED	Ваша история
+LAST_TIME_LINE	В прошлый раз: {ago}, {place}
+NEXT_GOAL_LINE	Далее: {goal} ({far})
+NO_GOAL_YET	Цели пока нет: гид выберет, когда будет куда идти.
+DOABLE_NOW	Что можно сделать здесь сейчас
+HAND_OVER_LINE	Отдать {what}: {who} ({far})
+LOCK_OPENS_NOW_LINE	Лимбический замок, который откроют ваши стержни ({far})
+NOTHING_TO_DO_HERE_NOW	Здесь сейчас нечего отдать или открыть.
+SIDE_IN_PROGRESS	Побочные истории в процессе ({count})
+NO_SIDE_IN_PROGRESS	Нет добрых дел или тайн в процессе.
+MORE_N	и ещё {n}
+TRIPS_THAT_PAY	Стоит съездить
+TRIP_LINE	Передать {handovers} · открыть замков {locks} · осталось {left}

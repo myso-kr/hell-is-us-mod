@@ -643,3 +643,17 @@ CONSENT_MAP_YES	Tak, włącz mapę i nawigację
 CONSENT_PLACES_YES	Tak, pokaż, gdzie co jest
 CONSENT_ANSWERS_YES	Tak, chcę widzieć odpowiedzi
 CONSENT_CHEATS_YES	Tak, użyję kodów
+MOTION	Ruchome tło panelu (dryfujące poziomice, trasa szukająca drogi)
+STORY_FOLLOWED	Historia, którą śledzisz
+LAST_TIME_LINE	Ostatnio: {ago}, w: {place}
+NEXT_GOAL_LINE	Dalej: {goal} ({far})
+NO_GOAL_YET	Brak celu: przewodnik wybierze, gdy będzie dokąd iść.
+DOABLE_NOW	Co możesz tu teraz zrobić
+HAND_OVER_LINE	Oddaj {what}: {who} ({far})
+LOCK_OPENS_NOW_LINE	Zamek limbiczny, który otworzą twoje pręty ({far})
+NOTHING_TO_DO_HERE_NOW	Teraz nie ma tu nic do oddania ani otwarcia.
+SIDE_IN_PROGRESS	Poboczne historie w toku ({count})
+NO_SIDE_IN_PROGRESS	Żaden dobry uczynek ani zagadka nie jest w toku.
+MORE_N	i {n} więcej
+TRIPS_THAT_PAY	Warto pojechać
+TRIP_LINE	Do oddania {handovers} · zamki do otwarcia {locks} · zostało {left}

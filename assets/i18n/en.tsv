@@ -643,3 +643,17 @@ CONSENT_MAP_YES	Yes, turn on the map and navigation
 CONSENT_PLACES_YES	Yes, show me where things are
 CONSENT_ANSWERS_YES	Yes, let me see answers
 CONSENT_CHEATS_YES	Yes, I’ll use cheats
+MOTION	Let the panel’s background move (contours drifting, a route finding its way)
+STORY_FOLLOWED	The story you follow
+LAST_TIME_LINE	Last time: {ago}, in {place}
+NEXT_GOAL_LINE	Next: {goal} ({far})
+NO_GOAL_YET	No goal chosen yet: the guide picks one when there is a place to go.
+DOABLE_NOW	What you can do here now
+HAND_OVER_LINE	Give {what} to {who} ({far})
+LOCK_OPENS_NOW_LINE	A Lymbic lock your rods open ({far})
+NOTHING_TO_DO_HERE_NOW	Nothing to hand over or open here right now.
+SIDE_IN_PROGRESS	Side stories under way ({count})
+NO_SIDE_IN_PROGRESS	No good deed or mystery is under way.
+MORE_N	and {n} more
+TRIPS_THAT_PAY	Worth a trip
+TRIP_LINE	Hand-overs {handovers} · locks you can open {locks} · {left} left

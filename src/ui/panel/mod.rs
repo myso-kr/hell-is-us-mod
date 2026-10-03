@@ -2,6 +2,7 @@
 //! read off the cheat table; the panel reads the worker's last snapshot and never
 //! touches the game itself.
 
+mod backdrop;
 mod clues;
 mod collect;
 mod consent;
@@ -286,7 +287,6 @@ pub struct Panel {
     /// Where the last session left off (session.rs), read once at start; the "previously"
     /// card until dismissed; when this session's state was last written.
     previous: Option<crate::session::Session>,
-    previous_dismissed: bool,
     /// The sidebar's two groups, each folded under its heading line: the tools start
     /// open, the cheats folded.
     /// The sidebar's groups (play, way-finding, system), each folded or not.
@@ -300,6 +300,8 @@ pub struct Panel {
     keep: bool,
     /// What the player agreed the mod may show and change; `None` until they chose.
     consent: Option<crate::settings::Consent>,
+    /// The backdrop moves (backdrop.rs); a switch on the Settings page.
+    motion: bool,
     /// The footer's update from GitHub's releases; checked once, at the first frame.
     updater: super::update::Updater,
     update_checked: bool,
@@ -358,6 +360,7 @@ impl Panel {
             keep: saved.keep,
             updater: Default::default(),
             consent: saved.consent,
+            motion: saved.motion,
             update_checked: false,
             splash: Some(Instant::now()),
             resized_at: Instant::now(),
@@ -389,7 +392,6 @@ impl Panel {
             height: 0.0,
             width: 0.0,
             previous,
-            previous_dismissed: false,
             groups_open: [true; 3],
             cheats_open: !back && !Tool::ALL.iter().any(|t| Some(t.id()) == tab),
             session_saved: None,
@@ -423,6 +425,7 @@ impl Panel {
             on: self.wanted.iter().map(|a| (a.cheat.to_string(), a.value)).collect(),
             values: self.value.iter().map(|(id, v)| (id.to_string(), *v)).collect(),
             consent: self.consent,
+            motion: self.motion,
         }
     }
 
@@ -936,6 +939,7 @@ impl Panel {
     /// How many cards the page shown has.
     fn page_cards(&self) -> usize {
         match self.tool {
+            // Five cards in rows of three: the story two columns wide (now.rs).
             Some(Tool::Now) => self.now_cards(),
             Some(Tool::Collect) => 4,
             Some(Tool::Quests) => 3 + self.grants(crate::settings::Consent::ANSWERS) as usize,
@@ -1065,9 +1069,16 @@ impl eframe::App for Panel {
             top: super::theme::BLOCK as i8,
             bottom: super::theme::BLOCK as i8,
         };
+        let motion = self.motion;
         let used = egui::Frame::central_panel(ui.style())
             .inner_margin(margin)
             .show(ui, |ui| {
+                // The backdrop first, under everything: it shows between the cards.
+                if motion {
+                    let t = ui.input(|i| i.time) as f32;
+                    backdrop::draw(ui.painter(), ui.clip_rect(), t);
+                    ui.ctx().request_repaint_after(Duration::from_secs_f32(1.0 / backdrop::FPS));
+                }
                 let inner = width - FRAME + lane;
                 ui.set_width(inner);
                 ui.set_max_width(inner);

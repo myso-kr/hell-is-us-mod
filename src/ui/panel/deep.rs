@@ -112,6 +112,9 @@ fn vault_dials(class: &str, a: &Answer) -> Option<Vec<u8>> {
     }
 }
 
+/// How tall the achievements list grows before it scrolls (px).
+const ACHIEVEMENTS_TALL: f32 = 420.0;
+
 impl Panel {
     /// The shard budget for the upgrade achievements (`budget_block`), a card of its own:
     /// it plans which upgrades to make and when to close the timeloops, and buried above
@@ -144,46 +147,49 @@ impl Panel {
                 // Stable: within a kind, Steam's own order.
                 shown.sort_by_key(|a| achievement_kind(&a.api));
             }
-            let mut kind = None;
-            for a in shown {
-                if self.achievements_grouped && kind != Some(achievement_kind(&a.api)) {
-                    let k = achievement_kind(&a.api);
-                    let count = list
-                        .iter()
-                        .filter(|x| (self.show_unlocked || !x.unlocked) && achievement_kind(&x.api) == k)
-                        .count();
-                    w(t, |ui| tw::group_heading(ui, ACHIEVEMENT_KINDS[k](), count));
-                    kind = Some(k);
-                }
-                let id = id_of(&a.api);
-                let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
-                let progress =
-                    a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| (v.clamp(0, of) as usize, of as usize));
-                // The name, then its progress as a meter with the count (a done one: a
-                // chip instead); under it the condition, which is what the player needs
-                // to read (a hidden one's only once shown).
-                tw::item(t, |t| {
-                    t.style(tw::row(INLINE)).add(|t| {
-                        let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { a.name.clone() };
-                        let colour = if a.unlocked { DIM } else { super::super::theme::TEXT };
-                        text(t, RichText::new(head).color(colour));
-                        if let Some((done, all)) = progress.filter(|_| !secret && !a.unlocked) {
-                            w(t, |ui| tw::meter(ui, Some(56.0), done, all));
-                            let count = RichText::new(format!("{done}/{all}")).monospace().size(11.5).color(DIM);
-                            w(t, |ui| ui.label(count));
-                        }
-                        if a.unlocked {
-                            tw::chip(t, "✓", tw::Tone::Ok);
-                        }
-                        if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
-                            self.revealed.insert(id);
+            // Forty achievements were a card taller than the window: they scroll inside it.
+            tw::scroll_list(t, "achievements", ACHIEVEMENTS_TALL, |t| {
+                let mut kind = None;
+                for a in shown {
+                    if self.achievements_grouped && kind != Some(achievement_kind(&a.api)) {
+                        let k = achievement_kind(&a.api);
+                        let count = list
+                            .iter()
+                            .filter(|x| (self.show_unlocked || !x.unlocked) && achievement_kind(&x.api) == k)
+                            .count();
+                        w(t, |ui| tw::group_heading(ui, ACHIEVEMENT_KINDS[k](), count));
+                        kind = Some(k);
+                    }
+                    let id = id_of(&a.api);
+                    let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
+                    let progress =
+                        a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| (v.clamp(0, of) as usize, of as usize));
+                    // The name, then its progress as a meter with the count (a done one: a
+                    // chip instead); under it the condition, which is what the player needs
+                    // to read (a hidden one's only once shown).
+                    tw::item(t, |t| {
+                        t.style(tw::row(INLINE)).add(|t| {
+                            let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { a.name.clone() };
+                            let colour = if a.unlocked { DIM } else { super::super::theme::TEXT };
+                            text(t, RichText::new(head).color(colour));
+                            if let Some((done, all)) = progress.filter(|_| !secret && !a.unlocked) {
+                                w(t, |ui| tw::meter(ui, Some(56.0), done, all));
+                                let count = RichText::new(format!("{done}/{all}")).monospace().size(11.5).color(DIM);
+                                w(t, |ui| ui.label(count));
+                            }
+                            if a.unlocked {
+                                tw::chip(t, "✓", tw::Tone::Ok);
+                            }
+                            if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
+                                self.revealed.insert(id);
+                            }
+                        });
+                        if !secret {
+                            note(t, a.desc.clone());
                         }
                     });
-                    if !secret {
-                        note(t, a.desc.clone());
-                    }
-                });
-            }
+                }
+            });
         });
     }
 

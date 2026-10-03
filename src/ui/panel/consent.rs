@@ -50,6 +50,7 @@ impl Panel {
                     self.set_consent(Consent(0));
                 }
             });
+            tw::switch(t, &mut self.motion, tr!("MOTION"));
         });
     }
 

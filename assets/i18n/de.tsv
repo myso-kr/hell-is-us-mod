@@ -643,3 +643,17 @@ CONSENT_MAP_YES	Ja, Karte und Navigation an
 CONSENT_PLACES_YES	Ja, zeig mir, wo was ist
 CONSENT_ANSWERS_YES	Ja, Lösungen zeigen
 CONSENT_CHEATS_YES	Ja, ich nutze Cheats
+MOTION	Bewegter Panel-Hintergrund (ziehende Höhenlinien, ein Weg, der sich findet)
+STORY_FOLLOWED	Deine Geschichte
+LAST_TIME_LINE	Zuletzt: {ago}, in {place}
+NEXT_GOAL_LINE	Als Nächstes: {goal} ({far})
+NO_GOAL_YET	Noch kein Ziel: Der Wegweiser wählt eins, sobald es einen Ort gibt.
+DOABLE_NOW	Was du hier jetzt tun kannst
+HAND_OVER_LINE	{what} an {who} geben ({far})
+LOCK_OPENS_NOW_LINE	Ein Lymbisches Schloss, das deine Stäbe öffnen ({far})
+NOTHING_TO_DO_HERE_NOW	Hier gibt es gerade nichts zu übergeben oder zu öffnen.
+SIDE_IN_PROGRESS	Laufende Nebengeschichten ({count})
+NO_SIDE_IN_PROGRESS	Keine gute Tat und kein Rätsel läuft gerade.
+MORE_N	und {n} weitere
+TRIPS_THAT_PAY	Lohnt eine Reise
+TRIP_LINE	Übergaben {handovers} · öffenbare Schlösser {locks} · {left} übrig

@@ -643,3 +643,17 @@ CONSENT_MAP_YES	是，打开地图与导航
 CONSENT_PLACES_YES	是，告诉我位置
 CONSENT_ANSWERS_YES	是，让我能看答案
 CONSENT_CHEATS_YES	是，我要用作弊
+MOTION	面板背景动画 (缓动的等高线、寻路的路线)
+STORY_FOLLOWED	你在追的故事
+LAST_TIME_LINE	上次：{ago}，在{place}
+NEXT_GOAL_LINE	下一个目标：{goal}（{far}）
+NO_GOAL_YET	还没有目标：有地方可去时，向导会选一个。
+DOABLE_NOW	现在在这里能做的
+HAND_OVER_LINE	把{what}交给{who}（{far}）
+LOCK_OPENS_NOW_LINE	你的林比克棒能打开的锁（{far}）
+NOTHING_TO_DO_HERE_NOW	这里现在没有可交付或可打开的东西。
+SIDE_IN_PROGRESS	进行中的善行与谜团（{count}）
+NO_SIDE_IN_PROGRESS	没有进行中的善行或谜团。
+MORE_N	另有 {n} 个
+TRIPS_THAT_PAY	值得一去的区域
+TRIP_LINE	可交付 {handovers} · 可开锁 {locks} · 剩余 {left}

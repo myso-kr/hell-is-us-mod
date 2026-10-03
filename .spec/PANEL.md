@@ -148,6 +148,32 @@ reported the frame before. Starting from 0, the page's scroll area stayed 0 tall
 nothing (it worked only while the footer sat in the same leaf and gave it height). The page's room
 is given outright (`allocate_ui_with_layout` at `page_height`); it still shrinks to its content.
 
+**The Now page** (2026-10-04, `panel/now.rs`), after the pains players name most (JOURNEY.md §1):
+the hero (the live map, the region, the KPI tiles), then a grid of the page's columns (`tw::span`,
+cards in a row stretched to one height, their rows kept at the top): **the story followed** (two
+columns: where the last session ended when it was 30 min or more ago, the quest and its progress, the
+guide's next goal, what was last learned on each lead), **what can be done here now** (hand-overs by
+whom and how far, the Lymbic locks the rods held open, the nearest places), **side stories under way**
+(good deeds, mysteries and timeloops begun, this region's first), **worth a trip** (the three regions
+with the most to do now and what: hand-overs, locks, what is left; the rest in a line), **before you go
+on** (missable deadlines, the keystone order). The old "previously" card became the story card's
+first line.
+
+**Long lists scroll inside their card** (`tw::scroll_list`): the achievements grow to 420 px, then
+scroll, over a taffy column of their own, given its room outright (the 0-height trap above).
+
+**The backdrop** (`panel/backdrop.rs`): faint contour lines drifting over two hills and, every 14 s,
+a dashed route finding its way across them with the goal's diamond glowing at its head, then fading,
+after the introduction video. Drawn first in the panel's frame, so it shows between the cards and
+behind the sidebar; 15 frames a second; a "the panel's background moves" switch on the Settings page
+(`motion` in settings.txt). Measured: the panel's process uses the same CPU with it on or off (about
+66 % of a core while the big map draws in game; the backdrop is a rounding error).
+
+**Cards are thin glass** (`tw` `background`): the card colour at about 80 % opacity, so the backdrop
+shows faintly through; a white sheen at 4 % fading out by 40 % of the height; a hairline of light
+along the top edge inside the corners; the edge a little softer. No blur: egui has none, and the
+translucency over a dark, quiet backdrop reads as glass without it.
+
 **The splash** (`panel/splash.rs`) is a window of its own in the middle of the screen, drawn after
 the introduction video's closing card and the site's hero: the ground colour, contour lines
 drifting, the compass strip with its glowing goal, the double diamond, the name, the loading steps

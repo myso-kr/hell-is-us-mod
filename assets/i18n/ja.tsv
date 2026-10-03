@@ -643,3 +643,17 @@ CONSENT_MAP_YES	はい、地図と道案内をオンに
 CONSENT_PLACES_YES	はい、場所を教えて
 CONSENT_ANSWERS_YES	はい、答えを見られるように
 CONSENT_CHEATS_YES	はい、チートを使います
+MOTION	パネル背景の動き (流れる等高線、道を探す経路)
+STORY_FOLLOWED	追っている物語
+LAST_TIME_LINE	前回: {ago}、{place}
+NEXT_GOAL_LINE	次の目標: {goal} ({far})
+NO_GOAL_YET	まだ目標がありません。行き先ができると案内が選びます。
+DOABLE_NOW	今ここでできること
+HAND_OVER_LINE	{who}に{what}を渡す ({far})
+LOCK_OPENS_NOW_LINE	手持ちのロッドで開くリンビック錠 ({far})
+NOTHING_TO_DO_HERE_NOW	今ここで渡すものも開けるものもありません。
+SIDE_IN_PROGRESS	進行中の善行・ミステリー ({count})
+NO_SIDE_IN_PROGRESS	進行中の善行やミステリーはありません。
+MORE_N	ほか {n} 件
+TRIPS_THAT_PAY	行く価値のある地域
+TRIP_LINE	渡せる物 {handovers} · 開けられる錠 {locks} · 残り {left}

@@ -202,6 +202,20 @@ pub fn block_at_least<T>(tui: &mut Tui, width: f32, f: impl FnOnce(&mut egui::Ui
     })
 }
 
+/// `col-span-{n}`: what `body` holds as one grid item `n` columns wide.
+pub fn span<T>(tui: &mut Tui, n: u16, body: impl FnOnce(&mut Tui) -> T) -> T {
+    use taffy::prelude::{auto, fr, span as across};
+    // Its one row fills the cell, so a card in it is as tall as the row (when the grid
+    // stretches its items).
+    tui.style(Style {
+        grid_column: taffy::Line { start: auto(), end: across(n.max(1)) },
+        grid_template_rows: vec![fr(1.0_f32)],
+        align_items: Some(AlignItems::Stretch),
+        ..col(0.0)
+    })
+    .add(body)
+}
+
 /// `col-span-full`: `style` as a grid item across every column.
 pub fn span_all(style: Style) -> Style {
     use taffy::prelude::line;
@@ -304,28 +318,62 @@ pub fn text(tui: &mut Tui, text: impl Into<RichText>) {
 
 /// A titled card: `flex flex-col gap-2 p-4 border rounded`, the accent bar beside its title.
 pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> T {
-    tui.style(Style { padding: length(super::theme::PAD), ..col(super::theme::INLINE) })
-        .add_with_background_ui(background, |tui, _| {
-            // The header: the title over a hairline as wide as the card's content.
-            block(tui, |ui| {
-                ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE));
-                let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 5.0), egui::Sense::hover());
-                ui.painter().hline(rect.x_range(), rect.bottom() - 0.5, egui::Stroke::new(1.0, super::theme::EDGE));
-            });
-            body(tui)
-        })
-        .main
+    // Its rows at the top: a card stretched to its row's height keeps its spare room
+    // below them, not spread between them.
+    tui.style(Style {
+        padding: length(super::theme::PAD),
+        align_content: Some(taffy::AlignContent::Start),
+        ..col(super::theme::INLINE)
+    })
+    .add_with_background_ui(background, |tui, _| {
+        // The header: the title over a hairline as wide as the card's content.
+        block(tui, |ui| {
+            ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE));
+            let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 5.0), egui::Sense::hover());
+            ui.painter().hline(rect.x_range(), rect.bottom() - 0.5, egui::Stroke::new(1.0, super::theme::EDGE));
+        });
+        body(tui)
+    })
+    .main
 }
 
 /// A raised panel with rounded corners: a card's, a hero's. No accent rail: the accent
 /// marks what is chosen or live, and a mark on every card would mean nothing.
+/// A card's (and the hero's) background, as thin glass: the card's colour a little
+/// see-through, so the panel's backdrop shows faintly behind; a soft sheen over its top
+/// that fades out a third of the way down; a hairline of light along the top edge; the
+/// usual edge. No blur (egui draws none) and nothing loud.
 fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
     let rect = container.full_container();
-    ui.painter().rect(
+    let p = ui.painter();
+    let radius = super::theme::R_CARD as f32;
+    let c = super::theme::CARD;
+    p.rect_filled(rect, radius, Color32::from_rgba_unmultiplied(c.r(), c.g(), c.b(), 206));
+    // The sheen: white, faint at the top, gone by 40 % of the height; inset by the corner
+    // radius at its sides so the rounded corners stay clean.
+    let sheen = egui::Rect::from_min_max(
+        egui::pos2(rect.left() + 1.0, rect.top() + 1.0),
+        egui::pos2(rect.right() - 1.0, rect.top() + rect.height().min(260.0) * 0.4),
+    );
+    let mut mesh = egui::Mesh::default();
+    let (top, clear) = (Color32::from_white_alpha(9), Color32::from_white_alpha(0));
+    mesh.colored_vertex(egui::pos2(sheen.left() + radius * 0.6, sheen.top()), top);
+    mesh.colored_vertex(egui::pos2(sheen.right() - radius * 0.6, sheen.top()), top);
+    mesh.colored_vertex(sheen.right_bottom(), clear);
+    mesh.colored_vertex(sheen.left_bottom(), clear);
+    mesh.add_triangle(0, 1, 2);
+    mesh.add_triangle(0, 2, 3);
+    p.add(egui::Shape::mesh(mesh));
+    // The light catching the top edge.
+    p.hline(
+        (rect.left() + radius)..=(rect.right() - radius),
+        rect.top() + 0.5,
+        egui::Stroke::new(1.0, Color32::from_white_alpha(22)),
+    );
+    p.rect_stroke(
         rect,
-        super::theme::R_CARD,
-        super::theme::CARD,
-        egui::Stroke::new(1.0, super::theme::EDGE),
+        radius,
+        egui::Stroke::new(1.0, super::theme::EDGE.gamma_multiply(0.85)),
         egui::StrokeKind::Inside,
     );
 }
@@ -515,52 +563,6 @@ pub fn stat(tui: &mut Tui, icon: impl FnOnce(&mut egui::Ui), value: &str, label:
 /// A KPI tile's least width (px), so a row of them lines up.
 const STAT_W: f32 = 84.0;
 
-/// A horizontal bar chart, one row per label: the part that can be done now in the
-/// accent, the rest of what is left behind it, all to one scale (the longest row), the
-/// counts on the right. Above it, a legend for the two parts.
-pub fn bars(ui: &mut egui::Ui, rows: &[(String, usize, usize)], legend: (&str, &str)) {
-    use super::theme::{ACCENT, CONTROL_HOVER, DIM, TEXT};
-    const LABEL: f32 = 116.0;
-    const COUNT: f32 = 64.0;
-    const ROW: f32 = 18.0;
-    let max = rows.iter().map(|r| r.2).max().unwrap_or(1).max(1) as f32;
-    ui.spacing_mut().item_spacing.y = 4.0;
-    ui.horizontal(|ui| {
-        for (text, colour) in [(legend.0, ACCENT), (legend.1, CONTROL_HOVER)] {
-            let (r, _) = ui.allocate_exact_size(egui::vec2(9.0, 9.0), egui::Sense::hover());
-            ui.painter().rect_filled(r, 2.0, colour);
-            ui.label(RichText::new(text).small().color(DIM));
-            ui.add_space(6.0);
-        }
-    });
-    for (label, now, left) in rows {
-        let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), ROW), egui::Sense::hover());
-        let p = ui.painter();
-        let font = egui::FontId::proportional(12.0);
-        let colour = if *now > 0 { TEXT } else { DIM };
-        let text = p.layout(label.clone(), font.clone(), colour, LABEL - 6.0);
-        p.galley(egui::pos2(rect.left(), rect.center().y - text.size().y / 2.0), text, colour);
-        let track = egui::Rect::from_min_max(
-            egui::pos2(rect.left() + LABEL, rect.center().y - 5.0),
-            egui::pos2((rect.right() - COUNT).max(rect.left() + LABEL + 10.0), rect.center().y + 5.0),
-        );
-        let w = |n: usize| track.width() * n as f32 / max;
-        let all = egui::Rect::from_min_size(track.min, egui::vec2(w(*left), track.height()));
-        p.rect_filled(all, 3.0, CONTROL_HOVER);
-        if *now > 0 {
-            let doable = egui::Rect::from_min_size(track.min, egui::vec2(w(*now).max(3.0), track.height()));
-            p.rect_filled(doable, 3.0, ACCENT);
-        }
-        p.text(
-            egui::pos2(rect.right(), rect.center().y),
-            egui::Align2::RIGHT_CENTER,
-            format!("{now} / {left}"),
-            egui::FontId::monospace(11.0),
-            colour,
-        );
-    }
-}
-
 /// A progress ring: the track, the part done from twelve o'clock clockwise (the accent,
 /// the OK colour once complete), the count in the middle and a label under it.
 pub fn ring(ui: &mut egui::Ui, side: f32, done: usize, all: usize, label: &str) -> egui::Response {
@@ -650,6 +652,23 @@ pub fn scroll<R>(
         fade(ui, r, ground, false);
     }
     out.inner
+}
+
+/// A scroll area inside a card, as tall as its content up to `max` (px), over a taffy
+/// column of its own. Its room is given outright: a ScrollArea is no taller than its
+/// parent's room, and a taffy leaf's room is last frame's height, which starts at 0.
+pub fn scroll_list(tui: &mut Tui, id: &str, max: f32, body: impl FnOnce(&mut Tui)) {
+    block(tui, |ui| {
+        let room = egui::vec2(ui.available_width(), max);
+        ui.allocate_ui_with_layout(room, egui::Layout::top_down(egui::Align::Min), |ui| {
+            scroll(ui, id, max, 0.0, super::theme::CARD, |ui| {
+                egui_taffy::tui(ui, ui.id().with(id))
+                    .reserve_available_width()
+                    .style(full(col(super::theme::INLINE)))
+                    .show(body);
+            });
+        });
+    });
 }
 
 /// How tall a scroll area's edge fade is (px).
