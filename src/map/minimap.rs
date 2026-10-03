@@ -21,8 +21,9 @@ const NEAR: f32 = 500.0;
 
 pub type Point = [f32; 3];
 
-/// The big map's largest radius (m).
-pub const BIG_RADIUS_MAX: f32 = 500.0;
+/// The largest radius either map draws (m): past about this the game has not loaded the
+/// land, and a wider map shows its edge cut off.
+pub const RADIUS_MAX: f32 = 400.0;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct MapState {
@@ -283,7 +284,7 @@ impl MapState {
                 ["heading_up", v] => s.heading_up = v == "true",
                 ["radius", v] => {
                     if let Some(r) = v.parse::<f32>().ok().filter(|r| (10.0..=1000.0).contains(r)) {
-                        s.radius_m = r;
+                        s.radius_m = r.min(RADIUS_MAX);
                     }
                 }
                 ["terrain", v] => s.terrain = v == "true",
@@ -315,8 +316,8 @@ impl MapState {
                 }
                 ["big_radius", v] => {
                     if let Some(r) = v.parse::<f32>().ok().filter(|r| (50.0..=2000.0).contains(r)) {
-                        // At most BIG_RADIUS_MAX: a setting saved larger is brought down.
-                        s.big_radius_m = r.min(BIG_RADIUS_MAX);
+                        // At most RADIUS_MAX: a setting saved larger is brought down.
+                        s.big_radius_m = r.min(RADIUS_MAX);
                     }
                 }
                 ["guide_auto", v] => s.guide_auto = v == "true",

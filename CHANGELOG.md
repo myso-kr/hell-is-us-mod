@@ -29,7 +29,7 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   longer cut off; the console, and its button in the panel's header, show only over a game menu.
 - The Map page has a legend card of the maps' lines and colours, as drawn with the settings now.
 - The big map covers the whole screen, centred on the hero and fading out toward the edges; its
-  radius, at most 500 m, is measured to the screen's short side with a margin above and below, and
+  radius, at most 400 m (the minimap's too), is measured to the screen's short side with a margin above and below, and
   its lines, icons and dots are drawn at full resolution. The minimap and big map cards
   each preview their own map.
 - The big map costs far less to draw: its ground is reused while the hero stands still, and the

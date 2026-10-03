@@ -237,8 +237,10 @@ with gaps between them, as Diablo's and Path of Exile's maps do.
   anyway) is drawn at half size and doubled (`upscale2`: weights 9/3/3/1, integer, rows in
   parallel); everything over it (`draw_above`: edges, dots, trail, icons, route) at full size, so
   lines, icons and the gaps between dots stay sharp (doubled, the dots blurred into a haze). Dots
-  grow with the canvas (2 px on a 1440 px screen). The fade mask is cached per size. The radius is
-  at most 500 m (`BIG_RADIUS_MAX`): wider, the map's drawn area looked too small.
+  grow with the canvas (2 px on a 1440 px screen); on a canvas under 600 px tall (the Map page's
+  preview, shown smaller still) they are drawn as the tone they average to, since a 1 px mask beat
+  with the panel's pixels. The fade mask is cached per size. Both maps' radius is at most 400 m
+  (`RADIUS_MAX`): at 500 m the edge of the loaded land showed, cut off.
 - **The ground is cached** (`raster.rs` `GROUND`): the disc and relief depend only on where the map
   stands and how it is drawn, so while the hero stands still (or moves under a pixel) the last
   frame's ground of that size is copied instead of drawn. Measured on 3440×1440 before the cache:

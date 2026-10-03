@@ -311,6 +311,17 @@ fn line_cover(v: f32, slope2: f32, base: f32, spacing: f32, half: f32) -> f32 {
 /// anything that must stay solid.
 fn dots(cv: &mut Canvas) {
     const BOOST: u32 = 170; // percent
+                            // Smaller than any screen (the Map page's preview, shown smaller still): the dots
+                            // would be under a pixel there, so draw what they average to instead, a quarter of
+                            // the ink boosted. A 1 px mask here, scaled down in the panel, beat with its pixels.
+    if cv.h < 600 {
+        const TONE: u32 = BOOST / 4; // percent
+        for px in cv.px.iter_mut().filter(|p| **p != 0) {
+            let c = |shift: u32| (((*px >> shift) & 0xFF) * TONE / 100) << shift;
+            *px = c(24) | c(16) | c(8) | c(0);
+        }
+        return;
+    }
     let dot = (cv.h / 600).clamp(1, 3);
     let pitch = dot * 2;
     let w = cv.w;
@@ -1119,7 +1130,7 @@ mod tests {
 
     #[test]
     fn walls_on_the_heros_floor_are_drawn_and_ceilings_are_not() {
-        let s = MapState { terrain: true, ..MapState::default() };
+        let s = MapState { terrain: true, dots: false, ..MapState::default() };
         let v = View {
             center: [0.0, 0.0, 100.0],
             yaw_deg: 0.0,

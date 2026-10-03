@@ -172,7 +172,9 @@ impl Panel {
                 w(t, |ui| ui.selectable_value(&mut state.heading_up, false, tr!("NORTH_N")));
                 w(t, |ui| ui.selectable_value(&mut state.heading_up, true, tr!("CAMERA")));
             });
-            field(t, tr!("RADIUS"), |t| tw::slider(t, &mut state.radius_m, 20.0..=300.0, 10.0, " m"));
+            field(t, tr!("RADIUS"), |t| {
+                tw::slider(t, &mut state.radius_m, 20.0..=crate::minimap::RADIUS_MAX, 10.0, " m")
+            });
             field(t, tr!("STYLE"), |t| {
                 w(t, |ui| ui.selectable_value(&mut state.mini_outline, true, tr!("OUTLINE")));
                 w(t, |ui| ui.selectable_value(&mut state.mini_outline, false, tr!("FILLED")));
@@ -236,7 +238,7 @@ impl Panel {
                 }
             });
             field(t, tr!("RADIUS"), |t| {
-                tw::slider(t, &mut state.big_radius_m, 50.0..=crate::minimap::BIG_RADIUS_MAX, 25.0, " m")
+                tw::slider(t, &mut state.big_radius_m, 50.0..=crate::minimap::RADIUS_MAX, 25.0, " m")
             });
             field(t, tr!("STYLE"), |t| {
                 w(t, |ui| ui.selectable_value(&mut state.big_outline, true, tr!("OUTLINE")));
