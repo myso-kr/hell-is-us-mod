@@ -45,7 +45,7 @@ pub fn make(reason: &str) -> Result<PathBuf, String> {
     if files.is_empty() {
         return Err("no save files to back up".into());
     }
-    let mut name = crate::journal::stamp();
+    let mut name = crate::logfile::stamp();
     if !reason.is_empty() {
         name.push('_');
         name.push_str(&reason.replace(|c: char| !c.is_alphanumeric() && c != '-', "_"));

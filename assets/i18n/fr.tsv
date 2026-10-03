@@ -425,3 +425,4 @@ Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Cache des s
 달성한 것도 보기	Afficher aussi ceux débloqués
 숨겨진 업적	Succès caché
 보기	Voir
+⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요	⚠ Vérifié sur la version {tested} — en cas de souci, lancez `doctor` dans la console

@@ -425,3 +425,4 @@ Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Steam's ach
 달성한 것도 보기	Show unlocked ones too
 숨겨진 업적	Hidden achievement
 보기	Show
+⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요	⚠ Checked on build {tested} — if something is off, run `doctor` in the console

@@ -94,7 +94,7 @@ pub fn run(shared: Arc<Shared>) {
         Layered::new("hiumod-minimap", "Hell Is Us Minimap", MAP_PX, MAP_PX),
         Layered::new("hiumod-compass", "Hell Is Us Compass", COMPASS_W, COMPASS_H),
     ) else {
-        crate::journal::line("overlay: could not create its windows");
+        crate::logfile::line("overlay: could not create its windows");
         return;
     };
     // The quest tracker: drawn again only when what it shows changes.
@@ -112,7 +112,7 @@ pub fn run(shared: Arc<Shared>) {
     let make = |px: u8| match crate::icons::Icons::new(px as usize) {
         Ok(i) => Some(i),
         Err(e) => {
-            crate::journal::line(&format!("minimap: {e} — drawing dots"));
+            crate::logfile::line(&format!("minimap: {e} — drawing dots"));
             None
         }
     };
@@ -189,7 +189,7 @@ pub fn run(shared: Arc<Shared>) {
                 state.observe(world, p);
                 if marker_now {
                     let added = state.toggle_marker(world, p);
-                    crate::journal::line(&format!(
+                    crate::logfile::line(&format!(
                         "minimap: marker {} at ({:.0}, {:.0}, {:.0}) in {world}",
                         if added { "added" } else { "removed" },
                         p[0],

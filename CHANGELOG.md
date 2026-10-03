@@ -274,4 +274,16 @@ been verified in play yet.
   - Enemy groups left per region and timeloop, for the every-Hollow achievement,
     with a guide to the nearest.
   - tools/survey writes spawners.json and vaults.json (`--tables` for those alone).
+- Waves B–F:
+  - The map marks enemy groups left, unsolved puzzles and vault doors, and the
+    tracker hints at a puzzle nearby.
+  - A puzzle list covers every world: dials of 3–4 with 6/8/10 places, codes of
+    3–6 digits, and item placements.
+  - An achievement board reads Steam's cache.
+  - `doctor saves` watches the save objects.
+  - `journal` is renamed `logfile`.
+  - Integration tests are added.
+  - The panel only repaints while shown.
+  - A release zip is built (tools/package.ps1).
+  - The panel warns when the game build is not the one checked.
 

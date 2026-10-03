@@ -72,7 +72,7 @@ pub fn follow_game() {
 /// files may have appeared since).
 fn load(culture: &str) {
     let l = Lang { culture: culture.into(), text: text::Table::load(culture), names: names::Names::load(culture) };
-    crate::journal::line(&format!("language: {culture} ({} mod lines, {} game names)", l.text.len(), l.names.len()));
+    crate::logfile::line(&format!("language: {culture} ({} mod lines, {} game names)", l.text.len(), l.names.len()));
     *current().write().unwrap() = Arc::new(l);
 }
 

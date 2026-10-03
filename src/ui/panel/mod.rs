@@ -390,7 +390,12 @@ impl Panel {
         };
         match snap.map(|s| &s.game) {
             Some(Ok((pid, version))) => {
-                line(ui, tr!("게임"), RichText::new(trf!("● 연결됨\nv{version} · PID {pid}", version = version, pid = pid)).color(OK))
+                line(ui, tr!("게임"), RichText::new(trf!("● 연결됨\nv{version} · PID {pid}", version = version, pid = pid)).color(OK));
+                // A build the mod was not checked on: names may have moved.
+                if version != crate::game::TESTED_BUILD {
+                    let warn = trf!("⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요", tested = crate::game::TESTED_BUILD);
+                    line(ui, "", RichText::new(warn).color(WAIT).small());
+                }
             }
             _ if launching => line(ui, tr!("게임"), RichText::new(tr!("실행하는 중 — 켜지면 자동으로 연결")).color(WAIT)),
             Some(Err(e)) => line(ui, tr!("게임"), RichText::new(trf!("○ 연결 안 됨 — {e}", e = e)).color(DIM)),

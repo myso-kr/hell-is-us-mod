@@ -18,46 +18,53 @@ game through its memory. **No game files are modified.**
 
 ## Quick start
 
-Double-click `hiumod.exe`, or run it with no arguments. It starts the game through
-Steam if the game is not running, attaches once you are in, and closes when the game
-exits. **F8** shows and hides the panel. Play in windowed or borderless mode.
+1. Unzip the release next to nothing in particular — it writes only to
+   `<game folder>\Mods\`.
+2. Double-click `hiumod.exe`. It starts the game through Steam if it is not running,
+   attaches once you are in, and closes when the game exits. Play windowed or
+   borderless.
+3. Press **`** (the key left of 1) to show or hide the panel. Its header button opens
+   a console for the commands below.
+4. Once, for the guide's full data: run `doctor survey` in that console (needs the
+   .NET 8 runtime; about two minutes). It reads the game's maps and text into
+   `Mods\survey` and `Mods\locale` — never into the repository or the game.
 
-The minimap sits in the game window's top-right corner. It shows the path you
-walked and the markers you placed, around an arrow for the hero. **F9** shows and
-hides it. **F6** drops a marker where you stand, or removes the one you are standing
-next to. Nearby enemies (red skull), items to pick up (green gem), loot (orange chest),
-NPCs (blue figure), doors or puzzles (violet door) and save points (yellow lantern)
-are drawn on it as icons.
-Corpses and things already picked up or used drop off the map. Each kind can be
-switched off, and so can its finer sorts: enemy families, and items split into
-medicine, food, weapons, gear, skills, research, lore, quest items and more. Icon size
-is set in the panel. The icons are SVGs in `assets/icons/`. Under it all, the walls
-and floors around you are outlined from the level's own geometry. Trails and markers are kept per area in `Mods\minimap.txt`. The 지도 tab of
-the panel sets north-up or heading-up and the radius. The game's own map art is not
-drawn: there is no map image yet.
+The mod speaks the game's language: it follows the game's text setting (12
+languages), and item, NPC and region names come from the game's own translations.
+
+## What it does
+
+- **Cheats** (panel): health, stamina, Lymbic energy, speed, time scale, frail
+  enemies, consumables, weapon XP, positions — written only while you control the
+  hero, and put back when switched off.
+- **Minimap and big map** (F9 cycles mini → big → off): walls and floors from the
+  level's geometry, shaded terrain and contours, floors above and below faded,
+  your trail, 26 kinds of icons (SVGs in `assets/icons/`) and 24 kinds of pins you
+  place (F6). Each kind can be hidden.
+- **Compass and guide** (F10, F11 for the next goal): the game has no quest markers,
+  so the guide works the goals out from what the save says you know and what each
+  place in the world still holds. It follows your chosen quest, routes along the
+  game's own navmesh and shows the distance and height difference.
+- **Quest tracker**: main quests, good deeds, mysteries and timeloops with real names,
+  what the followed quest still needs here and elsewhere, and missable deadlines.
+- **Collect**: collectibles per region, enemy groups left for the every-Hollow
+  achievement, the six Vaults of Forbidden Knowledge with their codes, NPCs with
+  more to tell, and your Steam achievements with progress.
+- **Puzzles**: every dial, keypad and item placement in the game with its answer —
+  hidden until you press *Show answer*.
+- **Saves**: each game save is backed up to `Mods\backups` (last 20).
+
+Every overlay hides while a game menu is open. The keys can be changed in the panel.
 
 ```
 hiumod doctor          # checks everything, writes nothing — load a save first
-hiumod list            # every attribute the hero has, read live
+hiumod doctor survey   # the guide's data from the game files (once per game update)
 hiumod hold god stamina speed=1200  # until Ctrl+C, then puts things back
-hiumod pose            # where the hero stands and faces (the minimap's input)
 hiumod restore         # if a hold was killed rather than stopped
+hiumod help            # every command
 ```
 
-## Compass and guide
-
-A compass strip sits at the top centre of the game window (**F10**). The game has no
-quest markers by design, so the guide works the places out from the game's own state.
-It reads which facts and tags the hero already knows from the save state, and which
-ones each interactable in the world would hand out. A place that still holds something
-new is a goal: a **quest goal** if it serves an open investigation, a **secret**
-(mysteries, good deeds, timeloops), or a **clue**. The compass and the minimap point
-to the chosen goal and show its distance. **F11** moves on to the next goal. The
-panel's 안내 tab lists every goal by distance; with auto on, the guide takes the
-nearest quest goal. The route to it is worked out with A* around the walls the map
-knows, drawn on the map, and followed by the compass. **F3** opens a big map in the
-middle of the screen. Every overlay hides while a game menu is open, detected by the
-game showing its cursor or pausing. See `.spec/GUIDE.md`.
+See `.spec/GUIDE.md` (Korean) for how each part reads the game.
 
 ## How it finds its way in
 
@@ -89,9 +96,12 @@ So a Steam patch only breaks something when it renames something. When that happ
 ## Building
 
 ```
-cargo test        # 42 tests, no game needed
+cargo test                       # unit and integration tests, no game needed
 cargo build --release
+powershell tools/package.ps1     # dist\hiumod-<version>.zip: the exe, the survey tool, the documents
 ```
+
+The survey tool (`tools/survey`, C# with CUE4Parse) needs the .NET 8 SDK to build.
 
 ---
 

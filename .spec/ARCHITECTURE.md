@@ -94,7 +94,7 @@ src/
     relief.rs icons.rs  지형 굽기, assets/{icons,pins}/*.svg 래스터화
   i18n/                 게임 언어 따르기 (.spec/I18N.md): culture.rs (프로필의 TextCulture) · names.rs (게임 고유명사:
                         Mods\locale) · text.rs (모드 문구 표 assets/i18n) · fill.rs (trf! 실행 시 채움). tr!/trf! 매크로
-  infra/                log.rs journal.rs (hiumod.log) · paths.rs (Mods\ 폴더, 모든 파일 경로의 뿌리) ·
+  infra/                log.rs logfile.rs (hiumod.log) · paths.rs (Mods\ 폴더, 모든 파일 경로의 뿌리) ·
                         settings.rs · verify.rs · backup.rs (세이브 백업) · memstat.rs (자기 메모리)
   game/                 밖에서 본 게임: locate.rs (설치), launch.rs, process.rs (RPM/WPM)
   ui/                   패널·오버레이 (Windows 전용)
@@ -130,3 +130,9 @@ examples/               일회용 탐침 (gitignore)
 `anchors::tests::image()` 가 PE 헤더·쓰기 가능 섹션·이름 풀·GEngine·GameInstance 를
 가짜 메모리에 만들고, `player::tests::world()` 가 그 위에 로컬 플레이어·컨트롤러·
 주인공·ASC·위치를 얹는다. 클래스·속성은 `names::fixture::Pool` 로 (`class`, `inherit`).
+
+## 문서·예제·테스트 규칙 (2026-10-03)
+- `.spec/` (한국어, 인수인계·조사·결정) 과 `docs/` (영어, 저장소를 보는 사람용) 는 일부러 따로 — .spec/README.md.
+- `examples/` 는 실행 중인 게임에 대는 일회용 탐침 (gitignore). 남길 가치가 있으면 `doctor` 하위 명령으로 옮긴다
+  (예: `doctor saves`, `doctor locale`).
+- 단위 테스트는 각 파일 안 `#[cfg(test)]`, 파일 형식을 공개 API 로 묶어 보는 통합 테스트는 `tests/` (data_files.rs).

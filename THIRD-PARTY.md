@@ -37,3 +37,9 @@ The panel's Flexbox and Grid layout. Linked as crates; nothing vendored.
 NuGet to read the game's cooked assets. It is a separate tool, not linked into
 `hiumod`. It decompresses with Oodle (`oo2core_9_win64.dll`), which is downloaded to
 the player's own `Mods\tools` and never redistributed.
+
+Release zip: `survey\` holds tools/survey published with its NuGet dependencies (CUE4Parse and what it
+brings: Newtonsoft.Json, Serilog, K4os LZ4, ZstdSharp, Zlib-ng.NET, Oodle.NET wrapper, BouncyCastle, Blake3,
+SevenZip, CommunityToolkit.HighPerformance, UE4Config, OffiUtils, CUE4Parse-Natives), each under its own
+licence. Oodle itself (oo2core) is not shipped: the tool fetches it on first use.
+

@@ -81,12 +81,12 @@ fn backups(shared: Arc<Shared>) {
             logged = std::time::Instant::now();
             if let (Some((ws, private)), Some(peak)) = (crate::memstat::now(), crate::memstat::peak()) {
                 use crate::memstat::mb;
-                crate::journal::line(&format!("memory: working {} · private {} · peak {}", mb(ws), mb(private), mb(peak)));
+                crate::logfile::line(&format!("memory: working {} · private {} · peak {}", mb(ws), mb(private), mb(peak)));
             }
         }
         match watch.poll() {
-            Some(Ok(to)) => crate::journal::line(&format!("save backed up to {}", to.display())),
-            Some(Err(e)) => crate::journal::line(&format!("save backup failed: {e}")),
+            Some(Ok(to)) => crate::logfile::line(&format!("save backed up to {}", to.display())),
+            Some(Err(e)) => crate::logfile::line(&format!("save backup failed: {e}")),
             None => {}
         }
     }
@@ -97,7 +97,7 @@ fn backups(shared: Arc<Shared>) {
 const STEP: Duration = Duration::from_millis(100);
 
 fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context) {
-    use crate::journal::line as log;
+    use crate::logfile::line as log;
     let reply = |ok: bool, text: String| {
         log(&format!("{} {text}", if ok { "ok  " } else { "FAIL" }));
         *shared.reply.lock().unwrap() = Some((ok, text));
@@ -176,7 +176,10 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
             close(&shared);
         }
         *shared.snap.lock().unwrap() = Some(snap);
-        ctx.request_repaint();
+        // Only a shown panel draws the new snapshot; showing it asks for a frame.
+        if shared.visible.load(Ordering::SeqCst) {
+            ctx.request_repaint();
+        }
     }
 }
 

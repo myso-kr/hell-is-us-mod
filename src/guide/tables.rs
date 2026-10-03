@@ -171,7 +171,10 @@ mod tests {
     use super::*;
 
     fn tables() -> Tables {
-        let dir = std::env::temp_dir().join(format!("hiumod-tables-{}", std::process::id()));
+        // One folder per call: the tests run at once.
+        static N: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let n = N.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        let dir = std::env::temp_dir().join(format!("hiumod-tables-{}-{n}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(
             dir.join("spawners.json"),

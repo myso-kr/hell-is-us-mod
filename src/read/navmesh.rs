@@ -549,7 +549,7 @@ impl Nav {
         self.tiles.extend(read_tiles(m, n, &chunks_of(m, &batch)));
         if self.queue.is_empty() {
             let mesh = NavMesh::from_tiles(&std::mem::take(&mut self.tiles));
-            crate::journal::line(&format!("navmesh: {} actors, {} polys", self.actors.len(), mesh.len()));
+            crate::logfile::line(&format!("navmesh: {} actors, {} polys", self.actors.len(), mesh.len()));
             self.done = std::sync::Arc::new(mesh);
         }
     }
