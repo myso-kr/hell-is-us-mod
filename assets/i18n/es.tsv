@@ -617,3 +617,4 @@ EVENT_LOOTED	saqueado
 EVENT_UNLOCKED	desbloqueado
 EVENT_TRAVEL	viaje permitido
 LEGEND_HAZE_LINK	Vínculo de bruma
+EVENT_CHANGED	cambio

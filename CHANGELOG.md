@@ -48,10 +48,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   the way and System.
 - Hazes are linked on the maps: a thin violet line from each Haze to the Hollow Walkers it keeps
   alive, so you can see which to kill first (in the legend while enemies are shown).
-- Places named only by the game's internal trigger take the name of the Datapad entry their facts
-  are about, in the game's language ("Jova Sign Observation" is "Jova"), with what they mark after a
-  dot; one with no facts takes the title of the mystery or good deed its tags belong to ("Captain
-  Vaas Office" is that mystery's name in your language); only a trigger with neither reads as words.
+- Places the game names only by an internal trigger ("AcasaHermitTombFullyOpened") are named in the
+  game's language, from its own text: the Datapad entry their facts are about; else the good deed,
+  mystery or timeloop their tags belong to (begun or not, with the steps between found by the tags
+  handed out together, or a telling word shared); else the place their name holds
+  (`Universal_Location_…`) or this region; what they mark ("opened", "done") follows after a dot.
+  A Lymbic rod's pickup has the rod's name.
 - Both sides of the panel have the same margin; the achievements list's order and "show unlocked"
   switches no longer squeeze each other.
 - Long lists can be grouped: places by kind, achievements by kind (story, deeds and mysteries,

@@ -617,3 +617,4 @@ EVENT_LOOTED	pillé
 EVENT_UNLOCKED	déverrouillé
 EVENT_TRAVEL	voyage permis
 LEGEND_HAZE_LINK	Lien de brume
+EVENT_CHANGED	changement

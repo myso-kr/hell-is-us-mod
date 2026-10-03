@@ -49,6 +49,8 @@ struct Derived {
     locks: Arc<Vec<crate::survey::Lock>>,
     clues: Arc<crate::clues::Clues>,
     budget: Arc<crate::budget::Budget>,
+    /// Every good deed's, mystery's and timeloop's tag prefix and title, begun or not.
+    secret_titles: Arc<Vec<(String, String)>>,
 }
 
 /// Puzzles this near the hero (cm) are read and shown.
@@ -209,6 +211,7 @@ impl Engine {
                                 collection: Arc::new(collection),
                                 stories: Arc::new(stories),
                                 secret_totals: crate::quests::Kind::SECRETS.map(|(k, _)| a.secret_total(k)),
+                                secret_titles: Arc::new(a.secret_titles()),
                                 journal,
                             };
                             self.derived = Some((Instant::now(), d));
@@ -230,9 +233,14 @@ impl Engine {
                             snap.clues = d.clues.clone();
                             snap.budget = d.budget.clone();
                         }
-                        // Triggers the game's text did not name, named after the journal's
-                        // mysteries and good deeds where their tags say which.
-                        crate::goals::name_by_journal(&mut snap.goals, &snap.journal);
+                        // Triggers the game's text did not name, named after the good deed,
+                        // mystery or timeloop their tags say (begun or not).
+                        if let Some((_, d)) = &self.derived {
+                            crate::goals::name_by_secrets(&mut snap.goals, &d.secret_titles);
+                        }
+                        // Then after the place the trigger's name holds, in the game's text.
+                        let world = snap.world.as_deref().map(crate::survey::Survey::world_of);
+                        crate::goals::name_by_place(&mut snap.goals, world, crate::i18n::location, crate::i18n::region);
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }

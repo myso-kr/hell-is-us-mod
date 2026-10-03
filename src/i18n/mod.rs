@@ -93,6 +93,12 @@ pub fn fact(name: &str) -> Option<names::Fact> {
     lang().names.fact(name)
 }
 
+/// A place's name in the game's language: its `Universal_Location_<name>` text
+/// (`ArcasSpire` → the Arcas Spire's name).
+pub fn location(name: &str) -> Option<String> {
+    lang().names.game_text("Facts_Shared", &format!("Universal_Location_{name}"))
+}
+
 /// An item's name, by its data asset's name or path (`/Game/Items/…/Key_Item_DA`).
 pub fn item(asset: &str) -> Option<String> {
     lang().names.item(asset)

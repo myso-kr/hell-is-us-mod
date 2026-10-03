@@ -466,6 +466,32 @@ impl Attached {
     }
 
     /// Every good deed the game has: (journal key, title, tag stem).
+    /// Every good deed's, mystery's and timeloop's tag prefix and title in the game's
+    /// language, begun or not: what names a trigger that only sets their tags.
+    ///
+    /// A deed's row names only its started, completed, failed and rewarded tags; the steps
+    /// between are tags of their own (`Secrets.Facts.PhotoAcquired` on the way to
+    /// `ClassroomPicture`'s). Tags handed out together, by one payload or one hand-over in
+    /// the survey, belong to the same deed: each of them is added under its title too.
+    pub fn secret_titles(&self) -> Vec<(String, String)> {
+        let g = self.guide.borrow();
+        let deeds: Vec<(String, String)> = crate::quests::Kind::SECRETS
+            .iter()
+            .flat_map(|(k, _)| g.quests.secrets(*k))
+            .filter(|(_, title, tags)| !tags.is_empty() && !title.is_empty())
+            .map(|(_, title, tags)| (tags, title))
+            .collect();
+        let groups: Vec<&[String]> = g
+            .survey
+            .iter()
+            .flat_map(|s| s.worlds.values().flatten())
+            .flat_map(|e| std::iter::once(e.tags.as_slice()).chain(e.trades.iter().map(|(_, _, t)| t.as_slice())))
+            .collect();
+        let mut out = deeds.clone();
+        out.extend(crate::goals::tags_together(&deeds, groups));
+        out
+    }
+
     pub fn deeds(&self) -> Vec<(String, String, String)> {
         self.guide.borrow().quests.secrets(crate::quests::Kind::GoodDeed)
     }

@@ -617,3 +617,4 @@ EVENT_LOOTED	looted
 EVENT_UNLOCKED	unlocked
 EVENT_TRAVEL	travel allowed
 LEGEND_HAZE_LINK	Haze link
+EVENT_CHANGED	changed

@@ -75,25 +75,31 @@ pub struct Goal {
     pub keys: Vec<String>,
     pub gate: Gate,
     /// Whether `label` is the game's own text (an item, a person, a Datapad entry). If
-    /// not it is the trigger's class in words, and the journal may name it better: a
-    /// mystery's or a good deed's title, by its tags (`name_by_journal`).
+    /// not it is the trigger's class in words, and a mystery's, good deed's or timeloop's
+    /// title may name it better, by its tags (`name_by_secrets`).
     pub named: bool,
 }
 
-/// Name the goals the game's text left unnamed after the journal's mystery, good deed
-/// or timeloop whose tags theirs extend (`Secrets.Mystery.TheHermit` names a trigger
-/// tagged `Secrets.Mystery.TheHermitCompleted`), the longest such prefix, keeping what
-/// the trigger marks after the dot.
-pub fn name_by_journal(goals: &mut [Goal], journal: &[crate::quests::Quest]) {
+/// Name the goals the game's text left unnamed after the good deed, mystery or timeloop
+/// whose tag prefix theirs extend (`Secrets.Mystery.TheHermit` names a trigger tagged
+/// `Secrets.Mystery.TheHermitCompleted`), the longest such prefix, keeping what the
+/// trigger marks after the dot. `secrets` is every one of them, (prefix, title), begun
+/// or not: the journal holds only those begun, and most triggers wait on one not begun.
+pub fn name_by_secrets(goals: &mut [Goal], secrets: &[(String, String)]) {
+    // The goals' own tag sets tie steps to deeds too (an NPC's hand-over that gives a
+    // step's tag beside a deed's).
+    let groups: Vec<Vec<String>> = goals.iter().map(|g| g.tags.clone()).collect();
+    let mut secrets = secrets.to_vec();
+    secrets.extend(tags_together(&secrets.clone(), groups.iter().map(Vec::as_slice)));
     for g in goals.iter_mut().filter(|g| !g.named) {
-        let deed = journal
+        let deed = secrets
             .iter()
-            .filter_map(|q| Some((q, q.tags.as_deref().filter(|p| !p.is_empty())?)))
-            .filter(|(_, prefix)| g.tags.iter().any(|t| t.starts_with(prefix)))
-            .max_by_key(|(_, prefix)| prefix.len());
-        if let Some((q, _)) = deed {
+            .filter(|(prefix, _)| g.tags.iter().any(|t| t.starts_with(prefix.as_str())))
+            .max_by_key(|(prefix, _)| prefix.len());
+        let title = deed.map(|(_, t)| t.as_str()).or_else(|| deed_by_words(g, &secrets));
+        if let Some(title) = title {
             let event = g.label.find(" · ").map(|i| g.label[i..].to_string()).unwrap_or_default();
-            g.label = format!("{}{event}", q.name);
+            g.label = format!("{title}{event}");
             g.named = true;
         }
     }
@@ -141,6 +147,8 @@ struct Payload {
     /// `InteractionActionComponent.bHasBeenActivated`: used already.
     used: Option<u64>,
     root: u64,
+    /// Whether `label` is an item's name in the game's text.
+    own: bool,
     label: String,
     /// What the trigger's class name says it marks (an i18n key: opened, done…).
     event: Option<&'static str>,
@@ -297,11 +305,133 @@ fn split_event(class: &str) -> (String, Option<&'static str>) {
     (words.join(" "), None)
 }
 
+/// Name what is still unnamed after the place its trigger's name holds: the longest run
+/// of its words that is a place the game names (`Universal_Location_…`, the words joined,
+/// also without "Of" and "The": `TempleOfTheFallen` is `TempleFallen`), else this region
+/// when the name starts with it (`Auriga…` in `AurigaMuseum`). What the trigger marks
+/// stays after the dot. `location` and `region` are the lookups (i18n's, in play).
+pub fn name_by_place(
+    goals: &mut [Goal],
+    world: Option<&str>,
+    location: impl Fn(&str) -> Option<String>,
+    region: impl Fn(&str) -> Option<String>,
+) {
+    for g in goals.iter_mut().filter(|g| !g.named) {
+        let (name, event) = match g.label.find(" · ") {
+            Some(i) => (g.label[..i].to_string(), g.label[i..].to_string()),
+            None => (g.label.clone(), String::new()),
+        };
+        // The name's words first, then each tag's segments (`…TempleOfTheFallen.…`).
+        let mut sources: Vec<Vec<String>> = vec![name.split_whitespace().map(str::to_string).collect()];
+        sources.extend(g.tags.iter().flat_map(|t| t.split('.').map(split_words)));
+        let found = sources.iter().find_map(|words| place_in(words, &location)).or_else(|| {
+            let world = world?;
+            sources[0].iter().any(|w| w.len() >= 4 && world.starts_with(w.as_str())).then(|| region(world)).flatten()
+        });
+        if let Some(place) = found {
+            g.label = format!("{place}{event}");
+            g.named = true;
+        }
+    }
+}
+
+/// The longest run of `words` that is a place the game names, also without "Of" and
+/// "The".
+fn place_in(words: &[String], location: &impl Fn(&str) -> Option<String>) -> Option<String> {
+    for len in (1..=words.len()).rev() {
+        for span in words.windows(len) {
+            let short: Vec<&str> = span.iter().map(String::as_str).filter(|w| *w != "Of" && *w != "The").collect();
+            for key in [span.concat(), short.concat()] {
+                if let Some(place) = location(&key) {
+                    return Some(place);
+                }
+            }
+        }
+    }
+    None
+}
+
+/// Words that say nothing of which deed a tag is about.
+const PLAIN: [&str; 14] = [
+    "Secrets",
+    "Secret",
+    "Facts",
+    "Mystery",
+    "Mysteries",
+    "Started",
+    "Completed",
+    "Complete",
+    "Confirmed",
+    "Failed",
+    "Entered",
+    "Visited",
+    "Opened",
+    "Timeloops",
+];
+
+/// The deed a goal's tags and name share a telling word with (five letters or more, not
+/// one of `PLAIN`), when exactly one deed shares the most: `Survivor01TradeTooLate` on
+/// `Secret_TheSurvivors01DeadConfirmed` is `TaljuSurvivors`'s. The last way to name a
+/// trigger after a deed, for a step no payload ties to it.
+fn deed_by_words<'a>(g: &Goal, secrets: &'a [(String, String)]) -> Option<&'a str> {
+    let telling = |w: &String| w.len() >= 5 && !PLAIN.contains(&w.as_str()) && !w.chars().all(|c| c.is_ascii_digit());
+    let mut mine: std::collections::HashSet<String> = std::collections::HashSet::new();
+    for t in g.tags.iter().filter(|t| t.starts_with("Secrets.")) {
+        mine.extend(t.rsplit('.').next().map(split_words).unwrap_or_default());
+    }
+    if mine.is_empty() {
+        return None;
+    }
+    let name = g.label.split(" · ").next().unwrap_or_default();
+    mine.extend(name.split_whitespace().map(str::to_string));
+    // Plural or not: `Survivor` meets `Survivors`.
+    let stem = |w: &str| w.strip_suffix('s').unwrap_or(w).to_string();
+    let mine: std::collections::HashSet<String> = mine.iter().filter(|w| telling(w)).map(|w| stem(w)).collect();
+    let mut scored: Vec<(usize, &str)> = secrets
+        .iter()
+        .map(|(prefix, title)| {
+            let words = prefix.rsplit('.').next().map(split_words).unwrap_or_default();
+            let shared = words.iter().filter(|w| telling(w) && mine.contains(&stem(w))).count();
+            (shared, title.as_str())
+        })
+        .filter(|(n, _)| *n > 0)
+        .collect();
+    scored.sort_by_key(|s| std::cmp::Reverse(s.0));
+    scored.dedup_by(|a, b| a.1 == b.1);
+    match scored.as_slice() {
+        [best, next, ..] if next.0 == best.0 => None,
+        [best, ..] => Some(best.1),
+        [] => None,
+    }
+}
+
+/// Tags handed out together with one of `deeds`' (a prefix and a title), each under that
+/// deed's title: a deed's steps, which its row does not name.
+pub fn tags_together<'a>(
+    deeds: &[(String, String)],
+    groups: impl IntoIterator<Item = &'a [String]>,
+) -> Vec<(String, String)> {
+    let deed_of = |t: &str| {
+        deeds.iter().filter(|(p, _)| t.starts_with(p.as_str())).max_by_key(|(p, _)| p.len()).map(|(_, title)| title)
+    };
+    let mut out = Vec::new();
+    for tags in groups {
+        let Some(title) = tags.iter().find_map(|t| deed_of(t)) else { continue };
+        for t in tags.iter().filter(|t| deed_of(t).is_none() && t.starts_with("Secrets.")) {
+            out.push((t.clone(), title.clone()));
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
 /// What a trigger's name can end with, longest first, and its i18n key.
-const EVENTS: [(&[&str], &str); 19] = [
+const EVENTS: [(&[&str], &str); 20] = [
     (&["Fully", "Opened"], "EVENT_OPENED"),
     (&["All", "Opened"], "EVENT_OPENED"),
     (&["Travel", "Allowed"], "EVENT_TRAVEL"),
+    (&["State", "Change"], "EVENT_CHANGED"),
     (&["Opened"], "EVENT_OPENED"),
     (&["Opening"], "EVENT_OPENING"),
     (&["Completion"], "EVENT_DONE"),
@@ -427,10 +557,18 @@ impl Goals {
         }
         let mut items = Vec::new();
         let mut keys = Vec::new();
+        // Items outside the quests' and secrets' (a Lymbic rod): not a reason to go, but
+        // their name in the game's language is a better label than the trigger's class.
+        let mut other = None;
         if let Some((at, _)) = n.path(m, comp, &["Rune", "PayloadData", "ItemsToAdd"]) {
-            for (label, key) in pointer_array(m, at).into_iter().filter_map(|i| quest_item(m, n, i)) {
-                items.push(label);
-                keys.extend(key);
+            for i in pointer_array(m, at) {
+                match quest_item(m, n, i) {
+                    Some((label, key)) => {
+                        items.push(label);
+                        keys.extend(key);
+                    }
+                    None => other = other.or_else(|| n.object(m, i).and_then(|name| crate::i18n::item(&name))),
+                }
             }
         }
         if facts.is_empty() && tags.is_empty() && items.is_empty() {
@@ -445,7 +583,8 @@ impl Goals {
             tags,
             used,
             root: rc,
-            label: items.first().cloned().unwrap_or_else(|| readable(&class)),
+            own: !items.is_empty() || other.is_some(),
+            label: items.first().cloned().or(other).unwrap_or_else(|| readable(&class)),
             event: split_event(&class).1,
             items,
             keys,
@@ -546,6 +685,7 @@ impl Goals {
             gate: Gate::Open,
             npc: true,
             event: None,
+            own: true,
         })
     }
 
@@ -556,7 +696,7 @@ impl Goals {
     /// The entry's name is the one the hero knows (`i18n::subject`), so a real name is not
     /// given away early. Without the game's text, the trigger's class in words.
     fn place_name(&self, p: &Payload) -> (String, bool) {
-        if !p.items.is_empty() || p.npc {
+        if p.own || p.npc {
             return (p.label.clone(), true);
         }
         let mut units: HashMap<String, usize> = HashMap::new();
@@ -735,20 +875,9 @@ mod tests {
     }
 
     #[test]
-    fn the_journal_names_what_the_game_text_did_not() {
-        use crate::quests::{Kind, Quest, Status};
-        let deed = |name: &str, tags: &str| Quest {
-            key: String::new(),
-            kind: Kind::Mystery,
-            name: name.into(),
-            detail: String::new(),
-            status: Status::Started,
-            progress: None,
-            leads: Vec::new(),
-            quest: None,
-            tags: Some(tags.into()),
-        };
-        let journal = [deed("은둔자", "Secrets.Mystery.TheHermit"), deed("다른 것", "Secrets.Mystery.The")];
+    fn secrets_name_what_the_game_text_did_not() {
+        let deed = |name: &str, tags: &str| (tags.to_string(), name.to_string());
+        let secrets = [deed("은둔자", "Secrets.Mystery.TheHermit"), deed("다른 것", "Secrets.Mystery.The")];
         let goal = |label: &str, named: bool| Goal {
             tier: Tier::Secret,
             id: 1,
@@ -762,11 +891,100 @@ mod tests {
             named,
         };
         let mut goals = [goal("Acasa Hermit Tomb · opened", false), goal("Hermit's Key", true)];
-        name_by_journal(&mut goals, &journal);
+        name_by_secrets(&mut goals, &secrets);
         // The longest prefix wins; what the trigger marks stays.
         assert_eq!(goals[0].label, "은둔자 · opened");
         // The game's own name is left alone.
         assert_eq!(goals[1].label, "Hermit's Key");
+    }
+
+    #[test]
+    fn a_trigger_is_named_after_the_place_its_name_holds() {
+        let goal = |class: &str| Goal {
+            tier: Tier::Quest,
+            id: 1,
+            label: readable(class),
+            detail: String::new(),
+            at: [0.0; 3],
+            quests: Vec::new(),
+            tags: Vec::new(),
+            keys: Vec::new(),
+            gate: Gate::Open,
+            named: false,
+        };
+        let places = |k: &str| match k {
+            "ArcasSpire" => Some("아르카스 첨탑".to_string()),
+            "TempleFallen" => Some("타락자의 신전".to_string()),
+            _ => None,
+        };
+        let mut goals = [
+            goal("ArcasSpireLeftCage01Complete_PayloadInactive_Interact_BP_C"),
+            goal("TempleOfTheFallenVisited_PayloadInactive_Interact_BP_C"),
+            goal("AurigaGeneratorActivated_PayloadInactive_Interact_BP_C"),
+            goal("SomethingElse_PayloadInactive_Interact_BP_C"),
+        ];
+        name_by_place(&mut goals, Some("AurigaMuseum"), places, |_| Some("아우리가 박물관".to_string()));
+        // A place in a tag, and the region by a word that is not the first.
+        let mut more = [
+            goal("TemplePuzzleDoor_PayloadInactive_Interact_BP_C"),
+            goal("UniqueAuriga_FloorB1_PayloadInactive_Interact_BP_C"),
+        ];
+        more[0].tags = vec!["Interactable.Event.TempleOfTheFallen.PressurePlateFirstDoorOpened".into()];
+        name_by_place(&mut more, Some("AurigaMuseum"), places, |_| Some("아우리가 박물관".to_string()));
+        assert_eq!(more[0].label, "타락자의 신전");
+        assert_eq!(more[1].label, "아우리가 박물관");
+        assert!(goals[0].label.starts_with("아르카스 첨탑 · "), "{}", goals[0].label);
+        assert!(goals[1].label.starts_with("타락자의 신전 · "), "{}", goals[1].label);
+        assert!(goals[2].label.starts_with("아우리가 박물관 · "), "{}", goals[2].label);
+        assert!(!goals[3].named);
+    }
+
+    #[test]
+    fn a_step_takes_the_title_of_the_deed_it_comes_with() {
+        let deeds = [("Secrets.Facts.ClassroomPicture".to_string(), "이웃을 사랑하라".to_string())];
+        // Thomas's hand-over gives a step's tag beside the deed's.
+        let handover =
+            ["Secrets.Facts.PhotoAcquired".to_string(), "Secrets.Facts.ClassroomPictureObtained".to_string()];
+        let steps = tags_together(&deeds, [&handover[..]]);
+        assert_eq!(steps, [("Secrets.Facts.PhotoAcquired".to_string(), "이웃을 사랑하라".to_string())]);
+        let mut secrets = deeds.to_vec();
+        secrets.extend(steps);
+        let mut goals = [Goal {
+            tier: Tier::Secret,
+            id: 1,
+            label: readable("AcasaMarshesThomasStateChange_PayloadInactive_Interact_BP_C"),
+            detail: String::new(),
+            at: [0.0; 3],
+            quests: Vec::new(),
+            tags: vec!["Secrets.Facts.PhotoAcquiredThomasStateChange".into()],
+            keys: Vec::new(),
+            gate: Gate::Open,
+            named: false,
+        }];
+        name_by_secrets(&mut goals, &secrets);
+        assert!(goals[0].label.starts_with("이웃을 사랑하라 · "), "{}", goals[0].label);
+    }
+
+    #[test]
+    fn a_step_no_payload_ties_takes_the_deed_it_shares_a_word_with() {
+        let secrets = [
+            ("Secrets.Facts.TaljuSurvivors".to_string(), "어둠 속의 빛".to_string()),
+            ("Secrets.Facts.RedShoes".to_string(), "새 신발".to_string()),
+        ];
+        let mut goals = [Goal {
+            tier: Tier::Secret,
+            id: 1,
+            label: readable("Secret_TheSurvivors01DeadConfirmed_PayloadInactive_Interact_BP_C"),
+            detail: String::new(),
+            at: [0.0; 3],
+            quests: Vec::new(),
+            tags: vec!["Secrets.Facts.Survivor01TradeTooLate".into()],
+            keys: Vec::new(),
+            gate: Gate::Open,
+            named: false,
+        }];
+        name_by_secrets(&mut goals, &secrets);
+        assert!(goals[0].label.starts_with("어둠 속의 빛"), "{}", goals[0].label);
     }
 
     #[test]
