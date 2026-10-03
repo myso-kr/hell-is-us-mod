@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	Good Deeds · Mysteries · Timeloops
 DONE_IN_PROGRESS_FAILED	Done {done} / {all} · in progress {started} · failed {failed}
 NPCS_WITH_MORE_TO_TELL	NPCs With More to Tell ({count})
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	People who can still tell you a fact or clue you lack (locked branches included)
-OTHER_REGIONS	Other regions: {regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Memory: in use {working} · private {private} · peak {peak} (also logged every minute)
 CHEATS_ON	Cheats on
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Original → written, and what the game holds now

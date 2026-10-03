@@ -297,11 +297,12 @@ impl Panel {
             for (p, solved) in rows.iter().take(30) {
                 let id = p.id();
                 let dist = here.map_or(String::new(), |h| crate::raster::span(h, p.at));
+                // The kind, the answer's shape and how far: the actor's class name told
+                // a player nothing and made each line wrap twice.
                 let head = format!(
-                    "{} · {} · {} ({dist}){}",
+                    "{} · {} ({dist}){}",
                     crate::i18n::tr(p.kind.label()),
                     shape(&p.answer),
-                    crate::goals::pretty(&p.class),
                     if *solved { " ✓" } else { "" }
                 );
                 let icon = |ui: &mut egui::Ui| {
@@ -336,11 +337,8 @@ impl Panel {
             {
                 *elsewhere.entry(p.world.as_str()).or_default() += 1;
             }
-            if !elsewhere.is_empty() {
-                let parts: Vec<String> =
-                    elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
-                note(t, trf!("OTHER_REGIONS", regions = parts.join(" · ")));
-            }
+            let counts = elsewhere.iter().map(|(w, n)| (crate::i18n::place(w), *n)).collect();
+            tw::regions(t, tr!("OTHER_REGIONS_CARD"), counts);
         });
     }
 
@@ -362,9 +360,12 @@ impl Panel {
             note(t, tr!("READS_THE_ANSWER_THE_GAME_HOLDS"));
             for p in list.iter() {
                 let far = here.map_or(String::new(), |h| crate::raster::span(h, p.at));
-                let name = crate::goals::pretty(&p.class);
-                let head =
-                    format!("{} · {name} ({far}){}", crate::i18n::tr(p.kind.label()), if p.solved { " ✓" } else { "" });
+                let head = format!(
+                    "{} · {} ({far}){}",
+                    crate::i18n::tr(p.kind.label()),
+                    shape(&p.answer),
+                    if p.solved { " ✓" } else { "" }
+                );
                 let icon = |ui: &mut egui::Ui| {
                     crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0);
                 };
@@ -406,8 +407,10 @@ impl Panel {
                 note(t, tr!("NO_VAULT_TABLE_RUN_DOCTOR_SURVEY"));
                 return;
             }
-            note(t, trf!("VAULT_RESEARCH_HINT", n = lore));
-            note(t, tr!("RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE"));
+            let hint = RichText::new(trf!("VAULT_RESEARCH_HINT", n = lore)).small().color(DIM);
+            block(t, |ui| {
+                ui.add(egui::Label::new(hint).wrap()).on_hover_text(tr!("RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE"))
+            });
             for v in list.iter() {
                 let name = crate::i18n::game_text(&v.vault.name);
                 let region = crate::i18n::game_text(&v.vault.region);
@@ -520,15 +523,7 @@ impl Panel {
                         }
                     }
                     for (lp, l, a) in h.timeloops.iter().filter(|(_, l, _)| *l > 0) {
-                        note(
-                            t,
-                            trf!(
-                                "TIMELOOP_LEFT",
-                                name = lp.trim_end_matches("_BP").trim_end_matches("_BP2"),
-                                left = l,
-                                all = a
-                            ),
-                        );
+                        note(t, trf!("TIMELOOP_LEFT", name = timeloop_name(&h.world, lp), left = l, all = a));
                     }
                 });
             }
@@ -669,4 +664,39 @@ pub(super) fn puzzles_hero(t: &mut Tui, snap: Option<&Snapshot>) {
             }
         });
     });
+}
+
+/// A timeloop's name under its region's line: the letter when the id is the region's own
+/// (`AcasaMarshes_TimeLoop_A` → `A`), else the place it is named after with the letter
+/// (`ArcasSpire_TimeLoop_A` → `Arcas Spire A`), so two loops of one region stay apart.
+fn timeloop_name(world: &str, id: &str) -> String {
+    let id = id.trim_end_matches("_BP2").trim_end_matches("_BP");
+    match id.split_once("_TimeLoop_") {
+        Some((place, letter)) if place == world => letter.to_string(),
+        Some((place, letter)) => format!("{} {letter}", spaced(place)),
+        None => id.to_string(),
+    }
+}
+
+/// `ArcasSpire` → `Arcas Spire`: a space before each capital that follows a small letter.
+fn spaced(name: &str) -> String {
+    let mut out = String::new();
+    let mut last = ' ';
+    for c in name.chars() {
+        if c.is_uppercase() && last.is_lowercase() {
+            out.push(' ');
+        }
+        out.push(c);
+        last = c;
+    }
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn a_timeloop_is_named_by_its_letter_or_its_place() {
+        assert_eq!(super::timeloop_name("AcasaMarshes", "AcasaMarshes_TimeLoop_A_BP"), "A");
+        assert_eq!(super::timeloop_name("SenedraForest", "ArcasSpire_TimeLoop_A"), "Arcas Spire A");
+    }
 }

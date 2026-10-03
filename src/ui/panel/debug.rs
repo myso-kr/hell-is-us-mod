@@ -101,7 +101,7 @@ impl Panel {
         section(ui, tr!("RECORD_TEST_RESULTS"), "", |ui| {
             ui.label(RichText::new(tr!("TRY_IT_IN_THE_GAME_THEN")).color(DIM).small());
             ui.add_space(4.0);
-            egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
+            tw::scroll(ui, "marks", 260.0, 0.0, super::super::theme::CARD, |ui| {
                 egui::ScrollArea::horizontal().id_salt("marks-scroll").show(ui, |ui| {
                     egui::Grid::new("marks").num_columns(3).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
                         for c in CHEATS {

@@ -143,7 +143,7 @@ impl Panel {
             block(t, |ui| {
                 // min_scrolled_height too: the block is laid out at last frame's height, and
                 // a scroll area alone never asks for more than it was given.
-                egui::ScrollArea::vertical().max_height(220.0).min_scrolled_height(220.0).show(ui, |ui| {
+                tw::scroll(ui, "places", 220.0, 220.0, super::super::theme::CARD, |ui| {
                     ui.spacing_mut().item_spacing.y = 2.0;
                     for g in list {
                         let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));

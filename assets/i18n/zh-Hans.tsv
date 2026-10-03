@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	好事 · 谜题 · 时间循环
 DONE_IN_PROGRESS_FAILED	已完成 {done} / {all} · 进行中 {started} · 失败 {failed}
 NPCS_WITH_MORE_TO_TELL	还有话可说的 NPC（{count}）
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	对话中仍能获得未知事实或线索的人（含被锁定的对话分支）
-OTHER_REGIONS	其他区域：{regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	内存：使用 {working} · 独占 {private} · 峰值 {peak}（每分钟记入日志）
 CHEATS_ON	已开启的作弊
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	原值 → 写入值，以及游戏当前值

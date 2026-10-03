@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	Bonnes actions · Mystères · Boucles temporelle
 DONE_IN_PROGRESS_FAILED	Terminées {done} / {all} · en cours {started} · échouées {failed}
 NPCS_WITH_MORE_TO_TELL	PNJ avec d'autres histoires ({count})
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	Personnes dont la discussion peut encore révéler un fait ou un indice inconnu (branches verrouillées comprises)
-OTHER_REGIONS	Autres régions : {regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Mémoire : utilisée {working} · privée {private} · pic {peak} (aussi journalisée chaque minute)
 CHEATS_ON	Cheats actifs
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Valeur d'origine → valeur écrite, et valeur actuelle du jeu

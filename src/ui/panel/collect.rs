@@ -62,14 +62,13 @@ impl Panel {
                         }
                     }
                     // Where the rest are, most first.
-                    let mut rest: Vec<&(String, usize)> =
-                        c.left_by_world.iter().filter(|(w, _)| Some(w) != here_world.as_ref()).collect();
-                    rest.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
-                    let elsewhere: Vec<String> =
-                        rest.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
-                    if !elsewhere.is_empty() {
-                        note(t, trf!("OTHER_REGIONS", regions = elsewhere.join(" · ")));
-                    }
+                    let rest = c
+                        .left_by_world
+                        .iter()
+                        .filter(|(w, _)| Some(w) != here_world.as_ref())
+                        .map(|(w, n)| (crate::i18n::place(w), *n))
+                        .collect();
+                    tw::regions(t, tr!("OTHER_REGIONS_CARD"), rest);
                 }
             }
         });
@@ -164,19 +163,8 @@ impl Panel {
             for x in list.iter().filter(|x| Some(&x.world) != here_world.as_ref()) {
                 *elsewhere.entry(x.world.as_str()).or_default() += 1;
             }
-            if !elsewhere.is_empty() {
-                note(
-                    t,
-                    trf!(
-                        "OTHER_REGIONS",
-                        regions = elsewhere
-                            .iter()
-                            .map(|(w, n)| format!("{} {n}", crate::i18n::place(w)))
-                            .collect::<Vec<_>>()
-                            .join(" · ")
-                    ),
-                );
-            }
+            let counts = elsewhere.iter().map(|(w, n)| (crate::i18n::place(w), *n)).collect();
+            tw::regions(t, tr!("OTHER_REGIONS_CARD"), counts);
         });
     }
 }

@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	Buone azioni · Misteri · Cronocicli
 DONE_IN_PROGRESS_FAILED	Fatte {done} / {all} · in corso {started} · fallite {failed}
 NPCS_WITH_MORE_TO_TELL	PNG con altro da raccontare ({count})
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	Persone il cui dialogo può ancora darti un fatto o un indizio che non hai (rami bloccati inclusi)
-OTHER_REGIONS	Altre regioni: {regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Memoria: in uso {working} · privata {private} · picco {peak} (registrata anche ogni minuto)
 CHEATS_ON	Trucchi attivi
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Valore originale → scritto, e valore attuale nel gioco

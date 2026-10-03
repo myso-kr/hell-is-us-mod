@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	İyilikler · Gizemler · Zaman Döngüleri
 DONE_IN_PROGRESS_FAILED	Tamamlanan {done} / {all} · devam eden {started} · başarısız {failed}
 NPCS_WITH_MORE_TO_TELL	Daha çok anlatacağı olan NPC'ler ({count})
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	Konuşunca sana yeni bir bilgi veya ipucu verebilecek kişiler (kilitli diyalog dalları dahil)
-OTHER_REGIONS	Diğer bölgeler: {regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Bellek: kullanımda {working} · özel {private} · tepe {peak} (dakikada bir günlüğe de yazılır)
 CHEATS_ON	Açık hileler
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Orijinal değer → yazılan değer ve oyunun şu anki değeri

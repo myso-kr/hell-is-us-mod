@@ -803,18 +803,14 @@ impl eframe::App for Panel {
                         self.nav(ui);
                     });
                     block(t, |ui| {
-                        egui::ScrollArea::vertical()
-                            .id_salt("page")
-                            .max_height(page_height)
-                            .auto_shrink([false, true])
-                            .show(ui, |ui| {
-                                ui.add_enabled_ui(open, |ui| {
-                                    tui(ui, ui.id().with("page"))
-                                        .reserve_available_width()
-                                        .style(tw::full(tw::col(tw::GAP)))
-                                        .show(|t| self.page(t, snap.as_ref()));
-                                });
+                        tw::scroll(ui, "page", page_height, 0.0, super::theme::SURFACE, |ui| {
+                            ui.add_enabled_ui(open, |ui| {
+                                tui(ui, ui.id().with("page"))
+                                    .reserve_available_width()
+                                    .style(tw::full(tw::col(tw::GAP)))
+                                    .show(|t| self.page(t, snap.as_ref()));
                             });
+                        });
                         ui.add_space(super::theme::INLINE);
                         ui.separator();
                         ui.add_space(super::theme::TIGHT);

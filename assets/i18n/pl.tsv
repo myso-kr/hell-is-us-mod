@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	Dobre uczynki · Zagadki · Pętle
 DONE_IN_PROGRESS_FAILED	Ukończone {done} / {all} · w toku {started} · nieudane {failed}
 NPCS_WITH_MORE_TO_TELL	Postacie z czymś do opowiedzenia ({count})
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	Osoby, których rozmowa może jeszcze dać nieznany fakt lub wskazówkę (także zablokowane wątki)
-OTHER_REGIONS	Inne regiony: {regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Pamięć: używana {working} · prywatna {private} · szczyt {peak} (co minutę zapisywana też w logu)
 CHEATS_ON	Włączone cheaty
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Wartość pierwotna → zapisana oraz to, co teraz ma gra

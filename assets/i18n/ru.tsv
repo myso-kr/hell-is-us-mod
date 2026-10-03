@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	Благие дела · Тайны · Време
 DONE_IN_PROGRESS_FAILED	Выполнено {done} / {all} · в процессе {started} · провалено {failed}
 NPCS_WITH_MORE_TO_TELL	NPC, которым есть что рассказать ({count})
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	Те, чей разговор ещё может дать неизвестный факт или подсказку (включая закрытые ветки)
-OTHER_REGIONS	Другие регионы: {regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Память: занято {working} · личная {private} · пик {peak} (раз в минуту пишется и в лог)
 CHEATS_ON	Включённые читы
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Исходное → записанное и текущее значение в игре

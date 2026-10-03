@@ -107,6 +107,12 @@ painter. Heroes: Now (live map, region, KPI tiles), Collect (collectibles, enemy
 secrets as rings), Puzzles (this region's puzzles, Lymbic locks, vaults as rings). Every meter and ring
 shows progress (done of all), so the enemy groups card reads "beaten", not "left".
 
+Scrolling shows itself (2026-10-03): solid scroll bars whenever there is more (theme.rs; egui's
+default bars float, thin, only on hover) and `tw::scroll` fades the edge that hides content into the
+colour behind it. "Elsewhere" counts are `tw::regions`: a dim label and quiet chips, most first.
+Internal names stay off the cards: puzzles read kind, answer shape and distance (no actor class),
+timeloops their letter, or the place they are named after when it is not the region.
+
 States are shown as **chips** (`tw::chip`/`tw::pill`, a tone's text on a faint wash of it: OK done or
 fine, WAIT waiting, BAD about to be lost, ACCENT chosen or known, Quiet a plain label); keys as
 **keycaps** (`tw::keycap`). Cards have no accent rail any more: the accent marks what is chosen or

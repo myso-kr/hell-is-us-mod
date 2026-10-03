@@ -23,6 +23,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   progress bar each; Clues and Help with KPI tiles and numbered steps; cheats, saves and the debug
   checks as aligned rows with status chips; achievements with progress bars; Map settings as form
   rows. Long explanations moved into hover text.
+- Scrolling is visible: solid scroll bars and a fade at an edge that hides more. Other regions are
+  chips; puzzles and timeloops no longer show internal names.
 - States read at a glance: chips for "opens now", covered or short, soon or later, a vault's state;
   keys as keycaps; card headers without the accent rail.
 - One look per role: press a line to be guided there (no separate Guide buttons), one small

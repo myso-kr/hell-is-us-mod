@@ -122,7 +122,6 @@ GOOD_DEEDS_MYSTERIES_TIMELOOPS	善行 · ミステリー · タイムループ
 DONE_IN_PROGRESS_FAILED	完了 {done} / {all} · 進行中 {started} · 失敗 {failed}
 NPCS_WITH_MORE_TO_TELL	話が残っているNPC ({count})
 PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	会話でまだ知らない事実や手がかりを教えてくれる人（分岐がロックされた会話も含む）
-OTHER_REGIONS	他のエリア: {regions}
 MEMORY_IN_USE_PRIVATE_PEAK_ALSO	メモリ: 使用 {working} · 専有 {private} · 最大 {peak}（1分ごとにログにも記録）
 CHEATS_ON	オンのチート
 ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	元の値 → 書き込む値、そして今ゲームが持っている値

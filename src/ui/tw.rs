@@ -556,6 +556,75 @@ pub fn meter(ui: &mut egui::Ui, width: Option<f32>, done: usize, all: usize) {
     }
 }
 
+/// A vertical scroll area that shows it scrolls: a solid bar (theme.rs) and, at an edge
+/// that hides content, a fade into `ground` (the colour behind it) — a list cut off at the
+/// bottom otherwise looks complete. `min` keeps the height while laid out at the frame
+/// before's size (a scroll area alone never asks for more than it was given).
+pub fn scroll<R>(
+    ui: &mut egui::Ui,
+    id: &str,
+    max: f32,
+    min: f32,
+    ground: Color32,
+    body: impl FnOnce(&mut egui::Ui) -> R,
+) -> R {
+    let out = egui::ScrollArea::vertical()
+        .id_salt(id)
+        .max_height(max)
+        .min_scrolled_height(min)
+        // As wide as it is given, as tall as its content up to `max`.
+        .auto_shrink([false, true])
+        .scroll_bar_visibility(egui::scroll_area::ScrollBarVisibility::VisibleWhenNeeded)
+        .show(ui, body);
+    let view = out.inner_rect;
+    let hidden_above = out.state.offset.y > 1.0;
+    let hidden_below = out.state.offset.y + view.height() < out.content_size.y - 1.0;
+    // Leave the bar's lane clear of the fade.
+    let bar = ui.spacing().scroll.bar_width + ui.spacing().scroll.bar_outer_margin + 2.0;
+    let lane = egui::Rect::from_min_max(view.min, egui::pos2(view.right() - bar, view.bottom()));
+    if hidden_above {
+        fade(ui, egui::Rect::from_min_size(lane.min, egui::vec2(lane.width(), FADE)), ground, true);
+    }
+    if hidden_below {
+        let r = egui::Rect::from_min_max(egui::pos2(lane.left(), lane.bottom() - FADE), lane.max);
+        fade(ui, r, ground, false);
+    }
+    out.inner
+}
+
+/// How tall a scroll area's edge fade is (px).
+const FADE: f32 = 22.0;
+
+/// A vertical gradient over `rect`: `ground` at the edge (`top` or bottom), clear inward.
+fn fade(ui: &egui::Ui, rect: egui::Rect, ground: Color32, top: bool) {
+    let clear = Color32::from_rgba_premultiplied(0, 0, 0, 0);
+    let (upper, lower) = if top { (ground, clear) } else { (clear, ground) };
+    let mut mesh = egui::Mesh::default();
+    mesh.colored_vertex(rect.left_top(), upper);
+    mesh.colored_vertex(rect.right_top(), upper);
+    mesh.colored_vertex(rect.right_bottom(), lower);
+    mesh.colored_vertex(rect.left_bottom(), lower);
+    mesh.add_triangle(0, 1, 2);
+    mesh.add_triangle(0, 2, 3);
+    ui.painter().add(egui::Shape::mesh(mesh));
+}
+
+/// Other regions with a count each, as a dim label and quiet chips, most first — the
+/// pages' "elsewhere" lines, which read as one long sentence of names.
+pub fn regions(tui: &mut Tui, label: &str, mut counts: Vec<(String, usize)>) {
+    if counts.is_empty() {
+        return;
+    }
+    counts.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    let label = label.to_string();
+    tui.style(wrap(super::theme::TIGHT)).add(|tui| {
+        w(tui, |ui| ui.label(RichText::new(label).small().color(super::theme::DIM)));
+        for (place, n) in counts {
+            chip(tui, format!("{place} {n}"), Tone::Quiet);
+        }
+    });
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

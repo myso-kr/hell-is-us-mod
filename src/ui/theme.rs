@@ -54,6 +54,9 @@ pub fn install(ctx: &egui::Context) {
         s.spacing.interact_size.y = 24.0;
         s.spacing.window_margin = egui::Margin::same(BLOCK as i8);
         s.spacing.slider_width = 170.0;
+        // Solid bars, shown whenever there is more to scroll: egui's default floating bars
+        // are thin and appear only on hover, so a list cut off at the bottom looked complete.
+        s.spacing.scroll = egui::style::ScrollStyle { bar_width: 6.0, ..egui::style::ScrollStyle::solid() };
         s.spacing.combo_width = 68.0;
         for (style, size) in [
             (egui::TextStyle::Body, 12.5),
