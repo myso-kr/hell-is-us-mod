@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	게임의 세이브 폴더를 찾지 못했습니�
 JUST_NOW	방금
 MIN_AGO	{minutes}분 전
 H_AGO	{hours}시간 전
-DAYS_AGO	{days}일 전
+DAYS_AGO	{count}일 전
 GUIDING	 · 안내 중
 THIS_QUEST_HAS_NO_GOAL_IN	이 지역에는 이 퀘스트의 목표가 없습니다 — 가까운 다른 퀘스트 목표로 안내합니다
 THIS_ENTRY_HAS_NO_GOAL_IN	이 지역에는 이 항목의 목표가 없습니다 — 다른 지역에서 이어집니다
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	퍼즐 목록이 없습니다 — 콘솔에서 
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	열쇠·물건 놓기 퍼즐도 보기
 UNSOLVED_PUZZLE	안 푼 퍼즐
 VAULT_DOOR	금고 문
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	근처에 퍼즐 — 답은 패널의 안내 탭에
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	근처에 퍼즐 — 답은 패널의 퍼즐 탭에
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	연구 아이템은 '수집 진행도'의 연구 아이템 줄을 누르면 가까운 것부터 안내합니다
 ACHIEVEMENTS	업적 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	.NET 8 설치
 INSTALL_NET_8_HOW	먼저 winget으로 Microsoft 공식 패키지를 설치합니다 (Windows가 권한을 묻습니다). 실패하면 관리자 권한 없이 게임 Mods 폴더에 이 사용자용으로 설치합니다.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	주인공을 조작할 수 있게 되면 읽습니다
 WAITING_FOR_THE_GAME	게임 기다리는 중
+NOW	지금
+PUZZLES	퍼즐
+PREVIOUSLY	지난 이야기
+LAST_PLAYED_AGO_IN	마지막 플레이: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	따라가던 퀘스트가 없었습니다.
+THAT_QUEST_IS_NO_LONGER_OPEN	따라가던 퀘스트는 이제 진행 중이 아닙니다.
+YOU_WERE_FOLLOWING	따라가던 퀘스트: {quest}
+GOT_IT	확인
+BEFORE_YOU_GO_ON	진행하기 전에
+NOTHING_IS_ABOUT_TO_BE_MISSED	지금 놓칠 위기에 있는 것은 없습니다.
+KEYSTONES_LEFT_IN_ORDER	남은 키스톤, 권장 순서: {keystones}
+MORE_WITH_A_LATER_DEADLINE	마감이 나중인 것: {count}
+GO_TO_PAGE	{page} 열기 ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	이 지역에서 모드가 아는 남은 것이 없습니다.
+COUNTS_ONLY_OPEN_A_LINE	개수만 보여 줍니다 — 줄을 누르면 그 탭이 열립니다.
+LEDGER_QUEST_PLACES	퀘스트 장소: {count}
+LEDGER_HANDOVERS	지금 건넬 수 있는 것: {count}
+LEDGER_PUZZLES	퍼즐: {count}
+LEDGER_LOCKS	림빅 잠금: {count} (지금 열 수 있음: {open})
+LEDGER_VAULT_DOORS	금고 문: {count}
+LEDGER_COLLECTIBLES	수집품: {count}
+LEDGER_ENEMY_GROUPS	적 무리: {count}
+LEDGER_STORIES	들을 이야기가 남은 NPC: {count}
+OTHER_REGIONS_CARD	다른 지역
+NOTHING_LEFT_ELSEWHERE	다른 지역에서 모드가 아는 남은 것이 없습니다.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	지금 그곳에서 할 수 있는 일이 많은 순: 건네주기, 가진 막대로 여는 잠금.
+TRIP_ROW	{place} — 지금: {doable} · 남음: {left}
+MINUTES_AGO	{count}분 전
+HOURS_AGO	{count}시간 전
+LYMBIC_LOCKS	림빅 잠금
+THE_RODS_EACH_LOCK_TAKES	잠금마다 필요한 막대 — 가진 막대로 이미 열 수 있는 잠금이 먼저 나옵니다. 잠금이나 빠진 막대 줄을 누르면 그곳으로 안내합니다.
+LOCK_OPENS_NOW	{place} — 지금 열 수 있음
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — 위치: {place}
+ROD_MISSING_NOWHERE	✗ {rod} — 조사 기록에 남은 획득처 없음
+LOCKS_IN_OTHER_REGIONS	다른 지역의 잠금: {count}

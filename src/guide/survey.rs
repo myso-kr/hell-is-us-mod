@@ -22,6 +22,9 @@ pub struct Entry {
     /// main quest when they are quest items (`Quest01`).
     pub items: Vec<String>,
     pub keys: Vec<String>,
+    /// Lymbic rods it hands out (`LymbicRod_Zulu_Terror_Item_DA`), kept apart from `items`:
+    /// they open locks, they are not something a quest waits for.
+    pub rods: Vec<String>,
     pub facts: Vec<String>,
     pub tags: Vec<String>,
     /// The item it wants, for a hand-over (the first, for the goal's line).
@@ -193,6 +196,11 @@ impl Entry {
         for c in names(&p["items"]).iter().filter_map(|i| category(i)) {
             if !self.cats.contains(&c) {
                 self.cats.push(c);
+            }
+        }
+        for name in names(&p["items"]).iter().map(|i| i.rsplit('/').next().unwrap_or(i)).filter(|n| is_rod(n)) {
+            if !self.rods.iter().any(|r| r == name) {
+                self.rods.push(name.to_string());
             }
         }
         for path in names(&p["items"]).iter().filter(|p| wanted_item(p)) {
@@ -456,6 +464,39 @@ pub struct Collect {
     pub here: (usize, usize),
     pub all: (usize, usize),
     pub left_here: Vec<Need>,
+    /// How many are left in each world that has any (the region ledger, ledger.rs).
+    pub left_by_world: Vec<(String, usize)>,
+}
+
+/// A Lymbic lock: a placement puzzle whose answer is Lymbic rods (.spec/JOURNEY.md §3.3).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Lock {
+    pub id: u64,
+    pub world: String,
+    pub at: [f32; 3],
+    pub solved: bool,
+    pub rods: Vec<Rod>,
+}
+
+/// One rod a lock takes: held or not, and where the nearest one not taken yet lies.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Rod {
+    /// Its data asset name (`LymbicRod_XRay_Rage_Item_DA`).
+    pub item: String,
+    pub held: bool,
+    pub source: Option<Need>,
+}
+
+impl Lock {
+    /// Every rod it takes is in the inventory: it can be opened now.
+    pub fn openable(&self) -> bool {
+        !self.solved && self.rods.iter().all(|r| r.held)
+    }
+}
+
+/// A Lymbic rod, by its data asset name.
+pub fn is_rod(item: &str) -> bool {
+    item.starts_with("LymbicRod")
 }
 
 impl Survey {
@@ -465,12 +506,17 @@ impl Survey {
         COLLECT
             .iter()
             .map(|&(_, label)| {
-                let mut c = Collect { label, here: (0, 0), all: (0, 0), left_here: Vec::new() };
+                let mut c =
+                    Collect { label, here: (0, 0), all: (0, 0), left_here: Vec::new(), left_by_world: Vec::new() };
+                let mut by_world: std::collections::BTreeMap<&str, usize> = Default::default();
                 for (w, list) in &self.worlds {
                     for e in list.iter().filter(|e| !e.npc && e.cats.contains(&label)) {
                         let got = e.guid.as_ref().is_some_and(|g| k.saved.contains(g));
                         c.all.1 += 1;
                         c.all.0 += got as usize;
+                        if !got {
+                            *by_world.entry(w.as_str()).or_default() += 1;
+                        }
                         if w == world {
                             c.here.1 += 1;
                             c.here.0 += got as usize;
@@ -487,10 +533,75 @@ impl Survey {
                         }
                     }
                 }
+                c.left_by_world = by_world.into_iter().map(|(w, n)| (w.to_string(), n)).collect();
                 c
             })
             .filter(|c| c.all.1 > 0)
             .collect()
+    }
+
+    /// Every Lymbic lock in the worlds: solved or not, and for each rod it takes,
+    /// whether it is held and, if not, the nearest pickup of it not taken yet — in the
+    /// lock's own world first.
+    pub fn locks(&self, k: &Known) -> Vec<Lock> {
+        use crate::puzzles::Answer;
+        let mut seen = HashSet::new();
+        self.puzzles
+            .iter()
+            // The survey can list one panel twice (a copy at the same place).
+            .filter(|p| seen.insert(p.id()))
+            .filter_map(|p| {
+                let Answer::Items(items) = &p.answer else { return None };
+                if !items.iter().any(|i| is_rod(i)) {
+                    return None;
+                }
+                let rods = items
+                    .iter()
+                    .filter(|i| is_rod(i))
+                    .map(|i| {
+                        let held = k.held.contains(i);
+                        Rod {
+                            item: i.clone(),
+                            held,
+                            source: if held { None } else { self.pickup(i, &p.world, p.at, k) },
+                        }
+                    })
+                    .collect();
+                Some(Lock {
+                    id: p.id(),
+                    world: p.world.clone(),
+                    at: p.at,
+                    solved: p.guid.as_ref().is_some_and(|g| k.saved.contains(g)),
+                    rods,
+                })
+            })
+            .collect()
+    }
+
+    /// The nearest place not taken yet that hands out `item`: in `world` first (by
+    /// distance from `near`), else the first in any other world.
+    fn pickup(&self, item: &str, world: &str, near: [f32; 3], k: &Known) -> Option<Need> {
+        let mut best: Option<(bool, f32, &String, &Entry)> = None;
+        for (w, list) in &self.worlds {
+            for e in list.iter().filter(|e| !e.npc && e.rods.iter().any(|i| i == item)) {
+                if e.guid.as_ref().is_some_and(|g| k.saved.contains(g)) {
+                    continue;
+                }
+                let here = w == world;
+                let d = if here { (e.at[0] - near[0]).hypot(e.at[1] - near[1]) } else { f32::MAX };
+                if best.is_none_or(|(bh, bd, bw, _)| (here && !bh) || (here == bh && (d < bd || (d == bd && w < bw)))) {
+                    best = Some((here, d, w, e));
+                }
+            }
+        }
+        best.map(|(_, _, w, e)| Need {
+            world: w.clone(),
+            id: e.id(),
+            label: e.label(),
+            what: item.to_string(),
+            at: e.at,
+            done: false,
+        })
     }
 
     /// NPCs whose talk still holds something the hero does not know, in every world.
@@ -588,6 +699,58 @@ mod tests {
             entry(&[], &[], &["Conversation.TopicsUnlock.X"]).left(&k).is_empty(),
             "topic unlocks are not a reason"
         );
+    }
+
+    #[test]
+    fn locks_know_their_rods_held_missing_and_where() {
+        use crate::puzzles::{Answer, Kind};
+        let lock = |world: &str, guid: Option<&str>, rods: &[&str]| Placed {
+            world: world.into(),
+            class: "LymbicLockPanel_2ndGen_Rage_X_V_Interact_BP_C".into(),
+            at: [0.0, 0.0, 0.0],
+            guid: guid.map(str::to_string),
+            kind: Kind::Placement,
+            answer: Answer::Items(rods.iter().map(|r| r.to_string()).collect()),
+        };
+        // Through the payload reader, as the survey's own paths come in.
+        let pick = |name: &str, at: [f32; 3], guid: &str, item: &str| {
+            let mut e = Entry { name: name.into(), at, guid: Some(guid.into()), ..Default::default() };
+            e.add_payload(&serde_json::json!({ "items": [format!("/Game/Items/Lymbic/RodsRage/{item}")] }));
+            e
+        };
+        let survey = Survey {
+            worlds: HashMap::from([
+                (
+                    "Jeljin".to_string(),
+                    vec![
+                        pick("far", [9000.0, 0.0, 0.0], "g1", "LymbicRod_Victor_Rage_Item_DA"),
+                        pick("near", [100.0, 0.0, 0.0], "g2", "LymbicRod_Victor_Rage_Item_DA"),
+                        pick("taken", [10.0, 0.0, 0.0], "g3", "LymbicRod_Victor_Rage_Item_DA"),
+                    ],
+                ),
+                ("Talju".to_string(), vec![pick("away", [0.0, 0.0, 0.0], "g4", "LymbicRod_Victor_Rage_Item_DA")]),
+            ]),
+            doors: Vec::new(),
+            puzzles: vec![
+                lock("Jeljin", Some("L1"), &["LymbicRod_XRay_Rage_Item_DA", "LymbicRod_Victor_Rage_Item_DA"]),
+                lock("Talju", Some("L2"), &["LymbicRod_XRay_Rage_Item_DA"]),
+                Placed { answer: Answer::Items(vec!["Door_Key_Item_DA".into()]), ..lock("Talju", None, &[]) },
+            ],
+        };
+        let (facts, tags, talked) = (HashSet::new(), HashSet::new(), HashSet::new());
+        let held = HashSet::from(["LymbicRod_XRay_Rage_Item_DA".to_string()]);
+        let saved = HashSet::from(["g3".to_string(), "L2".to_string()]);
+        let k = Known { facts: &facts, tags: &tags, held: &held, saved: &saved, talked: &talked };
+        let locks = survey.locks(&k);
+        assert_eq!(locks.len(), 2, "a key door is not a Lymbic lock");
+        let jeljin = locks.iter().find(|l| l.world == "Jeljin").unwrap();
+        assert!(!jeljin.openable(), "one rod missing");
+        let missing = jeljin.rods.iter().find(|r| !r.held).unwrap();
+        assert_eq!(missing.source.as_ref().map(|n| n.world.as_str()), Some("Jeljin"), "its own world first");
+        assert_eq!(missing.source.as_ref().map(|n| n.at[0]), Some(100.0), "the nearest not taken");
+        assert!(jeljin.rods.iter().find(|r| r.held).unwrap().source.is_none());
+        let talju = locks.iter().find(|l| l.world == "Talju").unwrap();
+        assert!(talju.solved && !talju.openable(), "solved locks are not to open again");
     }
 
     #[test]

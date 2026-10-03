@@ -106,7 +106,7 @@ impl Panel {
                 note(t, tr!("STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND"));
                 return;
             }
-            w(t, |ui| ui.checkbox(&mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO")));
+            tw::switch(t, &mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO"));
             for a in list.iter().filter(|a| self.show_unlocked || !a.unlocked) {
                 let id = {
                     use std::hash::{Hash, Hasher};
@@ -165,13 +165,12 @@ impl Panel {
                 note(t, tr!("NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY"));
                 return;
             }
-            w(t, |ui| ui.checkbox(&mut self.show_placements, tr!("SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS")));
+            tw::switch(t, &mut self.show_placements, tr!("SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS"));
             let mut rows = mine.clone();
             let far = |p: &crate::survey::Placed| here.map_or(0.0, |h| (p.at[0] - h[0]).hypot(p.at[1] - h[1]));
             rows.sort_by(|a, b| a.1.cmp(&b.1).then(far(&a.0).total_cmp(&far(&b.0))));
             for (p, solved) in rows.iter().take(30) {
                 let id = p.id();
-                let open = self.revealed.contains(&id);
                 let dist = here.map_or(String::new(), |_| crate::raster::distance(far(p) / 100.0));
                 let head = format!(
                     "{} · {} · {} ({dist}){}",
@@ -180,28 +179,23 @@ impl Panel {
                     crate::goals::pretty(&p.class),
                     if *solved { " ✓" } else { "" }
                 );
-                t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
-                    text(t, RichText::new(head).color(if *solved { DIM } else { super::super::theme::TEXT }).small());
-                    if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
-                        if open {
-                            self.revealed.remove(&id);
-                        } else {
-                            self.revealed.insert(id);
-                        }
-                    }
-                    if !*solved && w(t, |ui| ui.small_button(tr!("GUIDE"))).clicked() {
-                        let x = crate::survey::Need {
-                            world: p.world.clone(),
-                            id,
-                            label: format!("{} · {}", crate::i18n::tr(p.kind.label()), shape(&p.answer)),
-                            what: String::new(),
-                            at: p.at,
-                            done: false,
-                        };
-                        guide_to(state, &goals, &x);
-                    }
-                });
+                let icon = |ui: &mut egui::Ui| {
+                    crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0);
+                };
+                let head = RichText::new(head).color(if *solved { DIM } else { super::super::theme::TEXT }).small();
+                let on = (!*solved).then(|| state.target == Some(id));
+                if tw::line(t, on, icon, head, |t| reveal(t, &mut self.revealed, id, tr!("SHOW_ANSWER"))) {
+                    let x = crate::survey::Need {
+                        world: p.world.clone(),
+                        id,
+                        label: format!("{} · {}", crate::i18n::tr(p.kind.label()), shape(&p.answer)),
+                        what: String::new(),
+                        at: p.at,
+                        done: false,
+                    };
+                    guide_to(state, &goals, &x);
+                }
+                let open = self.revealed.contains(&id);
                 if open {
                     match vault_dials(&p.class, &p.answer) {
                         Some(code) => symbol_row(t, &code),
@@ -225,9 +219,15 @@ impl Panel {
         });
     }
 
-    /// The puzzles within 40 m: kind, name, how far; the answer behind a button.
-    pub(super) fn puzzles_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+    /// The puzzles within 40 m: kind, name, how far; press one to be guided to it, the
+    /// answer behind its button.
+    pub(super) fn puzzles_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let list = snap.map(|s| s.puzzles.clone()).unwrap_or_default();
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let world = snap
+            .and_then(|s| s.world.clone())
+            .map(|w| crate::survey::Survey::world_of(&w).to_string())
+            .unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
         card(t, &trf!("PUZZLES_NEARBY", n = list.len()), |t| {
             if list.is_empty() {
@@ -241,18 +241,23 @@ impl Panel {
                 let name = crate::goals::pretty(&p.class);
                 let head =
                     format!("{} · {name} ({far}){}", crate::i18n::tr(p.kind.label()), if p.solved { " ✓" } else { "" });
+                let icon = |ui: &mut egui::Ui| {
+                    crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0);
+                };
+                let head = RichText::new(head).color(if p.solved { DIM } else { super::super::theme::TEXT });
+                let on = (!p.solved).then(|| state.target == Some(p.id));
+                if tw::line(t, on, icon, head, |t| reveal(t, &mut self.revealed, p.id, tr!("SHOW_ANSWER"))) {
+                    let x = crate::survey::Need {
+                        world: world.clone(),
+                        id: p.id,
+                        label: crate::i18n::tr(p.kind.label()).to_string(),
+                        what: String::new(),
+                        at: p.at,
+                        done: false,
+                    };
+                    guide_to(state, &goals, &x);
+                }
                 let open = self.revealed.contains(&p.id);
-                t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
-                    text(t, RichText::new(head).color(if p.solved { DIM } else { super::super::theme::TEXT }));
-                    if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
-                        if open {
-                            self.revealed.remove(&p.id);
-                        } else {
-                            self.revealed.insert(p.id);
-                        }
-                    }
-                });
                 if open {
                     if let Some(code) = vault_dials(&p.class, &p.answer) {
                         symbol_row(t, &code);
@@ -288,34 +293,33 @@ impl Panel {
                     VaultState::Locked => trf!("RESEARCH_PROGRESS", n = lore, need = v.vault.entries),
                 };
                 let id = id_of(&v.vault.guid);
+                let icon = |ui: &mut egui::Ui| {
+                    crate::ui::svg::sort(ui, Sub::Vault, 18.0);
+                };
+                let shut = v.state != VaultState::Opened;
+                let colour = if shut { super::super::theme::TEXT } else { DIM };
+                let door = v.door.clone().filter(|_| shut);
+                let on = door.as_ref().map(|_| state.target == Some(id));
+                let revealed = &mut self.revealed;
+                let end = |t: &mut Tui| {
+                    if shut {
+                        reveal(t, revealed, id, tr!("SHOW_CODE"));
+                    }
+                };
+                if tw::line(t, on, icon, RichText::new(format!("{name} · {region} — {status}")).color(colour), end) {
+                    if let Some((world, at)) = door {
+                        let x = crate::survey::Need {
+                            world,
+                            id,
+                            label: name.clone(),
+                            what: String::new(),
+                            at,
+                            done: false,
+                        };
+                        guide_to(state, &goals, &x);
+                    }
+                }
                 let open = self.revealed.contains(&id);
-                t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| crate::ui::svg::sort(ui, Sub::Vault, 18.0));
-                    let colour = if v.state == VaultState::Opened { DIM } else { super::super::theme::TEXT };
-                    text(t, RichText::new(format!("{name} · {region} — {status}")).color(colour));
-                    if v.state != VaultState::Opened
-                        && w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_CODE") })).clicked()
-                    {
-                        if open {
-                            self.revealed.remove(&id);
-                        } else {
-                            self.revealed.insert(id);
-                        }
-                    }
-                    if let Some((world, at)) = v.door.clone().filter(|_| v.state != VaultState::Opened) {
-                        if w(t, |ui| ui.small_button(tr!("GUIDE"))).clicked() {
-                            let x = crate::survey::Need {
-                                world,
-                                id,
-                                label: name.clone(),
-                                what: String::new(),
-                                at,
-                                done: false,
-                            };
-                            guide_to(state, &goals, &x);
-                        }
-                    }
-                });
                 if open {
                     if v.state == VaultState::Known {
                         text(
@@ -331,7 +335,7 @@ impl Panel {
     }
 
     /// The Hollows left for "every Hollow" (Legend of the Phol): per region, its
-    /// timeloops, and a button to the nearest one left here.
+    /// timeloops; this region's line guides to the nearest one left.
     pub(super) fn hollows_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let list = snap.map(|s| s.hollows.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
@@ -354,35 +358,37 @@ impl Panel {
                     enemies = h.enemies_left
                 );
                 tw::item(t, |t| {
-                    t.style(tw::row(INLINE)).add(|t| {
-                        w(t, |ui| crate::ui::svg::sort(ui, Sub::EnemyGroup, 18.0));
-                        let colour = if h.left == 0 {
-                            DIM
-                        } else if mine {
-                            super::super::theme::TITLE
-                        } else {
-                            super::super::theme::TEXT
-                        };
-                        text(t, RichText::new(line).color(colour));
-                        if mine && h.left > 0 {
-                            if let (Some(p), true) = (here, w(t, |ui| ui.small_button(tr!("NEAREST"))).clicked()) {
-                                let near = h.places.iter().min_by(|a, b| {
-                                    (a[0] - p[0]).hypot(a[1] - p[1]).total_cmp(&(b[0] - p[0]).hypot(b[1] - p[1]))
-                                });
-                                if let Some(at) = near {
-                                    let x = crate::survey::Need {
-                                        world: h.world.clone(),
-                                        id: id_of(&format!("hollow{at:?}")),
-                                        label: tr!("ENEMY_GROUP_LEFT").to_string(),
-                                        what: String::new(),
-                                        at: *at,
-                                        done: false,
-                                    };
-                                    guide_to(state, &goals, &x);
-                                }
-                            }
-                        }
+                    let icon = |ui: &mut egui::Ui| {
+                        crate::ui::svg::sort(ui, Sub::EnemyGroup, 18.0);
+                    };
+                    let colour = if h.left == 0 {
+                        DIM
+                    } else if mine {
+                        super::super::theme::TITLE
+                    } else {
+                        super::super::theme::TEXT
+                    };
+                    // Here, the line guides to the nearest group left.
+                    let near = here.filter(|_| mine && h.left > 0).and_then(|p| {
+                        h.places.iter().min_by(|a, b| {
+                            (a[0] - p[0]).hypot(a[1] - p[1]).total_cmp(&(b[0] - p[0]).hypot(b[1] - p[1]))
+                        })
                     });
+                    let id = near.map(|at| id_of(&format!("hollow{at:?}")));
+                    let on = id.map(|id| state.target == Some(id));
+                    if tw::line(t, on, icon, RichText::new(line).color(colour), |_| {}) {
+                        if let (Some(at), Some(id)) = (near, id) {
+                            let x = crate::survey::Need {
+                                world: h.world.clone(),
+                                id,
+                                label: tr!("ENEMY_GROUP_LEFT").to_string(),
+                                what: String::new(),
+                                at: *at,
+                                done: false,
+                            };
+                            guide_to(state, &goals, &x);
+                        }
+                    }
                     for (lp, l, a) in h.timeloops.iter().filter(|(_, l, _)| *l > 0) {
                         note(
                             t,
@@ -398,4 +404,116 @@ impl Panel {
             }
         });
     }
+}
+
+impl Panel {
+    /// The Lymbic locks (.spec/JOURNEY.md §3.3): for each one not opened, the rods it
+    /// takes — held or not — and how far each missing one's pickup is; pressing a lock or a
+    /// missing rod guides there. Locks the rods
+    /// held already open come first; this region's before the others.
+    pub(super) fn locks_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let locks = snap.map(|s| s.locks.clone()).unwrap_or_default();
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+        let pos = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        card(t, tr!("LYMBIC_LOCKS"), |t| {
+            if locks.is_empty() {
+                note(t, tr!("NO_SURVEY_DB_RUN_DOCTOR_SURVEY"));
+                return;
+            }
+            note(t, tr!("THE_RODS_EACH_LOCK_TAKES"));
+            let mut open: Vec<_> = locks.iter().filter(|l| !l.solved).collect();
+            open.sort_by_key(|l| (!l.openable(), Some(l.world.as_str()) != here.as_deref(), l.world.clone()));
+            let elsewhere = open.iter().filter(|l| !l.openable() && Some(l.world.as_str()) != here.as_deref()).count();
+            for l in open.iter().filter(|l| l.openable() || Some(l.world.as_str()) == here.as_deref()) {
+                tw::item(t, |t| {
+                    // The card is this region's: a lock here goes by its distance, one
+                    // elsewhere (shown only when it opens) by its region.
+                    let name = match pos.filter(|_| Some(l.world.as_str()) == here.as_deref()) {
+                        Some(p) => format!("{} ({})", tr!("LYMBIC_LOCK"), span(p, l.at)),
+                        None if Some(l.world.as_str()) == here.as_deref() => tr!("LYMBIC_LOCK").to_string(),
+                        None => crate::i18n::place(&l.world),
+                    };
+                    let head = if l.openable() { trf!("LOCK_OPENS_NOW", place = name) } else { name };
+                    let head = RichText::new(head).color(if l.openable() { OK } else { super::super::theme::TEXT });
+                    // Pressing a line guides there, the one guided to stays marked — the lock
+                    // itself, or one of its missing rods below.
+                    let icon = |ui: &mut egui::Ui| {
+                        crate::ui::svg::sort(ui, crate::actors::Sub::LymbicLock, 18.0);
+                    };
+                    if tw::pick_with(t, state.target == Some(l.id), icon, head) {
+                        let x = crate::survey::Need {
+                            world: l.world.clone(),
+                            id: l.id,
+                            label: tr!("LYMBIC_LOCK").to_string(),
+                            what: String::new(),
+                            at: l.at,
+                            done: false,
+                        };
+                        guide_to(state, &goals, &x);
+                    }
+                    for r in &l.rods {
+                        let name = crate::i18n::item(&r.item).unwrap_or_else(|| rod_name(&r.item));
+                        let source = r.source.as_ref().filter(|_| !r.held);
+                        let line = match source {
+                            _ if r.held => trf!("ROD_HELD", rod = name),
+                            None => trf!("ROD_MISSING_NOWHERE", rod = name),
+                            Some(s) if here.as_deref() != Some(s.world.as_str()) => {
+                                trf!("ROD_MISSING_AT", rod = name, place = crate::i18n::place(&s.world))
+                            }
+                            Some(s) => match pos {
+                                Some(p) => trf!("ROD_MISSING", rod = format!("{name} ({})", span(p, s.at))),
+                                None => trf!("ROD_MISSING", rod = name),
+                            },
+                        };
+                        // Under the lock's name, past where its icon stands.
+                        let indent = |ui: &mut egui::Ui| {
+                            ui.allocate_exact_size(egui::vec2(18.0, 1.0), egui::Sense::hover());
+                        };
+                        let colour = if source.is_some() { super::super::theme::TEXT } else { DIM };
+                        let on = source.map(|s| state.target == Some(s.id));
+                        if tw::line(t, on, indent, RichText::new(line).color(colour).small(), |_| {}) {
+                            if let Some(s) = source {
+                                guide_to(state, &goals, s);
+                            }
+                        }
+                    }
+                });
+            }
+            if elsewhere > 0 {
+                note(t, trf!("LOCKS_IN_OTHER_REGIONS", count = elsewhere));
+            }
+        });
+    }
+}
+
+/// The one button a list line may carry: show what it hides (an answer, a code), or
+/// hide it again.
+fn reveal(t: &mut Tui, revealed: &mut std::collections::HashSet<u64>, id: u64, show: &str) {
+    let open = revealed.contains(&id);
+    if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { show })).clicked() {
+        if open {
+            revealed.remove(&id);
+        } else {
+            revealed.insert(id);
+        }
+    }
+}
+
+/// How far a place is: across, and up or down when that is three metres or more — a
+/// lock under a monument is "3m" away across but nine below.
+fn span(from: [f32; 3], to: [f32; 3]) -> String {
+    let across = (to[0] - from[0]).hypot(to[1] - from[1]) / 100.0;
+    match (to[2] - from[2]) / 100.0 {
+        up if up >= 3.0 => format!("{across:.0}m ↑{up:.0}m"),
+        up if up <= -3.0 => format!("{across:.0}m ↓{:.0}m", -up),
+        _ => format!("{across:.0}m"),
+    }
+}
+
+/// A rod's name when the game's text is not read yet: `LymbicRod_XRay_Rage_Item_DA` → "Rage X".
+fn rod_name(item: &str) -> String {
+    let mut parts = item.split('_').skip(1);
+    let (letter, emotion) = (parts.next().unwrap_or(""), parts.next().unwrap_or(""));
+    format!("{emotion} {}", letter.chars().next().unwrap_or('?'))
 }

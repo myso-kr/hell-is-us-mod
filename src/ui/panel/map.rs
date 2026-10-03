@@ -15,24 +15,28 @@ impl Panel {
         let cols = self.columns;
         let guard = &mut *guard;
         match self.tool {
-            Some(Tool::Guide) => tw::masonry(t, "guide", cols, 4, |t, i| match i {
+            Some(Tool::Now) => self.now_tab(t, guard, snap),
+            Some(Tool::Guide) => tw::masonry(t, "guide", cols, 2, |t, i| match i {
                 0 => self.guide_column(t, guard, snap),
-                1 => self.puzzles_card(t, snap),
-                2 => self.catalogue_card(t, guard, snap),
                 _ => self.goals_card(t, guard, snap),
             }),
-            Some(Tool::Collect) => tw::masonry(t, "collect", cols, 6, |t, i| match i {
-                0 => self.collection_card(t, guard, snap),
-                1 => self.achievements_card(t),
+            Some(Tool::Puzzles) => tw::masonry(t, "puzzles", cols, 4, |t, i| match i {
+                0 => self.puzzles_card(t, guard, snap),
+                1 => self.locks_card(t, guard, snap),
                 2 => self.vaults_card(t, guard, snap),
-                3 => self.hollows_card(t, guard, snap),
-                4 => self.secrets_card(t, snap),
-                _ => self.stories_card(t, guard, snap),
+                _ => self.catalogue_card(t, guard, snap),
             }),
-            Some(Tool::Quests) => tw::masonry(t, "quests", cols, 3, |t, i| match i {
+            Some(Tool::Collect) => tw::masonry(t, "collect", cols, 4, |t, i| match i {
+                0 => self.collection_card(t, guard, snap),
+                1 => self.hollows_card(t, guard, snap),
+                2 => self.stories_card(t, guard, snap),
+                _ => self.achievements_card(t),
+            }),
+            Some(Tool::Quests) => tw::masonry(t, "quests", cols, 4, |t, i| match i {
                 0 => self.quests_card(t, guard, snap),
                 1 => self.deadlines_card(t, guard, snap),
-                _ => self.handovers_card(t, guard, snap),
+                2 => self.handovers_card(t, guard, snap),
+                _ => self.secrets_card(t, snap),
             }),
             _ => tw::masonry(t, "map", cols, 3, |t, i| match i {
                 0 => self.map_column(t, guard),

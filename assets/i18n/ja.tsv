@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	ゲームのセーブフォルダが見つかり�
 JUST_NOW	たった今
 MIN_AGO	{minutes}分前
 H_AGO	{hours}時間前
-DAYS_AGO	{days}日前
+DAYS_AGO	{count}日前
 GUIDING	 · 案内中
 THIS_QUEST_HAS_NO_GOAL_IN	このエリアにはこのクエストの目標がありません — 近くの別のクエスト目標へ案内
 THIS_ENTRY_HAS_NO_GOAL_IN	このエリアにはこの項目の目標がありません — 他のエリアで進行
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	パズル一覧がありません — コンソ
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	鍵の扉・アイテム設置パズルも表示
 UNSOLVED_PUZZLE	未解決のパズル
 VAULT_DOOR	金庫の扉
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	近くにパズル — 答えはパネルのガイドタブにあります
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	近くにパズル — 答えはパネルのパズルタブにあります
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	調査アイテム: 「収集状況」の調査の行を押すと、近い順に案内します
 ACHIEVEMENTS	実績 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam の実績キャッシュが見つかりません (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	.NET 8 をインストール
 INSTALL_NET_8_HOW	まず winget で Microsoft 公式パッケージを入れます（Windows が許可を求めます）。失敗した場合は、管理者権限なしでゲームの Mods フォルダーにこのユーザー用として入れます。
 READ_ONCE_THE_HERO_IS_IN_CONTROL	主人公を操作できるようになったら読み込みます
 WAITING_FOR_THE_GAME	ゲームを待っています
+NOW	今
+PUZZLES	パズル
+PREVIOUSLY	前回のあらすじ
+LAST_PLAYED_AGO_IN	前回のプレイ：{ago}、{place}
+NO_QUEST_WAS_FOLLOWED	追跡中のクエストはありませんでした。
+THAT_QUEST_IS_NO_LONGER_OPEN	追跡していたクエストはもう進行中ではありません。
+YOU_WERE_FOLLOWING	追跡中：{quest}
+GOT_IT	OK
+BEFORE_YOU_GO_ON	先に進む前に
+NOTHING_IS_ABOUT_TO_BE_MISSED	今すぐ取り逃しそうなものはありません。
+KEYSTONES_LEFT_IN_ORDER	残りのキーストーン（推奨順）：{keystones}
+MORE_WITH_A_LATER_DEADLINE	期限がまだ先のもの：{count}
+GO_TO_PAGE	{page}を開く ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	この地域でMODが把握している残りはありません。
+COUNTS_ONLY_OPEN_A_LINE	件数のみ表示 — 行を押すとそのタブが開きます。
+LEDGER_QUEST_PLACES	クエストの場所：{count}
+LEDGER_HANDOVERS	今渡せるもの：{count}
+LEDGER_PUZZLES	パズル：{count}
+LEDGER_LOCKS	リムビックロック：{count}（今開けられる：{open}）
+LEDGER_VAULT_DOORS	金庫の扉：{count}
+LEDGER_COLLECTIBLES	収集品：{count}
+LEDGER_ENEMY_GROUPS	敵の群れ：{count}
+LEDGER_STORIES	話を聞けるNPC：{count}
+OTHER_REGIONS_CARD	ほかの地域
+NOTHING_LEFT_ELSEWHERE	ほかの地域でMODが把握している残りはありません。
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	今そこでできることが多い順：受け渡しと、手持ちのロッドで開くロック。
+TRIP_ROW	{place} — 今：{doable} · 残り：{left}
+MINUTES_AGO	{count}分前
+HOURS_AGO	{count}時間前
+LYMBIC_LOCKS	リムビックロック
+THE_RODS_EACH_LOCK_TAKES	ロックごとに必要なロッド — 手持ちのロッドで開けられるロックが先に並びます。ロックや足りないロッドの行を押すと、そこへ案内します。
+LOCK_OPENS_NOW	{place} — 今開けられる
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — {place}
+ROD_MISSING_NOWHERE	✗ {rod} — 調査記録に入手場所が残っていない
+LOCKS_IN_OTHER_REGIONS	ほかの地域のロック：{count}

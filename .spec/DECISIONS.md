@@ -123,7 +123,7 @@ user switched on (D8); the panel is its own window with a polled hotkey (D9). Th
 
 - Decision (2026-10-03): `ui/tw.rs` wraps egui_taffy with the vocabulary of Tailwind (`col`, `row`,
   `wrap`, `grow`, `card`, `masonry`). One palette and one spacing scale live in `ui/theme.rs`.
-- Why: hand-rolled egui columns and a 12-column grid kept overlapping or clipping (PANEL.md §6). A real
+- Why: hand-rolled egui columns and a 12-column grid kept overlapping or clipping (PANEL.md §7). A real
   layout engine measures each element instead of guessing widths.
 
 ## D18. The guide's game data is read automatically; the .NET 8 runtime is installed on request

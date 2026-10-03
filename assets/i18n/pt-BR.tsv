@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	Pasta de saves do jogo não encontrada
 JUST_NOW	agora há pouco
 MIN_AGO	há {minutes} min
 H_AGO	há {hours} h
-DAYS_AGO	há {days} dias
+DAYS_AGO	há {count} d
 GUIDING	 · guiando
 THIS_QUEST_HAS_NO_GOAL_IN	Esta região não tem objetivo desta missão — guiando ao objetivo de outra missão mais próxima
 THIS_ENTRY_HAS_NO_GOAL_IN	Esta região não tem objetivo deste item — continua em outra região
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Sem lista de quebra-cabeças — execute `docto
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Mostrar também portas com chave e colocação de itens
 UNSOLVED_PUZZLE	Quebra-cabeça não resolvido
 VAULT_DOOR	Porta do cofre
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Quebra-cabeça por perto — a resposta está na aba Guia do painel
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Quebra-cabeça por perto — a resposta está na aba Quebra-cabeças do painel
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Itens de pesquisa: clique na linha Pesquisa em 'Coleção' para ir ao mais próximo
 ACHIEVEMENTS	Conquistas {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Cache de conquistas da Steam não encontrado (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	Instalar .NET 8
 INSTALL_NET_8_HOW	Primeiro o pacote da Microsoft pelo winget (o Windows pede permissão); se falhar, na pasta Mods do jogo, só para você, sem precisar de administrador.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Lido assim que você controlar o protagonista
 WAITING_FOR_THE_GAME	Aguardando o jogo
+NOW	Agora
+PUZZLES	Quebra-cabeças
+PREVIOUSLY	Anteriormente
+LAST_PLAYED_AGO_IN	Última partida: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	Nenhuma missão estava sendo seguida.
+THAT_QUEST_IS_NO_LONGER_OPEN	A missão que você seguia não está mais aberta.
+YOU_WERE_FOLLOWING	Seguindo: {quest}
+GOT_IT	Entendi
+BEFORE_YOU_GO_ON	Antes de continuar
+NOTHING_IS_ABOUT_TO_BE_MISSED	Nada está prestes a ser perdido agora.
+KEYSTONES_LEFT_IN_ORDER	Pedras angulares restantes, em ordem: {keystones}
+MORE_WITH_A_LATER_DEADLINE	Com prazo mais adiante: {count}
+GO_TO_PAGE	Abrir {page} ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Não resta nada aqui que o mod conheça.
+COUNTS_ONLY_OPEN_A_LINE	Só contagens — clique numa linha para abrir a página dela.
+LEDGER_QUEST_PLACES	Locais de missão: {count}
+LEDGER_HANDOVERS	Entregas possíveis: {count}
+LEDGER_PUZZLES	Quebra-cabeças: {count}
+LEDGER_LOCKS	Travas límbicas: {count} (abrem agora: {open})
+LEDGER_VAULT_DOORS	Portas de câmara: {count}
+LEDGER_COLLECTIBLES	Colecionáveis: {count}
+LEDGER_ENEMY_GROUPS	Grupos de inimigos: {count}
+LEDGER_STORIES	NPCs com mais a contar: {count}
+OTHER_REGIONS_CARD	Outras regiões
+NOTHING_LEFT_ELSEWHERE	Não resta nada nas outras regiões que o mod conheça.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Primeiro onde você pode fazer mais agora: entregas e travas que suas hastes abrem.
+TRIP_ROW	{place} — agora: {doable} · restam: {left}
+MINUTES_AGO	há {count} min
+HOURS_AGO	há {count} h
+LYMBIC_LOCKS	Travas límbicas
+THE_RODS_EACH_LOCK_TAKES	As hastes que cada trava pede — primeiro as que suas hastes já abrem. Clique numa trava ou numa haste que falta para ser guiado até lá.
+LOCK_OPENS_NOW	{place} — abre agora
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — em {place}
+ROD_MISSING_NOWHERE	✗ {rod} — nenhum ponto de coleta restante no levantamento
+LOCKS_IN_OTHER_REGIONS	Travas em outras regiões: {count}

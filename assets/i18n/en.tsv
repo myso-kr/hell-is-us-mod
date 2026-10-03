@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	The game's save folder was not found
 JUST_NOW	just now
 MIN_AGO	{minutes} min ago
 H_AGO	{hours}h ago
-DAYS_AGO	{days}d ago
+DAYS_AGO	{count} d ago
 GUIDING	 · guiding
 THIS_QUEST_HAS_NO_GOAL_IN	This quest has no goal in this region — guiding to the nearest other quest goal
 THIS_ENTRY_HAS_NO_GOAL_IN	This entry has no goal in this region — it continues elsewhere
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	No puzzle list — run `doctor survey` once in 
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Show key doors and item placements too
 UNSOLVED_PUZZLE	Unsolved puzzle
 VAULT_DOOR	Vault door
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzzle nearby — the answer is in the panel's Guide tab
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzzle nearby — the answer is in the panel's Puzzles tab
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Research items: select Research under 'Collection' to be guided to the nearest
 ACHIEVEMENTS	Achievements {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam's achievement cache was not found (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	Install .NET 8
 INSTALL_NET_8_HOW	Microsoft's package through winget first (Windows asks for permission); if that fails, into the game's Mods folder for you only, no administrator needed.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Read once you're in control of the hero
 WAITING_FOR_THE_GAME	Waiting for the game
+NOW	Now
+PUZZLES	Puzzles
+PREVIOUSLY	Previously
+LAST_PLAYED_AGO_IN	Last played {ago} in {place}
+NO_QUEST_WAS_FOLLOWED	No quest was being followed.
+THAT_QUEST_IS_NO_LONGER_OPEN	The quest you followed is no longer open.
+YOU_WERE_FOLLOWING	Following: {quest}
+GOT_IT	Got it
+BEFORE_YOU_GO_ON	Before You Go On
+NOTHING_IS_ABOUT_TO_BE_MISSED	Nothing is about to be missed right now.
+KEYSTONES_LEFT_IN_ORDER	Keystones left, in order: {keystones}
+MORE_WITH_A_LATER_DEADLINE	Later deadlines: {count}
+GO_TO_PAGE	Open {page} ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Nothing left here that the mod knows of.
+COUNTS_ONLY_OPEN_A_LINE	Counts only — press a line to open its page.
+LEDGER_QUEST_PLACES	Quest places: {count}
+LEDGER_HANDOVERS	Hand-overs you can make: {count}
+LEDGER_PUZZLES	Puzzles: {count}
+LEDGER_LOCKS	Lymbic locks: {count} (open now: {open})
+LEDGER_VAULT_DOORS	Vault doors: {count}
+LEDGER_COLLECTIBLES	Collectibles: {count}
+LEDGER_ENEMY_GROUPS	Enemy groups: {count}
+LEDGER_STORIES	NPCs with more to tell: {count}
+OTHER_REGIONS_CARD	Other Regions
+NOTHING_LEFT_ELSEWHERE	Nothing left in other regions that the mod knows of.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Most you can do there now first: hand-overs, and locks your rods open.
+TRIP_ROW	{place} — now: {doable} · left: {left}
+MINUTES_AGO	{count} min ago
+HOURS_AGO	{count} h ago
+LYMBIC_LOCKS	Lymbic Locks
+THE_RODS_EACH_LOCK_TAKES	The rods each lock takes — locks your rods already open come first. Press a lock or a missing rod to be guided there.
+LOCK_OPENS_NOW	{place} — opens now
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — in {place}
+ROD_MISSING_NOWHERE	✗ {rod} — no pickup left in the survey
+LOCKS_IN_OTHER_REGIONS	Locks in other regions: {count}

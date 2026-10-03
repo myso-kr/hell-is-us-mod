@@ -62,7 +62,7 @@ impl Panel {
                     if state.chosen {
                         t.style(tw::row(INLINE)).add(|t| {
                             text(t, RichText::new(tr!("PICKED_BY_HAND_KEPT_UNTIL_IT")).color(DIM).small());
-                            if w(t, |ui| ui.small_button(tr!("BACK_TO_AUTO"))).clicked() {
+                            if w(t, |ui| ui.button(tr!("BACK_TO_AUTO"))).clicked() {
                                 state.chosen = false;
                                 state.target = None;
                                 state.guide_auto = true;
@@ -92,7 +92,7 @@ impl Panel {
             if !state.skipped.is_empty() {
                 t.style(tw::row(INLINE)).add(|t| {
                     text(t, RichText::new(trf!("GOALS_SKIPPED", count = state.skipped.len())).color(DIM).small());
-                    if w(t, |ui| ui.small_button(tr!("UNDO"))).clicked() {
+                    if w(t, |ui| ui.button(tr!("UNDO"))).clicked() {
                         state.skipped.clear();
                         state.target = None;
                     }

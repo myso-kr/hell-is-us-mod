@@ -8,5 +8,6 @@ pub mod logfile;
 pub mod memstat;
 pub mod paths;
 pub mod runtime;
+pub mod session;
 pub mod settings;
 pub mod verify;

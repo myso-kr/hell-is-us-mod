@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	No se encontró la carpeta de partidas del juego
 JUST_NOW	ahora mismo
 MIN_AGO	hace {minutes} min
 H_AGO	hace {hours} h
-DAYS_AGO	hace {days} d
+DAYS_AGO	hace {count} d
 GUIDING	 · guiando
 THIS_QUEST_HAS_NO_GOAL_IN	Esta misión no tiene objetivo en esta región — guiando al objetivo de otra misión más cercana
 THIS_ENTRY_HAS_NO_GOAL_IN	Esta entrada no tiene objetivo en esta región — continúa en otro lugar
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	No hay lista de puzles — ejecuta `doctor surv
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Mostrar también puertas con llave y colocación de objetos
 UNSOLVED_PUZZLE	Puzle sin resolver
 VAULT_DOOR	Puerta de cámara
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzle cerca — la respuesta está en la pestaña Guía del panel
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzle cerca — la respuesta está en la pestaña Puzles del panel
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objetos de investigación: pulsa la línea Investigación en «Colección» para ir al más cercano
 ACHIEVEMENTS	Logros {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	No se encontró la caché de logros de Steam (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	Instalar .NET 8
 INSTALL_NET_8_HOW	Primero el paquete de Microsoft con winget (Windows pide permiso); si falla, en la carpeta Mods del juego, solo para ti y sin permisos de administrador.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Se lee en cuanto controles al protagonista
 WAITING_FOR_THE_GAME	Esperando al juego
+NOW	Ahora
+PUZZLES	Puzles
+PREVIOUSLY	Anteriormente
+LAST_PLAYED_AGO_IN	Última partida: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	No seguías ninguna misión.
+THAT_QUEST_IS_NO_LONGER_OPEN	La misión que seguías ya no está en curso.
+YOU_WERE_FOLLOWING	Siguiendo: {quest}
+GOT_IT	Entendido
+BEFORE_YOU_GO_ON	Antes de seguir
+NOTHING_IS_ABOUT_TO_BE_MISSED	Ahora mismo no hay nada a punto de perderse.
+KEYSTONES_LEFT_IN_ORDER	Piedras angulares restantes, en orden: {keystones}
+MORE_WITH_A_LATER_DEADLINE	Con plazo más adelante: {count}
+GO_TO_PAGE	Abrir {page} ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Aquí no queda nada que el mod conozca.
+COUNTS_ONLY_OPEN_A_LINE	Solo cifras: pulsa una línea para abrir su página.
+LEDGER_QUEST_PLACES	Lugares de misión: {count}
+LEDGER_HANDOVERS	Entregas posibles: {count}
+LEDGER_PUZZLES	Puzles: {count}
+LEDGER_LOCKS	Cerraduras límbicas: {count} (abribles ya: {open})
+LEDGER_VAULT_DOORS	Puertas de cámara: {count}
+LEDGER_COLLECTIBLES	Coleccionables: {count}
+LEDGER_ENEMY_GROUPS	Grupos de enemigos: {count}
+LEDGER_STORIES	PNJ con algo más que contar: {count}
+OTHER_REGIONS_CARD	Otras regiones
+NOTHING_LEFT_ELSEWHERE	No queda nada en otras regiones que el mod conozca.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Primero donde más puedes hacer ahora: entregas y cerraduras que abren tus varas.
+TRIP_ROW	{place} — ahora: {doable} · quedan: {left}
+MINUTES_AGO	hace {count} min
+HOURS_AGO	hace {count} h
+LYMBIC_LOCKS	Cerraduras límbicas
+THE_RODS_EACH_LOCK_TAKES	Las varas que pide cada cerradura; primero las que tus varas ya abren. Pulsa una cerradura o una vara que falte para que te guíe hasta allí.
+LOCK_OPENS_NOW	{place} — se abre ya
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — en {place}
+ROD_MISSING_NOWHERE	✗ {rod} — no queda dónde conseguirla en el registro
+LOCKS_IN_OTHER_REGIONS	Cerraduras en otras regiones: {count}

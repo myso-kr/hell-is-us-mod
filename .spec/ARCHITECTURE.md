@@ -108,6 +108,7 @@ src/
     quests.rs           the quest journal and secrets (good deeds, mysteries, timeloops), read on a time budget
     survey.rs tables.rs the survey (Mods\survey\*.json) and its tables: spawners, vaults
     missables.rs        good deeds that can be missed (assets/missables.tsv)
+    ledger.rs           what is left in each region, by kind; the trip planner's order (FEATURES.md §6)
     pathfind.rs         grid A* round obstacles, when there is no navmesh (ROUTES.md)
     target.rs           choosing the target: auto, skip, blocked → what opens it; the cycle key
   map/                  map state and drawing
@@ -122,14 +123,14 @@ src/
                         names.rs (the game's own names, Mods\locale) · text.rs (the mod's text tables, assets/i18n) ·
                         fill.rs (runtime fill for trf!) — tr!("KEY") / trf! macros
   infra/                log.rs logfile.rs (hiumod.log) · paths.rs (the Mods\ folder; every file path starts here) ·
-                        settings.rs · verify.rs · backup.rs (save backups) · memstat.rs (this process's memory) ·
+                        settings.rs · verify.rs · backup.rs (save backups) · memstat.rs (this process's memory) · session.rs (where the last session left off) ·
                         gamedata.rs runtime.rs (reading the survey automatically; the .NET 8 runtime — SURVEY.md §8)
   game/                 the game seen from outside: locate.rs (install), launch.rs, process.rs (RPM/WPM),
                         achievements.rs (Steam's achievement cache, FEATURES.md §4)
   ui/                   the panel and the overlays (Windows only)
     mod.rs              Request, Shared, the worker thread, the backup and memory-log thread
     panel/              the eframe panel: mod.rs (frame, header, sidebar, console window) and one file per page:
-                        groups · map · guide · quests · collect · deep · saves · debug
+                        groups · now · map · guide · quests · collect · deep · saves · debug
     overlay/            the overlay thread: mod.rs (frame loop, windows, keys) · route.rs (the route to the goal,
                         navmesh first then grid, own thread) · bake.rs (terrain baking) · hud.rs (pins, compass, tracker lines)
     tracker.rs pen.rs   the quest tracker; GDI text

@@ -1,4 +1,4 @@
-# Feature phases: F1–F11
+# Feature phases: F1–F11, and the "now" page
 
 A record of the guidance features, added in phases. The F numbers come from the 2026-10-03 feature
 plan: phase 1 is F2, F3, F5, F9; phase 2 is F1, F4, F10, F11; phase 3 is F6, F7, F8.
@@ -145,3 +145,33 @@ few seconds).
   `assets/symbols/<name>.svg` (100×100, white stroke 4, round caps). Other colors are made by
   replacing `#ffffff` (`src/map/symbols.rs`).
 - Drawing them in the panel: `PANEL.md` §2.
+
+## 6. The "now" page: region ledger, before you go on, previously, Lymbic locks (JOURNEY.md §3)
+
+Built from JOURNEY.md's first proposals, with the panel's tabs reorganised so no page carries more
+than four cards (PANEL.md §1).
+
+- **Region ledger** (`src/guide/ledger.rs`, §3.1): for every region, what is left by kind — quest
+  places (a place two quests need counts once), hand-overs possible now, dials and keypads unsolved
+  (vault doors and Lymbic locks apart), Lymbic locks (and how many the rods held open), vault doors,
+  collectibles (`Collect::left_by_world`), enemy groups, NPCs with more to tell. Counts only; each line
+  opens the page that lists the places.
+- **Trip planner** (§3.4): the same rows for the other regions, sorted by what can be done there now
+  (hand-overs + locks the rods held open), then by what is left.
+- **Before you go on** (§3.5): the good deeds whose story point can come any time now (F1's "soon"),
+  the act 2 keystone order, and how many deadlines are further off; a button to the Quests page.
+- **Previously** (§3.8, `src/infra/session.rs`): the panel writes `Mods\session.txt` (time, region,
+  followed quest, position) every 30 s while the hero is in play, and reads the previous one once at
+  start. After a gap of 30 minutes or more the panel opens on the "now" page with a card: when and
+  where the last session ended, the quest followed and its open leads now. Dismissed with "Got it".
+- **Lymbic locks** (§3.3, `Survey::locks`): every lock panel whose answer is Lymbic rods (24 in the
+  survey, a duplicated panel counted once), with each rod held (✓) or missing (✗). A missing rod shows
+  where its nearest pickup not taken is — the distance in this region, the region name elsewhere. A
+  lock's line and each missing rod's line are pressed to be guided there (the line guided to stays
+  marked); pressing is the asking, so there is no extra reveal step and no separate buttons. Some rods lie
+  in other Lymbic chests. Distances add ↑/↓ when the height differs by 3 m or more — one Acasa lock
+  sits 9 m under the monument it is "3 m" from. Locks the rods held already open come first; locks
+  elsewhere that cannot open yet are only counted.
+- Not built yet from JOURNEY.md: the chest rewards and the timeloop prisms (§4 research), the clue
+  board, the completion board, the shard budget, Haze links.
+

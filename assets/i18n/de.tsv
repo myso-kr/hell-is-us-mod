@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	Der Spielstandordner des Spiels wurde nicht gefund
 JUST_NOW	gerade eben
 MIN_AGO	vor {minutes} Min.
 H_AGO	vor {hours} Std.
-DAYS_AGO	vor {days} Tg.
+DAYS_AGO	vor {count} Tagen
 GUIDING	 · Führung aktiv
 THIS_QUEST_HAS_NO_GOAL_IN	Diese Quest hat in dieser Region kein Ziel – Führung zum nächsten Ziel einer anderen Quest
 THIS_ENTRY_HAS_NO_GOAL_IN	Dieser Eintrag hat in dieser Region kein Ziel – es geht woanders weiter
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Keine Rätselliste — führe einmal `doctor su
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Auch Schlüsseltüren und Gegenstandsplätze zeigen
 UNSOLVED_PUZZLE	Ungelöstes Rätsel
 VAULT_DOOR	Tresortür
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Rätsel in der Nähe — Lösung im Panel unter „Führung“
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Rätsel in der Nähe — Lösung im Panel unter „Rätsel“
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Forschungsgegenstände: Zeile „Forschung“ unter „Sammlung“ drücken, um zum nächsten geführt zu werden
 ACHIEVEMENTS	Erfolge {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steams Erfolgs-Cache nicht gefunden (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	.NET 8 installieren
 INSTALL_NET_8_HOW	Zuerst Microsofts Paket über winget (Windows fragt nach einer Berechtigung); klappt das nicht, in den Mods-Ordner des Spiels, nur für dich, ohne Administratorrechte.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Wird gelesen, sobald du den Helden steuerst
 WAITING_FOR_THE_GAME	Warte auf das Spiel
+NOW	Jetzt
+PUZZLES	Rätsel
+PREVIOUSLY	Bisher
+LAST_PLAYED_AGO_IN	Zuletzt gespielt: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	Es wurde keine Quest verfolgt.
+THAT_QUEST_IS_NO_LONGER_OPEN	Die verfolgte Quest ist nicht mehr offen.
+YOU_WERE_FOLLOWING	Verfolgt: {quest}
+GOT_IT	Verstanden
+BEFORE_YOU_GO_ON	Bevor du weitermachst
+NOTHING_IS_ABOUT_TO_BE_MISSED	Gerade droht nichts verpasst zu werden.
+KEYSTONES_LEFT_IN_ORDER	Verbleibende Schlusssteine, in dieser Reihenfolge: {keystones}
+MORE_WITH_A_LATER_DEADLINE	Spätere Fristen: {count}
+GO_TO_PAGE	{page} öffnen ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Hier ist nichts mehr übrig, das die Mod kennt.
+COUNTS_ONLY_OPEN_A_LINE	Nur Anzahlen — tippe auf eine Zeile, um die Seite zu öffnen.
+LEDGER_QUEST_PLACES	Quest-Orte: {count}
+LEDGER_HANDOVERS	Möglich zu übergeben: {count}
+LEDGER_PUZZLES	Rätsel: {count}
+LEDGER_LOCKS	Lymbische Schlösser: {count} (jetzt zu öffnen: {open})
+LEDGER_VAULT_DOORS	Grufttüren: {count}
+LEDGER_COLLECTIBLES	Sammelobjekte: {count}
+LEDGER_ENEMY_GROUPS	Gegnergruppen: {count}
+LEDGER_STORIES	NPCs mit mehr zu erzählen: {count}
+OTHER_REGIONS_CARD	Andere Regionen
+NOTHING_LEFT_ELSEWHERE	In anderen Regionen ist nichts mehr übrig, das die Mod kennt.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Wo du jetzt am meisten tun kannst, zuerst: Übergaben und Schlösser, die deine Stäbe öffnen.
+TRIP_ROW	{place} — jetzt: {doable} · übrig: {left}
+MINUTES_AGO	vor {count} Min.
+HOURS_AGO	vor {count} Std.
+LYMBIC_LOCKS	Lymbische Schlösser
+THE_RODS_EACH_LOCK_TAKES	Die Stäbe, die jedes Schloss braucht — Schlösser, die deine Stäbe schon öffnen, zuerst. Tippe auf ein Schloss oder einen fehlenden Stab, um dorthin geführt zu werden.
+LOCK_OPENS_NOW	{place} — jetzt zu öffnen
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — in {place}
+ROD_MISSING_NOWHERE	✗ {rod} — kein Fundort mehr in der Erfassung
+LOCKS_IN_OTHER_REGIONS	Schlösser in anderen Regionen: {count}

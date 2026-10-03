@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	Cartella dei salvataggi del gioco non trovata
 JUST_NOW	adesso
 MIN_AGO	{minutes} min fa
 H_AGO	{hours} h fa
-DAYS_AGO	{days} g fa
+DAYS_AGO	{count} g fa
 GUIDING	 · in guida
 THIS_QUEST_HAS_NO_GOAL_IN	Questa indagine non ha obiettivi in questa regione — la guida punta all'obiettivo di un'altra indagine più vicina
 THIS_ENTRY_HAS_NO_GOAL_IN	Questa voce non ha obiettivi in questa regione — prosegue altrove
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Nessun elenco enigmi — esegui `doctor survey`
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Mostra anche porte con chiave e oggetti da posare
 UNSOLVED_PUZZLE	Enigma non risolto
 VAULT_DOOR	Porta della camera
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Enigma vicino — la risposta è nella scheda Guida del pannello
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Enigma vicino — la risposta è nella scheda Enigmi del pannello
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Oggetti di ricerca: premi la riga Ricerca in «Raccolta» per essere guidato al più vicino
 ACHIEVEMENTS	Obiettivi Steam {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Cache degli obiettivi Steam non trovata (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	Installa .NET 8
 INSTALL_NET_8_HOW	Prima il pacchetto di Microsoft tramite winget (Windows chiede il permesso); se non riesce, nella cartella Mods del gioco, solo per te, senza diritti di amministratore.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Letti appena controlli il protagonista
 WAITING_FOR_THE_GAME	In attesa del gioco
+NOW	Adesso
+PUZZLES	Enigmi
+PREVIOUSLY	In precedenza
+LAST_PLAYED_AGO_IN	Ultima partita: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	Non stavi seguendo nessuna indagine.
+THAT_QUEST_IS_NO_LONGER_OPEN	L’indagine che seguivi non è più aperta.
+YOU_WERE_FOLLOWING	Seguita: {quest}
+GOT_IT	Ok
+BEFORE_YOU_GO_ON	Prima di proseguire
+NOTHING_IS_ABOUT_TO_BE_MISSED	Al momento non c’è nulla che rischi di andare perso.
+KEYSTONES_LEFT_IN_ORDER	Chiavi di volta rimaste, in ordine: {keystones}
+MORE_WITH_A_LATER_DEADLINE	Scadenze più avanti: {count}
+GO_TO_PAGE	Apri {page} ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Qui non resta nulla che la mod conosca.
+COUNTS_ONLY_OPEN_A_LINE	Solo conteggi: premi una riga per aprirne la pagina.
+LEDGER_QUEST_PLACES	Luoghi delle indagini: {count}
+LEDGER_HANDOVERS	Consegne possibili: {count}
+LEDGER_PUZZLES	Enigmi: {count}
+LEDGER_LOCKS	Blocchi limbici: {count} (apribili ora: {open})
+LEDGER_VAULT_DOORS	Porte delle camere: {count}
+LEDGER_COLLECTIBLES	Collezionabili: {count}
+LEDGER_ENEMY_GROUPS	Gruppi di nemici: {count}
+LEDGER_STORIES	PNG con altro da raccontare: {count}
+OTHER_REGIONS_CARD	Altre regioni
+NOTHING_LEFT_ELSEWHERE	Nelle altre regioni non resta nulla che la mod conosca.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Prima dove puoi fare di più adesso: consegne e blocchi che le tue barre aprono.
+TRIP_ROW	{place} — ora: {doable} · restano: {left}
+MINUTES_AGO	{count} min fa
+HOURS_AGO	{count} h fa
+LYMBIC_LOCKS	Blocchi limbici
+THE_RODS_EACH_LOCK_TAKES	Le barre che ogni blocco richiede; prima quelli che le tue barre aprono già. Premi un blocco o una barra mancante per esservi guidato.
+LOCK_OPENS_NOW	{place} — si apre ora
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — a {place}
+ROD_MISSING_NOWHERE	✗ {rod} — nessun punto di raccolta rimasto nel rilevamento
+LOCKS_IN_OTHER_REGIONS	Blocchi in altre regioni: {count}

@@ -46,6 +46,7 @@ struct Derived {
     hollows: Arc<Vec<crate::tables::Hollows>>,
     puzzles: Arc<Vec<crate::puzzles::Puzzle>>,
     catalogue: Arc<Vec<(crate::survey::Placed, bool)>>,
+    locks: Arc<Vec<crate::survey::Lock>>,
 }
 
 /// Puzzles this near the hero (cm) are read and shown.
@@ -139,6 +140,7 @@ impl Engine {
             hollows: Default::default(),
             puzzles: Default::default(),
             catalogue: Default::default(),
+            locks: Default::default(),
             deadlines: Default::default(),
             handovers: Default::default(),
             needs: Default::default(),
@@ -184,6 +186,7 @@ impl Engine {
                                 lore_known,
                                 hollows: Arc::new(a.hollows()),
                                 catalogue: Arc::new(a.catalogue()),
+                                locks: Arc::new(a.locks()),
                                 puzzles: Arc::new(here.map(|h| a.puzzles(h, PUZZLE_REACH)).unwrap_or_default()),
                                 needs: Arc::new(a.needs(&journal)),
                                 handovers: Arc::new(a.handovers()),
@@ -208,6 +211,7 @@ impl Engine {
                             snap.hollows = d.hollows.clone();
                             snap.puzzles = d.puzzles.clone();
                             snap.catalogue = d.catalogue.clone();
+                            snap.locks = d.locks.clone();
                         }
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();

@@ -5,7 +5,7 @@ Decisions and history for the eframe/egui panel's layout, styling and console. T
 
 ## 1. Current structure (summary)
 
-- **Layout:** `src/ui/tw.rs` wraps egui_taffy (CSS Flexbox/Grid, see §6.4) under Tailwind-style names.
+- **Layout:** `src/ui/tw.rs` wraps egui_taffy (CSS Flexbox/Grid, see §7.4) under Tailwind-style names.
   - A column (`col`) is a one-track grid (`minmax(0,1fr)`), so row heights come from content only.
   - A row (`row`/`wrap`) is a flex row; a text block inside it (`block`) grows to fill the remaining width.
 - **Cards:** masonry layout (§2). The column count depends on the number of cards and the monitor width.
@@ -13,8 +13,14 @@ Decisions and history for the eframe/egui panel's layout, styling and console. T
   `src/ui/panel/mod.rs`); beyond that the body scrolls.
 - **Look:** palette, corner radii and egui visuals live in one place, `src/ui/theme.rs` (§3). Spacing uses
   four values on a 4 px scale (§4). The website (`docs/`) uses the same palette.
-- **Sidebar:** game status, hero gate, game data status; cheat groups; tool tabs (Map, Guide, Quests,
-  Collect, Saves, Debug). The console is described in §5.
+- **Sidebar:** game status, hero gate, game data status; tool tabs, then the cheat groups — each
+  group folds under its heading (▾/▸). Tools start open; cheats start folded unless the panel opens on
+  a cheat page. The cheats heading counts the cheats on. The console is described in §6.
+- **Tool tabs** (2026-10-03, at most four cards a page): **Now** (previously, before you go on, this
+  region, other regions — FEATURES.md §6) · **Map** (map, pins, keys) · **Guide** (compass and guide,
+  places) · **Quests** (journal, missable deeds, hand-overs, secrets) · **Puzzles** (nearby, Lymbic locks,
+  vaults, the full list) · **Collect** (collection, enemy groups, NPC stories, achievements) · **Saves** ·
+  **Debug**. The "now" page is where the panel opens after a break of 30 minutes or more.
 - **How to check:** click through every tab and capture the window (RUNBOOK.md, "Checking the panel").
 
 ## 2. Card layout: masonry and SVG icons (2026-10-03)
@@ -88,7 +94,25 @@ All colors and egui visuals are defined in `src/ui/theme.rs`:
   - The Guide tab's "Places" list was cut off: a ScrollArea inside a block is stuck at the previous
     frame's height. Fixed with `min_scrolled_height`.
 
-## 5. Panel key `` ` `` (~) and CLI console (2026-10-03)
+## 5. What can be pressed: four roles, four looks (2026-10-03)
+
+Every control belongs to one role, and each role has one look, so a card never makes the player
+work out which of two alike buttons does what.
+
+| Role | Look | Where |
+|---|---|---|
+| Go there | The line itself, pressable (`tw::line`, `tw::pick_with`); the line guided to stays marked. No Guide buttons. | Lymbic locks and rods, puzzles nearby, the puzzle list, vaults, enemy groups, quests, places |
+| Reveal | One small button at the end of the line (`reveal` in `deep.rs`): Show answer / Show code ↔ Hide. The answer appears under the line. | Puzzles, vaults, hidden achievements |
+| Act | A normal-size button | Apply, Save, Back up now, Clear trail, Got it, Open page, Back to auto, Undo |
+| On/off | A switch (`toggle`), as tall as a line of body text so a top-aligned label sits on its first line. A choice among values is a segmented row. | Settings, list filters, keeping cheats on |
+
+- A line carries at most one button. A line with nowhere to go (a puzzle solved, a vault opened, a rod
+  held) is drawn by the same `tw::line` as a disabled selectable: the same padding and height, so text
+  and spacing match the pressable lines (a frameless button has no padding and would not).
+- Exceptions: a map pin's row holds a text field, so it keeps a "Guide" selectable and a × at its end;
+  folding (the sidebar groups, the map's details) is a frameless ▾/▸ line.
+
+## 6. Panel key `` ` `` (~) and CLI console (2026-10-03)
 
 Requested by the user: move the panel hotkey to `` ` `` (~) and add a console overlay for CLI commands that
 is ready for input whenever the panel is open.
@@ -113,18 +137,18 @@ is ready for input whenever the panel is open.
     shows the panel, `src/ui/hotkey.rs` finds the console window by its title and hides or shows it too;
   - when open, it takes keyboard focus.
 
-## 6. Layout history
+## 7. Layout history
 
 How the panel reached §1. Each step replaced the previous one; `ui/layout.rs` and the 12-column grid no
 longer exist. Kept for the reasons things changed.
 
-### 6.1 Console-style two columns (2026-10-02)
+### 7.1 Console-style two columns (2026-10-02)
 
 Request: merge north correction with guide/map, make the panel wider, use a two-column "SaaS console"
 style. Width went from 470 to 960 with a 172 px left sidebar, and the map and guide became one page.
 Superseded by the tabbed layout (`FEATURES.md` §1). A saved tab value `guide` was read as `map`.
 
-### 6.2 Fixed grid (2026-10-02)
+### 7.2 Fixed grid (2026-10-02)
 
 Problem: inner cards overlapped. egui `columns` and `Grid` grow to fit content and do not clip, so fixed
 180 px sliders, four-button rows and unwrapped labels in ~370 px columns spilled over neighbouring
@@ -133,16 +157,16 @@ Replaced because clipping hid content instead of fitting it. Changes that surviv
 became a dropdown, "heading up" became "Up is: North / Camera", terrain got its own card, and long goal
 and place names are ellipsized with the full name on hover.
 
-### 6.3 12-column grid, maximum height, body scroll (2026-10-03)
+### 7.3 12-column grid, maximum height, body scroll (2026-10-03)
 
 Feedback: content should fit the width, not be clipped; expanding sections made the window taller than
 the screen. `ui/layout.rs::row` became a 12-column grid that stacked cells vertically below a minimum
 width (300 px cards), with text wrapping by default. The lasting part is the height rule: window height
 follows content up to 85 % of the monitor, and the body scrolls inside while the sidebar and bottom bar
-stay fixed. The grid itself was replaced by taffy (§6.4) because hand-computed spans still guessed
+stay fixed. The grid itself was replaced by taffy (§7.4) because hand-computed spans still guessed
 widths.
 
-### 6.4 CSS Flexbox/Grid via taffy; trimmed settings (2026-10-03)
+### 7.4 CSS Flexbox/Grid via taffy; trimmed settings (2026-10-03)
 
 Request: Tailwind-style dynamic flexbox and grid. Adopted `egui_taffy 0.14` (egui 0.36, taffy 0.9, a
 W3C Flexbox/Grid implementation, MIT) and wrote `src/ui/tw.rs` (§1).

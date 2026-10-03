@@ -193,6 +193,31 @@ pub fn pick_with(tui: &mut Tui, on: bool, icon: impl FnOnce(&mut egui::Ui), text
     })
 }
 
+/// One line of a list, the panel's single pattern for "go there": an icon, the line, and
+/// at most one button at its end (`end`, e.g. a reveal). `Some(on)` makes the line
+/// pressable, marked while `on`; `None` draws it the same size and place, not pressable.
+/// Returns whether the line was pressed.
+pub fn line(
+    tui: &mut Tui,
+    on: Option<bool>,
+    icon: impl FnOnce(&mut egui::Ui),
+    text: impl Into<RichText>,
+    end: impl FnOnce(&mut Tui),
+) -> bool {
+    let text = text.into();
+    tui.style(row(super::theme::TIGHT)).add(|tui| {
+        w(tui, icon);
+        // Not pressable: the same selectable, disabled — the same padding and height, so
+        // its text starts where a pressable line's does (a frameless button has none).
+        let pressed = block(tui, |ui| {
+            let button = egui::Button::selectable(on.unwrap_or(false), text).wrap_mode(egui::TextWrapMode::Wrap);
+            ui.add_enabled(on.is_some(), button).clicked()
+        });
+        end(tui);
+        pressed && on.is_some()
+    })
+}
+
 /// A small, dim note that wraps to the width it is given.
 pub fn note(tui: &mut Tui, text: impl Into<String>) {
     let text = text.into();

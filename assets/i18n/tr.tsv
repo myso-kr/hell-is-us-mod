@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	Oyunun kayıt klasörü bulunamadı
 JUST_NOW	az önce
 MIN_AGO	{minutes} dk önce
 H_AGO	{hours} sa önce
-DAYS_AGO	{days} gün önce
+DAYS_AGO	{count} gün önce
 GUIDING	 · yönlendiriyor
 THIS_QUEST_HAS_NO_GOAL_IN	Bu bölgede bu görevin hedefi yok — en yakın diğer görev hedefine yönlendiriyor
 THIS_ENTRY_HAS_NO_GOAL_IN	Bu bölgede bu girdinin hedefi yok — başka bir bölgede devam ediyor
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Bulmaca listesi yok — konsolda bir kez `docto
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Anahtarlı kapıları ve eşya yerleştirmeyi de göster
 UNSOLVED_PUZZLE	Çözülmemiş bulmaca
 VAULT_DOOR	Mahzen kapısı
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Yakında bulmaca — cevap panelin Rehber sekmesinde
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Yakında bulmaca — cevap panelin Bulmacalar sekmesinde
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Araştırma eşyaları: 'Koleksiyon' altındaki Araştırma satırına bas, en yakına götürür
 ACHIEVEMENTS	Başarımlar {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam başarım önbelleği bulunamadı (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	.NET 8’i kur
 INSTALL_NET_8_HOW	Önce winget ile Microsoft’un paketi (Windows izin ister); olmazsa yönetici izni gerekmeden, yalnızca senin için oyunun Mods klasörüne.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Kahramanı kontrol ettiğinde okunur
 WAITING_FOR_THE_GAME	Oyun bekleniyor
+NOW	Şimdi
+PUZZLES	Bulmacalar
+PREVIOUSLY	Önceki bölümde
+LAST_PLAYED_AGO_IN	Son oynama: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	Takip edilen bir görev yoktu.
+THAT_QUEST_IS_NO_LONGER_OPEN	Takip ettiğiniz görev artık açık değil.
+YOU_WERE_FOLLOWING	Takip edilen: {quest}
+GOT_IT	Tamam
+BEFORE_YOU_GO_ON	Devam etmeden önce
+NOTHING_IS_ABOUT_TO_BE_MISSED	Şu anda kaçırılmak üzere olan bir şey yok.
+KEYSTONES_LEFT_IN_ORDER	Kalan kilit taşları, sırasıyla: {keystones}
+MORE_WITH_A_LATER_DEADLINE	Daha sonra süresi dolanlar: {count}
+GO_TO_PAGE	Aç: {page} ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Burada modun bildiği kalan bir şey yok.
+COUNTS_ONLY_OPEN_A_LINE	Yalnızca sayılar — sayfasını açmak için bir satıra basın.
+LEDGER_QUEST_PLACES	Görev yerleri: {count}
+LEDGER_HANDOVERS	Şimdi teslim edilebilir: {count}
+LEDGER_PUZZLES	Bulmacalar: {count}
+LEDGER_LOCKS	Limbik kilitler: {count} (şimdi açılabilir: {open})
+LEDGER_VAULT_DOORS	Mahzen kapıları: {count}
+LEDGER_COLLECTIBLES	Koleksiyon parçaları: {count}
+LEDGER_ENEMY_GROUPS	Düşman grupları: {count}
+LEDGER_STORIES	Anlatacakları kalan NPC: {count}
+OTHER_REGIONS_CARD	Diğer bölgeler
+NOTHING_LEFT_ELSEWHERE	Diğer bölgelerde modun bildiği kalan bir şey yok.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Önce şimdi en çok şey yapabileceğiniz yer: teslimler ve çubuklarınızın açtığı kilitler.
+TRIP_ROW	{place} — şimdi: {doable} · kalan: {left}
+MINUTES_AGO	{count} dk önce
+HOURS_AGO	{count} sa önce
+LYMBIC_LOCKS	Limbik kilitler
+THE_RODS_EACH_LOCK_TAKES	Her kilidin istediği çubuklar — çubuklarınızın zaten açtığı kilitler önce gelir. Oraya yönlendirilmek için bir kilide ya da eksik bir çubuğa basın.
+LOCK_OPENS_NOW	{place} — şimdi açılabilir
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — yer: {place}
+ROD_MISSING_NOWHERE	✗ {rod} — taramada alınacak yer kalmadı
+LOCKS_IN_OTHER_REGIONS	Diğer bölgelerdeki kilitler: {count}

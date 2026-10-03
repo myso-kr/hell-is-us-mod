@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	Папка сохранений игры не на
 JUST_NOW	только что
 MIN_AGO	{minutes} мин назад
 H_AGO	{hours} ч назад
-DAYS_AGO	{days} дн. назад
+DAYS_AGO	{count} дн. назад
 GUIDING	 · ведёт
 THIS_QUEST_HAS_NO_GOAL_IN	В этом регионе нет целей этого задания — ведёт к ближайшей цели другого задания
 THIS_ENTRY_HAS_NO_GOAL_IN	В этом регионе нет целей этой записи — продолжается в другом месте
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Нет списка головоломок — 
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Показывать и двери на ключ, и размещение предметов
 UNSOLVED_PUZZLE	Нерешённая головоломка
 VAULT_DOOR	Дверь хранилища
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Рядом головоломка — ответ на вкладке «Навигация» панели
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Рядом головоломка — ответ на вкладке «Головоломки» панели
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Предметы исследований: нажмите строку «Исследования» в «Коллекции», чтобы идти к ближайшему
 ACHIEVEMENTS	Достижения {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Кэш достижений Steam не найден (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	Установить .NET 8
 INSTALL_NET_8_HOW	Сначала пакет Microsoft через winget (Windows запросит разрешение); если не выйдет — в папку Mods игры, только для вас, без прав администратора.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Чтение начнётся, когда вы будете управлять героем
 WAITING_FOR_THE_GAME	Ожидание игры
+NOW	Сейчас
+PUZZLES	Головоломки
+PREVIOUSLY	Ранее
+LAST_PLAYED_AGO_IN	Последняя игра: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	Задание не отслеживалось.
+THAT_QUEST_IS_NO_LONGER_OPEN	Отслеживаемое задание больше не открыто.
+YOU_WERE_FOLLOWING	Отслеживается: {quest}
+GOT_IT	Понятно
+BEFORE_YOU_GO_ON	Прежде чем идти дальше
+NOTHING_IS_ABOUT_TO_BE_MISSED	Сейчас ничего не грозит быть упущенным.
+KEYSTONES_LEFT_IN_ORDER	Оставшиеся краеугольные камни, по порядку: {keystones}
+MORE_WITH_A_LATER_DEADLINE	С более поздним сроком: {count}
+GO_TO_PAGE	Открыть «{page}» ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Здесь не осталось ничего, о чём знает мод.
+COUNTS_ONLY_OPEN_A_LINE	Только числа — нажмите строку, чтобы открыть её вкладку.
+LEDGER_QUEST_PLACES	Места заданий: {count}
+LEDGER_HANDOVERS	Можно передать сейчас: {count}
+LEDGER_PUZZLES	Головоломки: {count}
+LEDGER_LOCKS	Лимбические замки: {count} (открываются сейчас: {open})
+LEDGER_VAULT_DOORS	Двери залов: {count}
+LEDGER_COLLECTIBLES	Коллекционные предметы: {count}
+LEDGER_ENEMY_GROUPS	Группы врагов: {count}
+LEDGER_STORIES	NPC, которым есть что рассказать: {count}
+OTHER_REGIONS_CARD	Другие регионы
+NOTHING_LEFT_ELSEWHERE	В других регионах не осталось ничего, о чём знает мод.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Сначала там, где сейчас можно сделать больше всего: передачи и замки, которые открывают ваши стержни.
+TRIP_ROW	{place} — сейчас: {doable} · осталось: {left}
+MINUTES_AGO	{count} мин назад
+HOURS_AGO	{count} ч назад
+LYMBIC_LOCKS	Лимбические замки
+THE_RODS_EACH_LOCK_TAKES	Стержни, которые нужны каждому замку; сначала те, что ваши стержни уже открывают. Нажмите на замок или недостающий стержень, чтобы вас туда провели.
+LOCK_OPENS_NOW	{place} — открывается сейчас
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — место: {place}
+ROD_MISSING_NOWHERE	✗ {rod} — в обследовании не осталось, где его взять
+LOCKS_IN_OTHER_REGIONS	Замки в других регионах: {count}

@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	Le dossier de sauvegarde du jeu est introuvable
 JUST_NOW	à l'instant
 MIN_AGO	il y a {minutes} min
 H_AGO	il y a {hours} h
-DAYS_AGO	il y a {days} j
+DAYS_AGO	il y a {count} j
 GUIDING	· guide
 THIS_QUEST_HAS_NO_GOAL_IN	Cette quête n'a aucun objectif dans cette région — guidage vers l'objectif d'une autre quête proche
 THIS_ENTRY_HAS_NO_GOAL_IN	Cette entrée n'a aucun objectif dans cette région — elle continue ailleurs
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Pas de liste d'énigmes — lancez `doctor surv
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Afficher aussi les portes à clé et les dépôts d'objets
 UNSOLVED_PUZZLE	Énigme non résolue
 VAULT_DOOR	Porte de chambre
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Énigme à proximité — réponse dans l'onglet Guide du panneau
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Énigme à proximité — réponse dans l’onglet Énigmes du panneau
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objets de recherche : appuyez sur la ligne Recherches dans « Collection » pour être guidé au plus proche
 ACHIEVEMENTS	Succès {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Cache des succès Steam introuvable (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	Installer .NET 8
 INSTALL_NET_8_HOW	D’abord le paquet de Microsoft via winget (Windows demande une autorisation) ; en cas d’échec, dans le dossier Mods du jeu, pour vous seul, sans droits d’administrateur.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Lu dès que vous contrôlez le héros
 WAITING_FOR_THE_GAME	En attente du jeu
+NOW	Maintenant
+PUZZLES	Énigmes
+PREVIOUSLY	Précédemment
+LAST_PLAYED_AGO_IN	Dernière partie : {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	Aucune quête n’était suivie.
+THAT_QUEST_IS_NO_LONGER_OPEN	La quête suivie n’est plus en cours.
+YOU_WERE_FOLLOWING	Suivie : {quest}
+GOT_IT	Compris
+BEFORE_YOU_GO_ON	Avant de continuer
+NOTHING_IS_ABOUT_TO_BE_MISSED	Rien n’est sur le point d’être manqué pour l’instant.
+KEYSTONES_LEFT_IN_ORDER	Pierres angulaires restantes, dans l’ordre : {keystones}
+MORE_WITH_A_LATER_DEADLINE	Échéances plus tardives : {count}
+GO_TO_PAGE	Ouvrir {page} ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Plus rien ici que le mod connaisse.
+COUNTS_ONLY_OPEN_A_LINE	Nombres seulement — cliquez sur une ligne pour ouvrir sa page.
+LEDGER_QUEST_PLACES	Lieux de quête : {count}
+LEDGER_HANDOVERS	Objets à remettre : {count}
+LEDGER_PUZZLES	Énigmes : {count}
+LEDGER_LOCKS	Verrous lymbiques : {count} (ouvrables maintenant : {open})
+LEDGER_VAULT_DOORS	Portes de chambre : {count}
+LEDGER_COLLECTIBLES	Objets à collectionner : {count}
+LEDGER_ENEMY_GROUPS	Groupes d’ennemis : {count}
+LEDGER_STORIES	PNJ qui ont encore à dire : {count}
+OTHER_REGIONS_CARD	Autres régions
+NOTHING_LEFT_ELSEWHERE	Plus rien dans les autres régions que le mod connaisse.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	D’abord là où vous pouvez faire le plus maintenant : remises et verrous que vos barres ouvrent.
+TRIP_ROW	{place} — maintenant : {doable} · restant : {left}
+MINUTES_AGO	il y a {count} min
+HOURS_AGO	il y a {count} h
+LYMBIC_LOCKS	Verrous lymbiques
+THE_RODS_EACH_LOCK_TAKES	Les barres que demande chaque verrou — ceux que vos barres ouvrent déjà en premier. Cliquez sur un verrou ou une barre manquante pour y être guidé.
+LOCK_OPENS_NOW	{place} — ouvrable maintenant
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — à {place}
+ROD_MISSING_NOWHERE	✗ {rod} — plus aucun emplacement dans le relevé
+LOCKS_IN_OTHER_REGIONS	Verrous dans d’autres régions : {count}

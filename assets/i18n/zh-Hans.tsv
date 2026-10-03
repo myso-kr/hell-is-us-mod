@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	未找到游戏的存档文件夹
 JUST_NOW	刚刚
 MIN_AGO	{minutes} 分钟前
 H_AGO	{hours} 小时前
-DAYS_AGO	{days} 天前
+DAYS_AGO	{count} 天前
 GUIDING	 · 引导中
 THIS_QUEST_HAS_NO_GOAL_IN	本区域没有此任务的目标，将引导至附近其他任务的目标
 THIS_ENTRY_HAS_NO_GOAL_IN	本区域没有此条目的目标，请前往其他区域
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	没有谜题列表，请在控制台运行一�
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	同时显示钥匙门和放置物品谜题
 UNSOLVED_PUZZLE	未解谜题
 VAULT_DOOR	宝库门
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	附近有谜题，答案在面板的“引导”页
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	附近有谜题，答案在面板的“谜题”页
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	研究道具：点击“收集进度”中的“研究”一行，即可引导至最近的一个
 ACHIEVEMENTS	成就 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	未找到 Steam 成就缓存（Steam/appcache/stats）
@@ -447,3 +447,40 @@ INSTALL_NET_8	安装 .NET 8
 INSTALL_NET_8_HOW	先通过 winget 安装 Microsoft 官方包（Windows 会请求权限）；若失败，则无需管理员权限，仅为当前用户安装到游戏的 Mods 文件夹。
 READ_ONCE_THE_HERO_IS_IN_CONTROL	可以操控主角后开始读取
 WAITING_FOR_THE_GAME	正在等待游戏
+NOW	当前
+PUZZLES	谜题
+PREVIOUSLY	前情回顾
+LAST_PLAYED_AGO_IN	上次游玩：{ago}，{place}
+NO_QUEST_WAS_FOLLOWED	当时没有追踪任务。
+THAT_QUEST_IS_NO_LONGER_OPEN	当时追踪的任务已不再进行中。
+YOU_WERE_FOLLOWING	正在追踪：{quest}
+GOT_IT	知道了
+BEFORE_YOU_GO_ON	继续之前
+NOTHING_IS_ABOUT_TO_BE_MISSED	目前没有即将错过的内容。
+KEYSTONES_LEFT_IN_ORDER	剩余的拱心石（建议顺序）：{keystones}
+MORE_WITH_A_LATER_DEADLINE	截止较晚的：{count}
+GO_TO_PAGE	打开“{page}” ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	模组已知的此地区剩余内容：无。
+COUNTS_ONLY_OPEN_A_LINE	只显示数量——点击一行打开对应页面。
+LEDGER_QUEST_PLACES	任务地点：{count}
+LEDGER_HANDOVERS	现在可交付：{count}
+LEDGER_PUZZLES	谜题：{count}
+LEDGER_LOCKS	林比克锁：{count}（现在可开：{open}）
+LEDGER_VAULT_DOORS	宝库门：{count}
+LEDGER_COLLECTIBLES	收集品：{count}
+LEDGER_ENEMY_GROUPS	敌群：{count}
+LEDGER_STORIES	还有话可听的 NPC：{count}
+OTHER_REGIONS_CARD	其他地区
+NOTHING_LEFT_ELSEWHERE	模组已知的其他地区剩余内容：无。
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	按现在能在那里做的事排序：交付物品，以及用已持有的棒能打开的锁。
+TRIP_ROW	{place}——现在：{doable} · 剩余：{left}
+MINUTES_AGO	{count} 分钟前
+HOURS_AGO	{count} 小时前
+LYMBIC_LOCKS	林比克锁
+THE_RODS_EACH_LOCK_TAKES	每把锁需要的棒——用已持有的棒就能打开的锁排在前面。点击锁或缺少的棒，即可引导前往。
+LOCK_OPENS_NOW	{place}——现在可开
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod}——在{place}
+ROD_MISSING_NOWHERE	✗ {rod}——勘测记录中已无可拾取处
+LOCKS_IN_OTHER_REGIONS	其他地区的锁：{count}

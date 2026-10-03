@@ -459,6 +459,20 @@ impl Attached {
     }
 
     /// NPCs that want an item the hero holds (the survey's trades).
+    /// Every Lymbic lock, with the rods held and where the missing ones are (JOURNEY.md §3.3).
+    pub fn locks(&self) -> Vec<crate::survey::Lock> {
+        let g = self.guide.borrow();
+        let Some(survey) = g.survey.as_ref() else { return Vec::new() };
+        let known = crate::survey::Known {
+            facts: &g.known_facts,
+            tags: &g.known_tags,
+            held: &g.held,
+            saved: &g.saved,
+            talked: &g.goals.done_npcs,
+        };
+        survey.locks(&known)
+    }
+
     pub fn handovers(&self) -> Vec<crate::survey::Need> {
         let g = self.guide.borrow();
         let Some(survey) = g.survey.as_ref() else { return Vec::new() };

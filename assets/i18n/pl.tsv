@@ -264,7 +264,7 @@ THE_GAMES_SAVE_FOLDER_WAS_NOT	Nie znaleziono folderu zapisów gry
 JUST_NOW	przed chwilą
 MIN_AGO	{minutes} min temu
 H_AGO	{hours} godz. temu
-DAYS_AGO	{days} d. temu
+DAYS_AGO	{count} dn. temu
 GUIDING	 · prowadzi
 THIS_QUEST_HAS_NO_GOAL_IN	Ten region nie ma celu tego zadania — prowadzi do najbliższego celu innego zadania
 THIS_ENTRY_HAS_NO_GOAL_IN	Ten region nie ma celu tego wpisu — ciąg dalszy gdzie indziej
@@ -417,7 +417,7 @@ NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Brak listy zagadek — uruchom raz `doctor surv
 SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Pokaż też drzwi na klucz i umieszczanie przedmiotów
 UNSOLVED_PUZZLE	Nierozwiązana zagadka
 VAULT_DOOR	Drzwi skarbca
-PUZZLE_NEARBY_THE_ANSWER_IS_IN	Zagadka w pobliżu — odpowiedź w zakładce Prowadzenie panelu
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Zagadka w pobliżu — odpowiedź w zakładce Łamigłówki panelu
 RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Przedmioty badawcze: kliknij wiersz Badania w „Kolekcji”, aby iść do najbliższego
 ACHIEVEMENTS	Osiągnięcia: {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Nie znaleziono pamięci podręcznej osiągnięć Steam (Steam/appcache/stats)
@@ -447,3 +447,40 @@ INSTALL_NET_8	Zainstaluj .NET 8
 INSTALL_NET_8_HOW	Najpierw pakiet Microsoftu przez winget (Windows poprosi o zgodę); jeśli się nie uda — do folderu Mods gry, tylko dla ciebie, bez uprawnień administratora.
 READ_ONCE_THE_HERO_IS_IN_CONTROL	Odczyt, gdy przejmiesz kontrolę nad bohaterem
 WAITING_FOR_THE_GAME	Czekam na grę
+NOW	Teraz
+PUZZLES	Łamigłówki
+PREVIOUSLY	Poprzednio
+LAST_PLAYED_AGO_IN	Ostatnia gra: {ago}, {place}
+NO_QUEST_WAS_FOLLOWED	Nie śledzono żadnego zadania.
+THAT_QUEST_IS_NO_LONGER_OPEN	Śledzone zadanie nie jest już otwarte.
+YOU_WERE_FOLLOWING	Śledzone: {quest}
+GOT_IT	OK
+BEFORE_YOU_GO_ON	Zanim pójdziesz dalej
+NOTHING_IS_ABOUT_TO_BE_MISSED	Teraz nic nie grozi przegapieniem.
+KEYSTONES_LEFT_IN_ORDER	Pozostałe kamienie zwornikowe, po kolei: {keystones}
+MORE_WITH_A_LATER_DEADLINE	Z późniejszym terminem: {count}
+GO_TO_PAGE	Otwórz: {page} ▸
+NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Tu nie zostało nic, o czym mod wie.
+COUNTS_ONLY_OPEN_A_LINE	Tylko liczby — kliknij wiersz, by otworzyć jego stronę.
+LEDGER_QUEST_PLACES	Miejsca zadań: {count}
+LEDGER_HANDOVERS	Do przekazania teraz: {count}
+LEDGER_PUZZLES	Łamigłówki: {count}
+LEDGER_LOCKS	Zamki limbiczne: {count} (do otwarcia teraz: {open})
+LEDGER_VAULT_DOORS	Drzwi skarbców: {count}
+LEDGER_COLLECTIBLES	Znajdźki: {count}
+LEDGER_ENEMY_GROUPS	Grupy wrogów: {count}
+LEDGER_STORIES	NPC z czymś jeszcze do powiedzenia: {count}
+OTHER_REGIONS_CARD	Inne regiony
+NOTHING_LEFT_ELSEWHERE	W innych regionach nie zostało nic, o czym mod wie.
+SORTED_BY_WHAT_YOU_CAN_DO_THERE	Najpierw tam, gdzie teraz zrobisz najwięcej: przekazania i zamki, które otwierają twoje pręty.
+TRIP_ROW	{place} — teraz: {doable} · zostało: {left}
+MINUTES_AGO	{count} min temu
+HOURS_AGO	{count} godz. temu
+LYMBIC_LOCKS	Zamki limbiczne
+THE_RODS_EACH_LOCK_TAKES	Pręty, których wymaga każdy zamek — najpierw te, które twoje pręty już otwierają. Kliknij zamek lub brakujący pręt, by cię tam poprowadzić.
+LOCK_OPENS_NOW	{place} — można otworzyć teraz
+ROD_HELD	✓ {rod}
+ROD_MISSING	✗ {rod}
+ROD_MISSING_AT	✗ {rod} — miejsce: {place}
+ROD_MISSING_NOWHERE	✗ {rod} — w spisie nie ma już skąd go wziąć
+LOCKS_IN_OTHER_REGIONS	Zamki w innych regionach: {count}

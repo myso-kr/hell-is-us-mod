@@ -8,6 +8,7 @@ mod deep;
 mod groups;
 mod guide;
 mod map;
+mod now;
 mod quests;
 mod saves;
 
@@ -127,23 +128,28 @@ fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], 
 /// The tool pages in the sidebar, under the cheat groups.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Tool {
+    Now,
     Map,
     Guide,
     Quests,
+    Puzzles,
     Collect,
     Saves,
     Debug,
 }
 
 impl Tool {
-    const ALL: [Tool; 6] = [Tool::Map, Tool::Guide, Tool::Quests, Tool::Collect, Tool::Saves, Tool::Debug];
+    const ALL: [Tool; 8] =
+        [Tool::Now, Tool::Map, Tool::Guide, Tool::Quests, Tool::Puzzles, Tool::Collect, Tool::Saves, Tool::Debug];
 
     /// Its name in settings.txt.
     fn id(self) -> &'static str {
         match self {
+            Tool::Now => "now",
             Tool::Map => "map",
             Tool::Guide => "guide",
             Tool::Quests => "quests",
+            Tool::Puzzles => "puzzles",
             Tool::Collect => "collect",
             Tool::Saves => "saves",
             Tool::Debug => "debug",
@@ -152,9 +158,11 @@ impl Tool {
 
     fn label(self) -> &'static str {
         match self {
+            Tool::Now => tr!("NOW"),
             Tool::Map => tr!("MAP"),
             Tool::Guide => tr!("GUIDE"),
             Tool::Quests => tr!("QUESTS"),
+            Tool::Puzzles => tr!("PUZZLES"),
             Tool::Collect => tr!("COLLECT"),
             Tool::Saves => tr!("SAVES"),
             Tool::Debug => tr!("DEBUG"),
@@ -203,6 +211,15 @@ pub struct Panel {
     /// The size last asked of the window, so it is asked once per change.
     height: f32,
     width: f32,
+    /// Where the last session left off (session.rs), read once at start; the "previously"
+    /// card until dismissed; when this session's state was last written.
+    previous: Option<crate::session::Session>,
+    previous_dismissed: bool,
+    /// The sidebar's two groups, each folded under its heading line: the tools start
+    /// open, the cheats folded.
+    tools_open: bool,
+    cheats_open: bool,
+    session_saved: Option<Instant>,
     /// What the player turned on — not what is on right now. The game exiting or the
     /// gate closing switches cheats off; that must not become the saved choice, or
     /// nothing would come back next time.
@@ -236,12 +253,15 @@ impl Panel {
             .filter_map(|(id, v)| Active::parse(&if *v == 0.0 { id.clone() } else { format!("{id}={v}") }).ok())
             .collect();
         let tab = saved.tab.as_deref();
+        let previous = crate::session::read();
+        // Back after a break: open on the "now" page, where the "previously" card is.
+        let back = previous.as_ref().is_some_and(|p| crate::session::now().saturating_sub(p.when) >= 30 * 60);
         Panel {
             fonts_for: crate::i18n::culture(),
             shared,
             tx,
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
-            tool: Tool::ALL.into_iter().find(|t| Some(t.id()) == tab),
+            tool: if back { Some(Tool::Now) } else { Tool::ALL.into_iter().find(|t| Some(t.id()) == tab) },
             unfolded: [false; 6],
             wanted: resume.clone(),
             keep: saved.keep,
@@ -265,6 +285,11 @@ impl Panel {
             backups_read: None,
             height: 0.0,
             width: 0.0,
+            previous,
+            previous_dismissed: false,
+            tools_open: true,
+            cheats_open: !back && !Tool::ALL.iter().any(|t| Some(t.id()) == tab),
+            session_saved: None,
         }
     }
 
@@ -449,6 +474,22 @@ impl Panel {
         ui.add_space(super::theme::INLINE);
     }
 
+    /// Where this session is, every half minute while the hero is in play — the next
+    /// session's "previously" card (session.rs).
+    fn save_session(&mut self, snap: &Snapshot) {
+        if self.session_saved.is_some_and(|at| at.elapsed() < Duration::from_secs(30)) || snap.gate.is_err() {
+            return;
+        }
+        let (Some(world), Some((p, _))) = (snap.world.as_deref(), snap.pose) else { return };
+        crate::session::write(&crate::session::Session {
+            when: crate::session::now(),
+            world: crate::survey::Survey::world_of(world).to_string(),
+            quest: self.shared.map.lock().unwrap().quest.clone(),
+            at: [p[0] as f32, p[1] as f32, p[2] as f32],
+        });
+        self.session_saved = Some(Instant::now());
+    }
+
     /// Start reading what game data is missing, once the hero is in control and the
     /// runtime is there — never while a run is going or after one failed (the panel
     /// says why; the console's `doctor survey` tries again).
@@ -465,8 +506,8 @@ impl Panel {
         }
     }
 
-    /// The sidebar's pages: each cheat group (with how many are on), then the map &
-    /// guide, then debugging.
+    /// The sidebar's pages: the tools, then the cheat groups (the heading counts the
+    /// cheats on), each group folded or open under its heading.
     fn nav(&mut self, ui: &mut egui::Ui) {
         let item = |ui: &mut egui::Ui, on: bool, text: String| {
             let label = RichText::new(text).size(13.0).color(if on { super::theme::TITLE } else { DIM });
@@ -477,25 +518,38 @@ impl Panel {
                 .min_size(egui::vec2(ui.available_width(), 28.0));
             ui.add(button).clicked()
         };
-        let heading = |ui: &mut egui::Ui, text: &str| {
-            ui.label(RichText::new(text).color(DIM).small());
-            ui.add_space(super::theme::TIGHT / 2.0);
+        // A group's heading folds it; folding leaves the page shown as it is.
+        let heading = |ui: &mut egui::Ui, open: &mut bool, text: String| {
+            let line = format!("{}  {text}", if *open { "▾" } else { "▸" });
+            let head = egui::Button::new(RichText::new(line).color(DIM).small())
+                .fill(Color32::TRANSPARENT)
+                .stroke(egui::Stroke::NONE)
+                .min_size(egui::vec2(ui.available_width(), 22.0));
+            if ui.add(head).clicked() {
+                *open = !*open;
+            }
         };
         ui.spacing_mut().item_spacing.y = 2.0;
-        heading(ui, tr!("CHEATS"));
-        for g in Group::ALL {
-            let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
-            let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
-            if item(ui, self.tool.is_none() && self.tab == g, text) {
-                self.tab = g;
-                self.tool = None;
+        heading(ui, &mut self.tools_open, tr!("TOOLS").to_string());
+        if self.tools_open {
+            for tool in Tool::ALL {
+                if item(ui, self.tool == Some(tool), tool.label().to_string()) {
+                    self.tool = Some(tool);
+                }
             }
         }
         ui.add_space(super::theme::BLOCK);
-        heading(ui, tr!("TOOLS"));
-        for tool in Tool::ALL {
-            if item(ui, self.tool == Some(tool), tool.label().to_string()) {
-                self.tool = Some(tool);
+        let on = CHEATS.iter().filter(|c| self.on.get(c.id).copied().unwrap_or(false)).count();
+        let title = if on > 0 { format!("{}  ({on})", tr!("CHEATS")) } else { tr!("CHEATS").to_string() };
+        heading(ui, &mut self.cheats_open, title);
+        if self.cheats_open {
+            for g in Group::ALL {
+                let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
+                let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
+                if item(ui, self.tool.is_none() && self.tab == g, text) {
+                    self.tab = g;
+                    self.tool = None;
+                }
             }
         }
     }
@@ -536,8 +590,9 @@ impl Panel {
                 self.resume = None;
                 self.sent = Some(Instant::now());
             }
-            ui.checkbox(&mut self.keep, tr!("KEEP_THESE_CHEATS_ON_NEXT_TIME"))
-                .on_hover_text(tr!("NEXT_RUN_ONCE_THE_HERO_CAN"));
+            ui.add_space(super::theme::INLINE);
+            toggle(ui, &mut self.keep).on_hover_text(tr!("NEXT_RUN_ONCE_THE_HERO_CAN"));
+            ui.label(tr!("KEEP_THESE_CHEATS_ON_NEXT_TIME")).on_hover_text(tr!("NEXT_RUN_ONCE_THE_HERO_CAN"));
         });
         let attached = snap.is_some_and(|s| s.game.is_ok());
         if let Some(n) = snap.and_then(|s| s.notice.clone()) {
@@ -574,9 +629,10 @@ impl Panel {
     /// How many cards the page shown has.
     fn page_cards(&self) -> usize {
         match self.tool {
-            Some(Tool::Collect) => 6,
-            Some(Tool::Guide) => 4,
-            Some(Tool::Quests) | Some(Tool::Map) => 3,
+            Some(Tool::Now) => self.now_cards(),
+            Some(Tool::Collect) | Some(Tool::Quests) | Some(Tool::Puzzles) => 4,
+            Some(Tool::Map) => 3,
+            Some(Tool::Guide) => 2,
             Some(Tool::Saves) => 2,
             Some(Tool::Debug) => 1,
             None if self.tab == Group::Movement => 3,
@@ -653,6 +709,7 @@ impl eframe::App for Panel {
             self.resume(s);
             self.follow(s);
             self.read_game_data(s);
+            self.save_session(s);
         }
         let open = snap.as_ref().is_some_and(|s| s.gate.is_ok());
 
@@ -742,9 +799,10 @@ fn key_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
     });
 }
 
-/// An on/off switch — clearer at a glance than a checkbox.
+/// An on/off switch — clearer at a glance than a checkbox. As tall as a line of body
+/// text, so a label beside it (top-aligned, as it may wrap) sits on its first line.
 pub(super) fn toggle(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
-    let size = ui.spacing().interact_size.y * egui::vec2(1.8, 0.9);
+    let size = ui.text_style_height(&egui::TextStyle::Body) * egui::vec2(2.0, 1.0);
     let (rect, mut response) = ui.allocate_exact_size(size, egui::Sense::click());
     if response.clicked() {
         *on = !*on;
@@ -756,7 +814,7 @@ pub(super) fn toggle(ui: &mut egui::Ui, on: &mut bool) -> egui::Response {
         let track = if *on { OK.gamma_multiply(0.85) } else { Color32::from_gray(70) };
         ui.painter().rect_filled(rect, radius, track);
         let x = egui::lerp((rect.left() + radius)..=(rect.right() - radius), t);
-        ui.painter().circle_filled(egui::pos2(x, rect.center().y), radius - 3.0, super::theme::TITLE);
+        ui.painter().circle_filled(egui::pos2(x, rect.center().y), radius - 2.0, super::theme::TITLE);
     }
     response
 }

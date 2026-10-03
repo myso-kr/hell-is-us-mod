@@ -6,6 +6,29 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## Unreleased — 0.2.0
+
+### Panel
+
+- A **Now** page, where the panel opens after a break: what was going on last time, the good deeds
+  about to be missed, what is left in this region by kind, and which other regions are worth a trip.
+- A **Puzzles** page: puzzles nearby, Lymbic locks, the vaults and the full puzzle list, moved out of
+  the Guide and Collect pages. No page has more than four cards now.
+- One look per role: press a line to be guided there (no separate Guide buttons), one small
+  reveal button at most per line, normal-size action buttons, and switches instead of checkboxes,
+  sized to the text beside them.
+- The sidebar lists the tools first and the cheat groups below; both fold under their heading, and
+  the cheats start folded, their heading counting the cheats on.
+
+### Guide
+
+- **Region ledger:** counts of quest places, hand-overs, puzzles, Lymbic locks, vault doors,
+  collectibles, enemy groups and NPCs with more to tell, per region — counts only, nothing named.
+- **Trip planner:** other regions sorted by what you can do there right now.
+- **Lymbic locks:** the rods each lock takes and which you hold; each missing rod shows how far its
+  pickup is (up or down too); press a lock or a missing rod to be guided there.
+- **Previously:** where the last session ended and the quest you were following.
+
 ## 0.1.0 — 2026-10-03
 
 The first release. Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
