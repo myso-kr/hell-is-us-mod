@@ -32,8 +32,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   radius, at most 400 m (the minimap's too), is measured to the screen's short side with a margin above and below, and
   its lines, icons and dots are drawn at full resolution. The minimap and big map cards
   each preview their own map.
-- The big map costs far less to draw: its ground is reused while the hero stands still, and the
-  edge fade and the doubling are cached and spread over threads.
+- The big map moves smoothly: the hero's position glides between readings, the map is drawn about
+  30 times a second, and a frame costs a tenth of what it did (its ground slides instead of being
+  redrawn, and is redrawn on a thread of its own; the trail draws only its latest stretch).
 - The panel and its tray icon carry the mod's mark instead of Windows' generic icon.
 - Long lists can be grouped: places by kind, achievements by kind (story, deeds and mysteries,
   combat, gear, research and collections).

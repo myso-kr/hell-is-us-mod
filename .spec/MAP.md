@@ -233,18 +233,35 @@ with gaps between them, as Diablo's and Path of Exile's maps do.
   below); it is a circle that fades from full strength at 45 % of its radius to nothing at its edge
   (`raster.rs` `fade_edges`), as Diablo's and Path of Exile's overlay maps do. Not an ellipse of the
   screen's shape: on a wide screen its sides reached 2.4 radii and were cut off. `View::full`: no
-  disc, rim or north mark. The ground (`draw_ground`: disc and relief, most of the work and soft
-  anyway) is drawn at half size and doubled (`upscale2`: weights 9/3/3/1, integer, rows in
-  parallel); everything over it (`draw_above`: edges, dots, trail, icons, route) at full size, so
-  lines, icons and the gaps between dots stay sharp (doubled, the dots blurred into a haze). Dots
-  grow with the canvas (2 px on a 1440 px screen); on a canvas under 600 px tall (the Map page's
+  disc, rim or north mark. The ground (`paint_ground`: disc, relief and the terrain's bands, most
+  of the work and soft anyway) is drawn at half size and doubled (`upscale2`: weights 9/3/3/1,
+  integer, rows in parallel); everything over it (`draw_above`: trail, pins, things, goals, route,
+  hero) at full size, so lines and icons stay sharp. Dots grow with the screen (2 px on a 1440 px
+  one; doubled, they had blurred into a haze); on a screen under 600 px tall (the Map page's
   preview, shown smaller still) they are drawn as the tone they average to, since a 1 px mask beat
   with the panel's pixels. The fade mask is cached per size. Both maps' radius is at most 400 m
   (`RADIUS_MAX`): at 500 m the edge of the loaded land showed, cut off.
-- **The ground is cached** (`raster.rs` `GROUND`): the disc and relief depend only on where the map
-  stands and how it is drawn, so while the hero stands still (or moves under a pixel) the last
-  frame's ground of that size is copied instead of drawn. Measured on 3440×1440 before the cache:
-  draw 22–24 ms, fade 1.1 ms (23 ms before the mask cache), double 8 ms (18–23 ms before).
+- **The big map scrolls its ground** (`overlay/bigmap.rs`, 2026-10-04): north up, walking only
+  slides it, so the ground is drawn once larger than the window by a margin (a tenth of its height,
+  about 40 m at 400 m), the dots put on it then (they move with the land), and copied at the hero's
+  offset each frame. It is drawn again, on a thread of its own while the old one keeps sliding,
+  when the hero is halfway out of the margin, has climbed 1.5 m since, or what it is drawn from
+  changed: the footprints by content (the list is made anew whenever any actor comes or goes), the
+  relief, the settings. The game streams the land in as the hero walks, so that is every second or
+  two; on the overlay's thread each took 80–140 ms and stopped the map.
+- **The hero glides** (`overlay/glide.rs`): the worker reads the game ten times a second; between
+  readings the pose is interpolated from where it is shown to the latest reading, over the time
+  readings take (60–200 ms), so the maps move smoothly a reading behind at most. Over 30 m is a
+  jump, shown at once; yaw turns the short way. While the big map shows the overlay draws every
+  30 ms (else 50).
+- **The trail is sliced to draw**: the latest 2,000 points, fading to nothing at the slice's start,
+  a segment only every 4 px on screen. The trail itself keeps every point.
+- **What it cost** (3440×1440, big map, a frame): before, about 140–170 ms (terrain supersampled at
+  full size 111–120 ms, doubling 20–45, ground 1–20, fade 2–3); after, 14–26 ms, at most about
+  30 (copy 2–8, trail 4–11, things 2–3, fade 2–7, present 4–12).
+- **Other maps' ground is cached** (`raster.rs` `GROUND`): the disc, relief and terrain depend only
+  on where the map stands and how it is drawn, so while the hero stands still (or moves under a
+  pixel) the last frame's ground of that size is copied instead of drawn.
 - **Two previews** on the Map page: the big map as it covers the game window (made small,
   `raster::downscale`) and the minimap beside its settings; the preview no longer follows the
   display mode.

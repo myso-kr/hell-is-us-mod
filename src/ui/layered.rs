@@ -111,10 +111,6 @@ impl Layered {
         }
     }
 
-    pub fn is_shown(&self) -> bool {
-        self.shown
-    }
-
     pub fn hide(&mut self) {
         if self.shown {
             unsafe { ShowWindow(self.hwnd, SW_HIDE) };

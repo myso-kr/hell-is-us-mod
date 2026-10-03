@@ -17,6 +17,8 @@
 //! what the windows show (hud.rs) are worked out beside this loop.
 
 mod bake;
+mod bigmap;
+mod glide;
 mod hud;
 mod route;
 
@@ -43,16 +45,16 @@ const COMPASS_H: i32 = 60;
 /// Gap from the game window's edges.
 const MARGIN: i32 = 24;
 const FRAME: Duration = Duration::from_millis(50);
-/// The big map takes this share of the game window's height, and is drawn every
-/// third frame — it is many more pixels.
-const BIG_EVERY: u32 = 3;
-/// The panel's hero map: its side (px), how far it reaches (m) and how often (frames).
+/// While the big map shows: it covers the screen, so it is drawn more often (it costs
+/// little a frame once its ground is drawn: see bigmap.rs).
+const FRAME_BIG: Duration = Duration::from_millis(30);
+/// The panel's hero map: its side (px), how far it reaches (m) and how often.
 const HERO_PX: usize = 176;
 const HERO_RADIUS_M: f32 = 120.0;
-const HERO_EVERY: u32 = 20;
-/// The Map page's preview: redrawn this often (frames) while the page shows, so a
-/// setting moved is seen at once.
-const PREVIEW_EVERY: u32 = 4;
+const HERO_EVERY: Duration = Duration::from_secs(1);
+/// The Map page's preview: redrawn this often while the page shows, so a setting moved
+/// is seen at once.
+const PREVIEW_EVERY: Duration = Duration::from_millis(200);
 /// The big map's preview width (px): the panel shows it at about this size.
 const PREVIEW_BIG_W: usize = 640;
 const SAVE_EVERY: Duration = Duration::from_secs(10);
@@ -113,7 +115,10 @@ pub fn run(shared: Arc<Shared>) {
     let mut big_cv = Canvas::new(1, 1);
     // The big map is drawn at half size, then shown at full: these are its half-size
     // canvas and icons.
-    let mut big_half = Canvas::new(1, 1);
+    let mut big_scroll = bigmap::Scroll::default();
+    let mut glide = glide::Glide::default();
+    let mut big_on = false;
+    let (mut hero_at, mut preview_at) = (Instant::now(), Instant::now());
     let mut map_cv = Canvas::new(MAP_PX as usize, MAP_PX as usize);
     let mut compass_cv = Canvas::new(COMPASS_W as usize, COMPASS_H as usize);
     // Without icons the map still works, with dots.
@@ -138,7 +143,9 @@ pub fn run(shared: Arc<Shared>) {
         pump();
         // A frame every FRAME, whatever the last one took to draw.
         let spent = frame_start.elapsed();
-        std::thread::sleep(FRAME.saturating_sub(spent).max(Duration::from_millis(5)));
+        let frame = if big_on { FRAME_BIG } else { FRAME };
+        std::thread::sleep(frame.saturating_sub(spent).max(Duration::from_millis(5)));
+        big_on = false;
         frame_start = Instant::now();
         tick = tick.wrapping_add(1);
 
@@ -178,7 +185,9 @@ pub fn run(shared: Arc<Shared>) {
                     false,
                 ),
             };
-        let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
+        // Between the worker's readings, glided (glide.rs).
+        let here =
+            glide.see(pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32)), Instant::now());
 
         let mut state = shared.map.lock().unwrap();
         // The panel changed the icon size: rasterise them again, once.
@@ -208,7 +217,8 @@ pub fn run(shared: Arc<Shared>) {
 
         // The panel's hero map, while the panel shows (the game has no focus then, so
         // the minimap below is not drawn): north up, the relief and the places, no route.
-        if tick % HERO_EVERY == 0 && shared.visible.load(Ordering::SeqCst) {
+        if hero_at.elapsed() >= HERO_EVERY && shared.visible.load(Ordering::SeqCst) {
+            hero_at = Instant::now();
             if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
                 let view = View {
                     center: p,
@@ -245,10 +255,11 @@ pub fn run(shared: Arc<Shared>) {
 
         // The Map page's preview: the map the settings make now, the big map's when that
         // is the display (its opacity too), else the minimap's.
-        if tick % PREVIEW_EVERY == 0
+        if preview_at.elapsed() >= PREVIEW_EVERY
             && shared.visible.load(Ordering::SeqCst)
             && shared.preview_wanted.load(Ordering::SeqCst)
         {
+            preview_at = Instant::now();
             if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
                 let relief = baking.relief(&state, p, &obstacles);
                 let goals = hud::with_pins(&goals, &state, world);
@@ -290,10 +301,9 @@ pub fn run(shared: Arc<Shared>) {
                     let (gw, gh) = ((gr.right - gr.left).max(2) as usize, (gr.bottom - gr.top).max(2) as usize);
                     let w = PREVIEW_BIG_W.min(gw) & !1;
                     let h = (gh * w / gw).max(2) & !1;
-                    let mut half = Canvas::new(w / 2, h / 2);
                     let mut small = Canvas::new(w, h);
-                    big_frame(
-                        &mut half,
+                    bigmap::frame(
+                        &mut bigmap::Scroll::default(),
                         &mut small,
                         &state,
                         world,
@@ -303,7 +313,7 @@ pub fn run(shared: Arc<Shared>) {
                         &footprints,
                         &goals,
                         &Default::default(),
-                        relief.as_deref(),
+                        relief.as_ref(),
                     );
                     if state.big_alpha < 100 {
                         // Premultiplied: every channel scales with the opacity.
@@ -371,25 +381,24 @@ pub fn run(shared: Arc<Shared>) {
                     if big_window.as_ref().is_none_or(|w| (w.w, w.h) != (gw, gh)) {
                         big_window = Layered::new("hiumod-bigmap", "Hell Is Us Map", gw, gh);
                         big_cv = Canvas::new(gw as usize, gh as usize);
-                        big_half = Canvas::new((gw / 2).max(1) as usize, (gh / 2).max(1) as usize);
+                        big_scroll = bigmap::Scroll::default();
                     }
                     if let Some(w) = big_window.as_mut() {
-                        if tick % BIG_EVERY == 0 || !w.is_shown() {
-                            big_frame(
-                                &mut big_half,
-                                &mut big_cv,
-                                &state,
-                                world,
-                                (p, yaw),
-                                &things,
-                                icons.as_ref(),
-                                &footprints,
-                                &goals,
-                                &path,
-                                relief.as_deref(),
-                            );
-                            w.present_alpha(&big_cv, r.left, r.top, (state.big_alpha as u32 * 255 / 100) as u8);
-                        }
+                        big_on = true;
+                        bigmap::frame(
+                            &mut big_scroll,
+                            &mut big_cv,
+                            &state,
+                            world,
+                            (p, yaw),
+                            &things,
+                            icons.as_ref(),
+                            &footprints,
+                            &goals,
+                            &path,
+                            relief.as_ref(),
+                        );
+                        w.present_alpha(&big_cv, r.left, r.top, (state.big_alpha as u32 * 255 / 100) as u8);
                     }
                 } else {
                     if let Some(w) = big_window.as_mut() {
@@ -496,39 +505,4 @@ pub fn run(shared: Arc<Shared>) {
         }
     }
     save(&mut shared.map.lock().unwrap());
-}
-
-/// One frame of the big map into `full` (the game window's size): drawn at half size
-/// into `half`, faded toward its edges and doubled. The radius reaches the window's
-/// short side, the map a circle that fades out within it.
-#[allow(clippy::too_many_arguments)]
-fn big_frame(
-    half: &mut Canvas,
-    full: &mut Canvas,
-    state: &crate::minimap::MapState,
-    world: &str,
-    (p, yaw): ([f32; 3], f32),
-    things: &[crate::actors::Thing],
-    icons: Option<&crate::icons::Icons>,
-    footprints: &[crate::geometry::Footprint],
-    goals: &[crate::goals::Goal],
-    path: &crate::pathfind::Path,
-    relief: Option<&crate::relief::Relief>,
-) {
-    let view = |cv: &Canvas| View {
-        center: p,
-        yaw_deg: yaw,
-        heading_up: false,
-        scale: crate::raster::map_radius(cv, true) / (state.big_radius_m * 100.0),
-        north_deg: state.north_yaw,
-        outline: state.big_outline,
-        full: true,
-    };
-    // The ground (the most work, and soft anyway) at half size, doubled; the lines and
-    // icons over it at full size, so they stay sharp.
-    crate::raster::draw_ground(half, state, &view(half), relief);
-    crate::raster::upscale2(half, full);
-    let r = crate::raster::map_radius(full, true);
-    crate::raster::draw_above(full, state, world, &view(full), things, icons, footprints, goals, path, r);
-    crate::raster::fade_edges(full);
 }

@@ -306,15 +306,15 @@ fn line_cover(v: f32, slope2: f32, base: f32, spacing: f32, half: f32) -> f32 {
 /// The ground as dots: a square dot in each cell of a grid, the rest of the cell cleared,
 /// so three quarters of the map is gap and the game shows through. A kept dot is drawn
 /// stronger, so the ground still reads at a quarter of the ink. The dot grows with the
-/// canvas (1 px on a small one, 2 px on a 1440 px tall screen) so it reads as a dot, not
-/// as a fine mesh. Run after the ground layers (disc, relief, terrain) and before
-/// anything that must stay solid.
-fn dots(cv: &mut Canvas) {
+/// screen (`screen_h`: 1 px on a small one, 2 px on a 1440 px tall one) so it reads as a
+/// dot, not as a fine mesh. Run on the ground (disc, relief, terrain), before anything
+/// that must stay solid.
+pub fn dots(cv: &mut Canvas, screen_h: usize) {
     const BOOST: u32 = 170; // percent
                             // Smaller than any screen (the Map page's preview, shown smaller still): the dots
                             // would be under a pixel there, so draw what they average to instead, a quarter of
                             // the ink boosted. A 1 px mask here, scaled down in the panel, beat with its pixels.
-    if cv.h < 600 {
+    if screen_h < 600 {
         const TONE: u32 = BOOST / 4; // percent
         for px in cv.px.iter_mut().filter(|p| **p != 0) {
             let c = |shift: u32| (((*px >> shift) & 0xFF) * TONE / 100) << shift;
@@ -322,22 +322,27 @@ fn dots(cv: &mut Canvas) {
         }
         return;
     }
-    let dot = (cv.h / 600).clamp(1, 3);
+    let dot = (screen_h / 600).clamp(1, 3);
     let pitch = dot * 2;
-    let w = cv.w;
-    for (i, px) in cv.px.iter_mut().enumerate() {
-        if *px == 0 {
+    // By rows: a gap row is cleared whole; on a dot row, runs of `dot` kept, `dot` cleared.
+    for (y, row) in cv.px.chunks_mut(cv.w).enumerate() {
+        if y % pitch >= dot {
+            row.fill(0);
             continue;
         }
-        let (x, y) = (i % w, i / w);
-        if x % pitch >= dot || y % pitch >= dot {
-            *px = 0;
-            continue;
+        for (x, px) in row.iter_mut().enumerate() {
+            if *px == 0 {
+                continue;
+            }
+            if x % pitch >= dot {
+                *px = 0;
+                continue;
+            }
+            // Premultiplied: alpha and colour scale together; colour never above alpha.
+            let a = ((*px >> 24) * BOOST / 100).min(255);
+            let c = |shift: u32| ((((*px >> shift) & 0xFF) * BOOST / 100).min(a)) << shift;
+            *px = (a << 24) | c(16) | c(8) | c(0);
         }
-        // Premultiplied: alpha and colour scale together; colour never above alpha.
-        let a = ((*px >> 24) * BOOST / 100).min(255);
-        let c = |shift: u32| ((((*px >> shift) & 0xFF) * BOOST / 100).min(a)) << shift;
-        *px = (a << 24) | c(16) | c(8) | c(0);
     }
 }
 
@@ -403,8 +408,11 @@ pub fn draw_map(
     route: &Path,
     relief: Option<&Relief>,
 ) {
-    let r = draw_ground(cv, state, view, relief);
-    draw_above(cv, state, world, view, things, icons, footprints, goals, route, r);
+    let r = draw_ground(cv, state, view, relief, footprints);
+    if state.dots {
+        dots(cv, cv.h);
+    }
+    draw_above(cv, state, world, view, things, icons, goals, route, r);
 }
 
 /// The map's radius on a canvas (px): a full-screen map's circle leaves `FULL_FILL` of the
@@ -421,32 +429,18 @@ pub fn map_radius(cv: &Canvas, full: bool) -> f32 {
 /// How much of the short side's half a full-screen map's circle takes.
 pub const FULL_FILL: f32 = 0.86;
 
-/// The ground under everything (the disc and the relief) into `cv`; the map's radius.
-pub fn draw_ground(cv: &mut Canvas, state: &MapState, view: &View, relief: Option<&Relief>) -> f32 {
+/// The ground (disc, relief, terrain) into `cv` out to `r` px from its centre, uncached:
+/// the big map draws it larger than the screen and scrolls it (overlay `Scroll`).
+pub fn paint_ground(
+    cv: &mut Canvas,
+    state: &MapState,
+    view: &View,
+    relief: Option<&Relief>,
+    footprints: &[Footprint],
+    r: f32,
+) {
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
-    let r = map_radius(cv, view.full);
-    let [ground, lines, _] = state.opacity;
-    // The ground (disc and relief) depends only on where the map stands and how it is
-    // drawn: while the hero stands still (or moves under a pixel) it is copied from the
-    // last frame of that size instead of drawn again — the relief is most of a frame.
-    let key = relief.filter(|_| state.relief != ReliefMode::Off).map(|rel| {
-        use std::hash::{Hash, Hasher};
-        let mut h = std::collections::hash_map::DefaultHasher::new();
-        let (px, py) = view.project([0.0, 0.0, 0.0]);
-        ((px.round() as i64, py.round() as i64), view.scale.to_bits(), view.north_deg.to_bits()).hash(&mut h);
-        (view.heading_up, view.heading_up.then(|| view.yaw_deg.to_bits()), view.outline, view.full).hash(&mut h);
-        (state.relief.key(), ground, lines, rel.z.as_ptr() as usize, rel.feet.to_bits()).hash(&mut h);
-        h.finish()
-    });
-    if let Some(k) = key {
-        let hit = GROUND.with(|g| {
-            let g = g.borrow();
-            g.iter().find(|(size, kk, _)| *size == (cv.w, cv.h) && *kk == k).map(|(_, _, px)| cv.px.copy_from_slice(px))
-        });
-        if hit.is_some() {
-            return r;
-        }
-    }
+    let ground = state.opacity[0];
     // The empty disc is the same every frame at a size: drawn once, then copied. As
     // outlines, there is no disc: the background stays clear.
     if view.outline {
@@ -474,6 +468,48 @@ pub fn draw_ground(cv: &mut Canvas, state: &MapState, view: &View, relief: Optio
     if let Some(rel) = relief.filter(|_| state.relief != ReliefMode::Off) {
         draw_relief(cv, state.relief, view, rel, r, view.outline, state.opacity);
     }
+    if state.terrain {
+        draw_terrain(cv, state, view, footprints, r);
+    }
+}
+
+/// The ground under everything (the disc and the relief) into `cv`; the map's radius.
+pub fn draw_ground(
+    cv: &mut Canvas,
+    state: &MapState,
+    view: &View,
+    relief: Option<&Relief>,
+    footprints: &[Footprint],
+) -> f32 {
+    let r = map_radius(cv, view.full);
+    let [ground, lines, _] = state.opacity;
+    // The ground (disc, relief, terrain) depends only on where the map stands and how it
+    // is drawn: while the hero stands still (or moves under a pixel) it is copied from
+    // the last frame of that size instead of drawn again: it is most of a frame.
+    let relief = relief.filter(|_| state.relief != ReliefMode::Off);
+    let key = (relief.is_some() || state.terrain).then(|| {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        let (px, py) = view.project([0.0, 0.0, 0.0]);
+        ((px.round() as i64, py.round() as i64), view.scale.to_bits(), view.north_deg.to_bits()).hash(&mut h);
+        (view.heading_up, view.heading_up.then(|| view.yaw_deg.to_bits()), view.outline, view.full).hash(&mut h);
+        (state.relief.key(), ground, lines, relief.map(|rel| (rel.z.as_ptr() as usize, rel.feet.to_bits())))
+            .hash(&mut h);
+        // The terrain's bands are by height against the feet: to 20 cm.
+        (state.terrain, footprints.as_ptr() as usize, footprints.len(), (view.center[2] / 20.0).round() as i64)
+            .hash(&mut h);
+        h.finish()
+    });
+    if let Some(k) = key {
+        let hit = GROUND.with(|g| {
+            let g = g.borrow();
+            g.iter().find(|(size, kk, _)| *size == (cv.w, cv.h) && *kk == k).map(|(_, _, px)| cv.px.copy_from_slice(px))
+        });
+        if hit.is_some() {
+            return r;
+        }
+    }
+    paint_ground(cv, state, view, relief, footprints, r);
     if let Some(k) = key {
         GROUND.with(|g| {
             let mut g = g.borrow_mut();
@@ -488,7 +524,174 @@ pub fn draw_ground(cv: &mut Canvas, state: &MapState, view: &View, relief: Optio
     r
 }
 
-/// Everything over the ground: the terrain's edges, the dots, the trail, pins, things,
+/// The terrain's walls and floors (`state.terrain`) as bands by height against the feet,
+/// over the ground. Supersampled, so the heaviest layer: it is part of the ground, cached
+/// and drawn at half size for the big map.
+fn draw_terrain(cv: &mut Canvas, state: &MapState, view: &View, footprints: &[Footprint], r: f32) {
+    let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
+    let [ground, lines, _] = state.opacity;
+    // Feet are about 90 cm below the capsule's centre.
+    let feet = view.center[2] - 90.0;
+    let reach = r / view.scale.max(f32::EPSILON);
+    // One class per sample (0 = none, else 1 + the band's place in `Band::ALL`; the
+    // later band wins where they overlap), SS × SS samples a pixel, then coloured
+    // once with an edge where a band ends. Overlaps do not pile up.
+    let (w, h) = (cv.w, cv.h);
+    let (sw, sh) = (w * SS, h * SS);
+    let mut class = vec![0u8; sw * sh];
+    for f in footprints {
+        let c = f.center();
+        let d = ((c[0] - view.center[0]).powi(2) + (c[1] - view.center[1]).powi(2)).sqrt();
+        if d - f.reach() > reach {
+            continue;
+        }
+        let Some(b) = band(f, feet) else { continue };
+        let k = 1 + Band::ALL.iter().position(|x| *x == b).unwrap() as u8;
+        let pts: Vec<(f32, f32)> = f
+            .corners
+            .iter()
+            .map(|c| {
+                let (x, y) = view.project([c[0], c[1], 0.0]);
+                ((cx + x) * SS as f32, (cy + y) * SS as f32)
+            })
+            .collect();
+        fill_convex(&mut class, sw, sh, &pts, k);
+    }
+    let rim = r - 1.0;
+    let outline = view.outline;
+    // As outlines only walls and raised floors are drawn: the cliff and rock boxes
+    // are bigger than what they hold (the contours show the real ground), and the
+    // lower bands' blue would read as water.
+    let kept: Vec<bool> = Band::ALL
+        .iter()
+        .map(|b| !outline || matches!(b, Band::Wall | Band::Raised | Band::Above | Band::Below))
+        .collect();
+    // Each class's (fill, edge) at the layers' opacity; as outlines, no fill and a
+    // stronger edge. Index 0 is the dark rim just outside each shape, as outlines,
+    // which keeps its line readable over any background.
+    let none = Rgba(0, 0, 0, 0);
+    let mut paint = vec![(none, faded(Rgba(0, 0, 0, if outline { 120 } else { 0 }), lines))];
+    paint.extend(Band::ALL.iter().map(|b| {
+        let (fill, edge) = b.colours();
+        match outline {
+            true => (none, faded(Rgba(edge.0, edge.1, edge.2, 235), lines)),
+            false => (faded(fill, ground), faded(edge, lines)),
+        }
+    }));
+    // A band left out is drawn as nothing, still over what it covers.
+    let mut map = [0u8; 9];
+    for (k, m) in map.iter_mut().enumerate().skip(1) {
+        *m = if kept[k - 1] { k as u8 } else { 0 };
+    }
+    let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
+    let rows = h.div_ceil(workers);
+    // Each pixel's band where all its samples are of one, else MIXED: where a
+    // pixel and the four beside it are all of one band, it is a plain fill (or
+    // nothing), with no need to look at the samples one by one.
+    const MIXED: u8 = u8::MAX;
+    let mut span = vec![0u8; w * h];
+    std::thread::scope(|scope| {
+        for (k, out) in span.chunks_mut(rows * w).enumerate() {
+            let (class, map) = (&class, &map);
+            scope.spawn(move || {
+                for (row, out) in out.chunks_mut(w).enumerate() {
+                    let y = k * rows + row;
+                    let sub = |j: usize| class[(y * SS + j) * sw..(y * SS + j + 1) * sw].chunks_exact(SS);
+                    for (o, ((a, b), c)) in out.iter_mut().zip(sub(0).zip(sub(1)).zip(sub(2))) {
+                        let k = a[0];
+                        *o = match a.iter().chain(b).chain(c).all(|&v| v == k) {
+                            true => map[k as usize],
+                            false => MIXED,
+                        };
+                    }
+                }
+            });
+        }
+    });
+    let (class, paint, map, span) = (&class, &paint, &map, &span);
+    let class_at = move |i: usize| map[class[i] as usize];
+    std::thread::scope(|scope| {
+        for (k, out) in cv.px.chunks_mut(rows * w).enumerate() {
+            scope.spawn(move || {
+                for (row, out) in out.chunks_mut(w).enumerate() {
+                    let y = k * rows + row;
+                    let dy = y as f32 + 0.5 - cy;
+                    if y == 0 || y + 1 >= h || dy.abs() > rim + 0.5 {
+                        continue;
+                    }
+                    let half = ((rim + 0.5).powi(2) - dy * dy).max(0.0).sqrt();
+                    let (x0, x1) = (((cx - half).floor() as usize).max(1), ((cx + half).ceil() as usize).min(w - 1));
+                    // The bands fade out over the disc's last pixel.
+                    let fade = |x: usize| {
+                        let dx = x as f32 + 0.5 - cx;
+                        let d2 = dx * dx + dy * dy;
+                        match d2 < (rim - 0.5) * (rim - 0.5) {
+                            true => 1.0,
+                            false => (rim + 0.5 - d2.sqrt()).clamp(0.0, 1.0),
+                        }
+                    };
+                    for x in x0..x1 {
+                        let p = y * w + x;
+                        let k = span[p];
+                        if k != MIXED {
+                            let near = [span[p - 1], span[p + 1], span[p - w], span[p + w]];
+                            if k == 0 && (!outline || near.iter().all(|&n| n == 0)) {
+                                continue;
+                            }
+                            if k > 0 && near.iter().all(|&n| n != MIXED && n >= k) {
+                                let c = paint[k as usize].0;
+                                let a = (c.3 as f32 * fade(x) + 0.5) as u32;
+                                if a > 0 {
+                                    out[x] = over(out[x], c, a);
+                                }
+                                continue;
+                            }
+                        }
+                        // Each sample is a pixel's worth of the plain test — a band's
+                        // edge where a sample one pixel away is of a lower band — at
+                        // its own offset: their mean is the edge, antialiased.
+                        let (mut sa, mut sr, mut sg, mut sb) = (0u32, 0u32, 0u32, 0u32);
+                        for sy in y * SS..(y + 1) * SS {
+                            let at = sy * sw;
+                            let cells = &class[at + x * SS..at + (x + 1) * SS];
+                            for (j, &raw) in cells.iter().enumerate() {
+                                let i = at + x * SS + j;
+                                let k = map[raw as usize];
+                                let beside =
+                                    [class_at(i - SS), class_at(i + SS), class_at(i - SS * sw), class_at(i + SS * sw)];
+                                let c = if k == 0 {
+                                    if !outline || beside.iter().all(|&n| n == 0) {
+                                        continue;
+                                    }
+                                    paint[0].1
+                                } else if beside.iter().any(|&n| n < k) {
+                                    paint[k as usize].1
+                                } else {
+                                    paint[k as usize].0
+                                };
+                                let a = c.3 as u32;
+                                sa += a;
+                                sr += c.0 as u32 * a;
+                                sg += c.1 as u32 * a;
+                                sb += c.2 as u32 * a;
+                            }
+                        }
+                        if sa == 0 {
+                            continue;
+                        }
+                        let a = (sa as f32 * fade(x) / (SS * SS) as f32 + 0.5) as u32;
+                        if a > 0 {
+                            let c = Rgba((sr / sa) as u8, (sg / sa) as u8, (sb / sa) as u8, 255);
+                            out[x] = over(out[x], c, a);
+                        }
+                    }
+                }
+            });
+        }
+    });
+}
+
+/// Everything over the ground (and its dots): the trail, pins, things,
 /// goals and the route, the rim, north and the hero.
 #[allow(clippy::too_many_arguments)]
 pub fn draw_above(
@@ -498,7 +701,6 @@ pub fn draw_above(
     view: &View,
     things: &[Thing],
     icons: Option<&Icons>,
-    footprints: &[Footprint],
     goals: &[Goal],
     route: &Path,
     r: f32,
@@ -507,201 +709,54 @@ pub fn draw_above(
     let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
     let [ground, lines, marks] = state.opacity;
 
-    if state.terrain {
-        // Feet are about 90 cm below the capsule's centre.
-        let feet = view.center[2] - 90.0;
-        let reach = r / view.scale.max(f32::EPSILON);
-        // One class per sample (0 = none, else 1 + the band's place in `Band::ALL`; the
-        // later band wins where they overlap), SS × SS samples a pixel, then coloured
-        // once with an edge where a band ends. Overlaps do not pile up.
-        let (w, h) = (cv.w, cv.h);
-        let (sw, sh) = (w * SS, h * SS);
-        let mut class = vec![0u8; sw * sh];
-        for f in footprints {
-            let c = f.center();
-            let d = ((c[0] - view.center[0]).powi(2) + (c[1] - view.center[1]).powi(2)).sqrt();
-            if d - f.reach() > reach {
-                continue;
-            }
-            let Some(b) = band(f, feet) else { continue };
-            let k = 1 + Band::ALL.iter().position(|x| *x == b).unwrap() as u8;
-            let pts: Vec<(f32, f32)> = f
-                .corners
-                .iter()
-                .map(|c| {
-                    let (x, y) = view.project([c[0], c[1], 0.0]);
-                    ((cx + x) * SS as f32, (cy + y) * SS as f32)
-                })
-                .collect();
-            fill_convex(&mut class, sw, sh, &pts, k);
-        }
-        let rim = r - 1.0;
-        let outline = view.outline;
-        // As outlines only walls and raised floors are drawn: the cliff and rock boxes
-        // are bigger than what they hold (the contours show the real ground), and the
-        // lower bands' blue would read as water.
-        let kept: Vec<bool> = Band::ALL
-            .iter()
-            .map(|b| !outline || matches!(b, Band::Wall | Band::Raised | Band::Above | Band::Below))
-            .collect();
-        // Each class's (fill, edge) at the layers' opacity; as outlines, no fill and a
-        // stronger edge. Index 0 is the dark rim just outside each shape, as outlines,
-        // which keeps its line readable over any background.
-        let none = Rgba(0, 0, 0, 0);
-        let mut paint = vec![(none, faded(Rgba(0, 0, 0, if outline { 120 } else { 0 }), lines))];
-        paint.extend(Band::ALL.iter().map(|b| {
-            let (fill, edge) = b.colours();
-            match outline {
-                true => (none, faded(Rgba(edge.0, edge.1, edge.2, 235), lines)),
-                false => (faded(fill, ground), faded(edge, lines)),
-            }
-        }));
-        // A band left out is drawn as nothing, still over what it covers.
-        let mut map = [0u8; 9];
-        for (k, m) in map.iter_mut().enumerate().skip(1) {
-            *m = if kept[k - 1] { k as u8 } else { 0 };
-        }
-        let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
-        let rows = h.div_ceil(workers);
-        // Each pixel's band where all its samples are of one, else MIXED: where a
-        // pixel and the four beside it are all of one band, it is a plain fill (or
-        // nothing), with no need to look at the samples one by one.
-        const MIXED: u8 = u8::MAX;
-        let mut span = vec![0u8; w * h];
-        std::thread::scope(|scope| {
-            for (k, out) in span.chunks_mut(rows * w).enumerate() {
-                let (class, map) = (&class, &map);
-                scope.spawn(move || {
-                    for (row, out) in out.chunks_mut(w).enumerate() {
-                        let y = k * rows + row;
-                        let sub = |j: usize| class[(y * SS + j) * sw..(y * SS + j + 1) * sw].chunks_exact(SS);
-                        for (o, ((a, b), c)) in out.iter_mut().zip(sub(0).zip(sub(1)).zip(sub(2))) {
-                            let k = a[0];
-                            *o = match a.iter().chain(b).chain(c).all(|&v| v == k) {
-                                true => map[k as usize],
-                                false => MIXED,
-                            };
-                        }
-                    }
-                });
-            }
-        });
-        let (class, paint, map, span) = (&class, &paint, &map, &span);
-        let class_at = move |i: usize| map[class[i] as usize];
-        std::thread::scope(|scope| {
-            for (k, out) in cv.px.chunks_mut(rows * w).enumerate() {
-                scope.spawn(move || {
-                    for (row, out) in out.chunks_mut(w).enumerate() {
-                        let y = k * rows + row;
-                        let dy = y as f32 + 0.5 - cy;
-                        if y == 0 || y + 1 >= h || dy.abs() > rim + 0.5 {
-                            continue;
-                        }
-                        let half = ((rim + 0.5).powi(2) - dy * dy).max(0.0).sqrt();
-                        let (x0, x1) =
-                            (((cx - half).floor() as usize).max(1), ((cx + half).ceil() as usize).min(w - 1));
-                        // The bands fade out over the disc's last pixel.
-                        let fade = |x: usize| {
-                            let dx = x as f32 + 0.5 - cx;
-                            let d2 = dx * dx + dy * dy;
-                            match d2 < (rim - 0.5) * (rim - 0.5) {
-                                true => 1.0,
-                                false => (rim + 0.5 - d2.sqrt()).clamp(0.0, 1.0),
-                            }
-                        };
-                        for x in x0..x1 {
-                            let p = y * w + x;
-                            let k = span[p];
-                            if k != MIXED {
-                                let near = [span[p - 1], span[p + 1], span[p - w], span[p + w]];
-                                if k == 0 && (!outline || near.iter().all(|&n| n == 0)) {
-                                    continue;
-                                }
-                                if k > 0 && near.iter().all(|&n| n != MIXED && n >= k) {
-                                    let c = paint[k as usize].0;
-                                    let a = (c.3 as f32 * fade(x) + 0.5) as u32;
-                                    if a > 0 {
-                                        out[x] = over(out[x], c, a);
-                                    }
-                                    continue;
-                                }
-                            }
-                            // Each sample is a pixel's worth of the plain test — a band's
-                            // edge where a sample one pixel away is of a lower band — at
-                            // its own offset: their mean is the edge, antialiased.
-                            let (mut sa, mut sr, mut sg, mut sb) = (0u32, 0u32, 0u32, 0u32);
-                            for sy in y * SS..(y + 1) * SS {
-                                let at = sy * sw;
-                                let cells = &class[at + x * SS..at + (x + 1) * SS];
-                                for (j, &raw) in cells.iter().enumerate() {
-                                    let i = at + x * SS + j;
-                                    let k = map[raw as usize];
-                                    let beside = [
-                                        class_at(i - SS),
-                                        class_at(i + SS),
-                                        class_at(i - SS * sw),
-                                        class_at(i + SS * sw),
-                                    ];
-                                    let c = if k == 0 {
-                                        if !outline || beside.iter().all(|&n| n == 0) {
-                                            continue;
-                                        }
-                                        paint[0].1
-                                    } else if beside.iter().any(|&n| n < k) {
-                                        paint[k as usize].1
-                                    } else {
-                                        paint[k as usize].0
-                                    };
-                                    let a = c.3 as u32;
-                                    sa += a;
-                                    sr += c.0 as u32 * a;
-                                    sg += c.1 as u32 * a;
-                                    sb += c.2 as u32 * a;
-                                }
-                            }
-                            if sa == 0 {
-                                continue;
-                            }
-                            let a = (sa as f32 * fade(x) / (SS * SS) as f32 + 0.5) as u32;
-                            if a > 0 {
-                                let c = Rgba((sr / sa) as u8, (sg / sa) as u8, (sb / sa) as u8, 255);
-                                out[x] = over(out[x], c, a);
-                            }
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    if state.dots {
-        dots(cv);
-    }
-
     if let Some(trail) = state.trails.get(world) {
         // Newest last: the recent way bright, the old way fading out, so a long walk
         // does not cover the map in lines.
+        // Only the latest stretch: older points would be all but transparent, yet each
+        // was still a line to draw. The trail itself keeps them all (it is small).
+        const DRAWN: usize = 2000;
+        let trail = &trail[trail.len().saturating_sub(DRAWN)..];
         let n = trail.len().max(2) as f32;
-        for (i, pair) in trail.windows(2).enumerate() {
-            let age = 1.0 - (i as f32 + 1.0) / (n - 1.0);
+        // A segment is drawn from the last point drawn to one at least `STEP` px on (or
+        // the last before a gap): on a wide map a walk's points are a pixel or two apart,
+        // thousands of lines where a few hundred look the same.
+        const STEP: f32 = 4.0;
+        let mut from: Option<(f32, f32)> = None;
+        for (i, point) in trail.iter().enumerate() {
+            let Some(point) = point else {
+                from = None;
+                continue;
+            };
+            let pb = view.project(*point);
+            let Some(pa) = from else {
+                from = Some(pb);
+                continue;
+            };
+            let end = trail.get(i + 1).is_none_or(|next| next.is_none());
+            if !end && (pb.0 - pa.0).hypot(pb.1 - pa.1) < STEP {
+                continue;
+            }
+            from = Some(pb);
+            let age = 1.0 - i as f32 / (n - 1.0);
             let fresh = (1.0 - age).powf(1.6);
-            let colour = faded(Rgba(TRAIL.0, TRAIL.1, TRAIL.2, (TRAIL.3 as f32 * (0.08 + 0.92 * fresh)) as u8), lines);
+            // Fading to nothing at the slice's start, so it has no edge.
+            let colour = faded(Rgba(TRAIL.0, TRAIL.1, TRAIL.2, (TRAIL.3 as f32 * fresh) as u8), lines);
+            if colour.3 == 0 {
+                continue;
+            }
             let width = 1.2 + 1.0 * fresh;
-            if let [Some(a), Some(b)] = pair {
-                let (pa, pb) = (view.project(*a), view.project(*b));
-                if inside(pa) || inside(pb) {
-                    // Clip by shortening to the rim: good enough at walking scale.
-                    let clip = |p: (f32, f32)| {
-                        let d = (p.0 * p.0 + p.1 * p.1).sqrt();
-                        if d > r {
-                            (p.0 * r / d, p.1 * r / d)
-                        } else {
-                            p
-                        }
-                    };
-                    let (pa, pb) = (clip(pa), clip(pb));
-                    cv.line((cx + pa.0, cy + pa.1), (cx + pb.0, cy + pb.1), width, colour);
-                }
+            if inside(pa) || inside(pb) {
+                // Clip by shortening to the rim: good enough at walking scale.
+                let clip = |p: (f32, f32)| {
+                    let d = (p.0 * p.0 + p.1 * p.1).sqrt();
+                    if d > r {
+                        (p.0 * r / d, p.1 * r / d)
+                    } else {
+                        p
+                    }
+                };
+                let (pa, pb) = (clip(pa), clip(pb));
+                cv.line((cx + pa.0, cy + pa.1), (cx + pb.0, cy + pb.1), width, colour);
             }
         }
     }
