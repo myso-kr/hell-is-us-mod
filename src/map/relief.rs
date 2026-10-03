@@ -63,6 +63,51 @@ fn colour(z: f32, lit: f32, wet: bool, feet: f32) -> Rgba {
     Rgba(c(base.0), c(base.1), c(base.2), 150)
 }
 
+/// Fill the water out to its shore. The game's deadly-water boxes cover only part of a
+/// lake: around them, ground still below the surface showed as low land, and the shore
+/// as a jagged edge of boxes. From every wet texel, the water spreads to neighbours whose
+/// ground lies below that water's surface (its box's top), and stops where the land
+/// rises above it: the shore, or a cliff out of the water, where a fall cannot be climbed
+/// back from. Unknown ground (not loaded) stops it too.
+fn flood(wet: &mut [bool], z: &[f32], n: usize, res: f32, origin: [f32; 2], obstacles: &[crate::obstacles::Obstacle]) {
+    let mut level = vec![f32::NAN; n * n];
+    let mut queue = std::collections::VecDeque::new();
+    for o in obstacles.iter().filter(|o| o.water && o.zmax < 1.0e8) {
+        let lo = [
+            o.hull.iter().map(|p| p[0]).fold(f32::MAX, f32::min),
+            o.hull.iter().map(|p| p[1]).fold(f32::MAX, f32::min),
+        ];
+        let hi = [
+            o.hull.iter().map(|p| p[0]).fold(f32::MIN, f32::max),
+            o.hull.iter().map(|p| p[1]).fold(f32::MIN, f32::max),
+        ];
+        let cell = |v: f32, o: f32| ((v - o) / res - 0.5).ceil();
+        let (x0, x1) = (cell(lo[0], origin[0]).max(0.0) as usize, cell(hi[0], origin[0]).min(n as f32) as usize);
+        let (y0, y1) = (cell(lo[1], origin[1]).max(0.0) as usize, cell(hi[1], origin[1]).min(n as f32) as usize);
+        for y in y0..y1 {
+            for x in x0..x1 {
+                let i = y * n + x;
+                if level[i].is_nan() || o.zmax > level[i] {
+                    level[i] = o.zmax;
+                    queue.push_back(i);
+                }
+            }
+        }
+    }
+    while let Some(i) = queue.pop_front() {
+        let (x, y) = (i % n, i / n);
+        let near =
+            [(x > 0).then(|| i - 1), (x + 1 < n).then(|| i + 1), (y > 0).then(|| i - n), (y + 1 < n).then(|| i + n)];
+        for j in near.into_iter().flatten() {
+            if !wet[j] && !z[j].is_nan() && z[j] < level[i] {
+                wet[j] = true;
+                level[j] = level[i];
+                queue.push_back(j);
+            }
+        }
+    }
+}
+
 impl Relief {
     /// The square `half` (cm) each way around `center`, tinted against `feet` (cm).
     pub fn bake(scene: &Scene, center: [f32; 2], half: f32, feet: f32) -> Relief {
@@ -115,6 +160,7 @@ impl Relief {
                 }
             }
         }
+        flood(&mut wet, &z, n, res, origin, &scene.obstacles);
         let colour = (0..n * n).map(|i| colour(z[i], shade[i], wet[i], feet)).collect();
         Relief { origin, res, n, z, shade, wet, colour, feet }
     }
@@ -191,6 +237,26 @@ mod tests {
         assert!(lit > 0.1, "{lit}");
         assert!(!wet);
         assert!(r.look(500.0, 5000.0).unwrap().1, "water");
+    }
+
+    #[test]
+    fn water_floods_out_to_its_shore() {
+        // Ground rising 1 cm per cm eastward from 0 at x = 0; the box covers the first
+        // 10 m, its surface 20 m up: the water reaches x = 20 m and no further.
+        let n = 101;
+        let z = (0..n * n).map(|i| (i % n) as f32 * 100.0).collect();
+        let field = Heightfield { origin: [0.0, 0.0, 0.0], spacing: [100.0, 100.0], n, z };
+        let water = Obstacle {
+            hull: vec![[0.0, 0.0], [1000.0, 0.0], [1000.0, 10_000.0], [0.0, 10_000.0]],
+            zmin: f32::MIN,
+            zmax: 2000.0,
+            water: true,
+        };
+        let scene = Scene { obstacles: vec![water], terrain: Terrain::new(vec![field]) };
+        let r = Relief::bake(&scene, [5000.0, 5000.0], 4900.0, 0.0);
+        assert!(r.look(500.0, 5000.0).unwrap().1, "in the box");
+        assert!(r.look(1500.0, 5000.0).unwrap().1, "below the surface, past the box");
+        assert!(!r.look(2500.0, 5000.0).unwrap().1, "above the surface: the shore");
     }
 
     #[test]

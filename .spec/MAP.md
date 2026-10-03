@@ -209,3 +209,20 @@ panel settings, and have the single map key cycle through display modes, as most
 - Measured (Jova, the Vitalis house): the Family Reunion goal is 11–14 m below (underground). The
   grid route was flat and did not know the underground entrance, which led to using the game navmesh
   (ROUTES.md §6).
+
+## 12. Water out to its shore; the ground as dots (2026-10-03)
+
+Requested: where the ground suddenly rises out of the water is a fall that cannot be climbed back
+from, so fill the space up to there with water; and the solid map hides the game, so draw it as dots
+with gaps between them, as Diablo's and Path of Exile's maps do.
+
+- **Water floods to its shore** (`relief.rs` `flood`): the game's deadly-water boxes cover only part of
+  a lake, so ground below the surface around them showed as low land and the shore as a jagged edge of
+  boxes. Water obstacles now keep their surface (the hazard box's top) in `zmax`; from every wet
+  texel the water spreads to neighbours whose ground lies below that surface and stops where the land
+  rises above it (the shore, or a cliff out of the water) or is not loaded. Route finding is unchanged:
+  water blocks at any height (`pathfind.rs` tests `o.water` first).
+- **Dots** (`raster.rs` `dots`, setting `dots`, on by default; Map page "Draw as dots"): after the
+  ground layers (disc, relief, terrain bands) every other pixel on every other row is kept and the rest
+  cleared, so three quarters of the ground is gap; kept dots are drawn 1.7× stronger so the ground
+  still reads. The trail, route, icons, pins and the hero mark are drawn after it and stay solid.

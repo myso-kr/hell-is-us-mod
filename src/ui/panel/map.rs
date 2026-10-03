@@ -139,6 +139,10 @@ impl Panel {
                 w(t, |ui| ui.selectable_value(&mut state.mini_outline, true, tr!("OUTLINE")));
                 w(t, |ui| ui.selectable_value(&mut state.mini_outline, false, tr!("FILLED")));
             });
+            // The ground as dots (both maps): the game shows through the gaps.
+            field(t, tr!("DRAW_AS_DOTS"), |t| {
+                w(t, |ui| toggle(ui, &mut state.dots)).on_hover_text(tr!("DRAW_AS_DOTS_HOVER"));
+            });
             field(t, tr!("ICON_SIZE"), |t| tw::slider(t, &mut state.icon_px, crate::minimap::ICON_PX, 1.0, " px"));
             // A short label; the full sentence is the hover text.
             field(t, tr!("HIDE_IN_MENUS"), |t| {

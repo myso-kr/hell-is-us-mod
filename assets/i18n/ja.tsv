@@ -551,3 +551,7 @@ BACKUP_MANUAL	手動
 HIDE_IN_MENUS	メニューで隠す
 PREVIEW	プレビュー
 PREVIEW_NEEDS_THE_HERO	主人公を操作すると表示されます
+DRAW_AS_DOTS	点で描く
+DRAW_AS_DOTS_HOVER	地形を間隔のある点で描き、ゲーム画面が透けて見えるようにします。アイコン、経路、ピンはそのまま描きます。
+CONSOLE	コンソール
+CONSOLE_RUNNING	実行中

@@ -44,7 +44,8 @@ pub struct Obstacle {
     pub hull: Vec<[f32; 2]>,
     pub zmin: f32,
     pub zmax: f32,
-    /// Deadly water: blocks at any height.
+    /// Deadly water: blocks at any height. Its `zmax` is the water's surface (the
+    /// hazard box's top), which the map floods from (relief.rs); `zmin` is unbounded.
     pub water: bool,
 }
 
@@ -413,7 +414,7 @@ fn water(hazards: &[Hazard], terrain: &Terrain, solid: &[Obstacle], hero: [f64; 
                         out.push(Obstacle {
                             hull: vec![[ax, ay], [bx, ay], [bx, by], [ax, by]],
                             zmin: f32::MIN,
-                            zmax: f32::MAX,
+                            zmax: h.top,
                             water: true,
                         });
                         run = None;

@@ -551,3 +551,7 @@ BACKUP_MANUAL	Ręczna
 HIDE_IN_MENUS	Ukryj w menu
 PREVIEW	Podgląd
 PREVIEW_NEEDS_THE_HERO	Pojawi się, gdy sterujesz bohaterem
+DRAW_AS_DOTS	Rysuj kropkami
+DRAW_AS_DOTS_HOVER	Teren z rozstawionych kropek, by gra prześwitywała. Ikony, trasa i znaczniki pozostają pełne.
+CONSOLE	Konsola
+CONSOLE_RUNNING	Działa

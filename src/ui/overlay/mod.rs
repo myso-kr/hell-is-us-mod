@@ -214,6 +214,8 @@ pub fn run(shared: Arc<Shared>) {
                 let relief = baking.relief(&state, p, &obstacles);
                 let goals = hud::with_pins(&goals, &state, world);
                 let mut cv = Canvas::new(HERO_PX, HERO_PX);
+                // Dots are for seeing the game through the map; the hero sits on the panel.
+                let dots = std::mem::replace(&mut state.dots, false);
                 draw_map(
                     &mut cv,
                     &state,
@@ -226,6 +228,7 @@ pub fn run(shared: Arc<Shared>) {
                     &Default::default(),
                     relief.as_deref(),
                 );
+                state.dots = dots;
                 let mut hero = shared.hero.lock().unwrap();
                 let n = hero.as_ref().map_or(0, |h| h.2) + 1;
                 *hero = Some((HERO_PX, cv.px, n));

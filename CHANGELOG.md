@@ -23,6 +23,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   progress bar each; Clues and Help with KPI tiles and numbered steps; cheats, saves and the debug
   checks as aligned rows with status chips; achievements with progress bars; Map settings as form
   rows. Long explanations moved into hover text.
+- The map's water now reaches its real shore instead of stopping at the game's water boxes, and
+  the ground is drawn as dots with gaps between them so the game shows through (Map page, on by
+  default); icons, the route and pins stay solid.
 - The Map page opens on a live preview of the map as its settings draw it: the minimap, or the
   big map with its opacity when that is the display.
 - Scrolling is visible: solid scroll bars and a fade at an edge that hides more. Other regions are

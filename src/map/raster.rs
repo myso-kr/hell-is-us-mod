@@ -239,6 +239,29 @@ fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: 
     });
 }
 
+/// The ground as dots: every other pixel on every other row is kept, the rest cleared,
+/// so three quarters of the map is gap and the game shows through. A kept dot is drawn
+/// stronger, so the ground still reads at a quarter of the ink. Run after the ground
+/// layers (disc, relief, terrain) and before anything that must stay solid.
+fn dots(cv: &mut Canvas) {
+    const BOOST: u32 = 170; // percent
+    let w = cv.w;
+    for (i, px) in cv.px.iter_mut().enumerate() {
+        if *px == 0 {
+            continue;
+        }
+        let (x, y) = (i % w, i / w);
+        if x % 2 != 0 || y % 2 != 0 {
+            *px = 0;
+            continue;
+        }
+        // Premultiplied: alpha and colour scale together; colour never above alpha.
+        let a = ((*px >> 24) * BOOST / 100).min(255);
+        let c = |shift: u32| ((((*px >> shift) & 0xFF) * BOOST / 100).min(a)) << shift;
+        *px = (a << 24) | c(16) | c(8) | c(0);
+    }
+}
+
 /// A convex polygon's pixels (centres inside), set to at least `k` — no antialiasing.
 fn fill_convex(class: &mut [u8], w: usize, h: usize, p: &[(f32, f32)], k: u8) {
     let (y0, y1) = (p.iter().map(|q| q.1).fold(f32::MAX, f32::min), p.iter().map(|q| q.1).fold(f32::MIN, f32::max));
@@ -413,6 +436,10 @@ pub fn draw_map(
                 });
             }
         });
+    }
+
+    if state.dots {
+        dots(cv);
     }
 
     if let Some(trail) = state.trails.get(world) {

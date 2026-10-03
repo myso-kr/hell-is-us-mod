@@ -551,3 +551,7 @@ BACKUP_MANUAL	Elle
 HIDE_IN_MENUS	Menülerde gizle
 PREVIEW	Önizleme
 PREVIEW_NEEDS_THE_HERO	Kahramanı yönettiğinizde görünür
+DRAW_AS_DOTS	Noktalarla çiz
+DRAW_AS_DOTS_HOVER	Zemini aralıklı noktalarla çizer, oyun arkadan görünür. Simgeler, rota ve işaretler dolu kalır.
+CONSOLE	Konsol
+CONSOLE_RUNNING	Çalışıyor

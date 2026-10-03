@@ -551,3 +551,7 @@ BACKUP_MANUAL	Вручную
 HIDE_IN_MENUS	Скрывать в меню
 PREVIEW	Предпросмотр
 PREVIEW_NEEDS_THE_HERO	Появится, когда вы управляете героем
+DRAW_AS_DOTS	Рисовать точками
+DRAW_AS_DOTS_HOVER	Местность точками с промежутками, чтобы игра просвечивала. Значки, маршрут и метки остаются сплошными.
+CONSOLE	Консоль
+CONSOLE_RUNNING	Выполняется

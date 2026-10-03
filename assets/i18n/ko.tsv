@@ -551,3 +551,7 @@ BACKUP_MANUAL	수동
 HIDE_IN_MENUS	메뉴에서 숨기기
 PREVIEW	미리보기
 PREVIEW_NEEDS_THE_HERO	주인공을 조작하면 보입니다
+DRAW_AS_DOTS	점으로 그리기
+DRAW_AS_DOTS_HOVER	지형을 점으로 듬성듬성 그려 게임 화면이 비쳐 보이게 합니다. 아이콘, 경로, 핀은 그대로 진하게 그립니다.
+CONSOLE	콘솔
+CONSOLE_RUNNING	실행 중

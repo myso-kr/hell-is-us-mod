@@ -551,3 +551,7 @@ BACKUP_MANUAL	手动
 HIDE_IN_MENUS	菜单中隐藏
 PREVIEW	预览
 PREVIEW_NEEDS_THE_HERO	操控主角后显示
+DRAW_AS_DOTS	以点绘制
+DRAW_AS_DOTS_HOVER	用有间隔的点绘制地形，透出游戏画面。图标、路线和标记保持实心。
+CONSOLE	控制台
+CONSOLE_RUNNING	运行中

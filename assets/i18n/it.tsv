@@ -551,3 +551,7 @@ BACKUP_MANUAL	Manuale
 HIDE_IN_MENUS	Nascondi nei menu
 PREVIEW	Anteprima
 PREVIEW_NEEDS_THE_HERO	Appare quando controlli il protagonista
+DRAW_AS_DOTS	Disegna a punti
+DRAW_AS_DOTS_HOVER	Il terreno a punti distanziati, così il gioco si vede attraverso. Icone, percorso e segnaposti restano pieni.
+CONSOLE	Console
+CONSOLE_RUNNING	In esecuzione

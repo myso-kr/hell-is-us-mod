@@ -76,6 +76,9 @@ pub struct MapState {
     /// The big map and the minimap drawn as outlines on a clear background.
     pub big_outline: bool,
     pub mini_outline: bool,
+    /// The ground drawn as dots with gaps between them, so the game shows through
+    /// (as Diablo's and Path of Exile's maps): the icons, route and pins stay solid.
+    pub dots: bool,
     /// The big map's radius (m).
     pub big_radius_m: f32,
     /// Hide every overlay while a game menu is open (the game shows its cursor, or is
@@ -125,6 +128,7 @@ impl Default for MapState {
             big_alpha: 100,
             big_outline: true,
             mini_outline: false,
+            dots: true,
             hide_in_menus: true,
             route: true,
             trails: BTreeMap::new(),
@@ -187,7 +191,7 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\ntracker {}\n",
+            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\ndots {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\ntracker {}\n",
             self.display.key(),
             self.cycle,
             self.heading_up,
@@ -207,6 +211,7 @@ impl MapState {
             self.big_alpha,
             self.big_outline,
             self.mini_outline,
+            self.dots,
             self.hide_in_menus,
             self.route,
             self.north_yaw,
@@ -285,6 +290,7 @@ impl MapState {
                 }
                 ["big_outline", v] => s.big_outline = v == "true",
                 ["mini_outline", v] => s.mini_outline = v == "true",
+                ["dots", v] => s.dots = v == "true",
                 ["big_alpha", v] => {
                     if let Some(a) = v.parse::<u8>().ok().filter(|a| (20..=100).contains(a)) {
                         s.big_alpha = a;
@@ -542,6 +548,7 @@ mod tests {
             big_alpha: 60,
             big_outline: false,
             mini_outline: true,
+            dots: false,
             north_yaw: 90.0,
             hide_in_menus: false,
             route: false,

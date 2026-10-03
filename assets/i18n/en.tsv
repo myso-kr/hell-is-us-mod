@@ -551,3 +551,7 @@ BACKUP_MANUAL	Manual
 HIDE_IN_MENUS	Hide in menus
 PREVIEW	Preview
 PREVIEW_NEEDS_THE_HERO	Shown once the hero is in play
+DRAW_AS_DOTS	Draw as dots
+DRAW_AS_DOTS_HOVER	The ground as dots with gaps between them, so the game shows through. Icons, the route and pins stay solid.
+CONSOLE	Console
+CONSOLE_RUNNING	Running
