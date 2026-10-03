@@ -10,7 +10,16 @@ impl Panel {
         let fmt = |v: Option<f32>| v.map_or("—".to_string(), |v| format!("{v:.2}"));
         if let (Some((ws, private)), Some(peak)) = (crate::memstat::now(), crate::memstat::peak()) {
             use crate::memstat::mb;
-            ui.label(RichText::new(trf!("MEMORY_IN_USE_PRIVATE_PEAK_ALSO", working = mb(ws), private = mb(private), peak = mb(peak))).color(DIM).small());
+            ui.label(
+                RichText::new(trf!(
+                    "MEMORY_IN_USE_PRIVATE_PEAK_ALSO",
+                    working = mb(ws),
+                    private = mb(private),
+                    peak = mb(peak)
+                ))
+                .color(DIM)
+                .small(),
+            );
             ui.add_space(4.0);
         }
         ui.label(RichText::new(tr!("CHEATS_ON")).strong());
@@ -52,11 +61,9 @@ impl Panel {
                                 (Some(w), Some(n)) if (w - n).abs() <= 0.01 + w.abs() * 0.01 => {
                                     ui.label(RichText::new(trf!("APPLIED", n = n)).color(OK))
                                 }
-                                (Some(_), Some(n)) => {
-                                    ui.label(RichText::new(trf!("GAME_CHANGED_IT", n = n)).color(BAD)).on_hover_text(
-                                        tr!("DIFFERS_FROM_WHAT_WAS_WRITTEN_THE"),
-                                    )
-                                }
+                                (Some(_), Some(n)) => ui
+                                    .label(RichText::new(trf!("GAME_CHANGED_IT", n = n)).color(BAD))
+                                    .on_hover_text(tr!("DIFFERS_FROM_WHAT_WAS_WRITTEN_THE")),
                                 _ => ui.label(RichText::new(tr!("UNREADABLE")).color(BAD)),
                             };
                             ui.end_row();

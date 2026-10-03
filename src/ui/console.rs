@@ -139,7 +139,11 @@ impl Console {
                 while r.read_until(b'\n', &mut buf).is_ok_and(|n| n > 0) {
                     let text = String::from_utf8_lossy(&buf).trim_end_matches(['\r', '\n']).to_string();
                     // `log!` lines go to stderr but are not errors.
-                    let kind = if kind == Line::Err && text.starts_with("[hiumod]") && !text.contains("WARN") { Line::Out } else { kind };
+                    let kind = if kind == Line::Err && text.starts_with("[hiumod]") && !text.contains("WARN") {
+                        Line::Out
+                    } else {
+                        kind
+                    };
                     if tx.send((kind, text)).is_err() {
                         break;
                     }
@@ -238,7 +242,11 @@ impl Console {
             }
             if r.has_focus() {
                 let (up, down, esc) = ui.input(|i| {
-                    (i.key_pressed(egui::Key::ArrowUp), i.key_pressed(egui::Key::ArrowDown), i.key_pressed(egui::Key::Escape))
+                    (
+                        i.key_pressed(egui::Key::ArrowUp),
+                        i.key_pressed(egui::Key::ArrowDown),
+                        i.key_pressed(egui::Key::Escape),
+                    )
                 });
                 if up && !self.history.is_empty() {
                     let i = self.recall.map_or(self.history.len() - 1, |i| i.saturating_sub(1));

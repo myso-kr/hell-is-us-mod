@@ -31,7 +31,14 @@ impl Panel {
                 }
                 let on = state.quest.as_deref() == Some(q.key.as_str());
                 let kind = q.kind;
-                if tw::pick_with(t, on, |ui| { crate::ui::svg::quest(ui, kind, 16.0); }, label) {
+                if tw::pick_with(
+                    t,
+                    on,
+                    |ui| {
+                        crate::ui::svg::quest(ui, kind, 16.0);
+                    },
+                    label,
+                ) {
                     pick = Some(Some(q.key.clone()));
                 }
             }
@@ -43,7 +50,8 @@ impl Panel {
                 .and_then(|s| s.needs.iter().find(|(k, _)| Some(k) == followed.as_ref()))
                 .map(|(_, n)| n.clone())
                 .unwrap_or_default();
-            let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+            let here_world =
+                snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
             let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
             let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
             if needs.is_empty() {
@@ -65,7 +73,14 @@ impl Panel {
                     // A person to talk to, or a thing to take.
                     let npc = x.label.starts_with(trf!("TALK_NPC", p = "").as_str());
                     let sort = if npc { crate::actors::Sub::Npc } else { crate::actors::Sub::Quest };
-                    if tw::pick_with(t, state.target == Some(x.id), |ui| { crate::ui::svg::sort(ui, sort, 16.0); }, label) {
+                    if tw::pick_with(
+                        t,
+                        state.target == Some(x.id),
+                        |ui| {
+                            crate::ui::svg::sort(ui, sort, 16.0);
+                        },
+                        label,
+                    ) {
                         guide_to(state, &goals, x);
                     }
                 }
@@ -75,7 +90,8 @@ impl Panel {
                     *elsewhere.entry(x.world.as_str()).or_default() += 1;
                 }
                 if !elsewhere.is_empty() {
-                    let list: Vec<String> = elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
+                    let list: Vec<String> =
+                        elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
                     note(t, trf!("OTHER_REGIONS_TAKE_THE_APC", regions = list.join(" · ")));
                 }
             }
@@ -93,7 +109,12 @@ impl Panel {
 
     /// Missable good deeds and their deadlines; in act 2, the keystones left and what is
     /// due before the next (missables.rs).
-    pub(super) fn deadlines_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+    pub(super) fn deadlines_card(
+        &mut self,
+        t: &mut Tui,
+        state: &mut crate::minimap::MapState,
+        snap: Option<&Snapshot>,
+    ) {
         use crate::missables::When;
         let list = snap.map(|s| s.deadlines.clone()).unwrap_or_default();
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
@@ -140,7 +161,12 @@ impl Panel {
     }
 
     /// Items the hero holds that someone wants: who, where — press to guide there.
-    pub(super) fn handovers_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+    pub(super) fn handovers_card(
+        &mut self,
+        t: &mut Tui,
+        state: &mut crate::minimap::MapState,
+        snap: Option<&Snapshot>,
+    ) {
         let list = snap.map(|s| s.handovers.clone()).unwrap_or_default();
         if list.is_empty() {
             card(t, tr!("THINGS_TO_HAND_OVER"), |t| note(t, tr!("NO_ONE_WANTS_AN_ITEM_YOU")));
@@ -154,13 +180,23 @@ impl Panel {
             for x in list.iter() {
                 let same = Some(&x.world) == here_world.as_ref();
                 let place = if same {
-                    here.map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0))
+                    here.map_or(String::new(), |h| {
+                        crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0)
+                    })
                 } else {
                     trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world))
                 };
-                let label = format!("{} → {} ({place})", x.what, x.label.trim_start_matches(trf!("TALK_NPC", p = "").as_str()));
+                let label =
+                    format!("{} → {} ({place})", x.what, x.label.trim_start_matches(trf!("TALK_NPC", p = "").as_str()));
                 if same {
-                    if tw::pick_with(t, state.target == Some(x.id), |ui| { crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0); }, label) {
+                    if tw::pick_with(
+                        t,
+                        state.target == Some(x.id),
+                        |ui| {
+                            crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0);
+                        },
+                        label,
+                    ) {
                         guide_to(state, &goals, x);
                     }
                 } else {

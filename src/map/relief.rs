@@ -7,8 +7,8 @@
 //! scene has changed. Drawing then looks up each pixel's height (bilinear), so
 //! contour lines stay one pixel wide at any zoom.
 
-use crate::obstacles::Scene;
 use super::canvas::Rgba;
+use crate::obstacles::Scene;
 
 /// Texels a side, at most; texels grow beyond that instead.
 pub const MAX_SIDE: usize = 1024;

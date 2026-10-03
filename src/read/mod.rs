@@ -2,9 +2,9 @@
 
 pub mod actors;
 pub mod attr;
+pub mod geometry;
 pub mod knowledge;
-pub mod terrain;
+pub mod navmesh;
 pub mod obstacles;
 pub mod puzzles;
-pub mod navmesh;
-pub mod geometry;
+pub mod terrain;

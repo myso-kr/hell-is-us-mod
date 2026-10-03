@@ -74,7 +74,8 @@ fn guid_at(m: &dyn crate::mem::Memory, at: u64) -> Option<String> {
 pub fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u64) -> HashSet<String> {
     let mut out = HashSet::new();
     let Some((at, p)) = n.path(m, save, &["World", "RegionStates"]) else { return out };
-    let size = |field: u64| n.inner_of(m, field).and_then(|i| crate::mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
+    let size =
+        |field: u64| n.inner_of(m, field).and_then(|i| crate::mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
     let region_size = size(p.field);
     let Some(region_struct) = n.inner_of(m, p.field).and_then(|i| n.struct_of(m, i)) else { return out };
     let Some(states) = n.find(m, region_struct, "ElementStates") else { return out };
@@ -83,7 +84,11 @@ pub fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u6
         return out;
     }
     for region in crate::actors::array_of(m, at, region_size, 64) {
-        out.extend(crate::actors::array_of(m, region + states.offset as u64, element_size, 100_000).into_iter().filter_map(|e| guid_at(m, e)));
+        out.extend(
+            crate::actors::array_of(m, region + states.offset as u64, element_size, 100_000)
+                .into_iter()
+                .filter_map(|e| guid_at(m, e)),
+        );
     }
     out
 }
@@ -298,9 +303,16 @@ impl Attached {
         let mut goals = g.goals.evaluate(m, &k, chain.location);
         // What the survey knows of this world beyond what is loaded.
         let g = &mut *g;
-        let survey = g.survey.get_or_insert_with(|| crate::survey::Survey::load(&crate::paths::data_dir().join("survey")));
+        let survey =
+            g.survey.get_or_insert_with(|| crate::survey::Survey::load(&crate::paths::data_dir().join("survey")));
         if let Ok(world) = chain.world(m, &self.anchors) {
-            let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
+            let known = crate::survey::Known {
+                facts: &g.known_facts,
+                tags: &g.known_tags,
+                held: &g.held,
+                saved: &g.saved,
+                talked: &g.goals.done_npcs,
+            };
             goals.extend(survey.goals(crate::survey::Survey::world_of(&world), &known, &g.goals.loaded, &g.fact_keys));
         }
         Ok((goals, k))
@@ -310,7 +322,9 @@ impl Attached {
     pub fn journal(&self) -> Vec<crate::quests::Quest> {
         let g = self.guide.borrow();
         match (&g.knowledge, g.quests.ready()) {
-            (Some(k), true) => g.quests.journal(k, &crate::quests::deed_states(&self.game, &self.anchors.names, g.save)),
+            (Some(k), true) => {
+                g.quests.journal(k, &crate::quests::deed_states(&self.game, &self.anchors.names, g.save))
+            }
             _ => Vec::new(),
         }
     }
@@ -334,8 +348,13 @@ impl Attached {
     pub fn collection(&self, world: &str) -> (Vec<crate::survey::Collect>, Vec<crate::survey::Need>) {
         let g = self.guide.borrow();
         let Some(survey) = g.survey.as_ref() else { return Default::default() };
-        let known =
-            crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
+        let known = crate::survey::Known {
+            facts: &g.known_facts,
+            tags: &g.known_tags,
+            held: &g.held,
+            saved: &g.saved,
+            talked: &g.goals.done_npcs,
+        };
         (survey.collection(crate::survey::Survey::world_of(world), &known), survey.stories(&known))
     }
 
@@ -347,8 +366,11 @@ impl Attached {
         // `shown`: only the entries whose bIsShownToPlayer (+0x11) is set — every vault
         // has an entry, from the start.
         let guids = |field: &str, shown: bool| -> (usize, HashSet<String>) {
-            let Some((at, p)) = n.path(m, save, &["Player", "ResearchState", field]) else { return (0, HashSet::new()) };
-            let size = n.inner_of(m, p.field).and_then(|i| crate::mem::read_u32(m, i + n.layout.size)).unwrap_or(16) as u64;
+            let Some((at, p)) = n.path(m, save, &["Player", "ResearchState", field]) else {
+                return (0, HashSet::new());
+            };
+            let size =
+                n.inner_of(m, p.field).and_then(|i| crate::mem::read_u32(m, i + n.layout.size)).unwrap_or(16) as u64;
             let items = crate::actors::array_of(m, at, size.max(16), 4096);
             let flag = |e: u64| {
                 let mut b = [0u8; 1];
@@ -366,7 +388,8 @@ impl Attached {
         let (lore, known, opened) = self.research();
         let mut g = self.guide.borrow_mut();
         let g = &mut *g;
-        let tables = g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
+        let tables =
+            g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
         let doors = g.survey.as_ref().map(|s| s.doors.as_slice()).unwrap_or_default();
         (tables.vaults(&known, &opened, lore, doors), lore)
     }
@@ -375,7 +398,8 @@ impl Attached {
     pub fn hollows(&self) -> Vec<crate::tables::Hollows> {
         let mut g = self.guide.borrow_mut();
         let g = &mut *g;
-        let tables = g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
+        let tables =
+            g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
         tables.hollows(&g.saved)
     }
 
@@ -396,7 +420,10 @@ impl Attached {
             .puzzles()
             .iter()
             .filter_map(|&(comp, kind)| crate::puzzles::read(m, n, comp, kind))
-            .filter(|p| ((p.at[0] - here[0]).powi(2) + (p.at[1] - here[1]).powi(2)).sqrt() <= reach && (p.at[2] - here[2]).abs() <= reach)
+            .filter(|p| {
+                ((p.at[0] - here[0]).powi(2) + (p.at[1] - here[1]).powi(2)).sqrt() <= reach
+                    && (p.at[2] - here[2]).abs() <= reach
+            })
             .collect();
         let d = |p: &crate::puzzles::Puzzle| ((p.at[0] - here[0]).powi(2) + (p.at[1] - here[1]).powi(2)).sqrt();
         out.sort_by(|a, b| d(a).total_cmp(&d(b)));
@@ -417,8 +444,13 @@ impl Attached {
     pub fn handovers(&self) -> Vec<crate::survey::Need> {
         let g = self.guide.borrow();
         let Some(survey) = g.survey.as_ref() else { return Vec::new() };
-        let known =
-            crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
+        let known = crate::survey::Known {
+            facts: &g.known_facts,
+            tags: &g.known_tags,
+            held: &g.held,
+            saved: &g.saved,
+            talked: &g.goals.done_npcs,
+        };
         survey.handovers(&known)
     }
 
@@ -426,7 +458,13 @@ impl Attached {
     pub fn needs(&self, journal: &[crate::quests::Quest]) -> Vec<(String, Vec<crate::survey::Need>)> {
         let g = self.guide.borrow();
         let Some(survey) = g.survey.as_ref().filter(|s| !s.is_empty()) else { return Vec::new() };
-        let known = crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
+        let known = crate::survey::Known {
+            facts: &g.known_facts,
+            tags: &g.known_tags,
+            held: &g.held,
+            saved: &g.saved,
+            talked: &g.goals.done_npcs,
+        };
         journal
             .iter()
             .filter(|q| q.active())

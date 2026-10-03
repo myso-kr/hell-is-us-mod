@@ -30,7 +30,13 @@ pub struct Lang {
 
 fn current() -> &'static RwLock<Arc<Lang>> {
     static LANG: OnceLock<RwLock<Arc<Lang>>> = OnceLock::new();
-    LANG.get_or_init(|| RwLock::new(Arc::new(Lang { culture: culture::DEFAULT.into(), text: text::Table::load(culture::DEFAULT), names: names::Names::default() })))
+    LANG.get_or_init(|| {
+        RwLock::new(Arc::new(Lang {
+            culture: culture::DEFAULT.into(),
+            text: text::Table::load(culture::DEFAULT),
+            names: names::Names::default(),
+        }))
+    })
 }
 
 /// The language in use.

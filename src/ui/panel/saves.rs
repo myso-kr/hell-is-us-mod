@@ -21,7 +21,11 @@ impl Panel {
             choices(t, |t| {
                 if w(t, |ui| ui.button(tr!("BACK_UP_NOW"))).clicked() {
                     self.reply = Some(match crate::backup::make("manual") {
-                        Ok(to) => (true, trf!("BACKED_UP", file = to.file_name().unwrap_or_default().to_string_lossy()), Instant::now()),
+                        Ok(to) => (
+                            true,
+                            trf!("BACKED_UP", file = to.file_name().unwrap_or_default().to_string_lossy()),
+                            Instant::now(),
+                        ),
                         Err(e) => (false, trf!("BACKUP_FAILED", e = e), Instant::now()),
                     });
                     self.backups_read = None;
@@ -62,7 +66,9 @@ impl Panel {
                     3600..86400 => trf!("H_AGO", hours = ago / 3600),
                     _ => trf!("DAYS_AGO", days = ago / 86400),
                 };
-                field(t, name.trim_end_matches(".sav"), |t| text(t, RichText::new(format!("{when} · {} KB", len / 1024)).color(DIM)));
+                field(t, name.trim_end_matches(".sav"), |t| {
+                    text(t, RichText::new(format!("{when} · {} KB", len / 1024)).color(DIM))
+                });
             }
             note(t, dir.display().to_string());
         });

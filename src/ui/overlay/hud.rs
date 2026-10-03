@@ -37,7 +37,9 @@ pub fn with_survey(things: &[crate::actors::Thing], s: &crate::engine::Snapshot)
 /// Whether an unsolved puzzle is within 15 m of the hero.
 pub fn puzzle_near(s: &crate::engine::Snapshot) -> bool {
     let Some((p, _)) = s.pose else { return false };
-    s.puzzles.iter().any(|q| !q.solved && ((q.at[0] as f64 - p[0]).powi(2) + (q.at[1] as f64 - p[1]).powi(2)).sqrt() < 1500.0)
+    s.puzzles
+        .iter()
+        .any(|q| !q.solved && ((q.at[0] as f64 - p[0]).powi(2) + (q.at[1] as f64 - p[1]).powi(2)).sqrt() < 1500.0)
 }
 
 /// Which way `to` lies from `from`, as a UE yaw in degrees.
@@ -83,7 +85,8 @@ pub fn compass_pins(goals: &[Goal], state: &MapState, world: &str, p: [f32; 3], 
             // The target is pointed at along its route, and its distance is the route's.
             let (aim, distance) = match (target, path.points.len() >= 2) {
                 (true, true) => {
-                    let next = crate::pathfind::next_point(&path.points, [p[0], p[1]], ROUTE_AHEAD).unwrap_or([g.at[0], g.at[1]]);
+                    let next = crate::pathfind::next_point(&path.points, [p[0], p[1]], ROUTE_AHEAD)
+                        .unwrap_or([g.at[0], g.at[1]]);
                     ([next[0], next[1], g.at[2]], crate::pathfind::length(&path.points))
                 }
                 _ => (g.at, flat(p, g.at)),

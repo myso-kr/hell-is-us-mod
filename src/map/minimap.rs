@@ -408,7 +408,6 @@ pub fn usable_key(k: u8) -> bool {
     (1..=12).contains(&k)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -552,7 +551,8 @@ mod tests {
             ..MapState::default()
         };
         s.toggle_marker("Map_A", [1.5, -2.0, 3.0]);
-        s.markers.get_mut("Map_A").unwrap()[0] = Marker { at: [1.5, -2.0, 3.0], kind: PinKind::Puzzle, note: "pillar order".into() };
+        s.markers.get_mut("Map_A").unwrap()[0] =
+            Marker { at: [1.5, -2.0, 3.0], kind: PinKind::Puzzle, note: "pillar order".into() };
         s.observe("Map_A", [0.0, 0.0, 0.0]);
         s.observe("Map_A", [90_000.0, 0.0, 0.0]);
         s.dirty = false;

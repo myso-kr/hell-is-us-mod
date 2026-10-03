@@ -103,14 +103,20 @@ fn placed_answer(p: &Value) -> Option<(crate::puzzles::Kind, crate::puzzles::Ans
                 p["dials"]
                     .as_array()?
                     .iter()
-                    .map(|d| Dial { now: 0, want: d["solution"].as_u64().unwrap_or(0) as u8, places: d["places"].as_u64().unwrap_or(0) as u8 })
+                    .map(|d| Dial {
+                        now: 0,
+                        want: d["solution"].as_u64().unwrap_or(0) as u8,
+                        places: d["places"].as_u64().unwrap_or(0) as u8,
+                    })
                     .collect(),
             ),
         ),
         "keypad" => (Kind::Keypad, Answer::Code(p["code"].as_str()?.to_string())),
         "placement" => (
             Kind::Placement,
-            Answer::Items(names(&p["items"]).into_iter().map(|i| i.rsplit('/').next().unwrap_or(&i).to_string()).collect()),
+            Answer::Items(
+                names(&p["items"]).into_iter().map(|i| i.rsplit('/').next().unwrap_or(&i).to_string()).collect(),
+            ),
         ),
         _ => return None,
     })
@@ -131,7 +137,11 @@ fn item(path: &str) -> (String, Option<String>) {
 /// running game does not have (`…_UAID_047C16054F89B91D02_1325171520` → `…_UAID_047C16054F89B91D02`).
 fn runtime_name(cooked: &str) -> String {
     match cooked.rsplit_once('_') {
-        Some((head, tail)) if head.contains("_UAID_") && !tail.is_empty() && tail.bytes().all(|b| b.is_ascii_digit()) => head.to_string(),
+        Some((head, tail))
+            if head.contains("_UAID_") && !tail.is_empty() && tail.bytes().all(|b| b.is_ascii_digit()) =>
+        {
+            head.to_string()
+        }
         _ => cooked.to_string(),
     }
 }
@@ -224,7 +234,8 @@ impl Entry {
         let tags: Vec<String> =
             self.tags.iter().filter(|t| !t.starts_with("Conversation.") && !k.tags.contains(*t)).cloned().collect();
         let settled = !(self.facts.is_empty() && self.tags.is_empty()) && facts == 0 && tags.is_empty();
-        let items = if settled { Vec::new() } else { self.items.iter().filter(|i| !k.held.contains(*i)).cloned().collect() };
+        let items =
+            if settled { Vec::new() } else { self.items.iter().filter(|i| !k.held.contains(*i)).cloned().collect() };
         Left { facts, tags, items }
     }
 
@@ -285,7 +296,8 @@ impl Survey {
             let Some(world) = v["world"].as_str() else { continue };
             let mut list = Vec::new();
             for a in v["actors"].as_array().into_iter().flatten() {
-                let at = a["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
+                let at =
+                    a["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
                 let Some(at) = at.filter(|x| x.len() == 3) else { continue };
                 if let Some((kind, answer)) = placed_answer(&a["puzzle"]) {
                     let p = Placed {
@@ -297,7 +309,9 @@ impl Survey {
                         answer,
                     };
                     // A blueprint holds a copy per cell it streams in: one is enough.
-                    if !puzzles.iter().any(|q: &Placed| q.world == p.world && (q.at[0] - p.at[0]).hypot(q.at[1] - p.at[1]) < 50.0 && q.kind == p.kind) {
+                    if !puzzles.iter().any(|q: &Placed| {
+                        q.world == p.world && (q.at[0] - p.at[0]).hypot(q.at[1] - p.at[1]) < 50.0 && q.kind == p.kind
+                    }) {
                         puzzles.push(p);
                     }
                 }
@@ -347,7 +361,13 @@ impl Survey {
 
     /// Goals in `world` that are not loaded (`loaded` names what is), with something
     /// still left. `quests` names a fact's main quest key, where known.
-    pub fn goals(&self, world: &str, k: &Known, loaded: &HashSet<String>, quests: &HashMap<String, String>) -> Vec<Goal> {
+    pub fn goals(
+        &self,
+        world: &str,
+        k: &Known,
+        loaded: &HashSet<String>,
+        quests: &HashMap<String, String>,
+    ) -> Vec<Goal> {
         let Some(list) = self.worlds.get(world) else { return Vec::new() };
         list.iter()
             .filter(|e| !loaded.contains(&e.name))
@@ -481,7 +501,14 @@ impl Survey {
                 if e.left(k).is_empty() {
                     continue;
                 }
-                out.push(Need { world: world.clone(), id: e.id(), label: e.label(), what: String::new(), at: e.at, done: false });
+                out.push(Need {
+                    world: world.clone(),
+                    id: e.id(),
+                    label: e.label(),
+                    what: String::new(),
+                    at: e.at,
+                    done: false,
+                });
             }
         }
         out
@@ -545,7 +572,8 @@ mod tests {
 
     #[test]
     fn what_is_left_follows_knowledge_and_the_inventory() {
-        let (facts, tags, held) = (HashSet::from(["F1".to_string()]), HashSet::new(), HashSet::from(["Key_Item_DA".to_string()]));
+        let (facts, tags, held) =
+            (HashSet::from(["F1".to_string()]), HashSet::new(), HashSet::from(["Key_Item_DA".to_string()]));
         let saved = HashSet::from(["G".to_string()]);
         let talked = HashSet::new();
         let k = Known { facts: &facts, tags: &tags, held: &held, saved: &saved, talked: &talked };
@@ -556,7 +584,10 @@ mod tests {
         assert_eq!(entry(&["Note_Item_DA"], &[], &[]).left(&k).items, ["Note_Item_DA"], "not held");
         assert!(entry(&["Note_Item_DA"], &["F1"], &[]).left(&k).is_empty(), "its fact known: got, though used up");
         assert_eq!(entry(&[], &["F1", "F2"], &[]).left(&k).facts, 1);
-        assert!(entry(&[], &[], &["Conversation.TopicsUnlock.X"]).left(&k).is_empty(), "topic unlocks are not a reason");
+        assert!(
+            entry(&[], &[], &["Conversation.TopicsUnlock.X"]).left(&k).is_empty(),
+            "topic unlocks are not a reason"
+        );
     }
 
     #[test]
@@ -567,7 +598,10 @@ mod tests {
 
     #[test]
     fn quest_items_name_their_quest() {
-        assert_eq!(item("/Game/Items/Quests/Quest01/Quest01_PictureC_Item_DA"), ("Quest01_PictureC_Item_DA".into(), Some("Quest01".into())));
+        assert_eq!(
+            item("/Game/Items/Quests/Quest01/Quest01_PictureC_Item_DA"),
+            ("Quest01_PictureC_Item_DA".into(), Some("Quest01".into()))
+        );
         assert_eq!(item("/Game/Items/Secrets/AcasaMarshes/X_Item_DA").1, None);
         assert!(entry(&[], &[], &[]).id() >> 63 == 1, "never an address");
     }

@@ -15,7 +15,8 @@ pub fn texture(ctx: &egui::Context, svg: &str, px: u32) -> Option<egui::TextureH
     }
     let icon = crate::icons::render(svg, px as usize).ok()?;
     // The icon is premultiplied ARGB words; egui takes premultiplied RGBA bytes.
-    let rgba: Vec<u8> = icon.px.iter().flat_map(|&p| [(p >> 16) as u8, (p >> 8) as u8, p as u8, (p >> 24) as u8]).collect();
+    let rgba: Vec<u8> =
+        icon.px.iter().flat_map(|&p| [(p >> 16) as u8, (p >> 8) as u8, p as u8, (p >> 24) as u8]).collect();
     let image = egui::ColorImage::from_rgba_premultiplied([px as usize, px as usize], &rgba);
     let t = ctx.load_texture(format!("svg-{}", h.finish()), image, egui::TextureOptions::LINEAR);
     ctx.data_mut(|d| d.insert_temp(id, t.clone()));

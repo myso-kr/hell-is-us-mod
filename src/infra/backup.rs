@@ -26,8 +26,11 @@ pub fn dir() -> PathBuf {
 
 fn save_files(saves: &Path) -> Vec<PathBuf> {
     let Ok(read) = std::fs::read_dir(saves) else { return Vec::new() };
-    let mut out: Vec<PathBuf> =
-        read.flatten().map(|e| e.path()).filter(|p| p.extension().is_some_and(|e| e.eq_ignore_ascii_case("sav"))).collect();
+    let mut out: Vec<PathBuf> = read
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| p.extension().is_some_and(|e| e.eq_ignore_ascii_case("sav")))
+        .collect();
     out.sort();
     out
 }

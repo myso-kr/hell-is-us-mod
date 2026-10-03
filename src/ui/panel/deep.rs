@@ -3,8 +3,8 @@
 
 use super::super::theme::INLINE;
 use super::*;
-use crate::puzzles::{Answer, Puzzle};
 use crate::actors::Sub;
+use crate::puzzles::{Answer, Puzzle};
 use crate::tables::VaultState;
 
 /// A puzzle kind's icon on the map and in the lists.
@@ -36,7 +36,10 @@ fn answer(p: &Puzzle) -> Vec<String> {
             .collect(),
         Answer::Code(code) => vec![trf!("CODE_IS", code = code)],
         Answer::Items(items) => {
-            vec![trf!("NEEDS", items = items.iter().map(|i| crate::goals::item_label(i)).collect::<Vec<_>>().join(" · "))]
+            vec![trf!(
+                "NEEDS",
+                items = items.iter().map(|i| crate::goals::item_label(i)).collect::<Vec<_>>().join(" · ")
+            )]
         }
     }
 }
@@ -57,9 +60,14 @@ fn shape(a: &Answer) -> String {
 /// A listed puzzle's answer: the dials' places in order (from 1), the code, the items.
 fn listed_answer(a: &Answer) -> String {
     match a {
-        Answer::Dials(d) => trf!("DIAL_POSITIONS_FROM_THE_LEFT_COUNTING", list = d.iter().map(|x| (x.want + 1).to_string()).collect::<Vec<_>>().join(" · ")),
+        Answer::Dials(d) => trf!(
+            "DIAL_POSITIONS_FROM_THE_LEFT_COUNTING",
+            list = d.iter().map(|x| (x.want + 1).to_string()).collect::<Vec<_>>().join(" · ")
+        ),
         Answer::Code(c) => trf!("CODE_IS", code = c),
-        Answer::Items(i) => trf!("NEEDS", items = i.iter().map(|x| crate::goals::item_label(x)).collect::<Vec<_>>().join(" · ")),
+        Answer::Items(i) => {
+            trf!("NEEDS", items = i.iter().map(|x| crate::goals::item_label(x)).collect::<Vec<_>>().join(" · "))
+        }
     }
 }
 
@@ -88,7 +96,8 @@ impl Panel {
     /// their progress, a hidden one's text only once unlocked or asked for.
     pub(super) fn achievements_card(&mut self, t: &mut Tui) {
         if self.achievements.as_ref().is_none_or(|(at, _)| at.elapsed() >= std::time::Duration::from_secs(10)) {
-            self.achievements = Some((std::time::Instant::now(), crate::game::achievements::load(&crate::i18n::culture())));
+            self.achievements =
+                Some((std::time::Instant::now(), crate::game::achievements::load(&crate::i18n::culture())));
         }
         let list = self.achievements.as_ref().map(|(_, l)| l.clone()).unwrap_or_default();
         let done = list.iter().filter(|a| a.unlocked).count();
@@ -106,10 +115,18 @@ impl Panel {
                     h.finish()
                 };
                 let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
-                let progress = a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| format!("  {}/{of}", v.min(of))).unwrap_or_default();
+                let progress = a
+                    .progress
+                    .filter(|(_, of)| *of > 1)
+                    .map(|(v, of)| format!("  {}/{of}", v.min(of)))
+                    .unwrap_or_default();
                 tw::item(t, |t| {
                     t.style(tw::row(INLINE)).add(|t| {
-                        let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name) };
+                        let head = if secret {
+                            tr!("HIDDEN_ACHIEVEMENT").to_string()
+                        } else {
+                            format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name)
+                        };
                         text(t, RichText::new(head).color(if a.unlocked { DIM } else { super::super::theme::TEXT }));
                         if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
                             self.revealed.insert(id);
@@ -126,12 +143,18 @@ impl Panel {
     /// Every puzzle of the worlds (the survey): this region's left first — dials and
     /// codes, and on request the keys and item placements — with the answer behind a
     /// button and a guide to it; the other regions as counts.
-    pub(super) fn catalogue_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+    pub(super) fn catalogue_card(
+        &mut self,
+        t: &mut Tui,
+        state: &mut crate::minimap::MapState,
+        snap: Option<&Snapshot>,
+    ) {
         let list = snap.map(|s| s.catalogue.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
-        let shown = |p: &crate::survey::Placed, placements: bool| placements || p.kind != crate::puzzles::Kind::Placement;
+        let shown =
+            |p: &crate::survey::Placed, placements: bool| placements || p.kind != crate::puzzles::Kind::Placement;
         let mine: Vec<&(crate::survey::Placed, bool)> = list
             .iter()
             .filter(|(p, _)| Some(&p.world) == here_world.as_ref() && shown(p, self.show_placements))
@@ -188,11 +211,15 @@ impl Panel {
             }
             // The other regions: how many are left there.
             let mut elsewhere: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
-            for (p, _) in list.iter().filter(|(p, s)| !s && Some(&p.world) != here_world.as_ref() && shown(p, self.show_placements)) {
+            for (p, _) in list
+                .iter()
+                .filter(|(p, s)| !s && Some(&p.world) != here_world.as_ref() && shown(p, self.show_placements))
+            {
                 *elsewhere.entry(p.world.as_str()).or_default() += 1;
             }
             if !elsewhere.is_empty() {
-                let parts: Vec<String> = elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
+                let parts: Vec<String> =
+                    elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
                 note(t, trf!("OTHER_REGIONS", regions = parts.join(" · ")));
             }
         });
@@ -209,9 +236,11 @@ impl Panel {
             }
             note(t, tr!("READS_THE_ANSWER_THE_GAME_HOLDS"));
             for p in list.iter() {
-                let far = here.map_or(String::new(), |h| crate::raster::distance((p.at[0] - h[0]).hypot(p.at[1] - h[1]) / 100.0));
+                let far = here
+                    .map_or(String::new(), |h| crate::raster::distance((p.at[0] - h[0]).hypot(p.at[1] - h[1]) / 100.0));
                 let name = crate::goals::pretty(&p.class);
-                let head = format!("{} · {name} ({far}){}", crate::i18n::tr(p.kind.label()), if p.solved { " ✓" } else { "" });
+                let head =
+                    format!("{} · {name} ({far}){}", crate::i18n::tr(p.kind.label()), if p.solved { " ✓" } else { "" });
                 let open = self.revealed.contains(&p.id);
                 t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
@@ -264,7 +293,9 @@ impl Panel {
                     w(t, |ui| crate::ui::svg::sort(ui, Sub::Vault, 18.0));
                     let colour = if v.state == VaultState::Opened { DIM } else { super::super::theme::TEXT };
                     text(t, RichText::new(format!("{name} · {region} — {status}")).color(colour));
-                    if v.state != VaultState::Opened && w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_CODE") })).clicked() {
+                    if v.state != VaultState::Opened
+                        && w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_CODE") })).clicked()
+                    {
                         if open {
                             self.revealed.remove(&id);
                         } else {
@@ -273,14 +304,24 @@ impl Panel {
                     }
                     if let Some((world, at)) = v.door.clone().filter(|_| v.state != VaultState::Opened) {
                         if w(t, |ui| ui.small_button(tr!("GUIDE"))).clicked() {
-                            let x = crate::survey::Need { world, id, label: name.clone(), what: String::new(), at, done: false };
+                            let x = crate::survey::Need {
+                                world,
+                                id,
+                                label: name.clone(),
+                                what: String::new(),
+                                at,
+                                done: false,
+                            };
                             guide_to(state, &goals, &x);
                         }
                     }
                 });
                 if open {
                     if v.state == VaultState::Known {
-                        text(t, RichText::new(format!("    {}", crate::i18n::game_text(&v.vault.clue))).color(DIM).small());
+                        text(
+                            t,
+                            RichText::new(format!("    {}", crate::i18n::game_text(&v.vault.clue))).color(DIM).small(),
+                        );
                     }
                     symbol_row(t, &v.vault.code);
                     note(t, tr!("AT_THE_DOORS_DIALS_THE_PUZZLES"));
@@ -305,15 +346,29 @@ impl Panel {
             note(t, tr!("COUNTED_BY_ENEMY_GROUP_SPAWNER_A"));
             for h in list.iter() {
                 let mine = here_world.as_deref() == Some(h.world.as_str());
-                let line = trf!("GROUPS_ENEMIES", place = crate::i18n::place(&h.world), left = h.left, all = h.all, enemies = h.enemies_left);
+                let line = trf!(
+                    "GROUPS_ENEMIES",
+                    place = crate::i18n::place(&h.world),
+                    left = h.left,
+                    all = h.all,
+                    enemies = h.enemies_left
+                );
                 tw::item(t, |t| {
                     t.style(tw::row(INLINE)).add(|t| {
                         w(t, |ui| crate::ui::svg::sort(ui, Sub::EnemyGroup, 18.0));
-                        let colour = if h.left == 0 { DIM } else if mine { super::super::theme::TITLE } else { super::super::theme::TEXT };
+                        let colour = if h.left == 0 {
+                            DIM
+                        } else if mine {
+                            super::super::theme::TITLE
+                        } else {
+                            super::super::theme::TEXT
+                        };
                         text(t, RichText::new(line).color(colour));
                         if mine && h.left > 0 {
                             if let (Some(p), true) = (here, w(t, |ui| ui.small_button(tr!("NEAREST"))).clicked()) {
-                                let near = h.places.iter().min_by(|a, b| (a[0] - p[0]).hypot(a[1] - p[1]).total_cmp(&(b[0] - p[0]).hypot(b[1] - p[1])));
+                                let near = h.places.iter().min_by(|a, b| {
+                                    (a[0] - p[0]).hypot(a[1] - p[1]).total_cmp(&(b[0] - p[0]).hypot(b[1] - p[1]))
+                                });
                                 if let Some(at) = near {
                                     let x = crate::survey::Need {
                                         world: h.world.clone(),
@@ -329,7 +384,15 @@ impl Panel {
                         }
                     });
                     for (lp, l, a) in h.timeloops.iter().filter(|(_, l, _)| *l > 0) {
-                        note(t, trf!("TIMELOOP_LEFT", name = lp.trim_end_matches("_BP").trim_end_matches("_BP2"), left = l, all = a));
+                        note(
+                            t,
+                            trf!(
+                                "TIMELOOP_LEFT",
+                                name = lp.trim_end_matches("_BP").trim_end_matches("_BP2"),
+                                left = l,
+                                all = a
+                            ),
+                        );
                     }
                 });
             }

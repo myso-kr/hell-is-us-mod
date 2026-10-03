@@ -86,7 +86,9 @@ fn parse(b: &[u8]) -> Option<Tile> {
     if po + polys * POLY > b.len() {
         return None;
     }
-    let vert = |k: usize| unreal([f64_at(b, HEADER + k * 24), f64_at(b, HEADER + k * 24 + 8), f64_at(b, HEADER + k * 24 + 16)]);
+    let vert = |k: usize| {
+        unreal([f64_at(b, HEADER + k * 24), f64_at(b, HEADER + k * 24 + 8), f64_at(b, HEADER + k * 24 + 16)])
+    };
     let mut out = Vec::with_capacity(polys);
     for k in 0..polys {
         let q = po + k * POLY;
@@ -152,7 +154,10 @@ impl NavMesh {
                     let (a, b) = (corners[e], corners[(e + 1) % corners.len()]);
                     if nei & EXTERNAL != 0 {
                         border.push((me, a, b));
-                    } else if nei != 0 && ((nei - 1) as usize) < t.polys.len() && !t.polys[(nei - 1) as usize].0.is_empty() {
+                    } else if nei != 0
+                        && ((nei - 1) as usize) < t.polys.len()
+                        && !t.polys[(nei - 1) as usize].0.is_empty()
+                    {
                         mesh.polys[me as usize].links.push((base + nei as u32 - 1, [a, b]));
                     }
                 }
@@ -209,7 +214,11 @@ impl NavMesh {
                     }
                     // Heights of both edges over the overlap.
                     let at = |a: [f32; 3], b: [f32; 3], t: f32| {
-                        let k = if (b[along] - a[along]).abs() < f32::EPSILON { 0.0 } else { (t - a[along]) / (b[along] - a[along]) };
+                        let k = if (b[along] - a[along]).abs() < f32::EPSILON {
+                            0.0
+                        } else {
+                            (t - a[along]) / (b[along] - a[along])
+                        };
                         let mut p = [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
                         p[along] = t;
                         p
@@ -594,10 +603,17 @@ mod tests {
         // An L of three squares (Recast x, z): A (0..100, 0..100), B (100..200, 0..100),
         // C (100..200, 100..200). From A's middle to C's middle the route must pass B.
         let v = [
-            [0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [100.0, 0.0, 100.0], [0.0, 0.0, 100.0],
-            [200.0, 0.0, 0.0], [200.0, 0.0, 100.0], [200.0, 0.0, 200.0], [100.0, 0.0, 200.0],
+            [0.0, 0.0, 0.0],
+            [100.0, 0.0, 0.0],
+            [100.0, 0.0, 100.0],
+            [0.0, 0.0, 100.0],
+            [200.0, 0.0, 0.0],
+            [200.0, 0.0, 100.0],
+            [200.0, 0.0, 200.0],
+            [100.0, 0.0, 200.0],
         ];
-        let t = tile(&v, &[(&[0, 1, 2, 3], &[0, 2, 0, 0]), (&[1, 4, 5, 2], &[0, 0, 3, 1]), (&[2, 5, 6, 7], &[2, 0, 0, 0])]);
+        let t =
+            tile(&v, &[(&[0, 1, 2, 3], &[0, 2, 0, 0]), (&[1, 4, 5, 2], &[0, 0, 3, 1]), (&[2, 5, 6, 7], &[2, 0, 0, 0])]);
         let mesh = NavMesh::from_tiles(&[t]);
         assert_eq!(mesh.len(), 3);
         let (a, b) = ([-50.0, -50.0, 0.0], [-150.0, -150.0, 0.0]);
@@ -605,13 +621,23 @@ mod tests {
         assert_eq!(path.points.first(), Some(&[-50.0, -50.0]));
         assert_eq!(path.points.last(), Some(&[-150.0, -150.0]));
         // It bends at the shared corner (Recast (100, 100) → Unreal (−100, −100)).
-        assert!(path.points.iter().any(|p| (p[0] + 100.0).abs() < 1.0 && (p[1] + 100.0).abs() < 1.0), "{:?}", path.points);
+        assert!(
+            path.points.iter().any(|p| (p[0] + 100.0).abs() < 1.0 && (p[1] + 100.0).abs() < 1.0),
+            "{:?}",
+            path.points
+        );
     }
 
     #[test]
     fn tiles_join_across_their_border() {
-        let a = tile(&[[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [100.0, 0.0, 100.0], [0.0, 0.0, 100.0]], &[(&[0, 1, 2, 3], &[0, EXTERNAL, 0, 0])]);
-        let b = tile(&[[100.0, 0.0, 0.0], [200.0, 0.0, 0.0], [200.0, 0.0, 100.0], [100.0, 0.0, 100.0]], &[(&[0, 1, 2, 3], &[0, 0, 0, EXTERNAL])]);
+        let a = tile(
+            &[[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [100.0, 0.0, 100.0], [0.0, 0.0, 100.0]],
+            &[(&[0, 1, 2, 3], &[0, EXTERNAL, 0, 0])],
+        );
+        let b = tile(
+            &[[100.0, 0.0, 0.0], [200.0, 0.0, 0.0], [200.0, 0.0, 100.0], [100.0, 0.0, 100.0]],
+            &[(&[0, 1, 2, 3], &[0, 0, 0, EXTERNAL])],
+        );
         let mesh = NavMesh::from_tiles(&[a, b]);
         assert!(mesh.route([-50.0, -50.0, 0.0], [-150.0, -50.0, 0.0]).is_some());
     }
@@ -619,8 +645,16 @@ mod tests {
     #[test]
     fn a_point_finds_the_floor_it_stands_on() {
         // Two floors over the same square, 0 and 400 up.
-        let v = [[0.0, 0.0, 0.0], [100.0, 0.0, 0.0], [100.0, 0.0, 100.0], [0.0, 0.0, 100.0],
-            [0.0, 400.0, 0.0], [100.0, 400.0, 0.0], [100.0, 400.0, 100.0], [0.0, 400.0, 100.0]];
+        let v = [
+            [0.0, 0.0, 0.0],
+            [100.0, 0.0, 0.0],
+            [100.0, 0.0, 100.0],
+            [0.0, 0.0, 100.0],
+            [0.0, 400.0, 0.0],
+            [100.0, 400.0, 0.0],
+            [100.0, 400.0, 100.0],
+            [0.0, 400.0, 100.0],
+        ];
         let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0; 4]), (&[4, 5, 6, 7], &[0; 4])])]);
         assert_eq!(mesh.locate([-50.0, -50.0, 380.0]).map(|(i, _)| i), Some(1));
         assert_eq!(mesh.locate([-50.0, -50.0, 20.0]).map(|(i, _)| i), Some(0));

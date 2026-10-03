@@ -351,8 +351,10 @@ fn water(hazards: &[Hazard], terrain: &Terrain, solid: &[Obstacle], hero: [f64; 
     let lowest = hazards.iter().map(|h| h.top).fold(f32::MAX, f32::min);
     let highest = hazards.iter().map(|h| h.top).fold(f32::MIN, f32::max);
     let deck = |o: &Obstacle| {
-        let (lo, hi) = (o.hull.iter().fold([f32::MAX; 2], |a, p| [a[0].min(p[0]), a[1].min(p[1])]),
-            o.hull.iter().fold([f32::MIN; 2], |a, p| [a[0].max(p[0]), a[1].max(p[1])]));
+        let (lo, hi) = (
+            o.hull.iter().fold([f32::MAX; 2], |a, p| [a[0].min(p[0]), a[1].min(p[1])]),
+            o.hull.iter().fold([f32::MIN; 2], |a, p| [a[0].max(p[0]), a[1].max(p[1])]),
+        );
         o.zmax > lowest - DECK.0
             && o.zmax < highest + DECK.1
             && o.zmax - o.zmin < DECK.2
@@ -650,7 +652,12 @@ mod tests {
     fn a_deck_dries_the_water_under_it_and_a_tree_does_not() {
         let hazard = Hazard { hull: vec![[0.0, 0.0], [2000.0, 0.0], [2000.0, 2000.0], [0.0, 2000.0]], top: 0.0 };
         let n = 21;
-        let terrain = Terrain::new(vec![Heightfield { origin: [0.0, 0.0, 0.0], spacing: [100.0, 100.0], n, z: vec![-100.0; n * n] }]);
+        let terrain = Terrain::new(vec![Heightfield {
+            origin: [0.0, 0.0, 0.0],
+            spacing: [100.0, 100.0],
+            n,
+            z: vec![-100.0; n * n],
+        }]);
         let slab = |x0: f32, x1: f32, z0: f32, z1: f32| Obstacle {
             hull: vec![[x0, 0.0], [x1, 0.0], [x1, 2000.0], [x0, 2000.0]],
             zmin: z0,
@@ -658,7 +665,10 @@ mod tests {
             water: false,
         };
         let wet = |solid: &[Obstacle]| -> f32 {
-            water(std::slice::from_ref(&hazard), &terrain, solid, [1000.0, 1000.0, 0.0]).iter().map(|o| o.hull[1][0] - o.hull[0][0]).sum()
+            water(std::slice::from_ref(&hazard), &terrain, solid, [1000.0, 1000.0, 0.0])
+                .iter()
+                .map(|o| o.hull[1][0] - o.hull[0][0])
+                .sum()
         };
         let all = wet(&[]);
         assert_eq!(wet(&[slab(900.0, 1100.0, -500.0, 900.0)]), all, "a tree standing in it: still water");

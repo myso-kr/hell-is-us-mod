@@ -99,7 +99,10 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
             let (k, a) = pin_look(p.distance_m, p.target);
             let s = if p.target { 6.5 } else { 4.0 } * k;
             let colour = Rgba(r, g, b, (255.0 * a) as u8);
-            cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], Rgba(0, 0, 0, (200.0 * a) as u8));
+            cv.polygon(
+                &[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)],
+                Rgba(0, 0, 0, (200.0 * a) as u8),
+            );
             cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], colour);
             // Another floor: a small arrow beside it, up or down.
             if p.dz_m.abs() >= FLOOR_DZ {

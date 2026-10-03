@@ -30,11 +30,7 @@ impl Panel {
             .unwrap_or(0);
         card(t, tr!("GUIDE"), |t| {
             switch(t, &mut state.guide_auto, tr!("AUTO_GUIDE_KEEPS_GUIDING_TO_THE"));
-            switch(
-                t,
-                &mut state.route,
-                tr!("WALKING_ROUTE_A_AROUND_TERRAIN_WATER"),
-            );
+            switch(t, &mut state.route, tr!("WALKING_ROUTE_A_AROUND_TERRAIN_WATER"));
             choices(t, |t| {
                 for tier in crate::goals::Tier::ALL {
                     let [r, g, b] = tier.rgb();
@@ -75,14 +71,7 @@ impl Panel {
                     }
                     note(t, g.detail.clone());
                     if state.route && *self.shared.route_uncertain.lock().unwrap() {
-                        text(
-                            t,
-                            RichText::new(
-                                tr!("NO_WALKING_ROUTE_IT_MAY_BE"),
-                            )
-                            .color(WAIT)
-                            .small(),
-                        );
+                        text(t, RichText::new(tr!("NO_WALKING_ROUTE_IT_MAY_BE")).color(WAIT).small());
                     }
                 }
                 None => {
@@ -110,7 +99,6 @@ impl Panel {
                 });
             }
         });
-
     }
 
     /// Every place with something new, nearest first: press to guide there.
@@ -143,6 +131,5 @@ impl Panel {
                 });
             });
         });
-
     }
 }

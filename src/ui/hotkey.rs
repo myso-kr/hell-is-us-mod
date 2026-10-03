@@ -17,9 +17,9 @@ use windows_sys::Win32::Foundation::{BOOL, HWND, LPARAM, RECT};
 use windows_sys::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_OEM_3};
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    BringWindowToTop, EnumWindows, FindWindowW, SW_SHOWNOACTIVATE, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId, IsWindowVisible,
-    SetForegroundWindow, SetWindowPos, ShowWindow, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE,
-    SWP_SHOWWINDOW, SW_HIDE,
+    BringWindowToTop, EnumWindows, FindWindowW, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId,
+    IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE,
+    SWP_NOSIZE, SWP_SHOWWINDOW, SW_HIDE, SW_SHOWNOACTIVATE,
 };
 
 pub(super) fn pid_of(hwnd: HWND) -> u32 {

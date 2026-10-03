@@ -35,7 +35,14 @@ impl Route {
     /// Keep the route to `goal` current from the hero at `p`; `None` drops it (but
     /// not what is known to be blocked). `trail` is where the hero has walked — cheap
     /// ground for the grid.
-    pub fn follow(&mut self, goal: Option<&Goal>, p: [f32; 3], trail: impl FnOnce() -> Vec<[f32; 2]>, scene: &Arc<Scene>, nav: &Arc<crate::navmesh::NavMesh>) {
+    pub fn follow(
+        &mut self,
+        goal: Option<&Goal>,
+        p: [f32; 3],
+        trail: impl FnOnce() -> Vec<[f32; 2]>,
+        scene: &Arc<Scene>,
+        nav: &Arc<crate::navmesh::NavMesh>,
+    ) {
         let Some(g) = goal else {
             let blocked = std::mem::take(&mut self.blocked);
             *self = Route { blocked, ..Route::default() };
@@ -55,7 +62,8 @@ impl Route {
                 // Same goal: keep the way being followed unless this one is clearly
                 // better, so the compass does not swing.
                 if id == g.id
-                    && (self.path.points.len() < 2 || crate::pathfind::better(&self.path, &path, [p[0], p[1]], ROUTE_AHEAD))
+                    && (self.path.points.len() < 2
+                        || crate::pathfind::better(&self.path, &path, [p[0], p[1]], ROUTE_AHEAD))
                 {
                     self.path = path;
                 }
@@ -63,13 +71,16 @@ impl Route {
         }
         if due && self.pending.is_none() {
             let trail = trail();
-            let (from, to, feet, id, scene, nav) = ([p[0], p[1]], [g.at[0], g.at[1]], p[2] - 90.0, g.id, scene.clone(), nav.clone());
+            let (from, to, feet, id, scene, nav) =
+                ([p[0], p[1]], [g.at[0], g.at[1]], p[2] - 90.0, g.id, scene.clone(), nav.clone());
             let goal_feet = g.at[2] - GOAL_FEET;
             self.pending = Some(std::thread::spawn(move || {
                 let path = nav
                     .route([from[0], from[1], feet], [to[0], to[1], goal_feet])
                     .map(|(path, _)| path)
-                    .unwrap_or_else(|| crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail));
+                    .unwrap_or_else(|| {
+                        crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail)
+                    });
                 (path, id)
             }));
             if self.goal != Some(g.id) {

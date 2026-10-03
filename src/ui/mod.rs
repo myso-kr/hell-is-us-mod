@@ -83,7 +83,12 @@ fn backups(shared: Arc<Shared>) {
             logged = std::time::Instant::now();
             if let (Some((ws, private)), Some(peak)) = (crate::memstat::now(), crate::memstat::peak()) {
                 use crate::memstat::mb;
-                crate::logfile::line(&format!("memory: working {} · private {} · peak {}", mb(ws), mb(private), mb(peak)));
+                crate::logfile::line(&format!(
+                    "memory: working {} · private {} · peak {}",
+                    mb(ws),
+                    mb(private),
+                    mb(peak)
+                ));
             }
         }
         match watch.poll() {

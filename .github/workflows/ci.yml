@@ -58,3 +58,22 @@ jobs:
             esac
           done
           exit $fail
+
+  site:
+    name: The site in docs/ is what tools/site builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v6
+        with: { node-version: '22' }
+      # docs/ is generated. An edit made there instead of in tools/site would be
+      # overwritten by the next build, so a stale or hand-edited docs/ fails here.
+      - name: Rebuild and compare
+        run: |
+          python tools/site/build.py
+          git status --porcelain docs
+          git diff --exit-code docs
+      - name: The hero script parses
+        run: node --check tools/site/site.js

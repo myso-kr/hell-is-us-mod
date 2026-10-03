@@ -2,15 +2,14 @@
 //! read off the cheat table; the panel reads the worker's last snapshot and never
 //! touches the game itself.
 
-
-mod groups;
-mod map;
-mod guide;
-mod quests;
 mod collect;
-mod saves;
 mod debug;
 mod deep;
+mod groups;
+mod guide;
+mod map;
+mod quests;
+mod saves;
 
 use super::tw::{self, block, card, choices, field, note, switch, text, w};
 use super::{hotkey, Request, Shared};
@@ -64,7 +63,10 @@ pub fn install_fonts(ctx: &egui::Context) {
         "zh-Hans" => Some(("own", r"C:\Windows\Fonts\msyh.ttc")),
         _ => None,
     };
-    for (name, file) in own.into_iter().chain([("malgun", r"C:\Windows\Fonts\malgun.ttf"), ("symbol", r"C:\Windows\Fonts\seguisym.ttf")]) {
+    for (name, file) in own
+        .into_iter()
+        .chain([("malgun", r"C:\Windows\Fonts\malgun.ttf"), ("symbol", r"C:\Windows\Fonts\seguisym.ttf")])
+    {
         let Ok(bytes) = std::fs::read(file) else { continue };
         fonts.font_data.insert(name.into(), Arc::new(egui::FontData::from_owned(bytes)));
         for family in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
@@ -288,9 +290,7 @@ impl Panel {
     fn settings(&self) -> Settings {
         Settings {
             keep: self.keep,
-            tab: Some(
-                self.tool.map_or(self.tab.id(), Tool::id).to_string(),
-            ),
+            tab: Some(self.tool.map_or(self.tab.id(), Tool::id).to_string()),
             pos: *self.shared.pos.lock().unwrap(),
             on: self.wanted.iter().map(|a| (a.cheat.to_string(), a.value)).collect(),
             values: self.value.iter().map(|(id, v)| (id.to_string(), *v)).collect(),
@@ -485,12 +485,7 @@ impl Panel {
             }
         }
         ui.add_space(super::theme::TIGHT);
-        ui.add(
-            egui::Label::new(
-                RichText::new(tr!("WRITES_ONLY_WHILE_THE_HERO_IS")).color(DIM).small(),
-            )
-            .wrap(),
-        );
+        ui.add(egui::Label::new(RichText::new(tr!("WRITES_ONLY_WHILE_THE_HERO_IS")).color(DIM).small()).wrap());
     }
 
     /// The window is exactly as tall as what is in it: nothing clipped, nothing empty.
@@ -542,7 +537,9 @@ impl Panel {
     /// panel is and the console is open.
     fn console_window(&mut self, ctx: &egui::Context) {
         let game = self.shared.game_pid.load(std::sync::atomic::Ordering::SeqCst);
-        let Some((_, r)) = (self.console.open && game != 0).then(|| hotkey::game_window(game)).flatten() else { return };
+        let Some((_, r)) = (self.console.open && game != 0).then(|| hotkey::game_window(game)).flatten() else {
+            return;
+        };
         let ppp = ctx.pixels_per_point();
         let (w, h) = ((r.right - r.left) as f32 / ppp, (r.bottom - r.top) as f32 / ppp);
         let size = egui::vec2(w, (h * super::console::SHARE).max(180.0));
@@ -610,7 +607,8 @@ impl eframe::App for Panel {
         let monitor_w = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1920.0, |m| m.x);
         self.fit_columns(monitor_w);
         let width = (FRAME + NAV + DIVIDER + self.page_width() + SCROLLBAR).min(monitor_w * 0.9);
-        let used = egui::Frame::central_panel(ui.style()).inner_margin(super::theme::BLOCK)
+        let used = egui::Frame::central_panel(ui.style())
+            .inner_margin(super::theme::BLOCK)
             .show(ui, |ui| {
                 ui.set_width(width - FRAME);
                 ui.set_max_width(width - FRAME);
@@ -652,7 +650,6 @@ impl eframe::App for Panel {
                 let stroke = ui.visuals().widgets.noninteractive.bg_stroke;
                 let bottom = ui.min_rect().bottom();
                 ui.painter().vline(x, top..=bottom, stroke);
-
             })
             .response
             .rect;

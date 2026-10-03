@@ -167,7 +167,9 @@ impl Names {
     /// real name is not given away; a unit with only a real name (a place) shows it.
     pub fn subject(&self, unit: &str, facts: &HashSet<String>) -> Option<String> {
         let names = self.learned.get(unit)?;
-        let best = |list: &mut dyn Iterator<Item = &(String, String)>| list.max_by_key(|(f, _)| (rank(f), f.clone())).map(|(_, t)| t.clone());
+        let best = |list: &mut dyn Iterator<Item = &(String, String)>| {
+            list.max_by_key(|(f, _)| (rank(f), f.clone())).map(|(_, t)| t.clone())
+        };
         best(&mut names.iter().filter(|(f, _)| facts.contains(f)))
             .or_else(|| best(&mut names.iter().filter(|(f, _)| placeholder(f))))
             .or_else(|| (names.len() == 1).then(|| names[0].1.clone()))
@@ -230,16 +232,30 @@ mod tests {
     #[test]
     fn names_items_regions_and_npcs() {
         let n = Names::parse(TEXT, INDEX);
-        assert_eq!(n.item("/Game/Items/Secrets/Talju/TaljuProfessorHouseKey_item_DA").as_deref(), Some("열쇠 - 탈주 집"));
-        assert_eq!(n.item("TaljuProfessorHouseKey_Item_DA.TaljuProfessorHouseKey_Item_DA").as_deref(), Some("열쇠 - 탈주 집"));
+        assert_eq!(
+            n.item("/Game/Items/Secrets/Talju/TaljuProfessorHouseKey_item_DA").as_deref(),
+            Some("열쇠 - 탈주 집")
+        );
+        assert_eq!(
+            n.item("TaljuProfessorHouseKey_Item_DA.TaljuProfessorHouseKey_Item_DA").as_deref(),
+            Some("열쇠 - 탈주 집")
+        );
         assert_eq!(n.region("Talju").as_deref(), Some("탈주"));
         let mut facts = HashSet::new();
         assert_eq!(n.npc("Convo_MechanicSurvivor_BP_C", &facts).as_deref(), Some("피신한 정비공"));
         facts.insert("TaljuMechanic_Real_Name_TextFact_DA".to_string());
-        assert_eq!(n.npc("Convo_MechanicSurvivor_BP_C", &facts).as_deref(), Some("보로 주벤"), "the real name, once learned");
+        assert_eq!(
+            n.npc("Convo_MechanicSurvivor_BP_C", &facts).as_deref(),
+            Some("보로 주벤"),
+            "the real name, once learned"
+        );
         assert_eq!(n.npc("Nobody_BP_C", &facts), None);
         assert_eq!(n.subject("TaljuMechanic", &facts).as_deref(), Some("보로 주벤"), "known: the real name");
-        assert_eq!(n.subject("TaljuMechanic", &HashSet::new()).as_deref(), Some("피신한 정비공"), "unknown: the placeholder");
+        assert_eq!(
+            n.subject("TaljuMechanic", &HashSet::new()).as_deref(),
+            Some("피신한 정비공"),
+            "unknown: the placeholder"
+        );
         assert_eq!(n.subject("Nowhere", &facts), None);
         assert_eq!(n.len(), 3);
     }

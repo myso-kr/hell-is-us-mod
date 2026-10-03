@@ -42,7 +42,11 @@ fn a_survey_world_file_gives_its_puzzles_and_vault_door() {
 #[test]
 fn the_tables_count_what_is_left() {
     let dir = temp("tables");
-    std::fs::write(dir.join("spawners.json"), r#"{"Talju":[{"guid":"A","timeloop":null,"entities":["x"],"at":[0,0,0]}]}"#).unwrap();
+    std::fs::write(
+        dir.join("spawners.json"),
+        r#"{"Talju":[{"guid":"A","timeloop":null,"entities":["x"],"at":[0,0,0]}]}"#,
+    )
+    .unwrap();
     std::fs::write(dir.join("vaults.json"), "[]").unwrap();
     let t = hiumod::tables::Tables::load(&dir);
     let _ = std::fs::remove_dir_all(&dir);

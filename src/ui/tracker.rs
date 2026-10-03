@@ -115,7 +115,12 @@ pub fn draw(
 /// Put `bg` under what is drawn, over the rows `0..h` — so the box is as tall as its
 /// content without drawing the content twice.
 fn under(cv: &mut Canvas, h: i32, bg: Rgba) {
-    let (a, r, g, b) = (bg.3 as u32, bg.0 as u32 * bg.3 as u32 / 255, bg.1 as u32 * bg.3 as u32 / 255, bg.2 as u32 * bg.3 as u32 / 255);
+    let (a, r, g, b) = (
+        bg.3 as u32,
+        bg.0 as u32 * bg.3 as u32 / 255,
+        bg.1 as u32 * bg.3 as u32 / 255,
+        bg.2 as u32 * bg.3 as u32 / 255,
+    );
     let rows = (h.max(0) as usize).min(cv.h);
     for p in &mut cv.px[..rows * cv.w] {
         let k = 255 - (*p >> 24);

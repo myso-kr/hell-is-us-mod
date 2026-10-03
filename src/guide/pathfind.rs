@@ -482,7 +482,10 @@ mod tests {
         let old = Path { points: vec![[0.0, 0.0], [1000.0, 0.0], [1000.0, 1000.0]], through: vec![false, false] };
         let (off, left) = remaining(&old.points, [500.0, 100.0]).unwrap();
         assert_eq!((off, left), (100.0, 1500.0));
-        let back = Path { points: vec![[500.0, 100.0], [0.0, 100.0], [0.0, 1000.0], [1000.0, 1000.0]], through: vec![false; 3] };
+        let back = Path {
+            points: vec![[500.0, 100.0], [0.0, 100.0], [0.0, 1000.0], [1000.0, 1000.0]],
+            through: vec![false; 3],
+        };
         assert!(!better(&old, &back, [500.0, 100.0], 300.0), "turns the hero round, not shorter: keep the old one");
         let same = Path { points: vec![[500.0, 100.0], [1000.0, 100.0], [1000.0, 1000.0]], through: vec![false; 2] };
         assert!(better(&old, &same, [500.0, 100.0], 300.0), "the same way: take it, it is fresher");

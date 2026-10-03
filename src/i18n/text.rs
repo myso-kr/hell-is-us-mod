@@ -166,7 +166,9 @@ mod tests {
         }
         let mut files = Vec::new();
         walk(&std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("src"), &mut files);
-        let own = |c: &str| -> HashSet<&'static str> { TABLES.iter().filter(|(t, _)| *t == c).flat_map(|(_, t)| parse(t)).map(|(k, _)| k).collect() };
+        let own = |c: &str| -> HashSet<&'static str> {
+            TABLES.iter().filter(|(t, _)| *t == c).flat_map(|(_, t)| parse(t)).map(|(k, _)| k).collect()
+        };
         let (en, ko) = (own("en"), own("ko"));
         let mut missing = Vec::new();
         for f in files.iter().filter(|f| !f.components().any(|c| c.as_os_str() == "i18n")) {

@@ -6,6 +6,6 @@ pub mod icons;
 pub mod minimap;
 pub mod pins;
 pub mod raster;
-pub mod symbols;
 pub mod relief;
+pub mod symbols;
 pub mod view;

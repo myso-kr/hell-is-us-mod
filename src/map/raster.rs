@@ -10,10 +10,10 @@ use crate::minimap::{MapState, ReliefMode, View};
 use crate::pathfind::Path;
 use crate::relief::Relief;
 
-pub use super::canvas::*;
-pub use super::compass::*;
 use super::canvas::over;
+pub use super::canvas::*;
 use super::compass::floor_arrow;
+pub use super::compass::*;
 
 const BACKGROUND: Rgba = Rgba(16, 18, 22, 170);
 const EDGE: Rgba = Rgba(200, 200, 190, 200);
@@ -345,8 +345,10 @@ pub fn draw_map(
         // As outlines only walls and raised floors are drawn: the cliff and rock boxes
         // are bigger than what they hold (the contours show the real ground), and the
         // lower bands' blue would read as water.
-        let kept: Vec<bool> =
-            Band::ALL.iter().map(|b| !outline || matches!(b, Band::Wall | Band::Raised | Band::Above | Band::Below)).collect();
+        let kept: Vec<bool> = Band::ALL
+            .iter()
+            .map(|b| !outline || matches!(b, Band::Wall | Band::Raised | Band::Above | Band::Below))
+            .collect();
         let kept = &kept;
         let class_at = move |i: usize| {
             let k = class[i];
@@ -491,7 +493,12 @@ pub fn draw_map(
             None => {
                 let size = if *k == Kind::Enemy { 4.5 } else { 3.5 };
                 let c = colour(*k);
-                cv.disc(cx + p.0, cy + p.1, size + 1.2, Rgba(OUTLINE.0, OUTLINE.1, OUTLINE.2, (OUTLINE.3 as u32 * alpha / 255) as u8));
+                cv.disc(
+                    cx + p.0,
+                    cy + p.1,
+                    size + 1.2,
+                    Rgba(OUTLINE.0, OUTLINE.1, OUTLINE.2, (OUTLINE.3 as u32 * alpha / 255) as u8),
+                );
                 cv.disc(cx + p.0, cy + p.1, size, Rgba(c.0, c.1, c.2, (c.3 as u32 * alpha / 255) as u8));
                 floor_arrow(cv, cx + p.0 + size + 2.0, cy + p.1 - size, dz);
             }
@@ -637,7 +644,11 @@ mod tests {
 
     #[test]
     fn other_floors_are_ghosts_and_fade() {
-        let wall = |z0: f32, z1: f32| Footprint { corners: [[0.0, 0.0], [100.0, 0.0], [100.0, 20.0], [0.0, 20.0]], zmin: z0, zmax: z1 };
+        let wall = |z0: f32, z1: f32| Footprint {
+            corners: [[0.0, 0.0], [100.0, 0.0], [100.0, 20.0], [0.0, 20.0]],
+            zmin: z0,
+            zmax: z1,
+        };
         assert_eq!(band(&wall(0.0, 300.0), 0.0), Some(Band::Wall));
         assert_eq!(band(&wall(-1300.0, -1000.0), 0.0), Some(Band::Below), "a cellar's wall");
         assert_eq!(band(&wall(400.0, 700.0), 0.0), Some(Band::Above), "an upper floor's wall");
@@ -649,7 +660,11 @@ mod tests {
     fn the_compass_puts_north_ahead_and_a_target_where_it_lies() {
         let mut cv = Canvas::new(400, 60);
         // Facing north (yaw 0); a target due east (bearing 90) sits at the right end.
-        draw_compass(&mut cv, 0.0, &[Pin { bearing: 45.0, rgb: [255, 0, 255], target: true, distance_m: 8.0, dz_m: -12.0 }]);
+        draw_compass(
+            &mut cv,
+            0.0,
+            &[Pin { bearing: 45.0, rgb: [255, 0, 255], target: true, distance_m: 8.0, dz_m: -12.0 }],
+        );
         let ppd = (400.0 / 2.0 - 22.0) / COMPASS_SPAN;
         let x = (200.0 + 45.0 * ppd) as usize;
         let px = cv.px[(34 - 13) * 400 + x];

@@ -107,7 +107,6 @@ impl Panel {
             });
             field(t, tr!("OPACITY"), |t| tw::slider(t, &mut state.big_alpha, 20..=100, 1.0, " %"));
         });
-
     }
 
     /// What the map shows, and the pins: the map page's second column.
@@ -204,12 +203,20 @@ impl Panel {
                 for i in order {
                     let Some(m) = state.markers.get(wd).and_then(|l| l.get(i)).cloned() else { continue };
                     let id = m.id(wd);
-                    let far = here.map_or(String::new(), |h| crate::raster::distance((m.at[0] - h[0]).hypot(m.at[1] - h[1]) / 100.0));
+                    let far = here.map_or(String::new(), |h| {
+                        crate::raster::distance((m.at[0] - h[0]).hypot(m.at[1] - h[1]) / 100.0)
+                    });
                     let mut note_text = m.note.clone();
                     let mut kind = m.kind;
                     t.style(tw::row(INLINE)).add(|t| {
                         w(t, |ui| pin_picker(ui, &format!("pin-{i}"), &mut kind));
-                        block(t, |ui| ui.add(egui::TextEdit::singleline(&mut note_text).hint_text(tr!("NOTE")).desired_width(f32::INFINITY)));
+                        block(t, |ui| {
+                            ui.add(
+                                egui::TextEdit::singleline(&mut note_text)
+                                    .hint_text(tr!("NOTE"))
+                                    .desired_width(f32::INFINITY),
+                            )
+                        });
                         w(t, |ui| ui.label(RichText::new(far).color(DIM).small()));
                         if w(t, |ui| ui.selectable_label(state.target == Some(id), tr!("GUIDE"))).clicked() {
                             state.target = Some(id);
@@ -235,7 +242,9 @@ impl Panel {
                     state.dirty = true;
                 }
                 let trail = state.trails.get(wd).map_or(0, |x| x.iter().flatten().count());
-                field(t, tr!("THIS_REGION"), |t| text(t, RichText::new(trf!("TRAIL_POINTS_PINS", trail = trail, count = count)).color(DIM)));
+                field(t, tr!("THIS_REGION"), |t| {
+                    text(t, RichText::new(trf!("TRAIL_POINTS_PINS", trail = trail, count = count)).color(DIM))
+                });
                 choices(t, |t| {
                     if w(t, |ui| ui.button(tr!("CLEAR_TRAIL"))).clicked() {
                         state.clear_trail(wd);

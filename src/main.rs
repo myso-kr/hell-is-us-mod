@@ -1,6 +1,5 @@
 //! Entry point. It reads the arguments and assembles the run order — nothing else.
 
-use hiumod::{tr, trf};
 use hiumod::attr::ANY;
 use hiumod::cheats::{self, Active};
 use hiumod::cli::{self, Command, Options};
@@ -8,6 +7,7 @@ use hiumod::engine::{attach, Engine};
 use hiumod::game::locate;
 use hiumod::game::process;
 use hiumod::{log, warn};
+use hiumod::{tr, trf};
 use std::process::ExitCode;
 use std::sync::atomic::Ordering;
 use std::time::Duration;
@@ -63,7 +63,16 @@ fn doctor(opt: &Options) -> R {
             return Ok(());
         }
     };
-    log!("{}", trf!("PROCESS_BASE_0X_IMAGE_0X_BYTES", ok = ok(true), pid = a.game.pid, base = format!("{:X}", a.game.base), size = format!("{:X}", a.game.size)));
+    log!(
+        "{}",
+        trf!(
+            "PROCESS_BASE_0X_IMAGE_0X_BYTES",
+            ok = ok(true),
+            pid = a.game.pid,
+            base = format!("{:X}", a.game.base),
+            size = format!("{:X}", a.game.size)
+        )
+    );
     let an = &a.anchors;
     log!("{}", trf!("NAME_POOL_0X", ok = ok(true), at = format!("{:X}", an.names_rva)));
     log!("{} GEngine +0x{:X}", ok(true), an.gengine_rva);
@@ -114,7 +123,15 @@ fn doctor(opt: &Options) -> R {
             let count = |k: hiumod::actors::Kind| t.iter().filter(|x| x.kind() == k).count();
             let kinds: Vec<String> =
                 hiumod::actors::Kind::ALL.iter().map(|&k| format!("{} {}", k.label(), count(k))).collect();
-            log!("{}", trf!("OK_MINIMAP_THINGS_IN_MS", n = t.len(), ms = started.elapsed().as_millis(), kinds = kinds.join(", ")));
+            log!(
+                "{}",
+                trf!(
+                    "OK_MINIMAP_THINGS_IN_MS",
+                    n = t.len(),
+                    ms = started.elapsed().as_millis(),
+                    kinds = kinds.join(", ")
+                )
+            );
             let subs: Vec<String> = hiumod::actors::Sub::ALL
                 .iter()
                 .filter_map(|&s| {
@@ -208,7 +225,14 @@ fn doctor(opt: &Options) -> R {
                 None => format!("{}.{}", x.set, x.name),
             })
             .collect();
-        println!("        {:<16} {:<10} {:<22} {} [{}]", c.id, state, tried, hiumod::i18n::tr(c.label), sets.join(", "));
+        println!(
+            "        {:<16} {:<10} {:<22} {} [{}]",
+            c.id,
+            state,
+            tried,
+            hiumod::i18n::tr(c.label),
+            sets.join(", ")
+        );
     }
     Ok(())
 }
@@ -220,7 +244,14 @@ fn survey_tool() -> Option<std::path::PathBuf> {
     let dir = exe.parent()?;
     [
         dir.join("survey").join("survey.dll"),
-        dir.join("..").join("..").join("tools").join("survey").join("bin").join("Release").join("net8.0").join("survey.dll"),
+        dir.join("..")
+            .join("..")
+            .join("tools")
+            .join("survey")
+            .join("bin")
+            .join("Release")
+            .join("net8.0")
+            .join("survey.dll"),
     ]
     .into_iter()
     .find(|p| p.exists())
@@ -312,7 +343,8 @@ fn probe(args: &[String]) -> R {
             let started = std::time::Instant::now();
             while started.elapsed().as_secs() < secs {
                 for s in objects.of_class(m, n, "CharlieSaveGame") {
-                    let date = n.path(m, s, &["SaveDate"]).and_then(|(at, _)| hiumod::mem::read_u64(m, at)).unwrap_or(0);
+                    let date =
+                        n.path(m, s, &["SaveDate"]).and_then(|(at, _)| hiumod::mem::read_u64(m, at)).unwrap_or(0);
                     let k = hiumod::knowledge::read(n, m, s);
                     let deeds = hiumod::quests::deed_states(m, n, s);
                     let done = deeds.iter().filter(|d| (2..=3).contains(&d.1)).count();
@@ -333,7 +365,16 @@ fn probe(args: &[String]) -> R {
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
             let path = dir.join("HellIsUs.usmap");
             std::fs::write(&path, &bytes).map_err(|e| format!("{}: {e}", path.display()))?;
-            log!("{}", trf!("STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN", structs = structs, enums = enums, kb = bytes.len() / 1024, path = path.display()));
+            log!(
+                "{}",
+                trf!(
+                    "STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN",
+                    structs = structs,
+                    enums = enums,
+                    kb = bytes.len() / 1024,
+                    path = path.display()
+                )
+            );
             Ok(())
         }
         Some("watch") => {

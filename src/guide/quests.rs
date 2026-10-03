@@ -339,7 +339,11 @@ impl Quests {
 
     /// Every secret of a kind the game has, begun or not: (journal key, title, tag stem).
     pub fn secrets(&self, kind: Kind) -> Vec<(String, String, String)> {
-        self.deeds.iter().filter(|(_, d)| d.kind == kind).map(|(g, d)| (hex(g), d.title.clone(), d.tags.clone())).collect()
+        self.deeds
+            .iter()
+            .filter(|(_, d)| d.kind == kind)
+            .map(|(g, d)| (hex(g), d.title.clone(), d.tags.clone()))
+            .collect()
     }
 
     /// Whether the journal has been put together at least once.
@@ -375,7 +379,9 @@ impl Quests {
                 Some("StringTable") => Role::Strings,
                 Some("NavigationDataChunkActor") => Role::NavChunks,
                 Some("CharlieSaveGame") => Role::Save,
-                _ if crate::puzzles::Kind::of(m, n, o).is_some() => Role::Puzzle(crate::puzzles::Kind::of(m, n, o).unwrap()),
+                _ if crate::puzzles::Kind::of(m, n, o).is_some() => {
+                    Role::Puzzle(crate::puzzles::Kind::of(m, n, o).unwrap())
+                }
                 _ if n.is_a(m, o, "FlowAsset") => Role::Flow,
                 _ if n.is_a(m, o, "FactData") => Role::Fact,
                 _ => Role::Other,
@@ -432,7 +438,10 @@ impl Quests {
                 .and_then(|p| mem::read_u32(m, o + p.offset as u64))
                 .and_then(|i| n.get(m, i))
                 .unwrap_or_default();
-            let text = n.field(m, o, "Description").and_then(|p| ftext(m, o + p.offset as u64)).filter(|t| !t.trim().is_empty());
+            let text = n
+                .field(m, o, "Description")
+                .and_then(|p| ftext(m, o + p.offset as u64))
+                .filter(|t| !t.trim().is_empty());
             let name = mem::read_u32(m, o + crate::names::NAME).unwrap_or(0);
             self.by_quest.entry(q).or_default().push(Fact { name, object, track, text });
         }
@@ -556,7 +565,8 @@ impl Quests {
         let mut out = Vec::new();
         for q in &self.mains {
             let known = |f: &Fact| k.facts.contains(&f.name);
-            let status_fact = |part: &str| q.facts.iter().any(|f| f.track == "Quest Status" && f.object.contains(part) && known(f));
+            let status_fact =
+                |part: &str| q.facts.iter().any(|f| f.track == "Quest Status" && f.object.contains(part) && known(f));
             let status = if status_fact("Complete") {
                 Status::Completed
             } else if status_fact("Start") || q.facts.iter().any(known) {
@@ -564,10 +574,15 @@ impl Quests {
             } else {
                 Status::NotStarted
             };
-            let (name, detail) = self.seen.get(&q.key).cloned().unwrap_or_else(|| (trf!("MAIN_QUEST", number = q.number), String::new()));
+            let (name, detail) = self
+                .seen
+                .get(&q.key)
+                .cloned()
+                .unwrap_or_else(|| (trf!("MAIN_QUEST", number = q.number), String::new()));
             // Per subject: facts known, facts in all, the text of the last known one.
             let mut tracks: BTreeMap<&str, (usize, usize, Option<&String>)> = BTreeMap::new();
-            for f in q.facts.iter().filter(|f| !OWN_TRACKS.contains(&f.track.as_str()) && !f.track.starts_with("Desc")) {
+            for f in q.facts.iter().filter(|f| !OWN_TRACKS.contains(&f.track.as_str()) && !f.track.starts_with("Desc"))
+            {
                 let e = tracks.entry(&f.track).or_default();
                 e.1 += 1;
                 if known(f) {
@@ -607,7 +622,10 @@ impl Quests {
                 key: hex(guid),
                 kind,
                 name: deed.map_or_else(|| format!("{} {}", kind.label(), &hex(guid)[..4]), |d| d.title.clone()),
-                detail: deed.filter(|d| !d.place.is_empty()).map(|d| trf!("PLACE", place = d.place)).unwrap_or_default(),
+                detail: deed
+                    .filter(|d| !d.place.is_empty())
+                    .map(|d| trf!("PLACE", place = d.place))
+                    .unwrap_or_default(),
                 status,
                 progress: None,
                 leads: Vec::new(),
@@ -702,7 +720,8 @@ mod tests {
 
     #[test]
     fn the_main_story_follows_the_lowest_quest_under_way() {
-        let j = vec![main_quest(2, Status::Started), main_quest(1, Status::Completed), main_quest(3, Status::NotStarted)];
+        let j =
+            vec![main_quest(2, Status::Started), main_quest(1, Status::Completed), main_quest(3, Status::NotStarted)];
         assert_eq!(followed(&j, None).unwrap().key, "Quest02");
         let j = vec![main_quest(1, Status::Completed), main_quest(2, Status::NotStarted)];
         assert_eq!(followed(&j, None).unwrap().key, "Quest02", "the next one when none is under way");
@@ -723,8 +742,24 @@ mod tests {
     #[test]
     fn the_cache_round_trips() {
         let mut deeds = BTreeMap::new();
-        deeds.insert([7u8; 16], Deed { kind: Kind::GoodDeed, title: "헛간 구조".into(), tags: "Secrets.GoodDeeds.BarnRescue".into(), place: "하데아".into() });
-        deeds.insert([8u8; 16], Deed { kind: Kind::Mystery, title: "Caddell".into(), tags: "Secrets.Mystery.X".into(), place: String::new() });
+        deeds.insert(
+            [7u8; 16],
+            Deed {
+                kind: Kind::GoodDeed,
+                title: "헛간 구조".into(),
+                tags: "Secrets.GoodDeeds.BarnRescue".into(),
+                place: "하데아".into(),
+            },
+        );
+        deeds.insert(
+            [8u8; 16],
+            Deed {
+                kind: Kind::Mystery,
+                title: "Caddell".into(),
+                tags: "Secrets.Mystery.X".into(),
+                place: String::new(),
+            },
+        );
         let mut seen = HashMap::new();
         seen.insert("Quest01".to_string(), ("가족 재회".to_string(), "부모에 대한 단서".to_string()));
         let (d, s) = parse(&render(&deeds, &seen));

@@ -6,7 +6,8 @@ use std::path::PathBuf;
 /// there is none for it).
 pub fn usage() -> &'static str {
     let culture = crate::i18n::culture();
-    let pick = crate::i18n::culture::best(&culture, |c| HELP.iter().any(|(h, _)| *h == c)).unwrap_or_else(|| "en".into());
+    let pick =
+        crate::i18n::culture::best(&culture, |c| HELP.iter().any(|(h, _)| *h == c)).unwrap_or_else(|| "en".into());
     HELP.iter().find(|(h, _)| *h == pick).map_or(HELP[0].1, |(_, t)| t).trim_end()
 }
 

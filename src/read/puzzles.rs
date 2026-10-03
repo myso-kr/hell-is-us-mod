@@ -80,7 +80,8 @@ pub struct Puzzle {
 
 /// Where an actor stands: its root component's RelativeLocation (doubles).
 fn location(m: &dyn Memory, n: &Names, actor: u64) -> Option<[f32; 3]> {
-    let root = mem::read_u64(m, actor + n.field(m, actor, "RootComponent")?.offset as u64).filter(|&p| mem::plausible(p))?;
+    let root =
+        mem::read_u64(m, actor + n.field(m, actor, "RootComponent")?.offset as u64).filter(|&p| mem::plausible(p))?;
     let at = root + n.field(m, root, "RelativeLocation")?.offset as u64;
     let mut b = [0u8; 24];
     m.read(at, &mut b).then_some(())?;
@@ -141,11 +142,13 @@ pub fn read(m: &dyn Memory, n: &Names, comp: u64, kind: Kind) -> Option<Puzzle> 
             let (at, _) = n.path(m, comp, &["Rune", "ExpectedCode"])?;
             let code = crate::quests::fstring(m, at)?;
             // The keypad's (or the computer's) action says whether it was opened.
-            let action = component(m, n, actor, "KeypadAction").or_else(|| component(m, n, actor, "ComputerAccessAction"));
+            let action =
+                component(m, n, actor, "KeypadAction").or_else(|| component(m, n, actor, "ComputerAccessAction"));
             (Answer::Code(code), action.is_some_and(|a| activated(m, n, a)))
         }
         Kind::Placement => {
-            let solution = mem::read_u64(m, comp + n.field(m, comp, "Solution")?.offset as u64).filter(|&p| mem::plausible(p))?;
+            let solution =
+                mem::read_u64(m, comp + n.field(m, comp, "Solution")?.offset as u64).filter(|&p| mem::plausible(p))?;
             let items = if n.is_a(m, solution, "ItemData") {
                 vec![solution]
             } else {

@@ -18,8 +18,8 @@ use crate::mem::Memory;
 use crate::obstacles::{Obstacles, Scene};
 use crate::player::{self, Chain};
 use std::cell::RefCell;
-use std::sync::Arc;
 use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 mod attached;
@@ -175,7 +175,8 @@ impl Engine {
                         // knowledge (read every 2 s): worked out once a second, shared.
                         if self.derived.as_ref().is_none_or(|(at, _)| at.elapsed() >= DERIVE_EVERY) {
                             let journal = Arc::new(a.journal());
-                            let (collection, stories) = snap.world.as_deref().map(|w| a.collection(w)).unwrap_or_default();
+                            let (collection, stories) =
+                                snap.world.as_deref().map(|w| a.collection(w)).unwrap_or_default();
                             let (vaults, lore_known) = a.vaults();
                             let here = snap.pose.map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
                             let d = Derived {

@@ -168,7 +168,10 @@ pub fn read(schema: &Kv, user: Option<&Kv>, lang: &str) -> Vec<Achievement> {
         }
     }
     let text = |d: Option<&Kv>| -> String {
-        d.and_then(|d| d.get(lang).or_else(|| d.get("english"))).and_then(Kv::str).unwrap_or_default().replace('\u{200b}', "")
+        d.and_then(|d| d.get(lang).or_else(|| d.get("english")))
+            .and_then(Kv::str)
+            .unwrap_or_default()
+            .replace('\u{200b}', "")
     };
     let mut out = Vec::new();
     let mut ids: Vec<(&String, &Kv)> = stats.entries().filter(|(_, s)| s.get("bits").is_some()).collect();
@@ -246,7 +249,14 @@ mod tests {
         let ach = |api: &str, en: &str, ko: &str, progress: Option<Kv>| {
             let mut a = vec![
                 ("name", s(api)),
-                ("display", map(&[("name", map(&[("english", s(en)), ("koreana", s(ko))])), ("desc", map(&[("english", s("d"))])), ("hidden", Kv::Int(0))])),
+                (
+                    "display",
+                    map(&[
+                        ("name", map(&[("english", s(en)), ("koreana", s(ko))])),
+                        ("desc", map(&[("english", s("d"))])),
+                        ("hidden", Kv::Int(0)),
+                    ]),
+                ),
             ];
             if let Some(p) = progress {
                 a.push(("progress", p));
@@ -270,7 +280,10 @@ mod tests {
                                         "GoodDeeds",
                                         "Deeds",
                                         "선행",
-                                        Some(map(&[("max_val", Kv::Int(26)), ("value", map(&[("operand1", s("DEEDS_STAT"))]))])),
+                                        Some(map(&[
+                                            ("max_val", Kv::Int(26)),
+                                            ("value", map(&[("operand1", s("DEEDS_STAT"))])),
+                                        ])),
                                     ),
                                 ),
                             ]),
@@ -280,7 +293,13 @@ mod tests {
                 ]),
             )]),
         )]);
-        let user = map(&[("cache", map(&[("1", map(&[("data", Kv::Int(1)), ("AchievementTimes", map(&[("0", Kv::Int(99))]))])), ("3", map(&[("data", Kv::Int(2))]))]))]);
+        let user = map(&[(
+            "cache",
+            map(&[
+                ("1", map(&[("data", Kv::Int(1)), ("AchievementTimes", map(&[("0", Kv::Int(99))]))])),
+                ("3", map(&[("data", Kv::Int(2))])),
+            ]),
+        )]);
         // Round trip through the binary form.
         let (mut b, mut u) = (Vec::new(), Vec::new());
         for (k, v) in schema.entries() {

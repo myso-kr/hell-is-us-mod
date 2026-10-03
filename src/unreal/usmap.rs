@@ -184,7 +184,8 @@ pub fn build(m: &dyn Memory, n: &Names, objects: &Objects) -> (Vec<u8>, usize, u
             continue;
         }
         if k == 2 {
-            let (Some(data), Some(count)) = (mem::read_u64(m, o + ENUM_NAMES), mem::read_u32(m, o + ENUM_NAMES + 8)) else {
+            let (Some(data), Some(count)) = (mem::read_u64(m, o + ENUM_NAMES), mem::read_u32(m, o + ENUM_NAMES + 8))
+            else {
                 continue;
             };
             if !mem::plausible(data) || count > 4096 {

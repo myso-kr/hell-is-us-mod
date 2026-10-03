@@ -1,0 +1,160 @@
+name: Release
+
+# Pushing a tag builds the zip on Windows and publishes it as a release.
+#
+#   1. CHANGELOG.md: rename "## Unreleased — 0.2.0" to "## 0.2.0", Cargo.toml version = "0.2.0"
+#   2. git tag v0.2.0 && git push origin v0.2.0
+#
+# Unlike combolands-mod, the whole archive can be built here: hiumod.exe is plain Rust
+# and the survey tool takes CUE4Parse from NuGet. Nothing from the game goes in — the
+# survey reads the player's own install at run time (`doctor survey`), so the runner
+# never needs the game, and the zip never carries it.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build by hand (e.g. v0.2.0)'
+        required: true
+
+permissions:
+  contents: write        # needed to create the release
+
+concurrency:
+  group: release-${{ github.ref_name || github.event.inputs.tag }}
+  cancel-in-progress: false
+
+env:
+  TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    name: Build the zip (Windows x64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      # A tag is how a release starts, so a tag that disagrees with the code is a
+      # release of something other than what it claims: the tag, Cargo.toml and the
+      # newest CHANGELOG heading must name the same version — and that heading must
+      # no longer say "Unreleased".
+      - name: The tag, Cargo.toml and the changelog agree
+        shell: bash
+        run: |
+          set -euo pipefail
+          V="${TAG#v}"
+          CARGO=$(sed -n 's/^version *= *"\(.*\)"/\1/p' Cargo.toml | head -1)
+          HEAD=$(grep -m1 '^## ' CHANGELOG.md | sed 's/^## *//')
+          echo "tag $V · Cargo.toml $CARGO · changelog '$HEAD'"
+          [ "$V" = "$CARGO" ] || { echo "::error::tag $V but Cargo.toml says $CARGO"; exit 1; }
+          case "$HEAD" in
+            "$V"|"$V "*) ;;
+            *) echo "::error::the newest CHANGELOG heading is '$HEAD', not '$V'"; exit 1 ;;
+          esac
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-dotnet@v6
+        with: { dotnet-version: '8.0.x' }
+
+      # tools/package.ps1 is what a person runs too: the tests, the release build, the
+      # survey tool published framework-dependent, the documents, one zip.
+      - name: Package
+        shell: pwsh
+        run: ./tools/package.ps1
+
+      - name: What went in, and its checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          V="${TAG#v}"
+          ZIP="dist/hiumod-$V.zip"
+          test -s "$ZIP" || { echo "::error::no archive at $ZIP"; exit 1; }
+          # The archive must hold the tool and its documents, and nothing of the game's.
+          LIST=$(powershell -NoProfile -Command "Add-Type -A System.IO.Compression.FileSystem; [IO.Compression.ZipFile]::OpenRead('$ZIP').Entries.FullName")
+          echo "$LIST"
+          for f in hiumod.exe README.md LICENSE NOTICE THIRD-PARTY.md CHANGELOG.md; do
+            echo "$LIST" | grep -qx "$f" || { echo "::error::$f is missing from the archive"; exit 1; }
+          done
+          if echo "$LIST" | grep -Eiq '\.(pak|ucas|utoc|uasset|uexp|usmap|sav)$|oo2core|aes'; then
+            echo "::error::something from the game is in the archive"; exit 1
+          fi
+          cd dist && sha256sum "hiumod-$V.zip" > "hiumod-$V.zip.sha256" && cat "hiumod-$V.zip.sha256"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: hiumod
+          path: |
+            dist/*.zip
+            dist/*.sha256
+          if-no-files-found: error
+
+  release:
+    name: Publish the release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: hiumod
+          path: artifacts
+
+      # The notes always say which Steam build this was verified on: the tool binds to
+      # names in the game's reflection, and without the build an issue report cannot
+      # be told apart from "the game updated".
+      - name: Compose the release notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          V="${TAG#v}"
+          BUILD=$(sed -n 's/.*TESTED_BUILD: &str = "\([0-9]*\)".*/\1/p' src/game/mod.rs)
+          [ -n "$BUILD" ] || { echo "::error::TESTED_BUILD not found in src/game/mod.rs"; exit 1; }
+          # Everything under the newest CHANGELOG heading, up to the next one.
+          awk '/^## /{ if (seen) exit; seen=1; next } seen' CHANGELOG.md > changes.md
+          {
+            echo "## Verified game build"
+            echo
+            echo "Steam build \`$BUILD\` of *Hell Is Us* (app 1620730). \`hiumod doctor\` checks yours."
+            echo
+            echo "> After a game update, run \`hiumod doctor\`: it names anything that moved. Run"
+            echo "> \`doctor survey\` again for the guide's data. If something stays broken, open an"
+            echo "> issue with the doctor output."
+            echo
+            echo "## Installing"
+            echo
+            echo "1. Unzip \`hiumod-$V.zip\` anywhere. It writes only to \`<game folder>\\Mods\\\`."
+            echo "2. Run \`hiumod.exe\`. It starts the game through Steam and attaches once you're in."
+            echo "3. Press **\`** (left of 1) for the panel. Once, type \`doctor survey\` in its console"
+            echo "   (needs the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0))."
+            echo
+            echo "**F9** map · **F10** compass · **F11** next goal · **F6** pin"
+            echo
+            echo "## What changed"
+            echo
+            cat changes.md
+            echo
+            echo "## Checksum"
+            echo
+            echo '```'
+            cat artifacts/*.sha256
+            echo '```'
+          } > notes.md
+          cat notes.md
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.TAG }}
+          name: hiumod ${{ env.TAG }}
+          body_path: notes.md
+          files: |
+            artifacts/*.zip
+            artifacts/*.sha256
+          fail_on_unmatched_files: true

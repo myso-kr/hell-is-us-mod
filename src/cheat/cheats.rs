@@ -253,9 +253,7 @@ impl Active {
                     Err(trf!("CHEAT_RANGE", id = id, min = min, max = max))
                 }
             }
-            (Kind::Set { .. } | Kind::SetStock { .. }, _) => {
-                Err(trf!("IS_WRITTEN_ONCE_USE_SET_VALUE", id = id))
-            }
+            (Kind::Set { .. } | Kind::SetStock { .. }, _) => Err(trf!("IS_WRITTEN_ONCE_USE_SET_VALUE", id = id)),
         }
     }
 

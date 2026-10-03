@@ -5,7 +5,6 @@
 //! Pixels are `0xAARRGGBB`, premultiplied, top row first: what `UpdateLayeredWindow`
 //! takes from a 32-bit top-down DIB. Edges are anti-aliased by coverage over one pixel.
 
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Rgba(pub u8, pub u8, pub u8, pub u8);
 
@@ -293,7 +292,6 @@ fn glyph(c: char) -> &'static [Seg] {
         _ => &[],
     }
 }
-
 
 /// Integer source-over of `c` at alpha `a` (0..=255) onto the pixel `d`: each
 /// channel (s·a + d·(255 − a)) / 255.

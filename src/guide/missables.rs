@@ -206,7 +206,12 @@ mod tests {
         let act1 = [main(1, Status::Completed), main(2, Status::Started)];
         assert_eq!(when(Due::Act1End, &act1), When::Now);
         assert_eq!(when(Due::Quest03, &act1), When::Later);
-        let act2 = [main(2, Status::Completed), main(3, Status::Started), main(4, Status::Completed), main(5, Status::Completed)];
+        let act2 = [
+            main(2, Status::Completed),
+            main(3, Status::Started),
+            main(4, Status::Completed),
+            main(5, Status::Completed),
+        ];
         assert_eq!(when(Due::Act1End, &act2), When::Passed);
         assert_eq!(when(Due::Talju, &act2), When::Now);
         assert_eq!(when(Due::ThirdKeystone, &act2), When::Now, "two keystones down: the next is the third");
@@ -217,7 +222,8 @@ mod tests {
     fn the_table_reads_and_names_known_deeds() {
         let t = table();
         assert!(t.len() >= 9);
-        let deeds = vec![("k1".to_string(), "Land of Milk and Honey".to_string(), "Secrets.Facts.SabinianBaby".to_string())];
+        let deeds =
+            vec![("k1".to_string(), "Land of Milk and Honey".to_string(), "Secrets.Facts.SabinianBaby".to_string())];
         let d = deadlines(&[main(2, Status::Started)], &deeds);
         assert_eq!(d.len(), 1);
         assert_eq!((d[0].due, d[0].when, d[0].started), (Due::Act1End, When::Now, false));

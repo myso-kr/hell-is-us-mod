@@ -58,7 +58,9 @@ mod tests {
 
     #[test]
     fn reads_the_text_culture_from_the_profile() {
-        let mut save = b"....TextCulture\0\x0c\0\0\0StrProperty\0\0\0\0\0\x07\0\0\0\0\x03\0\0\0ko\0\r\0\0\0AudioCulture\0".to_vec();
+        let mut save =
+            b"....TextCulture\0\x0c\0\0\0StrProperty\0\0\0\0\0\x07\0\0\0\0\x03\0\0\0ko\0\r\0\0\0AudioCulture\0"
+                .to_vec();
         assert_eq!(parse(&save).as_deref(), Some("ko"));
         save = b"TextCulture\0\x0c\0\0\0StrProperty\0\0\0\0\0\x0c\0\0\0\0\x08\0\0\0zh-Hans\0".to_vec();
         assert_eq!(parse(&save).as_deref(), Some("zh-Hans"));

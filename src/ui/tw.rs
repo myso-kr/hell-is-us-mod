@@ -102,14 +102,13 @@ pub fn masonry(tui: &mut Tui, key: &str, columns: usize, n: usize, mut card: imp
         for lane in lanes {
             tui.style(grow(col(GAP))).add(|tui| {
                 for i in lane {
-                    tui.style(col(0.0))
-                        .add_with_background_ui(
-                            |ui, container| {
-                                let h = container.full_container().height();
-                                ui.ctx().data_mut(|d| d.insert_temp(id(i), h));
-                            },
-                            |tui, _| card(tui, i),
-                        );
+                    tui.style(col(0.0)).add_with_background_ui(
+                        |ui, container| {
+                            let h = container.full_container().height();
+                            ui.ctx().data_mut(|d| d.insert_temp(id(i), h));
+                        },
+                        |tui, _| card(tui, i),
+                    );
                 }
             });
         }
@@ -216,19 +215,22 @@ pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> 
     fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
         let rect = container.full_container();
         let p = ui.painter();
-        p.rect(rect, super::theme::R_CARD, super::theme::CARD, egui::Stroke::new(1.0, super::theme::EDGE), egui::StrokeKind::Inside);
+        p.rect(
+            rect,
+            super::theme::R_CARD,
+            super::theme::CARD,
+            egui::Stroke::new(1.0, super::theme::EDGE),
+            egui::StrokeKind::Inside,
+        );
         let bar = egui::Rect::from_min_size(rect.min + egui::vec2(1.0, super::theme::PAD - 1.0), egui::vec2(3.0, 18.0));
         p.rect_filled(bar, 1.5, ACCENT);
     }
-    tui.style(Style {
-        padding: length(super::theme::PAD),
-        ..col(super::theme::INLINE)
-    })
-    .add_with_background_ui(background, |tui, _| {
-        w(tui, |ui| ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE)));
-        body(tui)
-    })
-    .main
+    tui.style(Style { padding: length(super::theme::PAD), ..col(super::theme::INLINE) })
+        .add_with_background_ui(background, |tui, _| {
+            w(tui, |ui| ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE)));
+            body(tui)
+        })
+        .main
 }
 
 /// The cards' accent bar: the theme's accent.

@@ -73,7 +73,8 @@ fn at(v: &Value) -> Option<[f32; 3]> {
 
 impl Tables {
     pub fn load(dir: &Path) -> Tables {
-        let read = |f: &str| std::fs::read_to_string(dir.join(f)).ok().and_then(|t| serde_json::from_str::<Value>(&t).ok());
+        let read =
+            |f: &str| std::fs::read_to_string(dir.join(f)).ok().and_then(|t| serde_json::from_str::<Value>(&t).ok());
         let mut t = Tables::default();
         if let Some(Value::Object(worlds)) = read("spawners.json") {
             for (world, list) in worlds {
@@ -103,7 +104,13 @@ impl Tables {
                         region: v["region"].as_str().unwrap_or_default().to_string(),
                         clue: v["clue"].as_str().unwrap_or_default().to_string(),
                         entries: v["entries"].as_u64().unwrap_or(0) as u32,
-                        code: v["code"].as_array().into_iter().flatten().filter_map(|c| c.as_u64()).map(|c| c as u8).collect(),
+                        code: v["code"]
+                            .as_array()
+                            .into_iter()
+                            .flatten()
+                            .filter_map(|c| c.as_u64())
+                            .map(|c| c as u8)
+                            .collect(),
                     })
                 })
                 .collect();
@@ -146,7 +153,13 @@ impl Tables {
     /// The vaults as the research state has them: shown in the datapad, opened (by
     /// GUID), or due by the research entries known (`lore`); `doors` — each world's
     /// vault door.
-    pub fn vaults(&self, known: &HashSet<String>, opened: &HashSet<String>, lore: usize, doors: &[(String, [f32; 3])]) -> Vec<VaultNote> {
+    pub fn vaults(
+        &self,
+        known: &HashSet<String>,
+        opened: &HashSet<String>,
+        lore: usize,
+        doors: &[(String, [f32; 3])],
+    ) -> Vec<VaultNote> {
         self.vaults
             .iter()
             .map(|v| {
@@ -209,7 +222,10 @@ mod tests {
         let doors = vec![("SenedraForest".to_string(), [1.0, 2.0, 3.0])];
         let none = HashSet::new();
         let v = t.vaults(&none, &none, 0, &doors);
-        assert_eq!((v[0].state, v[0].door.clone()), (VaultState::Locked, Some(("SenedraForest".to_string(), [1.0, 2.0, 3.0]))));
+        assert_eq!(
+            (v[0].state, v[0].door.clone()),
+            (VaultState::Locked, Some(("SenedraForest".to_string(), [1.0, 2.0, 3.0])))
+        );
         assert_eq!(v[0].vault.code, vec![7, 1, 6, 2]);
         let known: HashSet<String> = ["V1".to_string()].into();
         assert_eq!(t.vaults(&known, &none, 0, &doors)[0].state, VaultState::Known);

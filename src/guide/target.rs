@@ -70,7 +70,9 @@ pub fn settle_target(
         let stuck = wanted_all.iter().copied().min_by(near)?;
         let helper = goals
             .iter()
-            .filter(|g| g.id != stuck.id && !blocked.contains(&g.id) && g.gate == Gate::Open && !state.skipped.contains(&g.id))
+            .filter(|g| {
+                g.id != stuck.id && !blocked.contains(&g.id) && g.gate == Gate::Open && !state.skipped.contains(&g.id)
+            })
             .filter(|g| flat(g.at, stuck.at) <= HELPER)
             .filter(|g| reachable(g, journal))
             .min_by(|a, b| flat(a.at, stuck.at).total_cmp(&flat(b.at, stuck.at)));
@@ -79,8 +81,7 @@ pub fn settle_target(
     // Keep the target while it is still what would be picked, or still wanted and not
     // blocked (nearness alone does not make the guide hop between goals).
     let keep = state.target.is_some_and(|t| {
-        Some(t) == pick.map(|g| g.id)
-            || wanted_all.iter().any(|g| g.id == t) && !blocked.contains(&t) && open.is_some()
+        Some(t) == pick.map(|g| g.id) || wanted_all.iter().any(|g| g.id == t) && !blocked.contains(&t) && open.is_some()
     });
     if !keep {
         state.target = pick.map(|g| g.id);
@@ -104,7 +105,17 @@ mod tests {
     use super::*;
 
     fn goal(id: u64, tier: Tier, x: f32) -> Goal {
-        Goal { tier, id, label: String::new(), detail: String::new(), at: [x, 0.0, 0.0], quests: vec![], tags: vec![], keys: vec![], gate: Gate::Open }
+        Goal {
+            tier,
+            id,
+            label: String::new(),
+            detail: String::new(),
+            at: [x, 0.0, 0.0],
+            quests: vec![],
+            tags: vec![],
+            keys: vec![],
+            gate: Gate::Open,
+        }
     }
 
     #[test]

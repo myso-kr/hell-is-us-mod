@@ -22,12 +22,12 @@ mod route;
 
 use super::hotkey::{game_window, pid_of};
 use super::layered::{pump, Layered};
-use super::Shared;
-use crate::guide::target::{cycle, settle_target};
 use super::pen::Pen;
 use super::tracker;
-use crate::quests::Quest;
+use super::Shared;
+use crate::guide::target::{cycle, settle_target};
 use crate::minimap::{Display, MapState, View};
+use crate::quests::Quest;
 use crate::raster::{draw_compass, draw_map, Canvas};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
@@ -82,12 +82,9 @@ fn cursor_shown() -> bool {
     unsafe { GetCursorInfo(&mut ci) != 0 && ci.flags & CURSOR_SHOWING != 0 }
 }
 
-
 /// What the tracker last drew: the journal, the followed quest, whether its places are
 /// near, whether the guided goal is blocked, and the needs line.
 type Tracked = (Arc<Vec<Quest>>, Option<String>, bool, bool, String);
-
-
 
 pub fn run(shared: Arc<Shared>) {
     let (Some(mut map_window), Some(mut compass_window)) = (
@@ -137,25 +134,37 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
-        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines, puzzle_near) = match shared.snap.lock().unwrap().as_ref() {
-            Some(s) => (
-                s.pose,
-                s.world.clone(),
-                hud::with_survey(&s.things, s),
-                s.footprints.clone(),
-                s.goals.clone(),
-                s.paused,
-                s.obstacles.clone(),
-                s.journal.clone(),
-                s.nav.clone(),
-                s.needs.clone(),
-                s.deadlines.clone(),
-                hud::puzzle_near(s),
-            ),
-            None => {
-                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Default::default(), Default::default(), Default::default(), Default::default(), false)
-            }
-        };
+        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines, puzzle_near) =
+            match shared.snap.lock().unwrap().as_ref() {
+                Some(s) => (
+                    s.pose,
+                    s.world.clone(),
+                    hud::with_survey(&s.things, s),
+                    s.footprints.clone(),
+                    s.goals.clone(),
+                    s.paused,
+                    s.obstacles.clone(),
+                    s.journal.clone(),
+                    s.nav.clone(),
+                    s.needs.clone(),
+                    s.deadlines.clone(),
+                    hud::puzzle_near(s),
+                ),
+                None => (
+                    None,
+                    None,
+                    Vec::new(),
+                    Default::default(),
+                    Vec::new(),
+                    false,
+                    Default::default(),
+                    Default::default(),
+                    Default::default(),
+                    Default::default(),
+                    Default::default(),
+                    false,
+                ),
+            };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
 
         let mut state = shared.map.lock().unwrap();
@@ -199,7 +208,14 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 let goals = hud::with_pins(&goals, &state, world);
                 let chosen = state.quest.clone();
-                settle_target(&mut state, &goals, p, crate::quests::followed(&journal, chosen.as_deref()), &journal, &route.blocked);
+                settle_target(
+                    &mut state,
+                    &goals,
+                    p,
+                    crate::quests::followed(&journal, chosen.as_deref()),
+                    &journal,
+                    &route.blocked,
+                );
                 if cycle_now {
                     cycle(&mut state, &goals, p);
                 }
@@ -207,7 +223,11 @@ pub fn run(shared: Arc<Shared>) {
                 // The route to the goal, when it is due.
                 let goal = state.target.and_then(|t| goals.iter().find(|g| g.id == t)).filter(|_| state.route);
                 let trail = || {
-                    state.trails.get(world).map(|t| t.iter().flatten().map(|q| [q[0], q[1]]).collect()).unwrap_or_default()
+                    state
+                        .trails
+                        .get(world)
+                        .map(|t| t.iter().flatten().map(|q| [q[0], q[1]]).collect())
+                        .unwrap_or_default()
                 };
                 route.follow(goal, p, trail, &obstacles, &nav);
                 let path = route.drawn(p);
@@ -349,4 +369,3 @@ pub fn run(shared: Arc<Shared>) {
     }
     save(&mut shared.map.lock().unwrap());
 }
-

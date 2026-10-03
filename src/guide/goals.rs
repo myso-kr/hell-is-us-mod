@@ -274,7 +274,10 @@ fn flow_nodes(m: &dyn Memory, asset: u64) -> Vec<u64> {
     if !m.read(data, &mut buf) {
         return Vec::new();
     }
-    buf.chunks_exact(32).map(|e| u64::from_le_bytes(e[16..24].try_into().unwrap())).filter(|&p| mem::plausible(p)).collect()
+    buf.chunks_exact(32)
+        .map(|e| u64::from_le_bytes(e[16..24].try_into().unwrap()))
+        .filter(|&p| mem::plausible(p))
+        .collect()
 }
 
 fn pointer_array(m: &dyn Memory, at: u64) -> Vec<u64> {
@@ -328,12 +331,30 @@ impl Goals {
         let used = crate::actors::component(m, n, actor, "InteractionActionComponent")
             .and_then(|c| n.field(m, c, "bHasBeenActivated").filter(|p| p.size == 1).map(|p| c + p.offset as u64));
         let class = n.class(m, actor).unwrap_or_default();
-        Some(Payload { facts, tags, used, root: rc, label: items.first().cloned().unwrap_or_else(|| pretty(&class)), items, keys, note: None, gate: gate_of(&class), npc: false })
+        Some(Payload {
+            facts,
+            tags,
+            used,
+            root: rc,
+            label: items.first().cloned().unwrap_or_else(|| pretty(&class)),
+            items,
+            keys,
+            note: None,
+            gate: gate_of(&class),
+            npc: false,
+        })
     }
 
     /// What an NPC hands out: every payload in its conversations (following topic
     /// subgraphs two deep), and what it gives back for an item it wants.
-    fn read_npc(&mut self, m: &dyn Memory, n: &Names, actor: u64, root: u64, flows: &HashMap<u32, u64>) -> Option<Payload> {
+    fn read_npc(
+        &mut self,
+        m: &dyn Memory,
+        n: &Names,
+        actor: u64,
+        root: u64,
+        flows: &HashMap<u32, u64>,
+    ) -> Option<Payload> {
         let mut facts: Vec<u64> = Vec::new();
         let mut tags: Vec<u32> = Vec::new();
         let mut assets: Vec<(u64, u32)> = crate::actors::components(m, n, actor, "FlowComponent")
@@ -403,7 +424,18 @@ impl Goals {
         }
         let rc = mem::read_u64(m, actor + root).filter(|&p| mem::plausible(p))?;
         let label = trf!("TALK_GOAL", npc = npc_label(&n.class(m, actor).unwrap_or_default()));
-        Some(Payload { facts, tags, used: None, root: rc, label, items: Vec::new(), keys: Vec::new(), note, gate: Gate::Open, npc: true })
+        Some(Payload {
+            facts,
+            tags,
+            used: None,
+            root: rc,
+            label,
+            items: Vec::new(),
+            keys: Vec::new(),
+            note,
+            gate: Gate::Open,
+            npc: true,
+        })
     }
 
     /// Read what the loaded interactables hand out, when a scan is due.
@@ -465,7 +497,8 @@ impl Goals {
             self.talked = load_talked();
         }
         // Topic unlocks known: a new one may open more talk with someone already talked to.
-        let topics = k.tags.iter().filter(|t| self.tag_names.get(t).is_some_and(|n| n.starts_with("Conversation."))).count();
+        let topics =
+            k.tags.iter().filter(|t| self.tag_names.get(t).is_some_and(|n| n.starts_with("Conversation."))).count();
         self.done_npcs = self.talked.iter().filter(|(_, &at)| topics <= at).map(|(n, _)| n.clone()).collect();
         for (&actor, (class, p)) in &self.payloads {
             let Some(p) = p else { continue };
@@ -521,9 +554,10 @@ impl Goals {
             if !at.iter().all(|v| v.is_finite()) {
                 continue;
             }
-            let mut detail = p.note.clone().or_else(|| items_left.then(|| trf!("ITEM", items = p.items.join(", ")))).unwrap_or_else(|| {
-                new_tags.first().map(|t| tag(t)).unwrap_or_else(|| trf!("NEW_FACTS", count = new_facts.len()))
-            });
+            let mut detail =
+                p.note.clone().or_else(|| items_left.then(|| trf!("ITEM", items = p.items.join(", ")))).unwrap_or_else(
+                    || new_tags.first().map(|t| tag(t)).unwrap_or_else(|| trf!("NEW_FACTS", count = new_facts.len())),
+                );
             let mut quests: Vec<u32> = new_facts.iter().filter_map(|(_, q)| *q).collect();
             quests.sort_unstable();
             quests.dedup();
@@ -531,7 +565,17 @@ impl Goals {
             if p.gate == Gate::Conditional {
                 detail += tr!("NEEDS_SOMETHING_A_KEY_A_PUZZLE");
             }
-            out.push(Goal { tier, id: actor, label: p.label.clone(), detail, at, quests, tags, keys: p.keys.clone(), gate: p.gate });
+            out.push(Goal {
+                tier,
+                id: actor,
+                label: p.label.clone(),
+                detail,
+                at,
+                quests,
+                tags,
+                keys: p.keys.clone(),
+                gate: p.gate,
+            });
         }
         out
     }
