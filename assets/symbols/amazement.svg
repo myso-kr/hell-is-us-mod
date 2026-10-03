@@ -1,0 +1,15 @@
+<!-- Vault symbol 2: amazement — drawn for the mod after the game's dials. 100×100, y down. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<g stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<line x1="41" y1="3" x2="41" y2="21"/>
+<line x1="41" y1="79" x2="41" y2="97"/>
+<line x1="59" y1="3" x2="59" y2="21"/>
+<line x1="59" y1="79" x2="59" y2="97"/>
+<line x1="38" y1="21" x2="62" y2="21"/>
+<line x1="38" y1="79" x2="62" y2="79"/>
+<path d="M33.94,72.94 A28,28 0 0 1 33.94,27.06" fill="none"/>
+<path d="M66.06,27.06 A28,28 0 0 1 66.06,72.94" fill="none"/>
+<circle cx="50" cy="50" r="17" fill="none"/>
+<circle cx="50" cy="50" r="9" fill="none"/>
+</g>
+</svg>

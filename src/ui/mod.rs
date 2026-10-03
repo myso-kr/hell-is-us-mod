@@ -21,6 +21,7 @@ mod layered;
 mod overlay;
 mod panel;
 mod pen;
+mod svg;
 mod tracker;
 mod tw;
 

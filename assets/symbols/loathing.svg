@@ -1,0 +1,24 @@
+<!-- Vault symbol 5: loathing — drawn for the mod after the game's dials. 100×100, y down. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<g stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<polyline points="26,3 26,38 30,46 70,46 74,38 74,3" fill="none"/>
+<line x1="50" y1="46" x2="24" y2="69"/>
+<circle cx="24" cy="72" r="3" fill="none"/>
+<line x1="50" y1="46" x2="37" y2="73"/>
+<circle cx="37" cy="76" r="3" fill="none"/>
+<line x1="50" y1="46" x2="50" y2="75"/>
+<circle cx="50" cy="78" r="3" fill="none"/>
+<line x1="50" y1="46" x2="63" y2="73"/>
+<circle cx="63" cy="76" r="3" fill="none"/>
+<line x1="50" y1="46" x2="76" y2="69"/>
+<circle cx="76" cy="72" r="3" fill="none"/>
+<line x1="50" y1="46" x2="30" y2="86"/>
+<circle cx="30" cy="89" r="3" fill="none"/>
+<line x1="50" y1="46" x2="43" y2="90"/>
+<circle cx="43" cy="93" r="3" fill="none"/>
+<line x1="50" y1="46" x2="57" y2="90"/>
+<circle cx="57" cy="93" r="3" fill="none"/>
+<line x1="50" y1="46" x2="70" y2="86"/>
+<circle cx="70" cy="89" r="3" fill="none"/>
+</g>
+</svg>

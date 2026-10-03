@@ -447,7 +447,7 @@
 **F6 퍼즐 도우미** (`read/puzzles.rs`, 안내 탭 '근처 퍼즐')
 - 퀘스트 패스가 모든 객체를 훑을 때 퍼즐 컴포넌트도 모음 (`quests.rs` Role::Puzzle). 1초마다 주인공 40 m 안의 것을 읽음.
 - 다이얼: `DialPuzzleActionComponent.Dials` → `DialComponent.{DialState, DialSolution, NbDialState}` → "다이얼 n: k칸 돌리기 (지금 a → b)".
-  `bIsDialsLocked` 또는 전부 맞으면 풀림. 칸 번호는 0부터인 값을 +1 해서 보여 줌 (금고 코드의 기호 번호와 같은 기준이라고 가정 — 미확인).
+  `bIsDialsLocked` 또는 전부 맞으면 풀림. 칸 번호는 0부터인 값을 +1 해서 보여 줌 — 금고 코드의 기호 번호와 같은 기준 (2026-10-03 게임에서 금고를 열어 확인).
 - 키패드·컴퓨터: `KeypadRuneComponent.Rune.ExpectedCode` (문자열). 열렸는지는 액터의 `KeypadAction`/`ComputerAccessAction.bHasBeenActivated`.
 - 물건 놓기(열쇠 문·림빅 막대·사진 등): `ItemPlacementActionComponent.Solution` → 아이템 하나 또는 `ItemPlacementCondition.Solution` 목록. 이름은 게임 번역.
 - 답은 기본으로 숨김 — '답 보기' 를 눌러야 보임 (이번 실행 동안만 기억).
@@ -464,7 +464,7 @@
 - 표: `GameData/Spawner/<World>_Root_WP_Spawner_DT` (SpawnerLymbicEntityData: SpawnerSerializeGuid, EntitiesToSpawn, SpawnerLocation,
   TimeloopActorID) — 11개 지역 522개 스포너. `Mods\survey\spawners.json`.
 - 판정: 세이브 `World.RegionStates` 에 그 스포너 GUID 의 상태가 있으면 처치한 것. 실측: 기록 없는 스포너 곁(≤5 m)엔 살아 있는 적,
-  기록 있는 곳은 대부분 없음 (예외 2 — 이웃 스포너의 적으로 봄). 그래서 패널에 "(추정)".
+  기록 있는 곳은 대부분 없음 (예외 2 — 이웃 스포너의 적으로 봄). 2026-10-03 게임에서 무리를 처치하자 수가 줄어드는 것 확인.
   기록의 Data 는 1바이트(F8)뿐 — SerializeSpawnerState(DefeatedLymbicEntities) 가 그대로 저장되진 않음.
 - 지역별 무리·적 수, 타임루프별, '가장 가까운 곳' 안내. 업적 쪽 실시간 값: `CharlieAchievementsUnlockerSubsystem.AdditionalClearedMapInformation`
   (지역·타임루프별 bAll…EnemyKilled) — 지금은 표시 안 함.
@@ -476,7 +476,7 @@
   키패드(`KeypadRuneComponent.Rune.ExpectedCode`), 물건 놓기(`Solution` → 아이템, 또는 조건 객체의 Solution 목록; 블루프린트 패키지 export 까지 따라감).
 - 실제 분포: 다이얼 24 (3개×10칸 8, 3개×6칸 1, 4개×8/4칸 3, 금고 4개×8칸 12), 코드 33 (3자리 4, 4자리 8, 5자리 7, 6자리 14), 물건 놓기 212.
   같은 위치·종류의 복제는 하나로.
-- 풀었는지: 세이브에 그 액터 GUID 상태가 있으면 ✓ (추정). 이 지역 남은 것 먼저, 거리순, 답 숨김·안내. 열쇠·물건 놓기는 체크해야 보임.
+- 풀었는지: 세이브에 그 액터 GUID 상태가 있으면 ✓. 이 지역 남은 것 먼저, 거리순, 답 숨김·안내. 열쇠·물건 놓기는 체크해야 보임.
 
 
 ## 28. 업적 진행 (2026-10-03, 웨이브 D)
@@ -485,3 +485,12 @@
 - 게임 언어 → Steam 언어 (koreana·japanese·schinese·brazilian …). 진행 표시 12개 (선행 /26, 미스터리 /43, 유물 /29, 물건 놓기 /25 …).
 - 수집 탭 '업적' 카드: 남은 것부터, 숨겨진 업적은 '보기' 전까지 가림. 10초마다 다시 읽음 — Steam 이 게임의 보고를 받아 파일을 쓸 때 반영.
 - 게임 쪽 표(`AchievementsDefinitions_DT`)는 이름이 개발용 자리표시라 쓰지 않음.
+
+## 29. 금고 문양 (2026-10-03)
+- 금고 코드 기호 1–8 = 플루치크의 여덟 감정, 알파벳순: 1 감탄(Admiration) · 2 놀람(Amazement) · 3 황홀(Ecstasy) · 4 비탄(Grief) ·
+  5 혐오(Loathing) · 6 격노(Rage) · 7 공포(Terror) · 8 경계(Vigilance). 여섯 금고 코드(vaults.json)와 공략(Fextralife·DualShockers 등)의
+  기호 이름을 대조해 확정 — 예: 잡목림 [7,1,6,2] = 공포·감탄·격노·놀람. 게임 금고 문에서 맞는 것 확인.
+- 그림: 웹의 문양 이미지를 참고만 해서(저장소에 넣지 않음) 직접 그린 SVG — `assets/symbols/<이름>.svg` (100×100, 흰 선 4,
+  둥근 끝). 다른 색은 `#ffffff` 를 바꿔서 (`map/symbols.rs`).
+- 패널 SVG: `ui/svg.rs` — resvg 로 래스터화해 egui 텍스처로, (문서, 크기)별로 한 번만 만들어 컨텍스트 메모리에 보관.
+  금고 수첩의 코드, 근처 퍼즐·퍼즐 목록의 금고 문 다이얼 답이 문양으로 나오고, 마우스를 올리면 이름.

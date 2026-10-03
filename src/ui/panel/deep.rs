@@ -53,6 +53,26 @@ fn listed_answer(a: &Answer) -> String {
     }
 }
 
+/// A vault code as its symbols (assets/symbols), their names on hover.
+fn symbol_row(t: &mut Tui, code: &[u8]) {
+    w(t, |ui| {
+        ui.horizontal(|ui| {
+            ui.add_space(16.0);
+            for &c in code {
+                crate::ui::svg::symbol(ui, c, 30.0, OK);
+            }
+        })
+    });
+}
+
+/// The symbols a vault door's dials want (from 1), when the puzzle is a vault's.
+fn vault_dials(class: &str, a: &Answer) -> Option<Vec<u8>> {
+    match a {
+        Answer::Dials(d) if class.starts_with("VOFK_") => Some(d.iter().map(|x| x.want + 1).collect()),
+        _ => None,
+    }
+}
+
 impl Panel {
     /// Steam's achievements in the game's language: how many, the ones left with
     /// their progress, a hidden one's text only once unlocked or asked for.
@@ -147,7 +167,10 @@ impl Panel {
                     }
                 });
                 if open {
-                    text(t, RichText::new(format!("    {}", listed_answer(&p.answer))).color(OK));
+                    match vault_dials(&p.class, &p.answer) {
+                        Some(code) => symbol_row(t, &code),
+                        None => text(t, RichText::new(format!("    {}", listed_answer(&p.answer))).color(OK)),
+                    }
                 }
             }
             // The other regions: how many are left there.
@@ -188,6 +211,9 @@ impl Panel {
                     }
                 });
                 if open {
+                    if let Some(code) = vault_dials(&p.class, &p.answer) {
+                        symbol_row(t, &code);
+                    }
                     for line in answer(p) {
                         text(t, RichText::new(format!("    {line}")).color(OK));
                     }
@@ -241,8 +267,7 @@ impl Panel {
                     if v.state == VaultState::Known {
                         text(t, RichText::new(format!("    {}", crate::i18n::game_text(&v.vault.clue))).color(DIM).small());
                     }
-                    let code = v.vault.code.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(" · ");
-                    text(t, RichText::new(trf!("    코드 (기호 번호): {code}", code = code)).color(OK));
+                    symbol_row(t, &v.vault.code);
                     note(t, tr!("    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다"));
                 }
             }
@@ -262,7 +287,7 @@ impl Panel {
                 note(t, tr!("스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요"));
                 return;
             }
-            note(t, tr!("적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)"));
+            note(t, tr!("적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다"));
             for h in list.iter() {
                 let mine = here_world.as_deref() == Some(h.world.as_str());
                 let line = trf!("{place}: {left}/{all} 무리 · 적 {enemies}", place = crate::i18n::place(&h.world), left = h.left, all = h.all, enemies = h.enemies_left);

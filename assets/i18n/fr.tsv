@@ -385,7 +385,6 @@ FAIL 안내: {e}	FAIL guide : {e}
 물건 놓기 퍼즐	Placement d'objets
 키패드·암호	Clavier · code
     문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    Aux cadrans devant la porte, la carte « Puzzles proches » indique de combien tourner chacun
-    코드 (기호 번호): {code}	    Code (numéros de symboles) : {code}
     타임루프 {name}: {left}/{all}	    Boucle temporelle {name} : {left}/{all}
 40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	Aucun puzzle de cadrans, de clavier ou de placement d'objets à moins de 40 m
 {place}: {left}/{all} 무리 · 적 {enemies}	{place} : {left}/{all} groupes · {enemies} ennemis
@@ -404,7 +403,7 @@ FAIL 안내: {e}	FAIL guide : {e}
 연구 {n}/{need}	Recherche {n}/{need}
 열림 ✓	Ouvert ✓
 장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Confiez des objets de recherche à {g:Facts_Tania/Tania_Real_Name} dans le véhicule blindé pour débloquer les infos des chambres · recherches actuelles {n}
-적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Compté par groupe d'ennemis (spawner) · un groupe noté dans la sauvegarde compte comme vaincu (estimation)
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다	Compté par groupe d'ennemis (spawner) · un groupe noté dans la sauvegarde compte comme vaincu
 정보 있음	Connu
 코드 보기	Voir le code
 코드: {code}	Code : {code}
@@ -426,3 +425,11 @@ Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Cache des s
 숨겨진 업적	Succès caché
 보기	Voir
 ⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요	⚠ Vérifié sur la version {tested} — en cas de souci, lancez `doctor` dans la console
+감탄	Admiration
+놀람	Stupéfaction
+황홀	Extase
+비탄	Chagrin
+혐오	Dégoût
+격노	Rage
+공포	Terreur
+경계	Vigilance

@@ -286,4 +286,7 @@ been verified in play yet.
   - The panel only repaints while shown.
   - A release zip is built (tools/package.ps1).
   - The panel warns when the game build is not the one checked.
+- Vault symbols: the eight emotion symbols drawn as SVGs (assets/symbols), shown in
+  the panel — vault codes and vault-door dial answers as symbols, named on hover.
+  The panel can show any SVG (ui/svg.rs).
 

@@ -1,0 +1,25 @@
+<!-- Vault symbol 3: ecstasy — drawn for the mod after the game's dials. 100×100, y down. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<g stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<circle cx="50" cy="27" r="4" fill="none"/>
+<line x1="54" y1="27" x2="65" y2="27"/>
+<polygon points="68,24 71,27 68,30 65,27" fill="none"/>
+<line x1="52.8" y1="29.8" x2="60.6" y2="37.6"/>
+<polygon points="62.7,36.7 65.7,39.7 62.7,42.7 59.7,39.7" fill="none"/>
+<line x1="50" y1="31" x2="50" y2="42"/>
+<polygon points="50,42 53,45 50,48 47,45" fill="none"/>
+<line x1="47.2" y1="29.8" x2="39.4" y2="37.6"/>
+<polygon points="37.3,36.7 40.3,39.7 37.3,42.7 34.3,39.7" fill="none"/>
+<line x1="46" y1="27" x2="35" y2="27"/>
+<polygon points="32,24 35,27 32,30 29,27" fill="none"/>
+<line x1="47.2" y1="24.2" x2="39.4" y2="16.4"/>
+<polygon points="37.3,11.3 40.3,14.3 37.3,17.3 34.3,14.3" fill="none"/>
+<line x1="50" y1="23" x2="50" y2="12"/>
+<polygon points="50,6 53,9 50,12 47,9" fill="none"/>
+<line x1="52.8" y1="24.2" x2="60.6" y2="16.4"/>
+<polygon points="62.7,11.3 65.7,14.3 62.7,17.3 59.7,14.3" fill="none"/>
+<line x1="50" y1="31" x2="50" y2="54"/>
+<circle cx="50" cy="73" r="19" fill="none"/>
+<circle cx="50" cy="73" r="7" fill="none"/>
+</g>
+</svg>

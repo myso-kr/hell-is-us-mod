@@ -385,7 +385,6 @@ FAIL 안내: {e}	FAIL guida: {e}
 물건 놓기 퍼즐	Posizionare oggetti
 키패드·암호	Tastierino · codice
     문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    Ai quadranti davanti alla porta, la scheda «Puzzle vicini» indica di quanto girare ciascuno
-    코드 (기호 번호): {code}	    Codice (numeri dei simboli): {code}
     타임루프 {name}: {left}/{all}	    Cronociclo {name}: {left}/{all}
 40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	Nessun puzzle a quadranti, tastierino o posizionamento oggetti entro 40 m
 {place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} gruppi · {enemies} nemici
@@ -404,7 +403,7 @@ FAIL 안내: {e}	FAIL guida: {e}
 연구 {n}/{need}	Ricerca {n}/{need}
 열림 ✓	Aperto ✓
 장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Consegna oggetti di ricerca a {g:Facts_Tania/Tania_Real_Name} nel VTT per sbloccare le informazioni sulle camere · ricerca attuale {n}
-적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Conteggio per gruppo di nemici (spawner) · un gruppo registrato nel salvataggio conta come sconfitto (stima)
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다	Conteggio per gruppo di nemici (spawner) · un gruppo registrato nel salvataggio conta come sconfitto
 정보 있음	Noto
 코드 보기	Mostra codice
 코드: {code}	Codice: {code}
@@ -426,3 +425,11 @@ Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Cache degli
 숨겨진 업적	Obiettivo nascosto
 보기	Mostra
 ⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요	⚠ Verificato sulla build {tested} — se qualcosa non va, esegui `doctor` nella console
+감탄	Ammirazione
+놀람	Stupore
+황홀	Estasi
+비탄	Dolore
+혐오	Disgusto
+격노	Furore
+공포	Terrore
+경계	Vigilanza

@@ -1,0 +1,17 @@
+<!-- Vault symbol 6: rage — drawn for the mod after the game's dials. 100×100, y down. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<g stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<line x1="46" y1="16" x2="46" y2="84"/>
+<line x1="54" y1="16" x2="54" y2="84"/>
+<polyline points="39,18 50,3 61,18 39,18" fill="none"/>
+<polyline points="39,82 50,97 61,82 39,82" fill="none"/>
+<line x1="54" y1="34" x2="73" y2="34"/>
+<polygon points="76,31 79,34 76,37 73,34" fill="none"/>
+<line x1="54" y1="55" x2="68" y2="55"/>
+<polygon points="71,52 74,55 71,58 68,55" fill="none"/>
+<line x1="46" y1="44" x2="27" y2="44"/>
+<polygon points="24,41 27,44 24,47 21,44" fill="none"/>
+<line x1="46" y1="65" x2="27" y2="65"/>
+<polygon points="24,62 27,65 24,68 21,65" fill="none"/>
+</g>
+</svg>

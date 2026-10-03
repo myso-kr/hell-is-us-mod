@@ -24,6 +24,6 @@ pub mod unreal;
 pub use cheat::{cheats, extras, hold};
 pub use guide::{goals, missables, pathfind, quests, survey, tables};
 pub use infra::{backup, log, logfile, memstat, paths, settings, verify};
-pub use map::{icons, minimap, raster, relief};
+pub use map::{icons, minimap, raster, relief, symbols};
 pub use read::{actors, attr, geometry, knowledge, navmesh, obstacles, puzzles, terrain};
 pub use unreal::{anchors, gobjects, mem, names, player, probe, usmap};

@@ -385,7 +385,6 @@ FAIL 안내: {e}	FAIL guide: {e}
 물건 놓기 퍼즐	Item placement
 키패드·암호	Keypad · code
     문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    At the door's dials, the 'Puzzles nearby' card tells how far to turn each
-    코드 (기호 번호): {code}	    Code (symbol numbers): {code}
     타임루프 {name}: {left}/{all}	    Timeloop {name}: {left}/{all}
 40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	No dial, keypad or item placement puzzle within 40 m
 {place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} groups · {enemies} enemies
@@ -404,7 +403,7 @@ FAIL 안내: {e}	FAIL guide: {e}
 연구 {n}/{need}	Research {n}/{need}
 열림 ✓	Opened ✓
 장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Give research items to {g:Facts_Tania/Tania_Real_Name} in the APC to unlock vault information · research now {n}
-적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Counted by enemy group (spawner) · a group the save records counts as beaten (estimate)
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다	Counted by enemy group (spawner) · a group the save records counts as beaten
 정보 있음	Known
 코드 보기	Show code
 코드: {code}	Code: {code}
@@ -426,3 +425,11 @@ Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Steam's ach
 숨겨진 업적	Hidden achievement
 보기	Show
 ⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요	⚠ Checked on build {tested} — if something is off, run `doctor` in the console
+감탄	Admiration
+놀람	Amazement
+황홀	Ecstasy
+비탄	Grief
+혐오	Loathing
+격노	Rage
+공포	Terror
+경계	Vigilance
