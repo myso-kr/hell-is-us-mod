@@ -1,0 +1,383 @@
+# Korean (as written in the code) <TAB> Italian. \n \t \\ are escapes; {name} placeholders stay as they are.
+생존	Sopravvivenza
+전투	Combattimento
+이동	Movimento
+아이템	Oggetti
+체력 유지 (상한을 최대로)	Mantieni salute (limite al massimo)
+스태미나 무한	Resistenza infinita
+고스트 (탐험용 — 켜는 동안 공격도 막힘)	Fantasma (per esplorare — non puoi attaccare finché è attivo)
+림빅 에너지 무한	Energia limbica infinita
+림빅 소모 없음	Nessun costo limbico
+스킬 쿨다운 없음	Nessun tempo di ricarica abilità
+걷기 속도 (기본 450)	Velocità di camminata (predefinita 450)
+주인공 시간 배속 (기본 1)	Scala del tempo dell'eroe (predefinita 1)
+게임 속도 (기본 1)	Velocità di gioco (predefinita 1)
+적 속도 (기본 1)	Velocità dei nemici (predefinita 1)
+약한 적 (한 방에 처치)	Nemici fragili (muoiono in un colpo)
+소모품 줄지 않음	Consumabili infiniti
+무기 경험치 배수 (기본 1)	Moltiplicatore XP arma (predefinito 1)
+가진 샤드 수량 (999=최대면 줍기·알림 막힘)	Frammenti posseduti (999 = max, blocca raccolta e avvisi)
+퀘스트 목표	Obiettivo missione
+비밀	Segreto
+단서	Indizio
+전달: {a0}	Consegna: {a0}
+대화: {a0}	Parla: {a0}
+아이템: {a0}	Oggetto: {a0}
+새 사실 {a0}개	{a0} nuovi fatti
+ · 조건 필요 (열쇠·퍼즐 등 — 가기만 해선 안 됨)	 · serve qualcosa (chiave, enigma… — andarci non basta)
+1막 끝까지	Fino alla fine dell'Atto 1
+세 번째 키스톤 전	Prima della terza chiave
+마감 임박 선행: {a0} ({a1})	Buona azione in scadenza: {a0} ({a1})
+마감 임박 선행 {n}개 — 퀘스트 탭에서 확인	{n} buone azioni in scadenza — vedi la scheda Missioni
+메인 {n}	Principale {n}
+선행	Buona azione
+미스터리	Mistero
+타임루프	Cronociclo
+메인 퀘스트 {a0}	Missione principale {a0}
+장소: {a0}	Luogo: {a0}
+대화: {p}	Parla: {p}
+ · 조사 DB (아직 로드 안 됨)	 · DB di indagine (non ancora caricato)
+ · 조건 필요	 · serve qualcosa
+유물	Reliquie
+기록물	Registri
+연구 자료	Ricerca
+모자	Cappelli
+드론 모듈	Moduli del drone
+림빅 스킬	Abilità limbiche
+무기	Armi
+방어구	Protezioni
+림빅 막대	Barre limbiche
+제작서	Tomi di fabbricazione
+잠긴 문	Porta chiusa
+잠긴 상자	Forziere chiuso
+림빅 잠금	Blocco limbico
+퍼즐	Enigma
+코드·암호	Codice
+열쇠 필요	Serve una chiave
+나중에 주울 것	Da raccogliere dopo
+상인	Mercante
+만날 사람	Persona da incontrare
+퀘스트 단서	Indizio missione
+위험	Pericolo
+강적	Nemico forte
+저장 지점	Punto di salvataggio
+지름길	Scorciatoia
+오를 곳	Da scalare
+막다른 길	Vicolo cieco
+물·건널 곳	Guado
+둘러볼 곳	Da esplorare
+보물	Tesoro
+메모	Nota
+거점	Base
+모르는 것	Sconosciuto
+표시	Segnalino
+핀: {a0}	Segnalino: {a0}
+미니맵	Minimappa
+큰 지도	Mappa grande
+끔	No
+음영	Ombreggiatura
+등고선	Curve di livello
+둘 다	Entrambi
+위층 (흐리게)	Piani superiori (sfumati)
+아래층·지하 (흐리게)	Piani inferiori e sotterranei (sfumati)
+깊은 곳	Profondo
+낮은 곳	Basso
+같은 높이	Stessa altezza
+높은 곳	Alto
+절벽·바위	Scogliere e rocce
+벽	Pareti
+적	Nemici
+전리품	Bottino
+문·퍼즐	Porte ed enigmi
+저장	Salvataggio
+기타	Altro
+약품	Medicinali
+음식	Cibo
+기타 소모품	Altri consumabili
+퀘스트·비밀	Missioni e segreti
+보급품	Rifornimenti
+적 전리품 상자	Cassa di bottino nemico
+문	Porta
+드론 번역	Traduzione del drone
+명령을 입력하세요 — `help` 로 목록, ↑/↓ 이전 명령, Esc 로 실행 중지	Digita un comando — `help` li elenca, ↑/↓ cronologia, Esc interrompe
+hiumod 만으로는 패널이 하나 더 열립니다 — 명령을 붙여 주세요 (help)	hiumod da solo apre un altro pannello — aggiungi un comando (help)
+앞의 명령이 아직 실행 중입니다 (Esc 로 중지)	L'ultimo comando è ancora in esecuzione (Esc lo interrompe)
+실행 파일을 찾지 못함: {e}	Eseguibile non trovato: {e}
+실행하지 못함: {e}	Impossibile eseguire: {e}
+(끝남: 코드 {c})	(terminato: codice {c})
+(끝남)	(terminato)
+(중지함)	(interrotto)
+명령 (help)	Comando (help)
+지도 핀	Segnalino mappa
+패널에서 고른 곳	Scelto nel pannello
+필요한 것: 이 지역 {h}곳	Servono: {h} qui
+필요한 것: 다른 지역 {a}곳 — 장갑차로 이동	Servono: {a} in altre regioni — usa il VTT
+필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳	Servono: {h} qui · {a} in altre regioni
+위치 {a0} 저장 ({a1:.0}, {a2:.0}, {a3:.0})	Posizione {a0} salvata ({a1:.0}, {a2:.0}, {a3:.0})
+위치 {a0} 로 이동	Spostato alla posizione {a0}
+수집 진행도	Progresso raccolta
+조사 DB 가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Nessun DB di indagine — esegui `doctor survey` una volta nella console
+월드에 놓인 것만 셉니다 (NPC 보상·상점은 제외) · 이 지역 / 전체	Conta solo ciò che si trova nel mondo (non ricompense PNG né negozi) · qui / totale
+{a0}  {a1}/{a2} · 전체 {a3}/{a4}	{a0}  {a1}/{a2} · totale {a3}/{a4}
+선행 · 미스터리 · 타임루프	Buone azioni · Misteri · Cronocicli
+완료 {a0} / {a1} · 진행 중 {a2} · 실패 {a3}	Fatte {a0} / {a1} · in corso {a2} · fallite {a3}
+들을 이야기가 남은 NPC ({a0})	PNG con altro da raccontare ({a0})
+대화에서 아직 모르는 사실·단서를 줄 수 있는 사람 (갈래가 잠긴 대화도 포함)	Persone il cui dialogo può ancora darti un fatto o un indizio che non hai (rami bloccati inclusi)
+다른 지역: {a0}	Altre regioni: {a0}
+메모리: 사용 {a0} · 전용 {a1} · 최고 {a2} (1분마다 로그에도 남음)	Memoria: in uso {a0} · privata {a1} · picco {a2} (registrata anche ogni minuto)
+켜진 치트	Trucchi attivi
+원래 값 → 넣는 값, 그리고 지금 게임에 들어 있는 값	Valore originale → scritto, e valore attuale nel gioco
+켜진 치트가 없습니다	Nessun trucco attivo
+적·인벤토리 대상	Nemici e inventario
+매 틱 적용	Applicato a ogni tick
+적용 중 {n:.2}	Applicato {n:.2}
+게임이 바꿈 {n:.2}	Il gioco l'ha cambiato {n:.2}
+넣은 값과 다릅니다. 게임이 매 순간 다시 계산하는 값일 수 있습니다.	Diverso da quanto scritto. Il gioco potrebbe ricalcolarlo di continuo.
+읽을 수 없음	Illeggibile
+테스트 결과 기록	Registra i test
+게임에서 해 보고 눌러 주세요. verify.txt에 저장됩니다.	Provalo nel gioco, poi premi. Salvato in verify.txt.
+됨 ✓	Funziona ✓
+안 됨 ✗	Non funziona ✗
+확인됨	Verificato
+미검증	Non verificato
+로그·기록 폴더 열기	Apri la cartella dei log
+게임의 현재 값: {now:.2}	Valore attuale nel gioco: {now:.2}
+적용	Applica
+아직 게임에서 확인하지 않은 치트입니다. 동작하는지 알려주세요.	Trucco non ancora verificato nel gioco. Facci sapere se funziona.
+위치 저장 · 이동	Salva e carica posizioni
+슬롯 {a0}	Slot {a0}
+다른 지역 ({w})	Altra regione ({w})
+비어 있음	Vuoto
+저장한 지역 안에서만 이동합니다	Si sposta solo nella regione in cui è stato salvato
+켜진 치트 ({a0})	Trucchi attivi ({a0})
+{v:.2} (게임 {n:.2})	{v:.2} (gioco {n:.2})
+켜짐	Attivo
+나침반 · 방향	Bussola e direzione
+나침반 (F{a0})	Bussola (F{a0})
+화면 위 가운데	In alto al centro dello schermo
+안내	Guida
+자동 안내 — 따라가는 퀘스트의 다음 목표로 계속 안내	Guida automatica — continua a guidare al prossimo obiettivo della missione seguita
+실제 이동 경로 (A*) — 지형·물·벽을 돌아가는 길, 나침반이 다음 꺾이는 곳을 가리킴	Percorso a piedi (A*) — aggira terreno, acqua e pareti; la bussola indica la prossima svolta
+다음 목표 ▶	Prossimo obiettivo ▶
+이 목표는 끝났거나 지금 갈 수 없음 — 넘기고 다음 목표로 (이번 실행 동안)	Obiettivo completato o ora irraggiungibile — saltalo per il prossimo (per questa sessione)
+직접 고른 목표 — 끝날 때까지 유지	Scelto a mano — resta finché non è completato
+자동으로	Torna ad auto
+⚠ 걸어서 닿는 길이 없습니다 — 닫힌 문·퍼즐·열쇠 너머일 수 있음. 닿는 곳까지 안내하고 나머지는 노란 점선	⚠ Nessun percorso a piedi — potrebbe essere oltre una porta chiusa, un enigma o una chiave. Guida fin dove arriva; il resto è la linea gialla tratteggiata
+자동 안내가 꺼져 있습니다 — 위 스위치를 켜거나 '갈 곳' 에서 고르세요	La guida automatica è disattivata — attiva l'interruttore sopra o scegli da «Luoghi»
+이 근처에서 새로 얻을 것이 있는 곳을 찾지 못했습니다	Non c'è nulla di nuovo da ottenere qui vicino
+이 지역엔 따라가는 퀘스트의 목표가 없습니다 — 다른 지역에 {elsewhere}곳 (장갑차로 이동)	La missione seguita non ha obiettivi in questa regione — {elsewhere} in altre regioni (usa il VTT)
+남은 목표를 모두 건너뛰었습니다	Tutti gli obiettivi rimasti sono stati saltati
+따라가는 퀘스트의 목표가 이 근처에 없습니다 — '갈 곳' 에서 직접 고를 수 있습니다	La missione seguita non ha obiettivi qui vicino — sceglilo da «Luoghi»
+건너뛴 목표 {a0}개	{a0} obiettivi saltati
+되돌리기	Annulla
+갈 곳 ({a0})	Luoghi ({a0})
+표시 방식	Visualizzazione
+위쪽	Su è
+북쪽(N)	Nord (N)
+카메라 방향	Telecamera
+반경	Raggio
+스타일	Stile
+윤곽선	Contorno
+채움	Pieno
+아이콘 크기	Dimensione icone
+인벤토리·메뉴가 열리면 모든 오버레이 숨기기	Nascondi ogni overlay con inventario o menu aperti
+지형	Terreno
+지형 표시	Vista terreno
+벽·바닥 윤곽	Contorni di pareti e pavimenti
+불투명도	Opacità
+표시할 것	Mostra
+세부 ▲	Dettagli ▲
+세부 ▼	Dettagli ▼
+세부 ▼ ({h}개 숨김)	Dettagli ▼ ({h} nascosti)
+지도 핀 · 지나온 길	Segnalini mappa e scia
+새 핀 (F{a0})	Nuovo segnalino (F{a0})
+이 지역에 핀이 없습니다 — 잠긴 문·퍼즐 앞에서 F{a0} 를 누르면 꽂힙니다	Nessun segnalino in questa regione — premi F{a0} davanti a una porta chiusa o a un enigma per metterne uno
+이 핀 지우기	Rimuovi questo segnalino
+이 지역	Questa regione
+지나온 길 {trail}점 · 핀 {count}개	Scia {trail} punti · {count} segnalini
+경로 지우기	Cancella scia
+핀 모두 지우기	Rimuovi tutti i segnalini
+주인공을 조작할 수 있을 때 표시됩니다	Mostrato mentre si controlla l'eroe
+단축키	Tasti
+지도 표시 방식 전환	Cambia visualizzazione mappa
+마커 찍기/지우기	Metti o rimuovi un segno
+나침반 표시/숨김	Mostra o nascondi la bussola
+다음 목표로 안내	Guida al prossimo obiettivo
+지도	Mappa
+퀘스트	Missioni
+수집	Raccolta
+세이브	Salvataggi
+디버그	Debug
+지난번에 켜 둔 치트 {a0}개를 다시 켰습니다	Riattivati {a0} trucchi della volta scorsa
+닫기 — 원래 값으로 되돌리고 종료	Chiudi — ripristina i valori originali ed esce
+숨기기 (` 키로 다시 열기)	Nascondi (` lo riapre)
+콘솔 ▾	Console ▾
+콘솔 ▸	Console ▸
+CLI 명령 콘솔	Console CLI
+게임	Gioco
+● 연결됨\nv{version} · PID {pid}	● Connesso\nv{version} · PID {pid}
+실행하는 중 — 켜지면 자동으로 연결	Avvio in corso — si connette appena pronto
+○ 연결 안 됨 — {e}	○ Non connesso — {e}
+시작하는 중…	Avvio…
+주인공 게이트	Cancello dell'eroe
+● 열림 — 조작 중	● Aperto — sotto controllo
+○ 닫힘 — {e}	○ Chiuso — {e}
+○ 닫힘	○ Chiuso
+치트	Trucchi
+도구	Strumenti
+모두 원래대로 ({pending})	Ripristina tutto ({pending})
+다음에도 켜 둔 치트 유지	Mantieni questi trucchi la prossima volta
+다음 실행 때, 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다.	La prossima volta, quando potrai controllare l'eroe, i trucchi attivi ora verranno riattivati.
+주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다	Scrive valori solo mentre controlli l'eroe · non blocca gli obiettivi
+퀘스트 추적기 — 화면 오른쪽 가운데	Tracker missioni — al centro a destra dello schermo
+퀘스트를 읽는 중입니다 — 게임을 불러오고 몇 초 뒤에 나옵니다	Lettura delle missioni — compaiono qualche secondo dopo il caricamento del gioco
+메인 스토리 자동 — {a0}	Storia principale automatica — {a0}
+메인 스토리 자동	Storia principale automatica
+ · 단서 {got}/{all}	 · indizi {got}/{all}
+완료 {done}개 · 실패 {failed}개	{done} fatte · {failed} fallite
+필요한 것: 조사 DB 없음 — `hiumod doctor survey` 를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다	Servono: nessun DB di indagine — esegui `hiumod doctor survey` una volta per riempire oggetti e PNG di ogni regione
+필요한 것 — 남은 {left} / {a0}	Servono — restano {left} / {a0}
+다른 지역 (장갑차로 이동): {a0}	Altre regioni (usa il VTT): {a0}
+놓치기 쉬운 선행	Buone azioni da non perdere
+마감이 있는 선행은 모두 끝났거나 지났습니다	Tutte le buone azioni con scadenza sono finite o scadute
+임박	Presto
+나중	Dopo
+ (시작 전)	 (non iniziata)
+이미 지난 마감 {passed}개 — 그 선행은 실패했을 가능성이 큽니다	{passed} scadenze già passate — quelle buone azioni sono probabilmente fallite
+키스톤 순서	Ordine delle chiavi
+다음 키스톤 전에: {a0}	Prima della prossima chiave: {a0}
+건네줄 수 있는 것	Cose da consegnare
+지금 가진 아이템을 원하는 사람이 없습니다	Nessuno vuole un oggetto che possiedi ora
+건네줄 수 있는 것 ({a0})	Cose da consegnare ({a0})
+가진 아이템을 원하는 사람 — 대화의 "거래" 로 건넵니다	Persone che vogliono un oggetto che possiedi — consegnalo con «Tratta» nel dialogo
+{a0} — 장갑차로 이동	{a0} — usa il VTT
+세이브 백업	Backup dei salvataggi
+게임이 저장할 때마다 세이브 파일을 복사해 둡니다 (최근 {a0}개)	Copia i file di salvataggio a ogni salvataggio del gioco (gli ultimi {a0})
+아직 백업이 없습니다	Ancora nessun backup
+지금 백업	Esegui backup
+백업함: {a0}	Backup eseguito: {a0}
+백업 실패: {e}	Backup fallito: {e}
+폴더 열기	Apri cartella
+되돌리려면 게임을 끈 뒤 백업 폴더의 .sav 파일을 세이브 폴더(%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)에 덮어쓰세요	Per ripristinare, chiudi il gioco e copia i .sav di un backup sulla cartella dei salvataggi (%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)
+세이브 파일	File di salvataggio
+게임의 세이브 폴더를 찾지 못했습니다	Cartella dei salvataggi del gioco non trovata
+방금	adesso
+{a0}분 전	{a0} min fa
+{a0}시간 전	{a0} h fa
+{a0}일 전	{a0} giorni fa
+ · 안내 중	 · in guida
+이 지역엔 이 퀘스트의 목표가 없음 — 가까운 다른 퀘스트 목표로 안내	Questa missione non ha obiettivi in questa regione — guida verso l'obiettivo di un'altra missione più vicina
+이 지역엔 이 항목의 목표가 없음 — 다른 지역에서 진행	Questa voce non ha obiettivi in questa regione — prosegue altrove
+닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저	Oltre una porta chiusa o un enigma — guida fin dove arriva; cerca prima un biglietto, una chiave o un dispositivo vicino
+살펴볼 곳	Luogo da esaminare
+1막 끝 전	Prima della fine dell'atto 1
+1막 끝 전, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — 트럭으로 떠나기 전에 약을 — 아니면 죽음	Prima della fine dell'atto 1: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — la medicina prima che parta col camion, o morirà
+1막 끝({g:Facts_Shared/Universal_Location_LymbicForge}) 전에 {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}의 아기에게 젖병을 — 아니면 아기가 죽음	Prima della fine dell'atto 1 ({g:Facts_Shared/Universal_Location_LymbicForge}): il biberon per il bambino di {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}, o il bambino morirà
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 {g:Facts_VillageOfJova/Name_Real} 상황이 바뀌기 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} 사망	Durante {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, prima che {g:Facts_VillageOfJova/Name_Real} cambi — o {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} morirà
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} 사망	Prima di {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — o {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} morirà
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 — {g:Facts_VillageOfJova/Name_Real} 변화 전	Durante {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, prima che {g:Facts_VillageOfJova/Name_Real} cambi
+{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전	{g:Facts_Shared/Universal_Location_LethePropaganda} — prima di lasciarlo la prima volta
+{g:Facts_Shared/Universal_Location_Talju} 대피 트럭 출발 전	Prima che parta il camion di evacuazione di {g:Facts_Shared/Universal_Location_Talju}
+{g:Facts_Shared/Universal_Location_Talju} 대피 트럭이 떠나기 전	Prima che parta il camion di evacuazione di {g:Facts_Shared/Universal_Location_Talju}
+권장 순서 ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 먼저: 일부 아이템이 {g:Facts_Shared/Universal_Location_Talju}에만 있음) — 키스톤마다 시간이 흘러 선행이 끝날 수 있습니다	Ordine consigliato ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} per primo: alcuni oggetti sono solo a {g:Facts_Shared/Universal_Location_Talju}) — il tempo passa a ogni chiave e le buone azioni possono chiudersi
+세 번째 키스톤을 놓기 전	Prima di inserire la terza chiave
+{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+포인터를 읽을 수 없음	Puntatore illeggibile
+게임이 실행 중이 아닙니다	Il gioco non è in esecuzione
+주인공의 인벤토리를 찾지 못함	Inventario del protagonista non trovato
+주인공 위치를 쓰지 못함	Impossibile scrivere la posizione del protagonista
+WorldSettings.Pauser 없음	Nessun WorldSettings.Pauser
+세이브 상태를 찾지 못함	Nessuno stato di salvataggio trovato
+세이브 상태를 읽지 못함	Impossibile leggere lo stato di salvataggio
+아직 액터를 훑지 않음	Attori non ancora scansionati
+게임이 종료됨 — 치트 꺼짐	Il gioco è terminato — cheat disattivati
+그런 슬롯이 없음	Slot inesistente
+그 슬롯에 저장된 것이 없음	Niente salvato in quello slot
+원래 값으로 되돌림	Valori originali ripristinati
+쓰기 실패	Scrittura fallita
+Steam 라이브러리에서 Hell Is Us 설치를 찾지 못함 — --game-dir 로 알려 주세요	Nessuna installazione di Hell Is Us trovata nelle librerie Steam — indicala con --game-dir
+예상과 다른 실행 파일 경로	Percorso dell'eseguibile inatteso
+폰에 AbilitySystemComponent 가 없음	Il pawn non ha AbilitySystemComponent
+플레이어 컨트롤러 없음	Nessun player controller
+폰 없음 — 로딩 중이거나 컷신?	Nessun pawn — caricamento o filmato?
+조작 중인 폰이 주인공이 아님	Il pawn controllato non è il protagonista
+어빌리티 시스템 없음	Nessun sistema di abilità
+레벨 없음	Nessun livello
+월드 없음	Nessun mondo
+월드 이름을 읽을 수 없음	Nome del mondo illeggibile
+루트 컴포넌트 없음	Nessun componente radice
+위치를 읽을 수 없음	Posizione illeggibile
+방향을 읽을 수 없음	Rotazione illeggibile
+위치·방향 값이 숫자가 아님	La posa non è un numero
+GEngine 이 비어 있음	GEngine è vuoto
+게임 이미지에서 GameEngine 을 찾지 못함 (아직 시작 중?)	GameEngine non trovato nell'immagine del gioco (ancora in avvio?)
+아는 FField 레이아웃으로 GameEngine.GameInstance 를 읽지 못함 — 엔진 구조가 바뀜	Nessun layout FField noto legge GameEngine.GameInstance — la struttura del motore è cambiata
+속성 세트 배열을 읽을 수 없음	Array dei set di attributi illeggibile
+속성 세트 개수를 읽을 수 없음	Numero di set di attributi illeggibile
+속성 이름을 하나도 읽지 못함 — 이름 풀이나 클래스 구조가 이 빌드와 맞지 않음	Nessun attributo è stato nominato — il pool dei nomi o la struttura delle classi non corrisponde a questa build
+필드를 읽을 수 없음	Campo illeggibile
+속성을 읽을 수 없음	Attributo illeggibile
+유한하지 않은 값은 쓰지 않음	Valore non finito rifiutato
+읽을 수 있는 속성이 없음	Nessun attributo leggibile
+미니맵: {e}	Minimappa: {e}
+원래 값을 기록하지 못함 — 치트 꺼짐: {e}	Impossibile registrare i valori originali — cheat disattivati: {e}
+{name}: 1..={max} 사이	{name}: accetta 1..={max}
+다른 지역에서 저장됨 ({world})	Salvato in un'altra regione ({world})
+되돌리지 못함: {a0}	Impossibile ripristinare: {a0}
+되돌리지 못함: {a0} — 나중에 `hiumod restore` 를 실행하세요	Impossibile ripristinare: {a0} — esegui `hiumod restore` più tardi
+`{id}` 은(는) 값을 정할 수 없음 — 가능한 것: {a0}	`{id}` non può essere impostato — uno tra: {a0}
+{id}: 0..={max} 사이	{id}: accetta 0..={max}
+모르는 치트 `{id}` — 가능한 것: {a0}	Cheat sconosciuto `{id}` — uno tra: {a0}
+{id} 에는 값을 줄 수 없음	{id} non accetta valori
+{id}: {min}..={max} 사이	{id}: accetta {min}..={max}
+{id} 는 한 번 쓰는 값 — hold 가 아니라 `set {id} <값>` 을 쓰세요	{id} si scrive una sola volta — usa `set {id} <valore>`, non hold
+인벤토리에 {class} 없음 — 먼저 하나 주우세요	Nessun {class} nell'inventario — raccogline uno prima
+{a0}번째 줄: {set}.{name} — 이 버전에 없는 속성	Riga {a0}: {set}.{name} non è un attributo noto in questa versione
+{a0} 에 Hell Is Us 설치가 없음 — --game-dir 로 알려 주세요	Nessuna installazione di Hell Is Us in {a0} — indicala con --game-dir
+게임 프로세스를 열 수 없음: {a0}	Impossibile aprire il processo del gioco: {a0}
+프로세스 목록을 얻지 못함: {a0}	Elenco dei processi fallito: {a0}
+게임 모듈 목록을 얻지 못함: {a0}	Impossibile elencare i moduli del gioco: {a0}
+{name} 속성이 없음	Nessuna proprietà {name}
+폰이 주인공이 아니라 {a0} — 먼저 세이브를 불러오세요	Il pawn è un {a0}, non il protagonista — carica prima un salvataggio
+속성 세트 배열이 이상함 (num={num}, data=0x{data})	L'array dei set di attributi sembra errato (num={num}, data=0x{data})
+속성들의 vtable 이 일치하지 않음 ({n}/{total}, 0x{vt})	Gli attributi non concordano sulla vtable ({n}/{total} su 0x{vt})
+{ok} 설치 {dir} — Steam 빌드 {build}	{ok} installazione {dir} — build Steam {build}
+{ok} 설치: {e}	{ok} installazione: {e}
+{ok} 프로세스 {pid} — 베이스 0x{base}, 이미지 0x{size} 바이트	{ok} processo {pid} — base 0x{base}, immagine 0x{size} byte
+{ok} 이름 풀 +0x{at}	{ok} pool dei nomi +0x{at}
+{ok} FField 레이아웃: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}	{ok} layout di FField: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
+{ok} 플레이어: {e}	{ok} giocatore: {e}
+{ok} 주인공: {a0}	{ok} eroe: {a0}
+{ok} 체인: GEngine {path} → 컨트롤러 +0x{pawn} 폰 → +0x{asc} ASC → +0x{sets} SpawnedAttributes	{ok} catena: GEngine {path} → controller +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
+ok   주인공 게이트: 열림 — 쓰기 허용	ok   gate dell'eroe: aperto — scrittura consentita
+ok   위치: ({x:.0}, {y:.0}, {z:.0}) 방향 {yaw:.1}	ok   posa: ({x:.0}, {y:.0}, {z:.0}) imbardata {yaw:.1}
+FAIL 위치: {e}	FAIL posa: {e}
+ok   미니맵 대상: {n}개, {ms} ms — {kinds}	ok   elementi della minimappa: {n} in {ms} ms — {kinds}
+FAIL 미니맵 대상: {e}	FAIL elementi della minimappa: {e}
+ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open} — 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})	ok   guida: conosce {facts} fatti, {tags} tag; in corso: {open} — {places} luoghi in {ms} ms (missione {quest}, segreto {secret}, indizio {clue})
+FAIL 안내: {e}	FAIL guida: {e}
+{ok} 속성: {e}	{ok} attributi: {e}
+{ok} 속성: 세트 {sets}개, 이름으로 찾은 속성 {count}개, vtable +0x{vt}	{ok} attributi: {sets} set, {count} attributi per nome, vtable +0x{vt}
+속성 {n}개	{n} attributi
+{ok} 치트 표: 이름이 나오는 속성 {n}개가 모두 게임에 있음	{ok} tabella dei trucchi: tutti i {n} attributi nominati sono nel gioco
+{ok} 치트 표: 게임에 없음 — {a0}	{ok} tabella dei trucchi: non presente nel gioco — {a0}
+플레이어: 됨	giocatore: funziona
+플레이어: 안 됨	giocatore: NON FUNZIONA
+{path} 에 씀	Scritto in {path}
+클래스·구조체 {s}개의 속성 {p}개	{p} proprietà in {s} classi e struct
+{prefix}(으)로 시작하는 클래스·구조체 {n}개	{n} classi e struct che iniziano con {prefix}
+매핑: 구조체·클래스 {structs}개, 열거형 {enums}개	Mappature: {structs} struct e classi, {enums} enum
+실행: {tool} {args}	Esecuzione di {tool} {args}
+조사 결과: {path}	Survey scritto in {path}
+게임 텍스트: {path}	Testo del gioco scritto in {path}
+구조체·클래스 {structs}개, 열거형 {enums}개 — {kb} KB, {path} 에 씀	{structs} struct e classi, {enums} enum — {kb} KB, scritto in {path}
+객체 {n}개를 {secs}초 동안 지켜봄 — Ctrl+C 로 멈춤	Osservo {n} oggetto/i per {secs} s — Ctrl+C per fermare
+{all}곳 중 {kept}곳이 이제 {v}	{kept} luoghi su {all} ora contengono {v}
+{n}곳이 {v} — 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`	{n} luoghi contengono {v} — cambialo nel gioco, poi `doctor scan next <nuovo valore>`
+이전 hold 가 남긴 원래 값 {n}개 — 지금 값이 아니라 그것을 유지	{n} originale/i lasciato/i da un hold precedente — vengono mantenuti, non i valori attuali
+유지 중: {a0} — Ctrl+C 로 멈추고 되돌림	Mantengo {a0} — Ctrl+C per fermare e ripristinare
+강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Se il processo viene terminato, `hiumod restore` ripristina tutto
+적용 중	Applicazione in corso
+되돌릴 것이 없음	Niente da ripristinare

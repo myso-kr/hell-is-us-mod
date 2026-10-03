@@ -2,48 +2,29 @@
 
 use std::path::PathBuf;
 
-pub const USAGE: &str = "\
-hiumod — single-player cheats and a minimap for Hell Is Us (Steam)
+/// The help, in the game's language (`assets/i18n/help/<culture>.txt`; English when
+/// there is none for it).
+pub fn usage() -> &'static str {
+    let culture = crate::i18n::culture();
+    let pick = crate::i18n::culture::best(&culture, |c| HELP.iter().any(|(h, _)| *h == c)).unwrap_or_else(|| "en".into());
+    HELP.iter().find(|(h, _)| *h == pick).map_or(HELP[0].1, |(_, t)| t).trim_end()
+}
 
-USAGE
-  hiumod                        start the game if needed, then the panel — ` (~) shows/hides it;
-                                the panel closes when the game does
-  hiumod ui                     the panel only; does not start the game
-  hiumod doctor                 check everything; writes nothing
-  hiumod doctor inspect <target> [depth] [gaps]
-                                every reflected field of a live object, by name and
-                                value; pointers followed `depth` levels (default 0);
-                                `gaps` also shows the native bytes between fields
-  hiumod doctor find <text>     every class or struct property whose name holds text
-  hiumod doctor dump [prefix]...
-                                an SDK-like listing of the classes and structs whose
-                                names start with a prefix (default Charlie, Story)
-  hiumod doctor usmap           the loaded classes, structs and enums as a .usmap
-                                mappings file, for tools/survey
-  hiumod doctor survey [world]  mappings, then tools/survey over the game's maps:
-                                what every world hands out, to Mods\\survey
-  hiumod doctor watch <target> [seconds]
-                                what changes in an object, named or native, as it does
-  hiumod doctor scan <target> <value>
-  hiumod doctor scan next <value>
-                                where in an object a value sits; then, after it
-                                changes in game, which of those places changed with it
-                                targets: hero, controller, asc, sets, inventory, items,
-                                save, world, enemy[:N], 0xADDRESS, or a class name[:N]
-                                — results are also written to Mods\\doctor
-  hiumod list                   every attribute of every set, read live
-  hiumod get <attribute>...     some of them, as Name or Set.Name
-  hiumod pose                   where the hero stands and faces, read live until Ctrl+C
-  hiumod set <cheat> <value>    a balance written once (none in the table yet)
-  hiumod hold <cheat>...        e.g. god stamina speed=2 — until Ctrl+C;
-                                every held cheat is in `hiumod doctor`'s list
-  hiumod restore                put back what a killed hold left changed
-
-OPTIONS
-  --game-dir <dir>              the install root, holding HellIsUs\
-                                (default: found in your Steam libraries)
-
-Nothing is written unless you are in control of the hero. Back up your save.";
+/// The help texts shipped, by culture; English first (the fallback).
+pub const HELP: [(&str, &str); 12] = [
+    ("en", include_str!("../assets/i18n/help/en.txt")),
+    ("de", include_str!("../assets/i18n/help/de.txt")),
+    ("es", include_str!("../assets/i18n/help/es.txt")),
+    ("fr", include_str!("../assets/i18n/help/fr.txt")),
+    ("it", include_str!("../assets/i18n/help/it.txt")),
+    ("ja", include_str!("../assets/i18n/help/ja.txt")),
+    ("ko", include_str!("../assets/i18n/help/ko.txt")),
+    ("pl", include_str!("../assets/i18n/help/pl.txt")),
+    ("pt-BR", include_str!("../assets/i18n/help/pt-BR.txt")),
+    ("ru", include_str!("../assets/i18n/help/ru.txt")),
+    ("tr", include_str!("../assets/i18n/help/tr.txt")),
+    ("zh-Hans", include_str!("../assets/i18n/help/zh-Hans.txt")),
+];
 
 #[derive(Debug, PartialEq)]
 pub enum Command {

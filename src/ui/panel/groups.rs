@@ -11,17 +11,17 @@ impl Panel {
         for c in CHEATS.iter().filter(|c| c.group == group) {
             let mut on = self.on.get(c.id).copied().unwrap_or(false);
             match c.kind {
-                Kind::Toggle(_) => field(t, c.label, |t| {
+                Kind::Toggle(_) => field(t, crate::i18n::tr(c.label), |t| {
                     changed |= w(t, |ui| toggle(ui, &mut on)).changed();
                     w(t, |ui| Self::badge(ui, c));
                 }),
-                Kind::Slider { min, max, .. } => field(t, c.label, |t| {
+                Kind::Slider { min, max, .. } => field(t, crate::i18n::tr(c.label), |t| {
                     changed |= w(t, |ui| toggle(ui, &mut on)).changed();
                     let step = if max - min > 50.0 { 10.0 } else { 0.05 };
                     let v = self.value.entry(c.id).or_insert(min);
                     let mut slider = tw::slider(t, v, min..=max, step, "");
                     if let Some(now) = chosen(c).and_then(|a| snap.and_then(|s| s.value(a))) {
-                        slider = slider.on_hover_text(format!("게임의 현재 값: {now:.2}"));
+                        slider = slider.on_hover_text(trf!("게임의 현재 값: {now:.2}", now = now));
                     }
                     // Live while dragging, at most every 150 ms — and always on release.
                     let due = self.slid.get(c.id).is_none_or(|x| x.elapsed() >= Duration::from_millis(150));
@@ -34,11 +34,11 @@ impl Panel {
                 Kind::SetStock { max, default, .. } => {
                     // Written once, on the button — not held.
                     let tx = self.tx.clone();
-                    field(t, c.label, |t| {
+                    field(t, crate::i18n::tr(c.label), |t| {
                         let v = self.value.entry(c.id).or_insert(default);
                         tw::slider(t, v, 1.0..=max, 1.0, "");
                         let v = *v;
-                        if w(t, |ui| ui.button("적용")).clicked() {
+                        if w(t, |ui| ui.button(tr!("적용"))).clicked() {
                             let _ = tx.send(Request::Set(c.id, v));
                         }
                         w(t, |ui| Self::badge(ui, c));
@@ -56,55 +56,55 @@ impl Panel {
 
     pub(super) fn badge(ui: &mut egui::Ui, c: &Cheat) {
         if !c.verified {
-            ui.label(RichText::new("미검증").color(WAIT).small())
-                .on_hover_text("아직 게임에서 확인하지 않은 치트입니다. 동작하는지 알려주세요.");
+            ui.label(RichText::new(tr!("미검증")).color(WAIT).small())
+                .on_hover_text(tr!("아직 게임에서 확인하지 않은 치트입니다. 동작하는지 알려주세요."));
         }
     }
 
     /// Saved positions: save where the hero stands, go back to it.
     pub(super) fn positions(&self, t: &mut Tui, snap: Option<&Snapshot>) {
-        card(t, "위치 저장 · 이동", |t| {
+        card(t, tr!("위치 저장 · 이동"), |t| {
             let world = snap.and_then(|s| s.world.clone());
             for i in 0..crate::engine::SLOTS {
                 let slot = snap.and_then(|s| s.slots[i].clone());
                 let here = slot.as_ref().is_some_and(|(w, _)| Some(w) == world.as_ref());
-                field(t, format!("슬롯 {}", i + 1), |t| {
-                    if w(t, |ui| ui.button("저장")).clicked() {
+                field(t, trf!("슬롯 {a0}", a0 = i + 1), |t| {
+                    if w(t, |ui| ui.button(tr!("저장"))).clicked() {
                         let _ = self.tx.send(Request::SavePosition(i));
                     }
-                    if w(t, |ui| ui.add_enabled(here, egui::Button::new("이동"))).clicked() {
+                    if w(t, |ui| ui.add_enabled(here, egui::Button::new(tr!("이동")))).clicked() {
                         let _ = self.tx.send(Request::LoadPosition(i));
                     }
                     let place = match &slot {
                         Some((_, p)) if here => format!("{:.0}, {:.0}, {:.0}", p[0], p[1], p[2]),
-                        Some((w, _)) => format!("다른 지역 ({w})"),
-                        None => "비어 있음".into(),
+                        Some((w, _)) => trf!("다른 지역 ({w})", w = crate::i18n::place(w)),
+                        None => tr!("비어 있음").into(),
                     };
                     note(t, place);
                 });
             }
-            note(t, "저장한 지역 안에서만 이동합니다");
+            note(t, tr!("저장한 지역 안에서만 이동합니다"));
         });
     }
 
     /// Every cheat that is on, across the groups, with its value.
     pub(super) fn summary(&self, t: &mut Tui, snap: Option<&Snapshot>) {
         let on: Vec<&Cheat> = CHEATS.iter().filter(|c| self.on.get(c.id).copied().unwrap_or(false)).collect();
-        card(t, &format!("켜진 치트 ({})", on.len()), |t| {
+        card(t, &trf!("켜진 치트 ({a0})", a0 = on.len()), |t| {
             if on.is_empty() {
-                text(t, RichText::new("켜진 치트가 없습니다").color(DIM));
+                text(t, RichText::new(tr!("켜진 치트가 없습니다")).color(DIM));
             }
             for c in on {
-                field(t, c.label, |t| {
+                field(t, crate::i18n::tr(c.label), |t| {
                     let value = match c.kind {
                         Kind::Slider { .. } => {
                             let v = self.value.get(c.id).copied().unwrap_or(0.0);
                             match chosen(c).and_then(|a| snap.and_then(|s| s.value(a))) {
-                                Some(n) => format!("{v:.2} (게임 {n:.2})"),
+                                Some(n) => trf!("{v:.2} (게임 {n:.2})", v = v, n = n),
                                 None => format!("{v:.2}"),
                             }
                         }
-                        _ => "켜짐".to_string(),
+                        _ => tr!("켜짐").to_string(),
                     };
                     w(t, |ui| ui.label(RichText::new(value).color(OK)));
                     w(t, |ui| ui.label(RichText::new(c.group.label()).color(DIM).small()));

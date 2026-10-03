@@ -65,6 +65,31 @@ var worlds = provider.Files.Keys
     .ToList();
 Console.Error.WriteLine($"worlds: {string.Join(", ", worlds)}");
 
+// --ls <regex>: the mounted paths that match. --dump <path>: a package's exports as JSON.
+if (opts.TryGetValue("ls", out var ls))
+{
+    var re = new System.Text.RegularExpressions.Regex(ls, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+    foreach (var p in provider.Files.Keys.Where(p => re.IsMatch(p)).OrderBy(p => p)) Console.WriteLine(p);
+    return;
+}
+if (opts.TryGetValue("dump", out var dumpPath))
+{
+    Console.WriteLine(JsonConvert.SerializeObject(provider.LoadPackage(dumpPath).GetExports(), Formatting.Indented));
+    return;
+}
+
+// --locale: every culture's text (the game's locres) to Mods\locale\<culture>.tsv —
+// namespace, key, text — and names.tsv: which text names each item, NPC and region
+// (.spec/I18N.md).
+if (opts.ContainsKey("locale"))
+{
+    var dir = Path.Combine(Path.GetDirectoryName(Need("out"))!, "locale");
+    Directory.CreateDirectory(dir);
+    Locale.Write(provider, dir);
+    Locale.Names(provider, dir, worlds);
+    return;
+}
+
 var survey = new Survey(provider);
 if (opts.TryGetValue("peek", out var peek))
 {
@@ -320,5 +345,131 @@ static class Args
             d[k] = i + 1 < a.Length && !a[i + 1].StartsWith("--") ? a[++i] : "true";
         }
         return d;
+    }
+}
+
+static class Locale
+{
+    public static string Esc(string s) => s.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\r", "\\r").Replace("\n", "\\n");
+
+    public static void Write(DefaultFileProvider provider, string dir)
+    {
+        var byCulture = provider.Files.Keys
+            .Select(p => System.Text.RegularExpressions.Regex.Match(p, @"^HellIsUs/Content/Localization/[^/]+/([^/]+)/[^/]+\.locres$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+            .Where(m => m.Success)
+            .GroupBy(m => m.Groups[1].Value, m => m.Value);
+        foreach (var g in byCulture)
+        {
+            var lines = new List<string>();
+            foreach (var path in g.OrderBy(p => p))
+            {
+                if (!provider.TryCreateReader(path, out var ar)) continue;
+                var res = new CUE4Parse.UE4.Localization.FTextLocalizationResource(ar);
+                foreach (var (ns, entries) in res.Entries)
+                    foreach (var (key, entry) in entries)
+                        lines.Add($"{Esc(ns.Str)}\t{Esc(key.Str)}\t{Esc(entry.LocalizedString)}");
+            }
+            lines.Sort(StringComparer.Ordinal);
+            var file = Path.Combine(dir, $"{g.Key}.tsv");
+            File.WriteAllLines(file, lines);
+            Console.Error.WriteLine($"{g.Key}: {lines.Count} → {file}");
+        }
+    }
+
+    /// names.tsv — the text that names a thing, as `kind  id  namespace  key  [more]`:
+    ///   item    <data asset name, lower case>                ns key
+    ///   region  <world>                                      ns key
+    ///   npc     <blueprint class, lower case>                ns key <story unit or ->
+    ///   name    <name fact asset>                            ns key <story unit>
+    /// An NPC's row is the name it shows when met; a `name` row of its story unit the hero
+    /// knows (the real name, learned later) wins over it.
+    public static void Names(DefaultFileProvider provider, string dir, List<string> worlds)
+    {
+        var rows = new SortedSet<string>(StringComparer.Ordinal);
+        var tableNs = new Dictionary<string, string?>();
+
+        string FilePath(string objectPath)
+        {
+            var p = objectPath.Split('.')[0];
+            return p.StartsWith("/Game/") ? "HellIsUs/Content/" + p["/Game/".Length..] : p.TrimStart('/');
+        }
+        string? Namespace(string tableId)
+        {
+            if (tableNs.TryGetValue(tableId, out var ns)) return ns;
+            try
+            {
+                var st = provider.LoadPackage(FilePath(tableId)).GetExports().OfType<CUE4Parse.UE4.Assets.Exports.Internationalization.UStringTable>().First();
+                ns = st.StringTable.TableNamespace;
+            }
+            catch { ns = null; }
+            return tableNs[tableId] = ns;
+        }
+        (string, string)? Text(JToken? t)
+        {
+            if (t is not JObject o || o["Key"]?.ToString() is not { Length: > 0 } key) return null;
+            if (o["TableId"]?.ToString() is { Length: > 0 } table)
+                return Namespace(table) is { } ns ? (ns, key) : null;
+            return o["Namespace"] is { } n ? (n.ToString(), key) : null;
+        }
+        IEnumerable<JObject> Exports(string path)
+        {
+            List<JObject> list;
+            try { list = JArray.Parse(JsonConvert.SerializeObject(provider.LoadPackage(path).GetExports())).OfType<JObject>().ToList(); }
+            catch (Exception e) { Console.Error.WriteLine($"  {path}: {e.Message}"); list = []; }
+            return list;
+        }
+        string Esc(string s) => Locale.Esc(s);
+        string UnitOf(string objectPath)
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(objectPath, @"/StoryUnits/([^/]+)/");
+            return m.Success ? m.Groups[1].Value : "-";
+        }
+        var files = provider.Files.Keys.ToList();
+
+        // Items: every data asset under Items/ with a Name.
+        foreach (var path in files.Where(p => p.StartsWith("HellIsUs/Content/Items/") && p.EndsWith("_DA.uasset")))
+            foreach (var e in Exports(path[..^".uasset".Length]))
+                if (Text(e["Properties"]?["Name"]) is var (ns, key))
+                    rows.Add($"item\t{Esc(e["Name"]!.ToString().ToLowerInvariant())}\t{Esc(ns)}\t{Esc(key)}");
+
+        // Regions: the worlds' location names.
+        foreach (var w in worlds)
+            rows.Add($"region\t{w}\tFacts_Shared\tUniversal_Location_{w}");
+
+        // Name facts of the story units.
+        foreach (var path in files.Where(p => p.StartsWith("HellIsUs/Content/GameData/StoryUnits/") && p.EndsWith("TextFact_DA.uasset")))
+            foreach (var e in Exports(path[..^".uasset".Length]))
+                if (e["Type"]?.ToString() == "StringFactData" && e["Properties"]?["Track"]?.ToString() == "Name"
+                    && Text(e["Properties"]?["Description"]) is var (ns, key))
+                    rows.Add($"name\t{Esc(e["Name"]!.ToString())}\t{Esc(ns)}\t{Esc(key)}\t{UnitOf(path)}");
+
+        // NPCs: a quick chat's speaker, or a conversation's name fact.
+        var factText = new Dictionary<string, (string, string)?>();
+        foreach (var path in files.Where(p => p.StartsWith("HellIsUs/Content/Gameplay/DynamicInteract/NPCs/") && p.EndsWith("_BP.uasset")))
+        {
+            var cls = Path.GetFileNameWithoutExtension(path).ToLowerInvariant() + "_c";
+            foreach (var e in Exports(path[..^".uasset".Length]))
+            {
+                var rune = e["Properties"]?["Rune"];
+                if (Text(rune?["SpeakerInfos"]?["SpeakerName"]) is var (ns, key))
+                {
+                    rows.Add($"npc\t{cls}\t{Esc(ns)}\t{Esc(key)}\t-");
+                    break;
+                }
+                if (rune?["NamePayload"]?["ContainedFacts"]?.FirstOrDefault()?["ObjectPath"]?.ToString() is { } fact)
+                {
+                    if (!factText.TryGetValue(fact, out var t))
+                        factText[fact] = t = Exports(FilePath(fact)).Select(x => Text(x["Properties"]?["Description"])).FirstOrDefault(x => x != null);
+                    if (t is var (fns, fkey))
+                    {
+                        rows.Add($"npc\t{cls}\t{Esc(fns)}\t{Esc(fkey)}\t{UnitOf(fact)}");
+                        break;
+                    }
+                }
+            }
+        }
+        var file = Path.Combine(dir, "names.tsv");
+        File.WriteAllLines(file, rows);
+        Console.Error.WriteLine($"names: {rows.Count} → {file}");
     }
 }

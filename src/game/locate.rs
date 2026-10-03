@@ -33,11 +33,11 @@ impl Install {
 /// is searched.
 pub fn find(dir: Option<&Path>) -> Result<Install, String> {
     let Some(dir) = dir else {
-        return discover().ok_or_else(|| "no Hell Is Us install found in any Steam library — pass --game-dir".into());
+        return discover().ok_or_else(|| tr!("Steam 라이브러리에서 Hell Is Us 설치를 찾지 못함 — --game-dir 로 알려 주세요").into());
     };
     let exe = dir.join(EXE);
     if !exe.is_file() {
-        return Err(format!("no Hell Is Us install at {} — pass --game-dir", dir.display()));
+        return Err(trf!("{a0} 에 Hell Is Us 설치가 없음 — --game-dir 로 알려 주세요", a0 = dir.display()));
     }
     let version = dir
         .parent()
@@ -51,7 +51,7 @@ pub fn find(dir: Option<&Path>) -> Result<Install, String> {
 /// The running executable's install: four directories up — `Win64`, `Binaries`,
 /// `HellIsUs`, then the install root.
 pub fn from_exe(exe: &Path) -> Result<Install, String> {
-    let dir = exe.ancestors().nth(4).ok_or("unexpected executable path")?;
+    let dir = exe.ancestors().nth(4).ok_or(tr!("예상과 다른 실행 파일 경로"))?;
     find(Some(dir))
 }
 

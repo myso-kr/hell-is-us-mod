@@ -72,7 +72,7 @@ const SAVES_EVERY: Duration = Duration::from_secs(60);
 const KNOWLEDGE_EVERY: Duration = Duration::from_secs(2);
 
 fn mem_ptr(m: &dyn crate::mem::Memory, at: u64) -> Result<u64, String> {
-    crate::mem::read_u64(m, at).filter(|&p| crate::mem::plausible(p)).ok_or_else(|| "pointer unreadable".into())
+    crate::mem::read_u64(m, at).filter(|&p| crate::mem::plausible(p)).ok_or_else(|| tr!("포인터를 읽을 수 없음").into())
 }
 
 /// The GUIDs of the placed things the save keeps a state for, in every region
@@ -102,7 +102,7 @@ fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u64) -
 }
 
 pub fn attach() -> Result<Attached, String> {
-    let game = Game::find()?.ok_or("the game is not running")?;
+    let game = Game::find()?.ok_or(tr!("게임이 실행 중이 아닙니다"))?;
     let version = locate::from_exe(&game.exe).map(|i| i.version).unwrap_or_else(|_| "unknown".into());
     let anchors = anchors::discover(&game, game.base)?;
     Ok(Attached {
@@ -180,7 +180,7 @@ impl Attached {
             .of_class(m, n, "CharlieInventory")
             .into_iter()
             .find(|&o| ok(o))
-            .ok_or("the hero's inventory was not found")?;
+            .ok_or(tr!("주인공의 인벤토리를 찾지 못함"))?;
         *self.inventory.borrow_mut() = Some(inv);
         Ok(inv)
     }
@@ -225,7 +225,7 @@ impl Attached {
         let bytes: Vec<u8> = p.iter().flat_map(|v| v.to_le_bytes()).collect();
         let c2w = root + crate::obstacles::COMPONENT_TO_WORLD + 0x20;
         if !m.write(root + chain.location, &bytes) || !m.write(c2w, &bytes) {
-            return Err("could not write the hero's position".into());
+            return Err(tr!("주인공 위치를 쓰지 못함").into());
         }
         if let Ok(mc) = n.follow(m, hero, "CharacterMovement") {
             if let Some(v) = n.field(m, mc, "Velocity") {
@@ -249,7 +249,7 @@ impl Attached {
         let world = mem_ptr(m, level + crate::names::OUTER)?;
         let persistent = n.follow(m, world, "PersistentLevel")?;
         let settings = n.follow(m, persistent, "WorldSettings")?;
-        let p = n.field(m, settings, "Pauser").ok_or("no WorldSettings.Pauser")?;
+        let p = n.field(m, settings, "Pauser").ok_or(tr!("WorldSettings.Pauser 없음"))?;
         Ok(crate::mem::read_u64(m, settings + p.offset as u64).is_some_and(|v| v != 0))
     }
 
@@ -268,21 +268,22 @@ impl Attached {
             g.saves_read = Some(Instant::now());
         }
         if g.knowledge.is_none() || g.knowledge_read.is_none_or(|t| t.elapsed() >= KNOWLEDGE_EVERY) {
-            let save = knowledge::current(n, m, &g.saves).ok_or("no save state found")?;
+            let save = knowledge::current(n, m, &g.saves).ok_or(tr!("세이브 상태를 찾지 못함"))?;
             g.save = save;
-            g.knowledge = Some(knowledge::read(n, m, save).ok_or("the save state could not be read")?);
+            g.knowledge = Some(knowledge::read(n, m, save).ok_or(tr!("세이브 상태를 읽지 못함"))?);
             g.knowledge_read = Some(Instant::now());
             // The same by name, for the survey.
             let g = &mut *g;
             let k = g.knowledge.as_ref().unwrap();
             let mut name = |i: u32| g.name_cache.entry(i).or_insert_with(|| n.get(m, i).unwrap_or_default()).clone();
             g.known_facts = k.facts.iter().map(|&i| name(i)).collect();
+            crate::i18n::set_known(&g.known_facts);
             g.known_tags = k.tags.iter().map(|&i| name(i)).collect();
             g.held = self.held_items();
             g.saved = saved_guids(m, n, save);
             g.fact_keys = g.quests.fact_keys();
         }
-        let actors = self.scanner.borrow().actors_offset().ok_or("actors not scanned yet")?;
+        let actors = self.scanner.borrow().actors_offset().ok_or(tr!("아직 액터를 훑지 않음"))?;
         {
             let g = &mut *g;
             g.goals.refresh(m, n, hero, chain.root, actors, g.quests.flows());
@@ -503,7 +504,7 @@ impl Engine {
     fn refresh(&mut self) -> Result<(), String> {
         let due = self.checked.is_none_or(|t| t.elapsed() >= RECHECK);
         if !due {
-            return if self.attached.is_some() { Ok(()) } else { Err("the game is not running".into()) };
+            return if self.attached.is_some() { Ok(()) } else { Err(tr!("게임이 실행 중이 아닙니다").into()) };
         }
         self.checked = Some(Instant::now());
         let live = Game::find()?.map(|g| g.pid);
@@ -514,7 +515,7 @@ impl Engine {
             self.attached = None;
             if !self.active.is_empty() {
                 self.active.clear();
-                self.notice = Some("the game exited — toggles off".into());
+                self.notice = Some(tr!("게임이 종료됨 — 치트 꺼짐").into());
             }
             self.extras.forget();
             self.originals.forget()?;
@@ -572,7 +573,7 @@ impl Engine {
                         snap.things = t;
                         snap.footprints = a.footprints();
                     }
-                    Err(e) => snap.notice = Some(format!("minimap: {e}")),
+                    Err(e) => snap.notice = Some(trf!("미니맵: {e}", e = e)),
                 }
                 match a.goals() {
                     Ok((g, _)) => {
@@ -605,7 +606,7 @@ impl Engine {
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }
-                    Err(e) => snap.notice = Some(format!("minimap: {e}")),
+                    Err(e) => snap.notice = Some(trf!("미니맵: {e}", e = e)),
                 }
                 match a.session() {
                     Err(e) => snap.notice = Some(e),
@@ -615,7 +616,7 @@ impl Engine {
                             Ok(errors) => snap.notice = Some(errors.join("; ")),
                             Err(e) => {
                                 self.active.clear();
-                                self.notice = Some(format!("cannot record originals — toggles off: {e}"));
+                                self.notice = Some(trf!("원래 값을 기록하지 못함 — 치트 꺼짐: {e}", e = e));
                             }
                         }
                         snap.values = cheats::attributes().into_iter().map(|a| (a, s.current(a).ok())).collect();
@@ -640,7 +641,7 @@ impl Engine {
         a.gate()?;
         if let Some(Kind::SetStock { class, max, .. }) = cheats::find(name).map(|c| c.kind) {
             if !(1.0..=max).contains(&v) {
-                return Err(format!("{name} takes 1..={max}"));
+                return Err(trf!("{name}: 1..={max} 사이", name = name, max = max));
             }
             return self.extras.set_stock(a, class, v as u32).map(drop);
         }
@@ -654,7 +655,7 @@ impl Engine {
         a.gate()?;
         let (p, _) = a.pose()?;
         let world = a.chain()?.world(&a.game, &a.anchors)?;
-        *self.slots.get_mut(i).ok_or("no such slot")? = Some((world, p));
+        *self.slots.get_mut(i).ok_or(tr!("그런 슬롯이 없음"))? = Some((world, p));
         Ok(p)
     }
 
@@ -663,9 +664,9 @@ impl Engine {
         self.refresh()?;
         let a = self.attached.as_ref().unwrap();
         a.gate()?;
-        let (world, p) = self.slots.get(i).cloned().flatten().ok_or("nothing saved in that slot")?;
+        let (world, p) = self.slots.get(i).cloned().flatten().ok_or(tr!("그 슬롯에 저장된 것이 없음"))?;
         if a.chain()?.world(&a.game, &a.anchors)? != world {
-            return Err(format!("saved in another area ({world})"));
+            return Err(trf!("다른 지역에서 저장됨 ({world})", world = crate::i18n::place(&world)));
         }
         a.teleport([p[0], p[1], p[2] + LIFT])
     }
@@ -689,7 +690,7 @@ impl Engine {
         if failed.is_empty() {
             Ok(())
         } else {
-            Err(format!("could not restore: {}", failed.join("; ")))
+            Err(trf!("되돌리지 못함: {a0}", a0 = failed.join("; ")))
         }
     }
 
@@ -711,7 +712,7 @@ impl Engine {
         if failed.is_empty() {
             Ok(())
         } else {
-            Err(format!("could not restore: {} — run `hiumod restore` later", failed.join("; ")))
+            Err(trf!("되돌리지 못함: {a0} — 나중에 `hiumod restore` 를 실행하세요", a0 = failed.join("; ")))
         }
     }
 }

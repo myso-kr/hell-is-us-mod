@@ -41,7 +41,7 @@ pub struct Chain {
 }
 
 fn offset(n: &Names, m: &dyn Memory, obj: u64, name: &str) -> Result<u64, String> {
-    n.field(m, obj, name).map(|p| p.offset as u64).ok_or_else(|| format!("no property {name}"))
+    n.field(m, obj, name).map(|p| p.offset as u64).ok_or_else(|| trf!("{name} 속성이 없음", name = name))
 }
 
 /// The first element of a `TArray` property, followed.
@@ -63,7 +63,7 @@ pub fn find_asc(n: &Names, m: &dyn Memory, pawn: u64) -> Result<(u64, u64), Stri
             }
         }
     }
-    Err("the pawn holds no AbilitySystemComponent".into())
+    Err(tr!("폰에 AbilitySystemComponent 가 없음").into())
 }
 
 pub fn learn(m: &dyn Memory, a: &Anchors) -> Result<Chain, String> {
@@ -78,7 +78,7 @@ pub fn learn(m: &dyn Memory, a: &Anchors) -> Result<Chain, String> {
     let pawn = n.follow(m, pc, "Pawn").map_err(|e| format!("{e} — load a save first"))?;
     let classes = n.class_names(m, pawn);
     if !classes.iter().any(|c| c == HERO) {
-        return Err(format!("the pawn is a {}, not the hero — load a save first", classes.join(" < ")));
+        return Err(trf!("폰이 주인공이 아니라 {a0} — 먼저 세이브를 불러오세요", a0 = classes.join(" < ")));
     }
     let (asc_off, asc) = find_asc(n, m, pawn)?;
     let sets = offset(n, m, asc, "SpawnedAttributes")?;
@@ -101,7 +101,7 @@ pub fn learn(m: &dyn Memory, a: &Anchors) -> Result<Chain, String> {
 impl Chain {
     pub fn controller(&self, m: &dyn Memory, a: &Anchors) -> Result<u64, String> {
         let at = mem::resolve(m, a.gengine, &self.to_controller).map_err(|e| e.to_string())?;
-        mem::read_u64(m, at).filter(|&p| mem::plausible(p)).ok_or_else(|| "no player controller".into())
+        mem::read_u64(m, at).filter(|&p| mem::plausible(p)).ok_or_else(|| tr!("플레이어 컨트롤러 없음").into())
     }
 
     /// The pawn, if it is the hero — the gate.
@@ -109,9 +109,9 @@ impl Chain {
         let pc = self.controller(m, a)?;
         let pawn = mem::read_u64(m, pc + self.pawn)
             .filter(|&p| mem::plausible(p))
-            .ok_or("no pawn — loading, or a cinematic?")?;
+            .ok_or(tr!("폰 없음 — 로딩 중이거나 컷신?"))?;
         if !a.names.is_a(m, pawn, HERO) {
-            return Err("the controlled pawn is not the hero".into());
+            return Err(tr!("조작 중인 폰이 주인공이 아님").into());
         }
         Ok(pawn)
     }
@@ -119,7 +119,7 @@ impl Chain {
     /// The hero's `SpawnedAttributes` TArray.
     pub fn attribute_sets(&self, m: &dyn Memory, a: &Anchors) -> Result<u64, String> {
         let pawn = self.hero(m, a)?;
-        let asc = mem::read_u64(m, pawn + self.asc).filter(|&p| mem::plausible(p)).ok_or("no ability system")?;
+        let asc = mem::read_u64(m, pawn + self.asc).filter(|&p| mem::plausible(p)).ok_or(tr!("어빌리티 시스템 없음"))?;
         Ok(asc + self.sets)
     }
 
@@ -127,9 +127,9 @@ impl Chain {
     /// level's outer its world. Trails and markers are kept per world.
     pub fn world(&self, m: &dyn Memory, a: &Anchors) -> Result<String, String> {
         let pawn = self.hero(m, a)?;
-        let level = mem::read_u64(m, pawn + names::OUTER).filter(|&p| mem::plausible(p)).ok_or("no level")?;
-        let world = mem::read_u64(m, level + names::OUTER).filter(|&p| mem::plausible(p)).ok_or("no world")?;
-        a.names.object(m, world).ok_or_else(|| "world name unreadable".into())
+        let level = mem::read_u64(m, pawn + names::OUTER).filter(|&p| mem::plausible(p)).ok_or(tr!("레벨 없음"))?;
+        let world = mem::read_u64(m, level + names::OUTER).filter(|&p| mem::plausible(p)).ok_or(tr!("월드 없음"))?;
+        a.names.object(m, world).ok_or_else(|| tr!("월드 이름을 읽을 수 없음").into())
     }
 
     /// Where the hero stands (UE units, centimetres) and which way the camera faces
@@ -137,20 +137,20 @@ impl Chain {
     pub fn pose(&self, m: &dyn Memory, a: &Anchors) -> Result<([f64; 3], f64), String> {
         let pc = self.controller(m, a)?;
         let pawn = self.hero(m, a)?;
-        let root = mem::read_u64(m, pawn + self.root).filter(|&p| mem::plausible(p)).ok_or("no root component")?;
+        let root = mem::read_u64(m, pawn + self.root).filter(|&p| mem::plausible(p)).ok_or(tr!("루트 컴포넌트 없음"))?;
         let mut b = [0u8; 24];
         if !m.read(root + self.location, &mut b) {
-            return Err("location unreadable".into());
+            return Err(tr!("위치를 읽을 수 없음").into());
         }
         let d = |i: usize| f64::from_le_bytes(b[i * 8..i * 8 + 8].try_into().unwrap());
         let loc = [d(0), d(1), d(2)];
         let mut r = [0u8; 8];
         if !m.read(pc + self.rotation + 8, &mut r) {
-            return Err("rotation unreadable".into());
+            return Err(tr!("방향을 읽을 수 없음").into());
         }
         let yaw = f64::from_le_bytes(r);
         if loc.iter().chain([&yaw]).any(|v| !v.is_finite()) {
-            return Err("pose is not a number".into());
+            return Err(tr!("위치·방향 값이 숫자가 아님").into());
         }
         Ok((loc, yaw))
     }

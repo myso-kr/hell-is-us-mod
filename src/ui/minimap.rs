@@ -237,7 +237,7 @@ pub fn run(shared: Arc<Shared>) {
                         tier: Tier::Clue,
                         id: m.id(world),
                         label: m.title(),
-                        detail: "지도 핀".into(),
+                        detail: tr!("지도 핀").into(),
                         at: m.at,
                         quests: vec![],
                         tags: vec![],
@@ -251,7 +251,7 @@ pub fn run(shared: Arc<Shared>) {
                             tier: Tier::Clue,
                             id,
                             label,
-                            detail: "패널에서 고른 곳".into(),
+                            detail: tr!("패널에서 고른 곳").into(),
                             at,
                             quests: vec![],
                             tags: vec![],
@@ -479,9 +479,9 @@ pub fn run(shared: Arc<Shared>) {
                             let away = list.iter().filter(|x| !x.done && x.world != w).count();
                             match (here, away) {
                                 (0, 0) => String::new(),
-                                (h, 0) => format!("필요한 것: 이 지역 {h}곳"),
-                                (0, a) => format!("필요한 것: 다른 지역 {a}곳 — 장갑차로 이동"),
-                                (h, a) => format!("필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳"),
+                                (h, 0) => trf!("필요한 것: 이 지역 {h}곳", h = h),
+                                (0, a) => trf!("필요한 것: 다른 지역 {a}곳 — 장갑차로 이동", a = a),
+                                (h, a) => trf!("필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳", h = h, a = a),
                             }
                         })
                         .unwrap_or_default();

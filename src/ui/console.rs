@@ -48,7 +48,7 @@ impl Default for Console {
             running: None,
             focus: false,
         };
-        c.push(Line::Note, "명령을 입력하세요 — `help` 로 목록, ↑/↓ 이전 명령, Esc 로 실행 중지".into());
+        c.push(Line::Note, tr!("명령을 입력하세요 — `help` 로 목록, ↑/↓ 이전 명령, Esc 로 실행 중지").into());
         c
     }
 }
@@ -98,14 +98,14 @@ impl Console {
             args.remove(0);
         }
         match args.first().map(String::as_str) {
-            None => self.push(Line::Err, "hiumod 만으로는 패널이 하나 더 열립니다 — 명령을 붙여 주세요 (help)".into()),
+            None => self.push(Line::Err, tr!("hiumod 만으로는 패널이 하나 더 열립니다 — 명령을 붙여 주세요 (help)").into()),
             Some("clear" | "cls") => self.lines.clear(),
             Some("help" | "?") => {
-                for l in crate::cli::USAGE.lines() {
+                for l in crate::cli::usage().lines() {
                     self.push(Line::Out, l.to_string());
                 }
             }
-            Some(_) if self.running.is_some() => self.push(Line::Err, "앞의 명령이 아직 실행 중입니다 (Esc 로 중지)".into()),
+            Some(_) if self.running.is_some() => self.push(Line::Err, tr!("앞의 명령이 아직 실행 중입니다 (Esc 로 중지)").into()),
             Some(_) => self.spawn(&args),
         }
     }
@@ -113,7 +113,7 @@ impl Console {
     fn spawn(&mut self, args: &[String]) {
         let exe = match std::env::current_exe() {
             Ok(e) => e,
-            Err(e) => return self.push(Line::Err, format!("실행 파일을 찾지 못함: {e}")),
+            Err(e) => return self.push(Line::Err, trf!("실행 파일을 찾지 못함: {e}", e = e)),
         };
         let mut cmd = Command::new(exe);
         cmd.args(args).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped());
@@ -124,7 +124,7 @@ impl Console {
         }
         let mut child = match cmd.spawn() {
             Ok(c) => c,
-            Err(e) => return self.push(Line::Err, format!("실행하지 못함: {e}")),
+            Err(e) => return self.push(Line::Err, trf!("실행하지 못함: {e}", e = e)),
         };
         let (tx, rx) = channel();
         for (pipe, kind) in [
@@ -174,8 +174,8 @@ impl Console {
             }
             match code {
                 Some(0) => {}
-                Some(c) => self.push(Line::Err, format!("(끝남: 코드 {c})")),
-                None => self.push(Line::Err, "(끝남)".into()),
+                Some(c) => self.push(Line::Err, trf!("(끝남: 코드 {c})", c = c)),
+                None => self.push(Line::Err, tr!("(끝남)").into()),
             }
         }
     }
@@ -183,7 +183,7 @@ impl Console {
     fn stop(&mut self) {
         if let Some((mut child, _)) = self.running.take() {
             let _ = child.kill();
-            self.push(Line::Err, "(중지함)".into());
+            self.push(Line::Err, tr!("(중지함)").into());
         }
     }
 
@@ -226,7 +226,7 @@ impl Console {
             let edit = egui::TextEdit::singleline(&mut self.input)
                 .font(mono.clone())
                 .desired_width(f32::INFINITY)
-                .hint_text("명령 (help)");
+                .hint_text(tr!("명령 (help)"));
             let r = ui.add(edit);
             // The panel's own key opens the panel, not a character to type.
             self.input.retain(|c| c != '`');

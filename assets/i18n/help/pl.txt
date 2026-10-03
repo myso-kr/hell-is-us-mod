@@ -1,0 +1,44 @@
+hiumod — cheaty do trybu jednoosobowego i minimapa do Hell Is Us (Steam)
+
+UŻYCIE
+  hiumod                        w razie potrzeby uruchamia grę, potem panel — ` (~) pokazuje/ukrywa go;
+                                panel zamyka się razem z grą
+  hiumod ui                     tylko panel; nie uruchamia gry
+  hiumod doctor                 sprawdza wszystko; niczego nie zapisuje
+  hiumod doctor inspect <target> [depth] [gaps]
+                                każde pole refleksji działającego obiektu, z nazwą i
+                                wartością; wskaźniki śledzone na `depth` poziomów (domyślnie 0);
+                                `gaps` pokazuje też natywne bajty między polami
+  hiumod doctor find <text>     każda właściwość klasy lub struktury, której nazwa zawiera tekst
+  hiumod doctor dump [prefix]...
+                                lista w stylu SDK klas i struktur, których nazwy
+                                zaczynają się od prefiksu (domyślnie Charlie, Story)
+  hiumod doctor usmap           wczytane klasy, struktury i enumy jako plik mapowań
+                                .usmap, dla tools/survey
+  hiumod doctor survey [world]  mapowania, potem tools/survey na mapach gry:
+                                co daje każdy świat, do Mods\survey —
+                                oraz tekst gry w 12 językach
+  hiumod doctor locale          tylko tekst gry, do Mods\locale: nazwy przedmiotów, NPC
+                                i regionów w języku gry
+  hiumod doctor watch <target> [seconds]
+                                co zmienia się w obiekcie, nazwanym lub natywnym, na bieżąco
+  hiumod doctor scan <target> <value>
+  hiumod doctor scan next <value>
+                                gdzie w obiekcie leży wartość; potem, gdy zmieni się
+                                w grze, które z tych miejsc zmieniły się razem z nią
+                                cele: hero, controller, asc, sets, inventory, items,
+                                save, world, enemy[:N], 0xADRES lub nazwa klasy[:N]
+                                — wyniki są też zapisywane w Mods\doctor
+  hiumod list                   każdy atrybut każdego zestawu, odczyt na żywo
+  hiumod get <attribute>...     niektóre z nich, jako Name lub Set.Name
+  hiumod pose                   gdzie stoi i patrzy bohater, odczyt na żywo do Ctrl+C
+  hiumod set <cheat> <value>    wartość zapisana raz (w tabeli jeszcze żadnej)
+  hiumod hold <cheat>...        np. god stamina speed=2 — do Ctrl+C;
+                                każdy utrzymywany cheat jest na liście `hiumod doctor`
+  hiumod restore                przywraca to, co przerwany hold zostawił zmienione
+
+OPCJE
+  --game-dir <dir>              katalog główny instalacji, zawierający HellIsUs\
+                                (domyślnie: znajdowany w bibliotekach Steam)
+
+Nic nie jest zapisywane, dopóki nie kontrolujesz bohatera. Zrób kopię zapasową zapisu.

@@ -121,30 +121,30 @@ impl PinKind {
 
     pub fn label(self) -> &'static str {
         match self {
-            PinKind::LockedDoor => "잠긴 문",
-            PinKind::LockedChest => "잠긴 상자",
-            PinKind::LymbicLock => "림빅 잠금",
-            PinKind::Puzzle => "퍼즐",
-            PinKind::Code => "코드·암호",
-            PinKind::KeyNeeded => "열쇠 필요",
-            PinKind::ItemLater => "나중에 주울 것",
-            PinKind::Merchant => "상인",
-            PinKind::Npc => "만날 사람",
-            PinKind::Quest => "퀘스트 단서",
-            PinKind::Danger => "위험",
-            PinKind::Boss => "강적",
-            PinKind::Timeloop => "타임루프",
-            PinKind::Save => "저장 지점",
-            PinKind::Shortcut => "지름길",
-            PinKind::Ladder => "오를 곳",
-            PinKind::DeadEnd => "막다른 길",
-            PinKind::Water => "물·건널 곳",
-            PinKind::View => "둘러볼 곳",
-            PinKind::Treasure => "보물",
-            PinKind::Note => "메모",
-            PinKind::Home => "거점",
-            PinKind::Question => "모르는 것",
-            PinKind::Mark => "표시",
+            PinKind::LockedDoor => tr!("잠긴 문"),
+            PinKind::LockedChest => tr!("잠긴 상자"),
+            PinKind::LymbicLock => tr!("림빅 잠금"),
+            PinKind::Puzzle => tr!("퍼즐"),
+            PinKind::Code => tr!("코드·암호"),
+            PinKind::KeyNeeded => tr!("열쇠 필요"),
+            PinKind::ItemLater => tr!("나중에 주울 것"),
+            PinKind::Merchant => tr!("상인"),
+            PinKind::Npc => tr!("만날 사람"),
+            PinKind::Quest => tr!("퀘스트 단서"),
+            PinKind::Danger => tr!("위험"),
+            PinKind::Boss => tr!("강적"),
+            PinKind::Timeloop => tr!("타임루프"),
+            PinKind::Save => tr!("저장 지점"),
+            PinKind::Shortcut => tr!("지름길"),
+            PinKind::Ladder => tr!("오를 곳"),
+            PinKind::DeadEnd => tr!("막다른 길"),
+            PinKind::Water => tr!("물·건널 곳"),
+            PinKind::View => tr!("둘러볼 곳"),
+            PinKind::Treasure => tr!("보물"),
+            PinKind::Note => tr!("메모"),
+            PinKind::Home => tr!("거점"),
+            PinKind::Question => tr!("모르는 것"),
+            PinKind::Mark => tr!("표시"),
         }
     }
 
@@ -207,9 +207,9 @@ impl Marker {
     /// What the guide calls it.
     pub fn title(&self) -> String {
         if self.note.trim().is_empty() {
-            format!("핀: {}", self.kind.label())
+            trf!("핀: {a0}", a0 = self.kind.label())
         } else {
-            format!("핀: {}", self.note.trim())
+            trf!("핀: {a0}", a0 = self.note.trim())
         }
     }
 }
@@ -624,9 +624,9 @@ impl Display {
 
     pub fn label(self) -> &'static str {
         match self {
-            Display::Mini => "미니맵",
-            Display::Big => "큰 지도",
-            Display::Off => "끔",
+            Display::Mini => tr!("미니맵"),
+            Display::Big => tr!("큰 지도"),
+            Display::Off => tr!("끔"),
         }
     }
 
@@ -661,10 +661,10 @@ impl ReliefMode {
 
     pub fn label(self) -> &'static str {
         match self {
-            ReliefMode::Off => "끔",
-            ReliefMode::Shade => "음영",
-            ReliefMode::Contour => "등고선",
-            ReliefMode::Both => "둘 다",
+            ReliefMode::Off => tr!("끔"),
+            ReliefMode::Shade => tr!("음영"),
+            ReliefMode::Contour => tr!("등고선"),
+            ReliefMode::Both => tr!("둘 다"),
         }
     }
 

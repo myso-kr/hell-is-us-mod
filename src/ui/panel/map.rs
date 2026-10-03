@@ -44,32 +44,32 @@ impl Panel {
     }
 
     pub(super) fn map_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
-        card(t, "미니맵", |t| {
-            field(t, "표시 방식", |t| {
+        card(t, tr!("미니맵"), |t| {
+            field(t, tr!("표시 방식"), |t| {
                 for d in crate::minimap::Display::ALL {
                     w(t, |ui| ui.selectable_value(&mut state.display, d, d.label()));
                 }
             });
-            field(t, "위쪽", |t| {
-                w(t, |ui| ui.selectable_value(&mut state.heading_up, false, "북쪽(N)"));
-                w(t, |ui| ui.selectable_value(&mut state.heading_up, true, "카메라 방향"));
+            field(t, tr!("위쪽"), |t| {
+                w(t, |ui| ui.selectable_value(&mut state.heading_up, false, tr!("북쪽(N)")));
+                w(t, |ui| ui.selectable_value(&mut state.heading_up, true, tr!("카메라 방향")));
             });
-            field(t, "반경", |t| tw::slider(t, &mut state.radius_m, 20.0..=300.0, 10.0, " m"));
-            field(t, "스타일", |t| {
-                w(t, |ui| ui.selectable_value(&mut state.mini_outline, true, "윤곽선"));
-                w(t, |ui| ui.selectable_value(&mut state.mini_outline, false, "채움"));
+            field(t, tr!("반경"), |t| tw::slider(t, &mut state.radius_m, 20.0..=300.0, 10.0, " m"));
+            field(t, tr!("스타일"), |t| {
+                w(t, |ui| ui.selectable_value(&mut state.mini_outline, true, tr!("윤곽선")));
+                w(t, |ui| ui.selectable_value(&mut state.mini_outline, false, tr!("채움")));
             });
-            field(t, "아이콘 크기", |t| tw::slider(t, &mut state.icon_px, crate::minimap::ICON_PX, 1.0, " px"));
-            switch(t, &mut state.hide_in_menus, "인벤토리·메뉴가 열리면 모든 오버레이 숨기기");
+            field(t, tr!("아이콘 크기"), |t| tw::slider(t, &mut state.icon_px, crate::minimap::ICON_PX, 1.0, " px"));
+            switch(t, &mut state.hide_in_menus, tr!("인벤토리·메뉴가 열리면 모든 오버레이 숨기기"));
         });
 
-        card(t, "지형", |t| {
-            field(t, "지형 표시", |t| {
+        card(t, tr!("지형"), |t| {
+            field(t, tr!("지형 표시"), |t| {
                 for m in crate::minimap::ReliefMode::ALL {
                     w(t, |ui| ui.selectable_value(&mut state.relief, m, m.label()));
                 }
             });
-            field(t, "벽·바닥 윤곽", |t| w(t, |ui| toggle(ui, &mut state.terrain)));
+            field(t, tr!("벽·바닥 윤곽"), |t| w(t, |ui| toggle(ui, &mut state.terrain)));
             if state.terrain {
                 choices(t, |t| {
                     for b in crate::raster::Band::ALL {
@@ -97,13 +97,13 @@ impl Panel {
             }
         });
 
-        card(t, "큰 지도", |t| {
-            field(t, "반경", |t| tw::slider(t, &mut state.big_radius_m, 50.0..=1000.0, 25.0, " m"));
-            field(t, "스타일", |t| {
-                w(t, |ui| ui.selectable_value(&mut state.big_outline, true, "윤곽선"));
-                w(t, |ui| ui.selectable_value(&mut state.big_outline, false, "채움"));
+        card(t, tr!("큰 지도"), |t| {
+            field(t, tr!("반경"), |t| tw::slider(t, &mut state.big_radius_m, 50.0..=1000.0, 25.0, " m"));
+            field(t, tr!("스타일"), |t| {
+                w(t, |ui| ui.selectable_value(&mut state.big_outline, true, tr!("윤곽선")));
+                w(t, |ui| ui.selectable_value(&mut state.big_outline, false, tr!("채움")));
             });
-            field(t, "불투명도", |t| tw::slider(t, &mut state.big_alpha, 20..=100, 1.0, " %"));
+            field(t, tr!("불투명도"), |t| tw::slider(t, &mut state.big_alpha, 20..=100, 1.0, " %"));
         });
 
     }
@@ -112,7 +112,7 @@ impl Panel {
     pub(super) fn marks_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let world = snap.and_then(|s| s.world.clone());
         let near = snap.map(|s| s.things.clone()).unwrap_or_default();
-        card(t, "표시할 것", |t| {
+        card(t, tr!("표시할 것"), |t| {
             for (i, k) in ThingKind::ALL.into_iter().enumerate() {
                 let [r, g, b] = k.rgb();
                 let colour = Color32::from_rgb(r, g, b);
@@ -140,9 +140,9 @@ impl Panel {
                     if subs > 1 {
                         let hidden = Sub::ALL.iter().filter(|x| x.kind() == k && state.hidden.contains(x)).count();
                         let label = match (self.unfolded[i], hidden) {
-                            (true, _) => "세부 ▲".to_string(),
-                            (false, 0) => "세부 ▼".to_string(),
-                            (false, h) => format!("세부 ▼ ({h}개 숨김)"),
+                            (true, _) => tr!("세부 ▲").to_string(),
+                            (false, 0) => tr!("세부 ▼").to_string(),
+                            (false, h) => trf!("세부 ▼ ({h}개 숨김)", h = h),
                         };
                         if w(t, |ui| ui.add(egui::Button::new(RichText::new(label).small()).frame(false))).clicked() {
                             self.unfolded[i] = !self.unfolded[i];
@@ -170,10 +170,10 @@ impl Panel {
         });
 
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
-        card(t, "지도 핀 · 지나온 길", |t| match &world {
+        card(t, tr!("지도 핀 · 지나온 길"), |t| match &world {
             Some(wd) => {
                 // The kind the marker key gives the next pin.
-                field(t, format!("새 핀 (F{})", state.marker_key), |t| {
+                field(t, trf!("새 핀 (F{a0})", a0 = state.marker_key), |t| {
                     w(t, |ui| {
                         if pin_picker(ui, "new-pin", &mut state.pin_kind) {
                             state.dirty = true;
@@ -182,7 +182,7 @@ impl Panel {
                 });
                 let count = state.markers.get(wd).map_or(0, Vec::len);
                 if count == 0 {
-                    note(t, format!("이 지역에 핀이 없습니다 — 잠긴 문·퍼즐 앞에서 F{} 를 누르면 꽂힙니다", state.marker_key));
+                    note(t, trf!("이 지역에 핀이 없습니다 — 잠긴 문·퍼즐 앞에서 F{a0} 를 누르면 꽂힙니다", a0 = state.marker_key));
                 }
                 // Nearest first; each: its kind (press to change), a note, guide, remove.
                 let mut order: Vec<usize> = (0..count).collect();
@@ -199,14 +199,14 @@ impl Panel {
                     let mut kind = m.kind;
                     t.style(tw::row(6.0)).add(|t| {
                         w(t, |ui| pin_picker(ui, &format!("pin-{i}"), &mut kind));
-                        block(t, |ui| ui.add(egui::TextEdit::singleline(&mut note_text).hint_text("메모").desired_width(f32::INFINITY)));
+                        block(t, |ui| ui.add(egui::TextEdit::singleline(&mut note_text).hint_text(tr!("메모")).desired_width(f32::INFINITY)));
                         w(t, |ui| ui.label(RichText::new(far).color(DIM).small()));
-                        if w(t, |ui| ui.selectable_label(state.target == Some(id), "안내")).clicked() {
+                        if w(t, |ui| ui.selectable_label(state.target == Some(id), tr!("안내"))).clicked() {
                             state.target = Some(id);
                             state.chosen = true;
                             state.route = true;
                         }
-                        if w(t, |ui| ui.small_button("×")).on_hover_text("이 핀 지우기").clicked() {
+                        if w(t, |ui| ui.small_button("×")).on_hover_text(tr!("이 핀 지우기")).clicked() {
                             remove = Some(i);
                         }
                     });
@@ -225,28 +225,28 @@ impl Panel {
                     state.dirty = true;
                 }
                 let trail = state.trails.get(wd).map_or(0, |x| x.iter().flatten().count());
-                field(t, "이 지역", |t| text(t, RichText::new(format!("지나온 길 {trail}점 · 핀 {count}개")).color(DIM)));
+                field(t, tr!("이 지역"), |t| text(t, RichText::new(trf!("지나온 길 {trail}점 · 핀 {count}개", trail = trail, count = count)).color(DIM)));
                 choices(t, |t| {
-                    if w(t, |ui| ui.button("경로 지우기")).clicked() {
+                    if w(t, |ui| ui.button(tr!("경로 지우기"))).clicked() {
                         state.clear_trail(wd);
                     }
-                    if w(t, |ui| ui.button("핀 모두 지우기")).clicked() {
+                    if w(t, |ui| ui.button(tr!("핀 모두 지우기"))).clicked() {
                         state.clear_markers(wd);
                     }
                 });
             }
-            _ => text(t, RichText::new("주인공을 조작할 수 있을 때 표시됩니다").color(DIM)),
+            _ => text(t, RichText::new(tr!("주인공을 조작할 수 있을 때 표시됩니다")).color(DIM)),
         });
     }
 
     /// The overlay's keys.
     pub(super) fn keys_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
-        card(t, "단축키", |t| {
+        card(t, tr!("단축키"), |t| {
             for (label, id) in [
-                ("지도 표시 방식 전환", "toggle_key"),
-                ("마커 찍기/지우기", "marker_key"),
-                ("나침반 표시/숨김", "compass_key"),
-                ("다음 목표로 안내", "cycle_key"),
+                (tr!("지도 표시 방식 전환"), "toggle_key"),
+                (tr!("마커 찍기/지우기"), "marker_key"),
+                (tr!("나침반 표시/숨김"), "compass_key"),
+                (tr!("다음 목표로 안내"), "cycle_key"),
             ] {
                 let mine = match id {
                     "toggle_key" => state.toggle_key,

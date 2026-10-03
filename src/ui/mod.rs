@@ -68,13 +68,14 @@ pub struct Shared {
     pub quit: AtomicBool,
 }
 
-/// Back the saves up after each write the game makes (backup.rs), and log this
-/// process's memory once a minute — where a growth would show (memstat.rs), until the
-/// panel quits.
+/// Back the saves up after each write the game makes (backup.rs), follow the game's
+/// language (i18n), and log this process's memory once a minute — where a growth
+/// would show (memstat.rs), until the panel quits.
 fn backups(shared: Arc<Shared>) {
     let mut watch = crate::backup::Watch::default();
     let mut logged = std::time::Instant::now();
     while !shared.quit.load(Ordering::SeqCst) {
+        crate::i18n::follow_game();
         std::thread::sleep(Duration::from_secs(2));
         if logged.elapsed() >= Duration::from_secs(60) {
             logged = std::time::Instant::now();
@@ -134,15 +135,15 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
                 }
             }
             Ok(Request::SavePosition(i)) => match engine.save_position(i) {
-                Ok(p) => reply(true, format!("위치 {} 저장 ({:.0}, {:.0}, {:.0})", i + 1, p[0], p[1], p[2])),
+                Ok(p) => reply(true, trf!("위치 {a0} 저장 ({a1:.0}, {a2:.0}, {a3:.0})", a0 = i + 1, a1 = p[0], a2 = p[1], a3 = p[2])),
                 Err(e) => reply(false, e),
             },
             Ok(Request::LoadPosition(i)) => match engine.load_position(i) {
-                Ok(()) => reply(true, format!("위치 {} 로 이동", i + 1)),
+                Ok(()) => reply(true, trf!("위치 {a0} 로 이동", a0 = i + 1)),
                 Err(e) => reply(false, e),
             },
             Ok(Request::Restore) => match engine.stop() {
-                Ok(()) => reply(true, "originals restored".into()),
+                Ok(()) => reply(true, tr!("원래 값으로 되돌림").into()),
                 Err(e) => reply(false, e),
             },
             Err(RecvTimeoutError::Timeout) => {}
@@ -207,6 +208,7 @@ pub fn alert(text: &str) {
 /// `launch`: start the game if it is not already running.
 pub fn run(launch: bool) -> Result<(), String> {
     let windowed = drop_own_console();
+    crate::i18n::follow_game();
     let result = panel_and_launch(launch);
     if let (true, Err(e)) = (windowed, &result) {
         alert(e);

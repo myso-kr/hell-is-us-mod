@@ -259,3 +259,10 @@ been verified in play yet.
   guide, map and infra. The panel is split into one file per page, and raster
   into canvas, compass and map drawing. Target choice moved to guide/target.rs,
   and file paths all start from paths.rs. Every old module path still resolves.
+- Languages. The mod follows the game's text language (TextCulture in the profile
+  save) and switches with it. Item, NPC and region names come from the game's own
+  translations in all 12 of its languages, extracted by `doctor locale`. An NPC
+  shows their real name once the hero has learned it. The mod's own text is
+  written in Korean and wrapped in `tr!`/`trf!`, with an English table and a test
+  that every string has a translation. A Japanese or Chinese font is loaded only
+  when that is the game's language. The quest-name cache is kept per language.

@@ -67,10 +67,10 @@ impl Group {
 
     pub fn label(self) -> &'static str {
         match self {
-            Group::Survival => "생존",
-            Group::Combat => "전투",
-            Group::Movement => "이동",
-            Group::Items => "아이템",
+            Group::Survival => tr!("생존"),
+            Group::Combat => tr!("전투"),
+            Group::Movement => tr!("이동"),
+            Group::Items => tr!("아이템"),
         }
     }
 }
@@ -213,10 +213,10 @@ pub fn ids(pick: impl Fn(&Kind) -> bool) -> String {
 /// Write a balance once.
 pub fn set_value(s: &Session, id: &str, v: f32) -> Result<(), String> {
     let Some(Kind::Set { target, caps, max }) = find(id).map(|c| c.kind) else {
-        return Err(format!("`{id}` cannot be set — one of: {}", ids(|k| matches!(k, Kind::Set { .. }))));
+        return Err(trf!("`{id}` 은(는) 값을 정할 수 없음 — 가능한 것: {a0}", id = id, a0 = ids(|k| matches!(k, Kind::Set { .. }))));
     };
     if !(0.0..=max).contains(&v) {
-        return Err(format!("{id} takes 0..={max}"));
+        return Err(trf!("{id}: 0..={max} 사이", id = id, max = max));
     }
     for &cap in caps {
         if s.current(cap)? < v {
@@ -241,20 +241,20 @@ impl Active {
             None => (s, None),
         };
         let held = || ids(|k| !matches!(k, Kind::Set { .. } | Kind::SetStock { .. }));
-        let c = find(id).ok_or_else(|| format!("unknown cheat `{id}` — one of: {}", held()))?;
+        let c = find(id).ok_or_else(|| trf!("모르는 치트 `{id}` — 가능한 것: {a0}", id = id, a0 = held()))?;
         match (c.kind, value) {
             (Kind::Toggle(_), None) => Ok(Active { cheat: c.id, value: 0.0 }),
-            (Kind::Toggle(_), Some(_)) => Err(format!("{id} takes no value")),
+            (Kind::Toggle(_), Some(_)) => Err(trf!("{id} 에는 값을 줄 수 없음", id = id)),
             (Kind::Slider { min, max, default, .. }, v) => {
                 let v = v.unwrap_or(default);
                 if (min..=max).contains(&v) {
                     Ok(Active { cheat: c.id, value: v })
                 } else {
-                    Err(format!("{id} takes {min}..={max}"))
+                    Err(trf!("{id}: {min}..={max} 사이", id = id, min = min, max = max))
                 }
             }
             (Kind::Set { .. } | Kind::SetStock { .. }, _) => {
-                Err(format!("{id} is written once — use `set {id} <value>`, not hold"))
+                Err(trf!("{id} 는 한 번 쓰는 값 — hold 가 아니라 `set {id} <값>` 을 쓰세요", id = id))
             }
         }
     }

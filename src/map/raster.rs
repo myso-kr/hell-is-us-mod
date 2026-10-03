@@ -75,14 +75,14 @@ impl Band {
 
     pub fn label(self) -> &'static str {
         match self {
-            Band::Above => "위층 (흐리게)",
-            Band::Below => "아래층·지하 (흐리게)",
-            Band::Deep => "깊은 곳",
-            Band::Lower => "낮은 곳",
-            Band::Level => "같은 높이",
-            Band::Raised => "높은 곳",
-            Band::High => "절벽·바위",
-            Band::Wall => "벽",
+            Band::Above => tr!("위층 (흐리게)"),
+            Band::Below => tr!("아래층·지하 (흐리게)"),
+            Band::Deep => tr!("깊은 곳"),
+            Band::Lower => tr!("낮은 곳"),
+            Band::Level => tr!("같은 높이"),
+            Band::Raised => tr!("높은 곳"),
+            Band::High => tr!("절벽·바위"),
+            Band::Wall => tr!("벽"),
         }
     }
 }

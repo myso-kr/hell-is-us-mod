@@ -1,5 +1,6 @@
 //! Entry point. It reads the arguments and assembles the run order — nothing else.
 
+use hiumod::{tr, trf};
 use hiumod::attr::ANY;
 use hiumod::cheats::{self, Active};
 use hiumod::cli::{self, Command, Options};
@@ -14,15 +15,17 @@ use std::time::Duration;
 type R = Result<(), String>;
 
 fn main() -> ExitCode {
+    // Messages in the game's language, as in the panel (.spec/I18N.md).
+    hiumod::i18n::follow_game();
     let opt = match cli::parse(std::env::args().skip(1)) {
         Ok(cli::Parsed::Run(o)) => o,
         Ok(cli::Parsed::Help) => {
-            println!("{}", cli::USAGE);
+            println!("{}", cli::usage());
             return ExitCode::SUCCESS;
         }
         Err(e) => {
             warn!("{e}");
-            eprintln!("{}", cli::USAGE);
+            eprintln!("{}", cli::usage());
             return ExitCode::from(2);
         }
     };
@@ -49,8 +52,8 @@ fn main() -> ExitCode {
 fn doctor(opt: &Options) -> R {
     let ok = |b: bool| if b { "ok  " } else { "FAIL" };
     match locate::find(opt.game_dir.as_deref()) {
-        Ok(i) => log!("{} install {} — Steam build {}", ok(true), i.dir.display(), i.version),
-        Err(e) => log!("{} install: {e}", ok(false)),
+        Ok(i) => log!("{}", trf!("{ok} 설치 {dir} — Steam 빌드 {build}", ok = ok(true), dir = i.dir.display(), build = i.version)),
+        Err(e) => log!("{}", trf!("{ok} 설치: {e}", ok = ok(false), e = e)),
     }
 
     let a = match attach() {
@@ -60,43 +63,49 @@ fn doctor(opt: &Options) -> R {
             return Ok(());
         }
     };
-    log!("{} process {} — base 0x{:X}, image 0x{:X} bytes", ok(true), a.game.pid, a.game.base, a.game.size);
+    log!("{}", trf!("{ok} 프로세스 {pid} — 베이스 0x{base}, 이미지 0x{size} 바이트", ok = ok(true), pid = a.game.pid, base = format!("{:X}", a.game.base), size = format!("{:X}", a.game.size)));
     let an = &a.anchors;
-    log!("{} name pool +0x{:X}", ok(true), an.names_rva);
+    log!("{}", trf!("{ok} 이름 풀 +0x{at}", ok = ok(true), at = format!("{:X}", an.names_rva)));
     log!("{} GEngine +0x{:X}", ok(true), an.gengine_rva);
     let l = an.names.layout;
     log!(
-        "{} FField layout: next +0x{:X}, name +0x{:X}, size +0x{:X}, offset +0x{:X}",
-        ok(true),
-        l.next,
-        l.name,
-        l.size,
-        l.offset
+        "{}",
+        trf!(
+            "{ok} FField 레이아웃: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}",
+            ok = ok(true),
+            next = format!("{:X}", l.next),
+            name = format!("{:X}", l.name),
+            size = format!("{:X}", l.size),
+            offset = format!("{:X}", l.offset)
+        )
     );
 
     let chain = match a.chain() {
         Ok(c) => c,
         Err(e) => {
-            log!("{} player: {e}", ok(false));
+            log!("{}", trf!("{ok} 플레이어: {e}", ok = ok(false), e = e));
             return Ok(());
         }
     };
-    log!("{} hero: {}", ok(true), chain.classes.join(" < "));
+    log!("{}", trf!("{ok} 주인공: {a0}", ok = ok(true), a0 = chain.classes.join(" < ")));
     log!(
-        "{} chain: GEngine {:X?} → controller +0x{:X} pawn → +0x{:X} ASC → +0x{:X} SpawnedAttributes",
-        ok(true),
-        chain.to_controller,
-        chain.pawn,
-        chain.asc,
-        chain.sets
+        "{}",
+        trf!(
+            "{ok} 체인: GEngine {path} → 컨트롤러 +0x{pawn} 폰 → +0x{asc} ASC → +0x{sets} SpawnedAttributes",
+            ok = ok(true),
+            path = format!("{:X?}", chain.to_controller),
+            pawn = format!("{:X}", chain.pawn),
+            asc = format!("{:X}", chain.asc),
+            sets = format!("{:X}", chain.sets)
+        )
     );
     match a.gate() {
-        Ok(()) => log!("ok   hero gate: open — writes allowed"),
+        Ok(()) => log!("{}", tr!("ok   주인공 게이트: 열림 — 쓰기 허용")),
         Err(e) => log!("FAIL {e}"),
     }
     match a.pose() {
-        Ok((p, yaw)) => log!("ok   pose: ({:.0}, {:.0}, {:.0}) yaw {yaw:.1}", p[0], p[1], p[2]),
-        Err(e) => log!("FAIL pose: {e}"),
+        Ok((p, yaw)) => log!("{}", trf!("ok   위치: ({x:.0}, {y:.0}, {z:.0}) 방향 {yaw:.1}", x = p[0], y = p[1], z = p[2], yaw = yaw)),
+        Err(e) => log!("{}", trf!("FAIL 위치: {e}", e = e)),
     }
 
     let started = std::time::Instant::now();
@@ -105,7 +114,7 @@ fn doctor(opt: &Options) -> R {
             let count = |k: hiumod::actors::Kind| t.iter().filter(|x| x.kind() == k).count();
             let kinds: Vec<String> =
                 hiumod::actors::Kind::ALL.iter().map(|&k| format!("{} {}", k.label(), count(k))).collect();
-            log!("ok   minimap things: {} in {} ms — {}", t.len(), started.elapsed().as_millis(), kinds.join(", "));
+            log!("{}", trf!("ok   미니맵 대상: {n}개, {ms} ms — {kinds}", n = t.len(), ms = started.elapsed().as_millis(), kinds = kinds.join(", ")));
             let subs: Vec<String> = hiumod::actors::Sub::ALL
                 .iter()
                 .filter_map(|&s| {
@@ -115,7 +124,7 @@ fn doctor(opt: &Options) -> R {
                 .collect();
             println!("        {}", subs.join(", "));
         }
-        Err(e) => log!("FAIL minimap things: {e}"),
+        Err(e) => log!("{}", trf!("FAIL 미니맵 대상: {e}", e = e)),
     }
 
     let started = std::time::Instant::now();
@@ -123,15 +132,18 @@ fn doctor(opt: &Options) -> R {
         Ok((g, k)) => {
             let count = |t: hiumod::goals::Tier| g.iter().filter(|x| x.tier == t).count();
             log!(
-                "ok   guide: knows {} facts, {} tags; open: {} — {} places in {} ms (quest {}, secret {}, clue {})",
-                k.facts.len(),
-                k.tags.len(),
-                k.quest_names.join(", "),
-                g.len(),
-                started.elapsed().as_millis(),
-                count(hiumod::goals::Tier::Quest),
-                count(hiumod::goals::Tier::Secret),
-                count(hiumod::goals::Tier::Clue)
+                "{}",
+                trf!(
+                    "ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open} — 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})",
+                    facts = k.facts.len(),
+                    tags = k.tags.len(),
+                    open = k.quest_names.join(", "),
+                    places = g.len(),
+                    ms = started.elapsed().as_millis(),
+                    quest = count(hiumod::goals::Tier::Quest),
+                    secret = count(hiumod::goals::Tier::Secret),
+                    clue = count(hiumod::goals::Tier::Clue)
+                )
             );
             let (p, _) = a.pose().unwrap_or(([0.0; 3], 0.0));
             let mut near: Vec<_> = g
@@ -143,40 +155,44 @@ fn doctor(opt: &Options) -> R {
                 println!("        {:>6.0} m  {:<10} {:<44} {}", d, x.tier.label(), x.label, x.detail);
             }
         }
-        Err(e) => log!("FAIL guide: {e}"),
+        Err(e) => log!("{}", trf!("FAIL 안내: {e}", e = e)),
     }
 
     let s = match a.session() {
         Ok(s) => s,
         Err(e) => {
-            log!("{} attributes: {e}", ok(false));
+            log!("{}", trf!("{ok} 속성: {e}", ok = ok(false), e = e));
             return Ok(());
         }
     };
     let count: usize = s.sets.iter().map(|x| x.attributes.len()).sum();
     log!(
-        "{} attributes: {} sets, {count} attributes by name, vtable +0x{:X}",
-        ok(true),
-        s.sets.len(),
-        s.vtable - a.game.base
+        "{}",
+        trf!(
+            "{ok} 속성: 세트 {sets}개, 이름으로 찾은 속성 {count}개, vtable +0x{vt}",
+            ok = ok(true),
+            sets = s.sets.len(),
+            count = count,
+            vt = format!("{:X}", s.vtable - a.game.base)
+        )
     );
     for set in &s.sets {
-        println!("        {:<36} {} attributes", set.class, set.attributes.len());
+        println!("        {:<36} {}", set.class, trf!("속성 {n}개", n = set.attributes.len()));
     }
 
     let missing: Vec<String> =
         cheats::attributes().into_iter().filter(|x| !s.has(*x)).map(|x| format!("{}.{}", x.set, x.name)).collect();
     if missing.is_empty() {
-        log!("{} cheat table: all {} attributes it names are in the game", ok(true), cheats::attributes().len());
+        log!("{}", trf!("{ok} 치트 표: 이름이 나오는 속성 {n}개가 모두 게임에 있음", ok = ok(true), n = cheats::attributes().len()));
     } else {
-        log!("{} cheat table: not in the game — {}", ok(false), missing.join(", "));
+        log!("{}", trf!("{ok} 치트 표: 게임에 없음 — {a0}", ok = ok(false), a0 = missing.join(", ")));
     }
     let marks = hiumod::verify::load();
     for c in cheats::CHEATS {
-        let state = if c.verified { "verified" } else { "unverified" };
+        let state = if c.verified { tr!("확인됨") } else { tr!("미검증") };
         let tried = match marks.get(c.id) {
-            Some(true) => "player: works",
-            Some(false) => "player: DOES NOT WORK",
+            Some(true) => tr!("플레이어: 됨"),
+            Some(false) => tr!("플레이어: 안 됨"),
             None => "",
         };
         let sets: Vec<String> = c
@@ -192,7 +208,7 @@ fn doctor(opt: &Options) -> R {
                 None => format!("{}.{}", x.set, x.name),
             })
             .collect();
-        println!("        {:<16} {:<10} {:<22} {} [{}]", c.id, state, tried, c.label, sets.join(", "));
+        println!("        {:<16} {:<10} {:<22} {} [{}]", c.id, state, tried, hiumod::i18n::tr(c.label), sets.join(", "));
     }
     Ok(())
 }
@@ -222,7 +238,7 @@ fn probe(args: &[String]) -> R {
     let save = |file: &str, text: &str| -> R {
         let path = dir.join(file);
         std::fs::write(&path, text).map_err(|e| format!("{}: {e}", path.display()))?;
-        log!("written to {}", path.display());
+        log!("{}", trf!("{path} 에 씀", path = path.display()));
         Ok(())
     };
     let arg = |i: usize| args.get(i).map(String::as_str);
@@ -248,7 +264,7 @@ fn probe(args: &[String]) -> R {
             for r in &rows {
                 println!("{r}");
             }
-            log!("{} properties in {} classes and structs", rows.len(), structs.len());
+            log!("{}", trf!("클래스·구조체 {s}개의 속성 {p}개", p = rows.len(), s = structs.len()));
             save(&format!("find-{text}.txt"), &rows.join("\n"))
         }
         Some("dump") => {
@@ -258,29 +274,35 @@ fn probe(args: &[String]) -> R {
             }
             let structs = probe::structs(n, m, &objects.all(m), &prefixes);
             let text = probe::dump(n, m, &structs);
-            log!("{} classes and structs starting with {}", structs.len(), prefixes.join(", "));
+            log!("{}", trf!("{prefix}(으)로 시작하는 클래스·구조체 {n}개", n = structs.len(), prefix = prefixes.join(", ")));
             save("sdk.txt", &text)
         }
-        Some("survey") => {
-            // Mappings first, then the survey tool over the game's maps (.spec/ITEMS.md).
+        Some(sub @ ("survey" | "locale")) => {
+            // Mappings first, then the survey tool over the game's maps (.spec/ITEMS.md),
+            // then the game's text in every language (.spec/I18N.md); `locale` only that.
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
             std::fs::write(dir.join("HellIsUs.usmap"), &bytes).map_err(|e| e.to_string())?;
-            log!("mappings: {structs} structs and classes, {enums} enums");
+            log!("{}", trf!("매핑: 구조체·클래스 {structs}개, 열거형 {enums}개", structs = structs, enums = enums));
             let tool = survey_tool().ok_or(
                 "tools/survey is not built: run `dotnet build -c Release` in tools/survey (needs the .NET 8 SDK)",
             )?;
             let game = hiumod::paths::data_dir().parent().ok_or("no game folder")?.to_path_buf();
-            let mut cmd = std::process::Command::new("dotnet");
-            cmd.arg(&tool).arg("--game").arg(&game);
-            if let Some(w) = arg(1) {
-                cmd.arg("--world").arg(w);
+            let run = |extra: &[&str]| -> Result<(), String> {
+                let mut cmd = std::process::Command::new("dotnet");
+                cmd.arg(&tool).arg("--game").arg(&game).args(extra);
+                log!("{}", trf!("실행: {tool} {args}", tool = tool.display(), args = extra.join(" ")));
+                let status = cmd.status().map_err(|e| format!("dotnet: {e}"))?;
+                status.success().then_some(()).ok_or(format!("the survey tool failed ({status})"))
+            };
+            if sub == "survey" {
+                match arg(1) {
+                    Some(w) => run(&["--world", w])?,
+                    None => run(&[])?,
+                }
+                log!("{}", trf!("조사 결과: {path}", path = hiumod::paths::data_dir().join("survey").display()));
             }
-            log!("running {}", tool.display());
-            let status = cmd.status().map_err(|e| format!("dotnet: {e}"))?;
-            if !status.success() {
-                return Err(format!("the survey tool failed ({status})"));
-            }
-            log!("survey written to {}", hiumod::paths::data_dir().join("survey").display());
+            run(&["--locale"])?;
+            log!("{}", trf!("게임 텍스트: {path}", path = hiumod::i18n::names::dir().display()));
             Ok(())
         }
         Some("usmap") => {
@@ -288,7 +310,7 @@ fn probe(args: &[String]) -> R {
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
             let path = dir.join("HellIsUs.usmap");
             std::fs::write(&path, &bytes).map_err(|e| format!("{}: {e}", path.display()))?;
-            log!("{structs} structs and classes, {enums} enums — {} KB, written to {}", bytes.len() / 1024, path.display());
+            log!("{}", trf!("구조체·클래스 {structs}개, 열거형 {enums}개 — {kb} KB, {path} 에 씀", structs = structs, enums = enums, kb = bytes.len() / 1024, path = path.display()));
             Ok(())
         }
         Some("watch") => {
@@ -306,7 +328,7 @@ fn probe(args: &[String]) -> R {
                     read(o, len).map(|b| (o, len, b))
                 })
                 .collect();
-            log!("watching {} object(s) for {secs} s — Ctrl+C stops", last.len());
+            log!("{}", trf!("객체 {n}개를 {secs}초 동안 지켜봄 — Ctrl+C 로 멈춤", n = last.len(), secs = secs));
             process::catch_ctrl_c();
             let start = std::time::Instant::now();
             let mut log_text = String::new();
@@ -346,7 +368,7 @@ fn probe(args: &[String]) -> R {
             for k in &kept {
                 println!("{k}");
             }
-            log!("{} of {} places now hold {v}", kept.len(), text.lines().count());
+            log!("{}", trf!("{all}곳 중 {kept}곳이 이제 {v}", kept = kept.len(), all = text.lines().count(), v = v));
             save("scan.txt", &kept.join("\n"))
         }
         Some("scan") => {
@@ -367,11 +389,11 @@ fn probe(args: &[String]) -> R {
             for r in &rows {
                 println!("{r}");
             }
-            log!("{} places hold {v} — change it in game, then `doctor scan next <new value>`", rows.len());
+            log!("{}", trf!("{n}곳이 {v} — 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`", n = rows.len(), v = v));
             let _ = mem::read_u32; // (reads above go through Memory)
             save("scan.txt", &rows.join("\n"))
         }
-        _ => Err("doctor takes: inspect, find, dump, watch, scan, usmap, survey — see `hiumod help`".into()),
+        _ => Err("doctor takes: inspect, find, dump, watch, scan, usmap, survey, locale — see `hiumod help`".into()),
     }
 }
 
@@ -494,7 +516,7 @@ fn hold(names: &[String]) -> R {
     let toggles = names.iter().map(|n| Active::parse(n)).collect::<Result<Vec<_>, _>>()?;
     let mut engine = Engine::new()?;
     if engine.pending() > 0 {
-        log!("{} original(s) left by an earlier hold — keeping those, not the current values", engine.pending());
+        log!("{}", trf!("이전 hold 가 남긴 원래 값 {n}개 — 지금 값이 아니라 그것을 유지", n = engine.pending()));
     }
     engine.set_active(toggles.clone())?;
     process::catch_ctrl_c();
@@ -502,8 +524,8 @@ fn hold(names: &[String]) -> R {
         .iter()
         .map(|t| format!("{}{}", t.cheat, if t.value != 0.0 { format!("={}", t.value) } else { String::new() }))
         .collect();
-    log!("holding {} — Ctrl+C to stop and put things back", held.join(", "));
-    log!("if this is killed instead, `hiumod restore` puts things back");
+    log!("{}", trf!("유지 중: {a0} — Ctrl+C 로 멈추고 되돌림", a0 = held.join(", ")));
+    log!("{}", tr!("강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음"));
 
     let mut last = String::new();
     let ended = loop {
@@ -517,7 +539,7 @@ fn hold(names: &[String]) -> R {
         }
         if now != last {
             if now.is_empty() {
-                log!("applying")
+                log!("{}", tr!("적용 중"))
             } else {
                 warn!("{now}")
             }
@@ -526,7 +548,7 @@ fn hold(names: &[String]) -> R {
         std::thread::sleep(Duration::from_millis(250));
     };
     match engine.stop() {
-        Ok(()) => log!("originals restored"),
+        Ok(()) => log!("{}", tr!("원래 값으로 되돌림")),
         Err(e) => warn!("{e}"),
     }
     ended
@@ -536,10 +558,10 @@ fn hold(names: &[String]) -> R {
 fn restore() -> R {
     let mut engine = Engine::new()?;
     if engine.pending() == 0 {
-        log!("nothing to restore");
+        log!("{}", tr!("되돌릴 것이 없음"));
         return Ok(());
     }
     engine.stop()?;
-    log!("originals restored");
+    log!("{}", tr!("원래 값으로 되돌림"));
     Ok(())
 }

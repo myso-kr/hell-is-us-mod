@@ -1,0 +1,44 @@
+hiumod — Hell Is Us (Steam) için tek oyunculu hileler ve mini harita
+
+KULLANIM
+  hiumod                        gerekirse oyunu başlatır, sonra paneli açar — ` (~) gösterir/gizler;
+                                oyun kapanınca panel de kapanır
+  hiumod ui                     yalnızca panel; oyunu başlatmaz
+  hiumod doctor                 her şeyi denetler; hiçbir şey yazmaz
+  hiumod doctor inspect <target> [depth] [gaps]
+                                çalışan bir nesnenin tüm yansıtılmış alanları, ad ve
+                                değer olarak; işaretçiler `depth` düzey izlenir (varsayılan 0);
+                                `gaps` alanlar arasındaki yerel baytları da gösterir
+  hiumod doctor find <text>     adında metin geçen tüm sınıf veya yapı özellikleri
+  hiumod doctor dump [prefix]...
+                                adları bir önekle başlayan sınıf ve yapıların SDK benzeri
+                                listesi (varsayılan Charlie, Story)
+  hiumod doctor usmap           yüklü sınıf, yapı ve enum'lar .usmap eşleme
+                                dosyası olarak, tools/survey için
+  hiumod doctor survey [world]  eşlemeler, sonra oyunun haritalarında tools/survey:
+                                her dünyanın verdikleri, Mods\survey içine —
+                                ve oyunun 12 dildeki metni
+  hiumod doctor locale          yalnızca oyun metni, Mods\locale içine: eşya, NPC
+                                ve bölge adları oyunun dilinde
+  hiumod doctor watch <target> [seconds]
+                                bir nesnede ne değişiyor, adlı veya yerel, değiştikçe
+  hiumod doctor scan <target> <value>
+  hiumod doctor scan next <value>
+                                bir değerin nesnede nerede durduğu; sonra oyunda
+                                değiştikten sonra bu yerlerden hangilerinin onunla değiştiği
+                                hedefler: hero, controller, asc, sets, inventory, items,
+                                save, world, enemy[:N], 0xADRES veya bir sınıf adı[:N]
+                                — sonuçlar ayrıca Mods\doctor içine yazılır
+  hiumod list                   her setin her özniteliği, canlı okunur
+  hiumod get <attribute>...     bazıları, Name veya Set.Name olarak
+  hiumod pose                   kahramanın nerede durduğu ve nereye baktığı, Ctrl+C'ye kadar canlı okunur
+  hiumod set <cheat> <value>    bir kez yazılan bir değer (tabloda henüz yok)
+  hiumod hold <cheat>...        örn. god stamina speed=2 — Ctrl+C'ye kadar;
+                                tutulan her hile `hiumod doctor` listesindedir
+  hiumod restore                sonlandırılan bir hold'un değiştirilmiş bıraktığını geri alır
+
+SEÇENEKLER
+  --game-dir <dir>              HellIsUs\ içeren kurulum kökü
+                                (varsayılan: Steam kitaplıklarınızda bulunur)
+
+Kahramanı kontrol etmiyorsanız hiçbir şey yazılmaz. Kayıt dosyanızı yedekleyin.

@@ -172,11 +172,16 @@ impl Entry {
     }
 
     pub fn label(&self) -> String {
-        let p = crate::goals::pretty(&self.class);
         if self.npc {
-            format!("대화: {p}")
+            let p = crate::goals::npc_label(&self.class);
+            trf!("대화: {p}", p = p)
         } else {
-            p
+            // A pickup by what it gives, in the game's words; a place that gives no item
+            // (a fact, a tag) has no name the game shows.
+            match self.items.first() {
+                Some(i) => crate::goals::item_label(i),
+                None => tr!("살펴볼 곳").to_string(),
+            }
         }
     }
 }
@@ -279,15 +284,15 @@ impl Survey {
                     Tier::Clue
                 };
                 let mut detail = match (&e.wants, left.items.first(), left.tags.first()) {
-                    (Some(w), _, _) => format!("전달: {}", crate::goals::item_label(w)),
-                    (_, Some(i), _) => format!("아이템: {}", crate::goals::item_label(i)),
+                    (Some(w), _, _) => trf!("전달: {a0}", a0 = crate::goals::item_label(w)),
+                    (_, Some(i), _) => trf!("아이템: {a0}", a0 = crate::goals::item_label(i)),
                     (_, _, Some(t)) => t.clone(),
-                    _ => format!("새 사실 {}개", left.facts),
+                    _ => trf!("새 사실 {a0}개", a0 = left.facts),
                 };
-                detail += " · 조사 DB (아직 로드 안 됨)";
+                detail += tr!(" · 조사 DB (아직 로드 안 됨)");
                 let gate = crate::goals::gate_of(&e.class);
                 if gate == Gate::Conditional {
-                    detail += " · 조건 필요";
+                    detail += tr!(" · 조건 필요");
                 }
                 Some(Goal {
                     tier,
@@ -326,7 +331,7 @@ impl Survey {
                         .first()
                         .map(|i| crate::goals::item_label(i))
                         .or_else(|| e.items.first().map(|i| crate::goals::item_label(i)))
-                        .unwrap_or_else(|| crate::goals::pretty(&e.class)),
+                        .unwrap_or_default(),
                     at: e.at,
                     done: left.is_empty(),
                 });

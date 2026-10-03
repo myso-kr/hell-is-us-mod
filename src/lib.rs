@@ -5,6 +5,9 @@
 //! `game` (the process from outside), `ui`. Each module is also re-exported at the top
 //! (`crate::goals`, `hiumod::mem`), so a path names a module, not where it lives.
 
+#[macro_use]
+pub mod i18n;
+
 pub mod cheat;
 pub mod cli;
 #[cfg(windows)]

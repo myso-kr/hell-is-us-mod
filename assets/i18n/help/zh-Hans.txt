@@ -1,0 +1,44 @@
+hiumod — 《Hell Is Us》(Steam) 的单人作弊与小地图
+
+用法
+  hiumod                        必要时启动游戏，然后打开面板 — ` (~) 显示/隐藏;
+                                游戏关闭时面板也随之关闭
+  hiumod ui                     仅面板; 不启动游戏
+  hiumod doctor                 检查一切; 不写入任何内容
+  hiumod doctor inspect <target> [depth] [gaps]
+                                运行中对象的所有反射字段，按名称和
+                                值显示; 指针最多跟随 `depth` 层 (默认 0);
+                                `gaps` 还会显示字段之间的原生字节
+  hiumod doctor find <text>     名称包含该文本的所有类或结构体属性
+  hiumod doctor dump [prefix]...
+                                名称以某前缀开头的类和结构体的
+                                类 SDK 列表 (默认 Charlie, Story)
+  hiumod doctor usmap           已加载的类、结构体和枚举，输出为 .usmap
+                                映射文件，供 tools/survey 使用
+  hiumod doctor survey [world]  映射，然后对游戏的各张地图运行 tools/survey:
+                                每个世界给出的内容，输出到 Mods\survey —
+                                以及游戏的 12 种语言文本
+  hiumod doctor locale          仅游戏文本，输出到 Mods\locale: 物品、NPC
+                                和区域名称，使用游戏语言
+  hiumod doctor watch <target> [seconds]
+                                对象中发生的变化，按名称或原生方式，实时显示
+  hiumod doctor scan <target> <value>
+  hiumod doctor scan next <value>
+                                某个值在对象中的位置; 然后在游戏中
+                                改变该值后，显示其中哪些位置随之改变
+                                目标: hero, controller, asc, sets, inventory, items,
+                                save, world, enemy[:N], 0xADDRESS 或类名[:N]
+                                — 结果同时写入 Mods\doctor
+  hiumod list                   每个集合的每个属性，实时读取
+  hiumod get <attribute>...     其中一部分，以 Name 或 Set.Name 指定
+  hiumod pose                   主角的位置与朝向，实时读取直到 Ctrl+C
+  hiumod set <cheat> <value>    一次性写入的数值 (表中暂无)
+  hiumod hold <cheat>...        例如 god stamina speed=2 — 直到 Ctrl+C;
+                                所有可保持的作弊都在 `hiumod doctor` 的列表中
+  hiumod restore                还原被中断的 hold 所遗留的修改
+
+选项
+  --game-dir <dir>              安装根目录，其中包含 HellIsUs\
+                                (默认: 在你的 Steam 库中查找)
+
+只有在你操控主角时才会写入。请备份存档。

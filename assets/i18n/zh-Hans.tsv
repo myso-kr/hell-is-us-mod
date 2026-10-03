@@ -1,0 +1,383 @@
+# Korean (as written in the code) <TAB> Simplified Chinese (zh-Hans). \n \t \\ are escapes; {name} placeholders stay as they are.
+생존	生存
+전투	战斗
+이동	移动
+아이템	道具
+체력 유지 (상한을 최대로)	保持生命值（上限拉满）
+스태미나 무한	无限耐力
+고스트 (탐험용 — 켜는 동안 공격도 막힘)	幽灵（用于探索 — 开启期间无法攻击）
+림빅 에너지 무한	无限林比克能量
+림빅 소모 없음	林比克无消耗
+스킬 쿨다운 없음	技能无冷却
+걷기 속도 (기본 450)	行走速度（默认 450）
+주인공 시간 배속 (기본 1)	主角时间倍率（默认 1）
+게임 속도 (기본 1)	游戏速度（默认 1）
+적 속도 (기본 1)	敌人速度（默认 1）
+약한 적 (한 방에 처치)	弱化敌人（一击必杀）
+소모품 줄지 않음	消耗品不减少
+무기 경험치 배수 (기본 1)	武器经验倍率（默认 1）
+가진 샤드 수량 (999=최대면 줍기·알림 막힘)	持有碎片数量（999 = 最大，会阻止拾取和提示）
+퀘스트 목표	任务目标
+비밀	秘密
+단서	线索
+전달: {a0}	交付: {a0}
+대화: {a0}	对话: {a0}
+아이템: {a0}	道具: {a0}
+새 사실 {a0}개	新事实 {a0} 条
+ · 조건 필요 (열쇠·퍼즐 등 — 가기만 해선 안 됨)	 · 需要条件（钥匙、谜题等 — 光走过去不行）
+1막 끝까지	直到第一幕结束
+세 번째 키스톤 전	第三个密钥石之前
+마감 임박 선행: {a0} ({a1})	即将截止的好事: {a0}（{a1}）
+마감 임박 선행 {n}개 — 퀘스트 탭에서 확인	即将截止的好事 {n} 件 — 请在任务标签页查看
+메인 {n}	主线 {n}
+선행	好事
+미스터리	谜题
+타임루프	时间循环
+메인 퀘스트 {a0}	主线任务 {a0}
+장소: {a0}	地点: {a0}
+대화: {p}	对话: {p}
+ · 조사 DB (아직 로드 안 됨)	 · 调查数据库（尚未加载）
+ · 조건 필요	 · 需要条件
+유물	遗物
+기록물	记录
+연구 자료	研究
+모자	帽子
+드론 모듈	无人机模块
+림빅 스킬	林比克技能
+무기	武器
+방어구	防御性装备
+림빅 막대	林比克棍
+제작서	制作书
+잠긴 문	上锁的门
+잠긴 상자	上锁的箱子
+림빅 잠금	林比克锁
+퍼즐	谜题
+코드·암호	代码
+열쇠 필요	需要钥匙
+나중에 주울 것	稍后拾取
+상인	商人
+만날 사람	要见的人
+퀘스트 단서	任务线索
+위험	危险
+강적	强敌
+저장 지점	存档点
+지름길	捷径
+오를 곳	攀爬处
+막다른 길	死路
+물·건널 곳	水域·渡口
+둘러볼 곳	可查看处
+보물	宝物
+메모	备注
+거점	据点
+모르는 것	未知
+표시	标记
+핀: {a0}	图钉: {a0}
+미니맵	小地图
+큰 지도	大地图
+끔	关闭
+음영	阴影
+등고선	等高线
+둘 다	两者
+위층 (흐리게)	上层（淡化）
+아래층·지하 (흐리게)	下层·地下（淡化）
+깊은 곳	深处
+낮은 곳	低处
+같은 높이	同一高度
+높은 곳	高处
+절벽·바위	悬崖·岩石
+벽	墙壁
+적	敌人
+전리품	战利品
+문·퍼즐	门·谜题
+저장	存档
+기타	其他
+약품	药品
+음식	食物
+기타 소모품	其他消耗品
+퀘스트·비밀	任务·秘密
+보급품	补给品
+적 전리품 상자	敌人战利品箱
+문	门
+드론 번역	无人机翻译
+명령을 입력하세요 — `help` 로 목록, ↑/↓ 이전 명령, Esc 로 실행 중지	输入命令 — `help` 查看列表，↑/↓ 翻阅历史，Esc 停止运行
+hiumod 만으로는 패널이 하나 더 열립니다 — 명령을 붙여 주세요 (help)	单独输入 hiumod 会再打开一个面板 — 请加上命令 (help)
+앞의 명령이 아직 실행 중입니다 (Esc 로 중지)	上一条命令仍在运行（按 Esc 停止）
+실행 파일을 찾지 못함: {e}	未找到可执行文件: {e}
+실행하지 못함: {e}	无法运行: {e}
+(끝남: 코드 {c})	（结束: 代码 {c}）
+(끝남)	（结束）
+(중지함)	（已停止）
+명령 (help)	命令 (help)
+지도 핀	地图图钉
+패널에서 고른 곳	在面板中选择的地点
+필요한 것: 이 지역 {h}곳	需要: 本区域 {h} 处
+필요한 것: 다른 지역 {a}곳 — 장갑차로 이동	需要: 其他区域 {a} 处 — 乘装甲车前往
+필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳	需要: 本区域 {h} 处 · 其他区域 {a} 处
+위치 {a0} 저장 ({a1:.0}, {a2:.0}, {a3:.0})	已保存位置 {a0} ({a1:.0}, {a2:.0}, {a3:.0})
+위치 {a0} 로 이동	已移动到位置 {a0}
+수집 진행도	收集进度
+조사 DB 가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	没有调查数据库 — 请在控制台运行一次 `doctor survey`
+월드에 놓인 것만 셉니다 (NPC 보상·상점은 제외) · 이 지역 / 전체	只统计世界中放置的物品（不含 NPC 奖励和商店） · 本区域 / 全部
+{a0}  {a1}/{a2} · 전체 {a3}/{a4}	{a0}  {a1}/{a2} · 全部 {a3}/{a4}
+선행 · 미스터리 · 타임루프	好事 · 谜题 · 时间循环
+완료 {a0} / {a1} · 진행 중 {a2} · 실패 {a3}	已完成 {a0} / {a1} · 进行中 {a2} · 未成功 {a3}
+들을 이야기가 남은 NPC ({a0})	还有话可说的 NPC ({a0})
+대화에서 아직 모르는 사실·단서를 줄 수 있는 사람 (갈래가 잠긴 대화도 포함)	通过对话还能告诉你未知事实或线索的人（包括分支被锁定的对话）
+다른 지역: {a0}	其他区域: {a0}
+메모리: 사용 {a0} · 전용 {a1} · 최고 {a2} (1분마다 로그에도 남음)	内存: 使用 {a0} · 独占 {a1} · 峰值 {a2}（每分钟也会记入日志）
+켜진 치트	已开启的作弊
+원래 값 → 넣는 값, 그리고 지금 게임에 들어 있는 값	原值 → 写入值，以及游戏当前持有的值
+켜진 치트가 없습니다	没有开启的作弊
+적·인벤토리 대상	敌人·背包对象
+매 틱 적용	每个 tick 应用
+적용 중 {n:.2}	应用中 {n:.2}
+게임이 바꿈 {n:.2}	游戏已修改 {n:.2}
+넣은 값과 다릅니다. 게임이 매 순간 다시 계산하는 값일 수 있습니다.	与写入的值不同。可能是游戏每时每刻都会重新计算的值。
+읽을 수 없음	无法读取
+테스트 결과 기록	记录测试结果
+게임에서 해 보고 눌러 주세요. verify.txt에 저장됩니다.	请先在游戏中试过再点击。将保存到 verify.txt。
+됨 ✓	有效 ✓
+안 됨 ✗	无效 ✗
+확인됨	已验证
+미검증	未验证
+로그·기록 폴더 열기	打开日志文件夹
+게임의 현재 값: {now:.2}	游戏当前值: {now:.2}
+적용	应用
+아직 게임에서 확인하지 않은 치트입니다. 동작하는지 알려주세요.	尚未在游戏中验证的作弊。请告知它是否有效。
+위치 저장 · 이동	保存位置 · 移动
+슬롯 {a0}	栏位 {a0}
+다른 지역 ({w})	其他区域 ({w})
+비어 있음	空
+저장한 지역 안에서만 이동합니다	仅在保存时所在的区域内移动
+켜진 치트 ({a0})	已开启的作弊 ({a0})
+{v:.2} (게임 {n:.2})	{v:.2}（游戏 {n:.2}）
+켜짐	开启
+나침반 · 방향	指南针 · 方向
+나침반 (F{a0})	指南针 (F{a0})
+화면 위 가운데	屏幕上方居中
+안내	引导
+자동 안내 — 따라가는 퀘스트의 다음 목표로 계속 안내	自动引导 — 持续引导至所追踪任务的下一个目标
+실제 이동 경로 (A*) — 지형·물·벽을 돌아가는 길, 나침반이 다음 꺾이는 곳을 가리킴	实际行走路线 (A*) — 绕过地形、水域和墙壁的路径，指南针指向下一个转弯处
+다음 목표 ▶	下一个目标 ▶
+이 목표는 끝났거나 지금 갈 수 없음 — 넘기고 다음 목표로 (이번 실행 동안)	此目标已完成或当前无法前往 — 跳过并前往下一个目标（仅限本次运行）
+직접 고른 목표 — 끝날 때까지 유지	手动选择的目标 — 保持到完成为止
+자동으로	恢复自动
+⚠ 걸어서 닿는 길이 없습니다 — 닫힌 문·퍼즐·열쇠 너머일 수 있음. 닿는 곳까지 안내하고 나머지는 노란 점선	⚠ 没有可步行到达的路 — 可能在关闭的门、谜题或钥匙之后。会引导到能到达的地方，其余为黄色虚线
+자동 안내가 꺼져 있습니다 — 위 스위치를 켜거나 '갈 곳' 에서 고르세요	自动引导已关闭 — 请打开上方开关，或从“去处”中选择
+이 근처에서 새로 얻을 것이 있는 곳을 찾지 못했습니다	在附近没有找到可获得新东西的地方
+이 지역엔 따라가는 퀘스트의 목표가 없습니다 — 다른 지역에 {elsewhere}곳 (장갑차로 이동)	本区域没有所追踪任务的目标 — 其他区域有 {elsewhere} 处（乘装甲车前往）
+남은 목표를 모두 건너뛰었습니다	已跳过所有剩余目标
+따라가는 퀘스트의 목표가 이 근처에 없습니다 — '갈 곳' 에서 직접 고를 수 있습니다	附近没有所追踪任务的目标 — 可从“去处”中手动选择
+건너뛴 목표 {a0}개	已跳过 {a0} 个目标
+되돌리기	撤销
+갈 곳 ({a0})	去处 ({a0})
+표시 방식	显示方式
+위쪽	上方为
+북쪽(N)	北 (N)
+카메라 방향	相机朝向
+반경	半径
+스타일	样式
+윤곽선	轮廓
+채움	填充
+아이콘 크기	图标大小
+인벤토리·메뉴가 열리면 모든 오버레이 숨기기	打开背包·菜单时隐藏所有覆盖层
+지형	地形
+지형 표시	地形显示
+벽·바닥 윤곽	墙壁和地面轮廓
+불투명도	不透明度
+표시할 것	显示内容
+세부 ▲	详情 ▲
+세부 ▼	详情 ▼
+세부 ▼ ({h}개 숨김)	详情 ▼（已隐藏 {h} 项）
+지도 핀 · 지나온 길	地图图钉 · 走过的路
+새 핀 (F{a0})	新图钉 (F{a0})
+이 지역에 핀이 없습니다 — 잠긴 문·퍼즐 앞에서 F{a0} 를 누르면 꽂힙니다	本区域没有图钉 — 在上锁的门或谜题前按 F{a0} 即可放置
+이 핀 지우기	删除此图钉
+이 지역	本区域
+지나온 길 {trail}점 · 핀 {count}개	走过的路 {trail} 点 · 图钉 {count} 个
+경로 지우기	清除路径
+핀 모두 지우기	删除所有图钉
+주인공을 조작할 수 있을 때 표시됩니다	在可以操控主角时显示
+단축키	按键
+지도 표시 방식 전환	切换地图显示方式
+마커 찍기/지우기	放置/删除标记
+나침반 표시/숨김	显示/隐藏指南针
+다음 목표로 안내	引导至下一个目标
+지도	地图
+퀘스트	任务
+수집	收集
+세이브	存档
+디버그	调试
+지난번에 켜 둔 치트 {a0}개를 다시 켰습니다	已重新开启上次开启的 {a0} 个作弊
+닫기 — 원래 값으로 되돌리고 종료	关闭 — 恢复原值并退出
+숨기기 (` 키로 다시 열기)	隐藏（按 ` 键重新打开）
+콘솔 ▾	控制台 ▾
+콘솔 ▸	控制台 ▸
+CLI 명령 콘솔	CLI 命令控制台
+게임	游戏
+● 연결됨\nv{version} · PID {pid}	● 已连接\nv{version} · PID {pid}
+실행하는 중 — 켜지면 자동으로 연결	正在启动 — 启动后自动连接
+○ 연결 안 됨 — {e}	○ 未连接 — {e}
+시작하는 중…	正在开始…
+주인공 게이트	主角闸门
+● 열림 — 조작 중	● 开启 — 操控中
+○ 닫힘 — {e}	○ 关闭 — {e}
+○ 닫힘	○ 关闭
+치트	作弊
+도구	工具
+모두 원래대로 ({pending})	全部恢复原状 ({pending})
+다음에도 켜 둔 치트 유지	下次继续保持开启的作弊
+다음 실행 때, 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다.	下次运行时，在可以操控主角后，会重新开启现在已开启的作弊。
+주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다	仅在操控主角期间写入数值 · 不会屏蔽成就
+퀘스트 추적기 — 화면 오른쪽 가운데	任务追踪器 — 屏幕右侧居中
+퀘스트를 읽는 중입니다 — 게임을 불러오고 몇 초 뒤에 나옵니다	正在读取任务 — 游戏加载几秒后显示
+메인 스토리 자동 — {a0}	主线剧情自动 — {a0}
+메인 스토리 자동	主线剧情自动
+ · 단서 {got}/{all}	 · 线索 {got}/{all}
+완료 {done}개 · 실패 {failed}개	已完成 {done} 个 · 未成功 {failed} 个
+필요한 것: 조사 DB 없음 — `hiumod doctor survey` 를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다	需要: 没有调查数据库 — 运行一次 `hiumod doctor survey`，即可填充所有区域的道具和 NPC 位置
+필요한 것 — 남은 {left} / {a0}	需要 — 剩余 {left} / {a0}
+다른 지역 (장갑차로 이동): {a0}	其他区域（乘装甲车前往）: {a0}
+놓치기 쉬운 선행	容易错过的好事
+마감이 있는 선행은 모두 끝났거나 지났습니다	有截止时间的好事已全部完成或已过期
+임박	即将
+나중	稍后
+ (시작 전)	 （未开始）
+이미 지난 마감 {passed}개 — 그 선행은 실패했을 가능성이 큽니다	已过期的截止时间 {passed} 个 — 这些好事很可能已经失败
+키스톤 순서	密钥石顺序
+다음 키스톤 전에: {a0}	下一个密钥石之前: {a0}
+건네줄 수 있는 것	可交付的东西
+지금 가진 아이템을 원하는 사람이 없습니다	没有人想要你现在持有的道具
+건네줄 수 있는 것 ({a0})	可交付的东西 ({a0})
+가진 아이템을 원하는 사람 — 대화의 "거래" 로 건넵니다	想要你持有道具的人 — 在对话中用“交易”交付
+{a0} — 장갑차로 이동	{a0} — 乘装甲车前往
+세이브 백업	存档备份
+게임이 저장할 때마다 세이브 파일을 복사해 둡니다 (최근 {a0}개)	游戏每次存档时复制存档文件（最近 {a0} 份）
+아직 백업이 없습니다	还没有备份
+지금 백업	立即备份
+백업함: {a0}	已备份: {a0}
+백업 실패: {e}	备份失败: {e}
+폴더 열기	打开文件夹
+되돌리려면 게임을 끈 뒤 백업 폴더의 .sav 파일을 세이브 폴더(%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)에 덮어쓰세요	要回滚，请先关闭游戏，再将备份文件夹中的 .sav 文件覆盖到存档文件夹 (%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)
+세이브 파일	存档文件
+게임의 세이브 폴더를 찾지 못했습니다	未找到游戏的存档文件夹
+방금	刚刚
+{a0}분 전	{a0} 分钟前
+{a0}시간 전	{a0} 小时前
+{a0}일 전	{a0} 天前
+ · 안내 중	 · 引导中
+이 지역엔 이 퀘스트의 목표가 없음 — 가까운 다른 퀘스트 목표로 안내	本区域没有此任务的目标 — 引导至附近其他任务的目标
+이 지역엔 이 항목의 목표가 없음 — 다른 지역에서 진행	本区域没有此项目的目标 — 在其他区域进行
+닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저	在关闭的门·谜题之后 — 引导到能到达的地方，请先找附近的字条·钥匙·装置
+살펴볼 곳	待调查地点
+1막 끝 전	第一幕结束前
+1막 끝 전, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — 트럭으로 떠나기 전에 약을 — 아니면 죽음	第一幕结束前：{g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — 在她坐卡车离开前送药，否则她会死
+1막 끝({g:Facts_Shared/Universal_Location_LymbicForge}) 전에 {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}의 아기에게 젖병을 — 아니면 아기가 죽음	第一幕结束（{g:Facts_Shared/Universal_Location_LymbicForge}）前：给{g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}的婴儿送奶瓶，否则婴儿会死
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 {g:Facts_VillageOfJova/Name_Real} 상황이 바뀌기 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} 사망	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}期间，{g:Facts_VillageOfJova/Name_Real}改变之前 — 否则{g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name}会死
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} 사망	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}之前 — 否则{g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name}会死
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 — {g:Facts_VillageOfJova/Name_Real} 변화 전	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}进行中 — {g:Facts_VillageOfJova/Name_Real}改变之前
+{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전	{g:Facts_Shared/Universal_Location_LethePropaganda} — 第一次离开之前
+{g:Facts_Shared/Universal_Location_Talju} 대피 트럭 출발 전	{g:Facts_Shared/Universal_Location_Talju}撤离卡车出发之前
+{g:Facts_Shared/Universal_Location_Talju} 대피 트럭이 떠나기 전	{g:Facts_Shared/Universal_Location_Talju}撤离卡车出发之前
+권장 순서 ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 먼저: 일부 아이템이 {g:Facts_Shared/Universal_Location_Talju}에만 있음) — 키스톤마다 시간이 흘러 선행이 끝날 수 있습니다	建议顺序（先{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}：部分物品只在{g:Facts_Shared/Universal_Location_Talju}）— 每放一块密钥石时间都会流逝，好事可能结束
+세 번째 키스톤을 놓기 전	放置第三块密钥石之前
+{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+포인터를 읽을 수 없음	无法读取指针
+게임이 실행 중이 아닙니다	游戏未运行
+주인공의 인벤토리를 찾지 못함	未找到主角的背包
+주인공 위치를 쓰지 못함	无法写入主角位置
+WorldSettings.Pauser 없음	没有 WorldSettings.Pauser
+세이브 상태를 찾지 못함	未找到存档状态
+세이브 상태를 읽지 못함	无法读取存档状态
+아직 액터를 훑지 않음	尚未扫描角色
+게임이 종료됨 — 치트 꺼짐	游戏已退出 — 作弊已关闭
+그런 슬롯이 없음	没有该存档位
+그 슬롯에 저장된 것이 없음	该存档位中没有存档
+원래 값으로 되돌림	已恢复原始值
+쓰기 실패	写入失败
+Steam 라이브러리에서 Hell Is Us 설치를 찾지 못함 — --game-dir 로 알려 주세요	在 Steam 库中未找到 Hell Is Us 安装 — 请用 --game-dir 指定
+예상과 다른 실행 파일 경로	可执行文件路径不符合预期
+폰에 AbilitySystemComponent 가 없음	Pawn 上没有 AbilitySystemComponent
+플레이어 컨트롤러 없음	没有玩家控制器
+폰 없음 — 로딩 중이거나 컷신?	没有 Pawn — 正在加载或过场动画?
+조작 중인 폰이 주인공이 아님	当前控制的 Pawn 不是主角
+어빌리티 시스템 없음	没有技能系统
+레벨 없음	没有关卡
+월드 없음	没有世界
+월드 이름을 읽을 수 없음	无法读取世界名称
+루트 컴포넌트 없음	没有根组件
+위치를 읽을 수 없음	无法读取位置
+방향을 읽을 수 없음	无法读取朝向
+위치·방향 값이 숫자가 아님	位置/朝向的值不是数字
+GEngine 이 비어 있음	GEngine 为空
+게임 이미지에서 GameEngine 을 찾지 못함 (아직 시작 중?)	在游戏镜像中未找到 GameEngine (可能仍在启动?)
+아는 FField 레이아웃으로 GameEngine.GameInstance 를 읽지 못함 — 엔진 구조가 바뀜	已知的 FField 布局都无法读取 GameEngine.GameInstance — 引擎结构已更改
+속성 세트 배열을 읽을 수 없음	无法读取属性集数组
+속성 세트 개수를 읽을 수 없음	无法读取属性集数量
+속성 이름을 하나도 읽지 못함 — 이름 풀이나 클래스 구조가 이 빌드와 맞지 않음	一个属性名也无法解析 — 名称池或类结构与此版本不符
+필드를 읽을 수 없음	无法读取字段
+속성을 읽을 수 없음	无法读取属性
+유한하지 않은 값은 쓰지 않음	拒绝写入非有限值
+읽을 수 있는 속성이 없음	没有可读取的属性
+미니맵: {e}	小地图: {e}
+원래 값을 기록하지 못함 — 치트 꺼짐: {e}	无法记录原始值 — 作弊已关闭: {e}
+{name}: 1..={max} 사이	{name}: 取值范围 1..={max}
+다른 지역에서 저장됨 ({world})	存档于另一区域 ({world})
+되돌리지 못함: {a0}	无法恢复: {a0}
+되돌리지 못함: {a0} — 나중에 `hiumod restore` 를 실행하세요	无法恢复: {a0} — 请稍后运行 `hiumod restore`
+`{id}` 은(는) 값을 정할 수 없음 — 가능한 것: {a0}	`{id}` 无法设置值 — 可用: {a0}
+{id}: 0..={max} 사이	{id}: 取值范围 0..={max}
+모르는 치트 `{id}` — 가능한 것: {a0}	未知作弊 `{id}` — 可用: {a0}
+{id} 에는 값을 줄 수 없음	{id} 不接受值
+{id}: {min}..={max} 사이	{id}: 取值范围 {min}..={max}
+{id} 는 한 번 쓰는 값 — hold 가 아니라 `set {id} <값>` 을 쓰세요	{id} 只写入一次 — 请使用 `set {id} <值>`,而不是 hold
+인벤토리에 {class} 없음 — 먼저 하나 주우세요	背包中没有 {class} — 请先捡一个
+{a0}번째 줄: {set}.{name} — 이 버전에 없는 속성	第 {a0} 行: {set}.{name} 不是此版本已知的属性
+{a0} 에 Hell Is Us 설치가 없음 — --game-dir 로 알려 주세요	{a0} 中没有 Hell Is Us 安装 — 请用 --game-dir 指定
+게임 프로세스를 열 수 없음: {a0}	无法打开游戏进程: {a0}
+프로세스 목록을 얻지 못함: {a0}	获取进程列表失败: {a0}
+게임 모듈 목록을 얻지 못함: {a0}	无法列出游戏模块: {a0}
+{name} 속성이 없음	没有属性 {name}
+폰이 주인공이 아니라 {a0} — 먼저 세이브를 불러오세요	Pawn 是 {a0},不是主角 — 请先加载存档
+속성 세트 배열이 이상함 (num={num}, data=0x{data})	属性集数组异常 (num={num}, data=0x{data})
+속성들의 vtable 이 일치하지 않음 ({n}/{total}, 0x{vt})	属性的 vtable 不一致 ({n}/{total},0x{vt})
+{ok} 설치 {dir} — Steam 빌드 {build}	{ok} 安装 {dir} — Steam 版本 {build}
+{ok} 설치: {e}	{ok} 安装: {e}
+{ok} 프로세스 {pid} — 베이스 0x{base}, 이미지 0x{size} 바이트	{ok} 进程 {pid} — 基址 0x{base}，镜像 0x{size} 字节
+{ok} 이름 풀 +0x{at}	{ok} 名称池 +0x{at}
+{ok} FField 레이아웃: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}	{ok} FField 布局: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
+{ok} 플레이어: {e}	{ok} 玩家: {e}
+{ok} 주인공: {a0}	{ok} 主角: {a0}
+{ok} 체인: GEngine {path} → 컨트롤러 +0x{pawn} 폰 → +0x{asc} ASC → +0x{sets} SpawnedAttributes	{ok} 链: GEngine {path} → 控制器 +0x{pawn} 棋子 → +0x{asc} ASC → +0x{sets} SpawnedAttributes
+ok   주인공 게이트: 열림 — 쓰기 허용	ok   主角门: 已打开 — 允许写入
+ok   위치: ({x:.0}, {y:.0}, {z:.0}) 방향 {yaw:.1}	ok   位置: ({x:.0}, {y:.0}, {z:.0}) 朝向 {yaw:.1}
+FAIL 위치: {e}	FAIL 位置: {e}
+ok   미니맵 대상: {n}개, {ms} ms — {kinds}	ok   小地图对象: {n} 个，{ms} ms — {kinds}
+FAIL 미니맵 대상: {e}	FAIL 小地图对象: {e}
+ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open} — 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})	ok   向导: 已知事实 {facts} 条，标签 {tags} 个；进行中: {open} — 地点 {places} 处，{ms} ms (任务 {quest}，秘密 {secret}，线索 {clue})
+FAIL 안내: {e}	FAIL 向导: {e}
+{ok} 속성: {e}	{ok} 属性: {e}
+{ok} 속성: 세트 {sets}개, 이름으로 찾은 속성 {count}개, vtable +0x{vt}	{ok} 属性: {sets} 个集合，按名称找到 {count} 个属性，vtable +0x{vt}
+속성 {n}개	{n} 个属性
+{ok} 치트 표: 이름이 나오는 속성 {n}개가 모두 게임에 있음	{ok} 作弊表: 其中列出的 {n} 个属性在游戏中全部存在
+{ok} 치트 표: 게임에 없음 — {a0}	{ok} 作弊表: 游戏中不存在 — {a0}
+플레이어: 됨	玩家: 正常
+플레이어: 안 됨	玩家: 不可用
+{path} 에 씀	已写入 {path}
+클래스·구조체 {s}개의 속성 {p}개	{s} 个类和结构体中的 {p} 个属性
+{prefix}(으)로 시작하는 클래스·구조체 {n}개	以 {prefix} 开头的类和结构体共 {n} 个
+매핑: 구조체·클래스 {structs}개, 열거형 {enums}개	映射: 结构体和类 {structs} 个，枚举 {enums} 个
+실행: {tool} {args}	运行: {tool} {args}
+조사 결과: {path}	调查结果: {path}
+게임 텍스트: {path}	游戏文本: {path}
+구조체·클래스 {structs}개, 열거형 {enums}개 — {kb} KB, {path} 에 씀	结构体和类 {structs} 个，枚举 {enums} 个 — {kb} KB，已写入 {path}
+객체 {n}개를 {secs}초 동안 지켜봄 — Ctrl+C 로 멈춤	正在监视 {n} 个对象，持续 {secs} 秒 — Ctrl+C 停止
+{all}곳 중 {kept}곳이 이제 {v}	{all} 处中有 {kept} 处现在为 {v}
+{n}곳이 {v} — 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`	{n} 处为 {v} — 在游戏中修改后，执行 `doctor scan next <新值>`
+이전 hold 가 남긴 원래 값 {n}개 — 지금 값이 아니라 그것을 유지	之前的 hold 留下了 {n} 个原始值 — 保留这些，而不是当前值
+유지 중: {a0} — Ctrl+C 로 멈추고 되돌림	保持中: {a0} — Ctrl+C 停止并还原
+강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	若被强制结束，可用 `hiumod restore` 还原
+적용 중	应用中
+되돌릴 것이 없음	没有可还原的内容

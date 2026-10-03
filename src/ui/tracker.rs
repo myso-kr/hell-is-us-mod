@@ -60,7 +60,7 @@ pub fn draw(
     let width = W - 2 * PAD - 8;
     let x = PAD + 8;
     let mut y = PAD;
-    y += pen.write(cv, PAD, y, W - 2 * PAD, "퀘스트", 12, true, DIM, 1) + 6;
+    y += pen.write(cv, PAD, y, W - 2 * PAD, tr!("퀘스트"), 12, true, DIM, 1) + 6;
     for (i, q) in list.iter().enumerate() {
         let open = i == 0 && followed.is_some();
         let c = accent(q, open);
@@ -68,17 +68,17 @@ pub fn draw(
         y += pen.write(cv, x, y, width, &q.name, if open { 16 } else { 14 }, true, if open { c } else { TEXT }, 2);
         let mut sub = kind_label(q);
         if let Some((got, all)) = q.progress.filter(|(_, all)| *all > 0) {
-            sub += &format!(" · 단서 {got}/{all}");
+            sub += &trf!(" · 단서 {got}/{all}", got = got, all = all);
         }
         if open {
-            sub += " · 안내 중";
+            sub += tr!(" · 안내 중");
         }
         y += pen.write(cv, x, y, width, &sub, 11, false, DIM, 1) + 2;
         if open {
             if !near {
                 let why = match q.kind {
-                    Kind::Main(_) => "이 지역엔 이 퀘스트의 목표가 없음 — 가까운 다른 퀘스트 목표로 안내",
-                    _ => "이 지역엔 이 항목의 목표가 없음 — 다른 지역에서 진행",
+                    Kind::Main(_) => tr!("이 지역엔 이 퀘스트의 목표가 없음 — 가까운 다른 퀘스트 목표로 안내"),
+                    _ => tr!("이 지역엔 이 항목의 목표가 없음 — 다른 지역에서 진행"),
                 };
                 y += pen.write(cv, x, y, width, why, 12, true, Rgba(255, 190, 90, 255), 2) + 2;
             }
@@ -86,7 +86,7 @@ pub fn draw(
                 y += pen.write(cv, x, y, width, needs, 12, true, Rgba(150, 220, 255, 255), 2) + 2;
             }
             if near && stuck {
-                let why = "닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저";
+                let why = tr!("닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저");
                 y += pen.write(cv, x, y, width, why, 12, true, Rgba(255, 220, 60, 255), 2) + 2;
             }
             if !q.detail.is_empty() {

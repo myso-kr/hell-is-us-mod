@@ -90,6 +90,8 @@ src/
     compass.rs          나침반 띠, 층 표시(흐림·위아래 화살표)
     raster.rs           draw_map (한 프레임) — canvas·compass 를 다시 내보냄
     relief.rs icons.rs  지형 굽기, assets/{icons,pins}/*.svg 래스터화
+  i18n/                 게임 언어 따르기 (.spec/I18N.md): culture.rs (프로필의 TextCulture) · names.rs (게임 고유명사:
+                        Mods\locale) · text.rs (모드 문구 표 assets/i18n) · fill.rs (trf! 실행 시 채움). tr!/trf! 매크로
   infra/                log.rs journal.rs (hiumod.log) · paths.rs (Mods\ 폴더, 모든 파일 경로의 뿌리) ·
                         settings.rs · verify.rs · backup.rs (세이브 백업) · memstat.rs (자기 메모리)
   game/                 밖에서 본 게임: locate.rs (설치), launch.rs, process.rs (RPM/WPM)
@@ -100,7 +102,7 @@ src/
     minimap.rs          오버레이 스레드: 미니맵·큰 지도·나침반·추적기, 경로 계산, 지형 굽기
     tracker.rs pen.rs   퀘스트 추적기, GDI 한글 글자
     console.rs hotkey.rs layered.rs tw.rs   드롭다운 콘솔, 단축키·창 순서, 레이어드 창, 카드 레이아웃
-assets/                 icons/ (종류 23) · pins/ (핀 24) · missables.tsv — 코드에 박지 않는 데이터
+assets/                 icons/ (종류 23) · pins/ (핀 24) · i18n/ (모드 문구 번역) · missables.tsv — 코드에 박지 않는 데이터
 tools/survey/           C# + CUE4Parse 조사기 (결과는 커밋 안 함)
 examples/               일회용 탐침 (gitignore)
 ```

@@ -76,10 +76,10 @@ impl Kind {
     /// What the panel and the tracker call it.
     pub fn label(self) -> String {
         match self {
-            Kind::Main(n) => format!("메인 {n}"),
-            Kind::GoodDeed => "선행".into(),
-            Kind::Mystery => "미스터리".into(),
-            Kind::Timeloop => "타임루프".into(),
+            Kind::Main(n) => trf!("메인 {n}", n = n),
+            Kind::GoodDeed => tr!("선행").into(),
+            Kind::Mystery => tr!("미스터리").into(),
+            Kind::Timeloop => tr!("타임루프").into(),
         }
     }
 
@@ -197,8 +197,13 @@ pub struct Quests {
     loaded: bool,
 }
 
+/// The names as the game shows them, so in its language: one file per culture —
+/// `quests.txt` for Korean (the first one), `quests.<culture>.txt` for the others.
 pub fn cache_path() -> PathBuf {
-    crate::paths::data_dir().join("quests.txt")
+    match crate::i18n::culture().as_str() {
+        crate::i18n::culture::SOURCE => crate::paths::data_dir().join("quests.txt"),
+        c => crate::paths::data_dir().join(format!("quests.{c}.txt")),
+    }
 }
 
 fn hex(g: &[u8; 16]) -> String {
@@ -263,6 +268,9 @@ fn parse(text: &str) -> Cache {
 /// "Quest01_Tania" → "Tania"; "Quest01_HeroFamilyHome" → "Hero Family Home".
 fn pretty(track: &str) -> String {
     let t = track.split_once('_').map_or(track, |(_, rest)| rest);
+    if let Some(name) = crate::i18n::subject(t) {
+        return name;
+    }
     let mut out = String::new();
     for (i, c) in t.chars().enumerate() {
         if i > 0 && c.is_uppercase() && !out.ends_with(' ') {
@@ -473,8 +481,12 @@ impl Quests {
             let tags = tag.strip_suffix("Started").unwrap_or(&tag).to_string();
             let (title, local) = match ftext(m, e + title_at) {
                 Some(t) => (t, true),
+                // The English source: in the game's language from its translations.
                 None => match text_key(m, e + title_at).and_then(|k| self.strings.get(&k)) {
-                    Some(t) => (t.clone(), false),
+                    Some(t) => match crate::i18n::from_source(t) {
+                        Some(local) => (local, true),
+                        None => (t.clone(), false),
+                    },
                     None => continue,
                 },
             };
@@ -485,7 +497,10 @@ impl Quests {
                 .and_then(|f| {
                     let d = n.field(m, f, "Description")?;
                     let at = f + d.offset as u64;
-                    ftext(m, at).or_else(|| text_key(m, at).and_then(|k| self.strings.get(&k).cloned()))
+                    ftext(m, at).or_else(|| {
+                        let source = text_key(m, at).and_then(|k| self.strings.get(&k).cloned())?;
+                        Some(crate::i18n::from_source(&source).unwrap_or(source))
+                    })
                 })
                 .unwrap_or_default();
             let old = self.deeds.get(&g);
@@ -514,7 +529,7 @@ impl Quests {
             } else {
                 Status::NotStarted
             };
-            let (name, detail) = self.seen.get(&q.key).cloned().unwrap_or_else(|| (format!("메인 퀘스트 {}", q.number), String::new()));
+            let (name, detail) = self.seen.get(&q.key).cloned().unwrap_or_else(|| (trf!("메인 퀘스트 {a0}", a0 = q.number), String::new()));
             // Per subject: facts known, facts in all, the text of the last known one.
             let mut tracks: BTreeMap<&str, (usize, usize, Option<&String>)> = BTreeMap::new();
             for f in q.facts.iter().filter(|f| !OWN_TRACKS.contains(&f.track.as_str()) && !f.track.starts_with("Desc")) {
@@ -557,7 +572,7 @@ impl Quests {
                 key: hex(guid),
                 kind,
                 name: deed.map_or_else(|| format!("{} {}", kind.label(), &hex(guid)[..4]), |d| d.title.clone()),
-                detail: deed.filter(|d| !d.place.is_empty()).map(|d| format!("장소: {}", d.place)).unwrap_or_default(),
+                detail: deed.filter(|d| !d.place.is_empty()).map(|d| trf!("장소: {a0}", a0 = d.place)).unwrap_or_default(),
                 status,
                 progress: None,
                 leads: Vec::new(),

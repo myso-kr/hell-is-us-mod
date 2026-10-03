@@ -35,13 +35,13 @@ impl Due {
         })
     }
 
-    pub fn label(self) -> &'static str {
+    pub fn label(self) -> String {
         match self {
-            Due::Act1End => "1막 끝까지",
-            Due::Quest03 => "공포의 키스톤(Quest03) 진행 중 Jova 변화 전",
-            Due::Talju => "Talju 대피 트럭 출발 전",
-            Due::Ministry => "문화부를 처음 떠나기 전",
-            Due::ThirdKeystone => "세 번째 키스톤 전",
+            Due::Act1End => trf!("1막 끝까지"),
+            Due::Quest03 => trf!("{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 — {g:Facts_VillageOfJova/Name_Real} 변화 전"),
+            Due::Talju => trf!("{g:Facts_Shared/Universal_Location_Talju} 대피 트럭 출발 전"),
+            Due::Ministry => trf!("{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전"),
+            Due::ThirdKeystone => trf!("세 번째 키스톤 전"),
         }
     }
 }
@@ -132,7 +132,7 @@ pub fn deadlines(journal: &[Quest], deeds: &[(String, String, String)]) -> Vec<D
                 started: st == Status::Started,
                 due,
                 when: when(due, journal),
-                what: what.clone(),
+                what: crate::i18n::text(&what),
             });
         }
     }
@@ -143,15 +143,19 @@ pub fn deadlines(journal: &[Quest], deeds: &[(String, String, String)]) -> Vec<D
 /// Act 2 advice, while keystones are left: those left in the order the guides
 /// suggest (Terror first — some of its items are only in Talju — then Rage, then
 /// Ecstasy), and the deeds due before the next one goes down.
-pub fn keystone_advice(journal: &[Quest], deadlines: &[Deadline]) -> Option<(Vec<&'static str>, Vec<String>)> {
+pub fn keystone_advice(journal: &[Quest], deadlines: &[Deadline]) -> Option<(Vec<String>, Vec<String>)> {
     if !act1_over(journal) || keystones(journal) == 3 {
         return None;
     }
-    let left: Vec<&'static str> = [("Quest03", "공포 — Talju · Marastan · Arcas Spire"), ("Quest05", "분노 — Jeljin · Lethe 문화부 · Auriga"), ("Quest04", "환희 — Lethe 도서관 · Vyssa 광산 · Plains of Mist")]
-        .into_iter()
-        .filter(|(k, _)| status(journal, k) != Status::Completed)
-        .map(|(_, l)| l)
-        .collect();
+    let left: Vec<String> = [
+        ("Quest03", trf!("{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}")),
+        ("Quest05", trf!("{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}")),
+        ("Quest04", trf!("{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}")),
+    ]
+    .into_iter()
+    .filter(|(k, _)| status(journal, k) != Status::Completed)
+    .map(|(_, l)| l)
+    .collect();
     let before: Vec<String> = deadlines.iter().filter(|d| d.when == When::Now).map(|d| d.title.clone()).collect();
     Some((left, before))
 }
@@ -161,8 +165,8 @@ pub fn alert(deadlines: &[Deadline]) -> Option<String> {
     let now: Vec<&Deadline> = deadlines.iter().filter(|d| d.when == When::Now).collect();
     match now.len() {
         0 => None,
-        1 => Some(format!("마감 임박 선행: {} ({})", now[0].title, now[0].due.label())),
-        n => Some(format!("마감 임박 선행 {n}개 — 퀘스트 탭에서 확인")),
+        1 => Some(trf!("마감 임박 선행: {a0} ({a1})", a0 = now[0].title, a1 = now[0].due.label())),
+        n => Some(trf!("마감 임박 선행 {n}개 — 퀘스트 탭에서 확인", n = n)),
     }
 }
 
@@ -186,6 +190,14 @@ mod tests {
             leads: vec![],
             quest: None,
             tags: None,
+        }
+    }
+
+    #[test]
+    fn every_text_of_the_table_is_translated() {
+        let en = crate::i18n::text::Table::load("en");
+        for (stem, _, what) in table() {
+            assert!(en.get(&what).is_some(), "{stem}: {what:?} has no English line in assets/i18n/en.tsv");
         }
     }
 

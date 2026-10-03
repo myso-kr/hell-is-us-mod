@@ -79,7 +79,14 @@ pub fn install_style(ctx: &egui::Context) {
 /// without them the panel still works, with boxes for what is missing.
 pub fn install_fonts(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
-    for (name, file) in [("malgun", r"C:\Windows\Fonts\malgun.ttf"), ("symbol", r"C:\Windows\Fonts\seguisym.ttf")] {
+    // The game's language's own font first (its kana or simplified Chinese — Malgun
+    // Gothic has neither), only that one: a CJK font is tens of MB.
+    let own = match crate::i18n::culture().as_str() {
+        "ja" => Some(("own", r"C:\Windows\Fonts\YuGothR.ttc")),
+        "zh-Hans" => Some(("own", r"C:\Windows\Fonts\msyh.ttc")),
+        _ => None,
+    };
+    for (name, file) in own.into_iter().chain([("malgun", r"C:\Windows\Fonts\malgun.ttf"), ("symbol", r"C:\Windows\Fonts\seguisym.ttf")]) {
         let Ok(bytes) = std::fs::read(file) else { continue };
         fonts.font_data.insert(name.into(), Arc::new(egui::FontData::from_owned(bytes)));
         for family in [egui::FontFamily::Proportional, egui::FontFamily::Monospace] {
@@ -157,17 +164,19 @@ impl Tool {
 
     fn label(self) -> &'static str {
         match self {
-            Tool::Map => "지도",
-            Tool::Guide => "안내",
-            Tool::Quests => "퀘스트",
-            Tool::Collect => "수집",
-            Tool::Saves => "세이브",
-            Tool::Debug => "디버그",
+            Tool::Map => tr!("지도"),
+            Tool::Guide => tr!("안내"),
+            Tool::Quests => tr!("퀘스트"),
+            Tool::Collect => tr!("수집"),
+            Tool::Saves => tr!("세이브"),
+            Tool::Debug => tr!("디버그"),
         }
     }
 }
 
 pub struct Panel {
+    /// The culture the fonts were installed for.
+    fonts_for: String,
     shared: Arc<Shared>,
     tx: Sender<Request>,
     tab: Group,
@@ -230,6 +239,7 @@ impl Panel {
             .collect();
         let tab = saved.tab.as_deref();
         Panel {
+            fonts_for: crate::i18n::culture(),
             shared,
             tx,
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
@@ -309,7 +319,7 @@ impl Panel {
             self.value.insert(a.cheat, a.value);
         }
         self.send_active();
-        self.reply = Some((true, format!("지난번에 켜 둔 치트 {}개를 다시 켰습니다", resume.len()), Instant::now()));
+        self.reply = Some((true, trf!("지난번에 켜 둔 치트 {a0}개를 다시 켰습니다", a0 = resume.len()), Instant::now()));
     }
 
     /// The engine is the truth about what is on: the gate closing or the game exiting
@@ -339,14 +349,14 @@ impl Panel {
             ui.label(RichText::new("Hell Is Us Mod").strong());
             ui.label(RichText::new("`").color(DIM));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button(" × ").on_hover_text("닫기 — 원래 값으로 되돌리고 종료").clicked() {
+                if ui.button(" × ").on_hover_text(tr!("닫기 — 원래 값으로 되돌리고 종료")).clicked() {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
-                if ui.button(" — ").on_hover_text("숨기기 (` 키로 다시 열기)").clicked() {
+                if ui.button(" — ").on_hover_text(tr!("숨기기 (` 키로 다시 열기)")).clicked() {
                     hotkey::hide(&self.shared);
                 }
-                let label = if self.console.open { "콘솔 ▾" } else { "콘솔 ▸" };
-                if ui.selectable_label(self.console.open, label).on_hover_text("CLI 명령 콘솔").clicked() {
+                let label = if self.console.open { tr!("콘솔 ▾") } else { tr!("콘솔 ▸") };
+                if ui.selectable_label(self.console.open, label).on_hover_text(tr!("CLI 명령 콘솔")).clicked() {
                     self.console.open = !self.console.open;
                     if self.console.open {
                         self.console.focus();
@@ -367,18 +377,18 @@ impl Panel {
         };
         match snap.map(|s| &s.game) {
             Some(Ok((pid, version))) => {
-                line(ui, "게임", RichText::new(format!("● 연결됨\nv{version} · PID {pid}")).color(OK))
+                line(ui, tr!("게임"), RichText::new(trf!("● 연결됨\nv{version} · PID {pid}", version = version, pid = pid)).color(OK))
             }
-            _ if launching => line(ui, "게임", RichText::new("실행하는 중 — 켜지면 자동으로 연결").color(WAIT)),
-            Some(Err(e)) => line(ui, "게임", RichText::new(format!("○ 연결 안 됨 — {e}")).color(DIM)),
-            None => line(ui, "게임", RichText::new("시작하는 중…").color(DIM)),
+            _ if launching => line(ui, tr!("게임"), RichText::new(tr!("실행하는 중 — 켜지면 자동으로 연결")).color(WAIT)),
+            Some(Err(e)) => line(ui, tr!("게임"), RichText::new(trf!("○ 연결 안 됨 — {e}", e = e)).color(DIM)),
+            None => line(ui, tr!("게임"), RichText::new(tr!("시작하는 중…")).color(DIM)),
         }
         match snap.map(|s| &s.gate) {
-            Some(Ok(())) => line(ui, "주인공 게이트", RichText::new("● 열림 — 조작 중").color(OK)),
+            Some(Ok(())) => line(ui, tr!("주인공 게이트"), RichText::new(tr!("● 열림 — 조작 중")).color(OK)),
             Some(Err(e)) if snap.is_some_and(|s| s.game.is_ok()) => {
-                line(ui, "주인공 게이트", RichText::new(format!("○ 닫힘 — {e}")).color(WAIT))
+                line(ui, tr!("주인공 게이트"), RichText::new(trf!("○ 닫힘 — {e}", e = e)).color(WAIT))
             }
-            _ => line(ui, "주인공 게이트", RichText::new("○ 닫힘").color(DIM)),
+            _ => line(ui, tr!("주인공 게이트"), RichText::new(tr!("○ 닫힘")).color(DIM)),
         }
     }
 
@@ -394,7 +404,7 @@ impl Panel {
                 .min_size(egui::vec2(ui.available_width(), 26.0));
             ui.add(button).clicked()
         };
-        ui.label(RichText::new("치트").color(DIM).small());
+        ui.label(RichText::new(tr!("치트")).color(DIM).small());
         for g in Group::ALL {
             let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
             let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
@@ -404,7 +414,7 @@ impl Panel {
             }
         }
         ui.add_space(6.0);
-        ui.label(RichText::new("도구").color(DIM).small());
+        ui.label(RichText::new(tr!("도구")).color(DIM).small());
         for tool in Tool::ALL {
             if item(ui, self.tool == Some(tool), tool.label().to_string()) {
                 self.tool = Some(tool);
@@ -439,7 +449,7 @@ impl Panel {
     fn footer(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
         let pending = snap.map_or(0, |s| s.pending);
         ui.horizontal(|ui| {
-            let restore = ui.add_enabled(pending > 0, egui::Button::new(format!("모두 원래대로 ({pending})")));
+            let restore = ui.add_enabled(pending > 0, egui::Button::new(trf!("모두 원래대로 ({pending})", pending = pending)));
             if restore.clicked() {
                 let _ = self.tx.send(Request::Restore);
                 self.on.clear();
@@ -447,8 +457,8 @@ impl Panel {
                 self.resume = None;
                 self.sent = Some(Instant::now());
             }
-            ui.checkbox(&mut self.keep, "다음에도 켜 둔 치트 유지")
-                .on_hover_text("다음 실행 때, 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다.");
+            ui.checkbox(&mut self.keep, tr!("다음에도 켜 둔 치트 유지"))
+                .on_hover_text(tr!("다음 실행 때, 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다."));
         });
         let attached = snap.is_some_and(|s| s.game.is_ok());
         if let Some(n) = snap.and_then(|s| s.notice.clone()) {
@@ -462,7 +472,7 @@ impl Panel {
         ui.add_space(4.0);
         ui.add(
             egui::Label::new(
-                RichText::new("주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다").color(DIM).small(),
+                RichText::new(tr!("주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다")).color(DIM).small(),
             )
             .wrap(),
         );
@@ -525,6 +535,12 @@ impl Panel {
 
 impl eframe::App for Panel {
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
+        // The game's language changed: its font.
+        let culture = crate::i18n::culture();
+        if self.fonts_for != culture {
+            install_fonts(ui.ctx());
+            self.fonts_for = culture;
+        }
         if self.shared.hwnd.load(Ordering::SeqCst) == 0 {
             if let Ok(RawWindowHandle::Win32(h)) = frame.window_handle().map(|h| h.as_raw()) {
                 self.shared.hwnd.store(h.hwnd.get(), Ordering::SeqCst);

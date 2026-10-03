@@ -31,7 +31,7 @@ impl Game {
         let access = PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION;
         let handle = unsafe { OpenProcess(access, 0, pid) };
         if handle.is_null() {
-            return Err(format!("cannot open the game process: {}", std::io::Error::last_os_error()));
+            return Err(trf!("게임 프로세스를 열 수 없음: {a0}", a0 = std::io::Error::last_os_error()));
         }
         Ok(Some(Game { pid, base, size, exe, handle }))
     }
@@ -74,7 +74,7 @@ impl Snapshot {
     fn new(flags: u32, pid: u32) -> Result<Snapshot, String> {
         let h = unsafe { CreateToolhelp32Snapshot(flags, pid) };
         if h == INVALID_HANDLE_VALUE {
-            return Err(format!("process snapshot failed: {}", std::io::Error::last_os_error()));
+            return Err(trf!("프로세스 목록을 얻지 못함: {a0}", a0 = std::io::Error::last_os_error()));
         }
         Ok(Snapshot(h))
     }
@@ -106,7 +106,7 @@ fn main_module(pid: u32) -> Result<(u64, u64, PathBuf), String> {
     let mut e: MODULEENTRY32W = unsafe { std::mem::zeroed() };
     e.dwSize = std::mem::size_of::<MODULEENTRY32W>() as u32;
     if unsafe { Module32FirstW(snap.0, &mut e) } == 0 {
-        return Err(format!("cannot list the game's modules: {}", std::io::Error::last_os_error()));
+        return Err(trf!("게임 모듈 목록을 얻지 못함: {a0}", a0 = std::io::Error::last_os_error()));
     }
     Ok((e.modBaseAddr as u64, e.modBaseSize as u64, PathBuf::from(wide(&e.szExePath))))
 }
