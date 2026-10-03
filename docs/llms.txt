@@ -28,7 +28,7 @@ The codes are spread through Hadea as notes and inscriptions. hiumod lists the c
 Hell Is Us is single-player with no anti-cheat and no online play, and hiumod changes no game files. As with any third-party tool, use it at your own discretion.
 
 ### Does it work with the latest version of the game?
-hiumod is tested against a specific Steam build and tells you when the game has been updated since. After an update, run doctor survey again; anything that breaks is fixed in a new release.
+hiumod is tested against a specific Steam build and tells you when the game has been updated since. After an update it reads the game's data again by itself; anything that breaks is fixed in a new release.
 
 ### Which languages does it support?
 All twelve of the game's languages: English, Korean, Japanese, Simplified Chinese, German, French, Spanish, Italian, Polish, Brazilian Portuguese, Russian and Turkish. It follows the language set in the game.

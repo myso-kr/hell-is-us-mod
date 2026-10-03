@@ -1,6 +1,6 @@
 //! What actually stands in the hero's way: the collision shapes of every static mesh
 //! — plain, instanced, hierarchical, foliage — in world space, seen from above
-//! (.spec/GUIDE.md §7).
+//! (.spec/ROUTES.md §2).
 //!
 //! The game keeps no ground navmesh in memory here (§7), so the route finder needs
 //! the obstacles themselves. Render bounds will not do — a tree's box is its canopy —
@@ -30,7 +30,7 @@ use std::sync::Arc;
 
 /// USceneComponent::ComponentToWorld — not reflected; found on build 24045435 as the
 /// one FTransform in the hero's root component whose translation is its
-/// RelativeLocation (.spec/GUIDE.md §7).
+/// RelativeLocation (.spec/ROUTES.md §2).
 pub const COMPONENT_TO_WORLD: u64 = 0x1D0;
 
 /// Objects looked at per step.

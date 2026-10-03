@@ -155,20 +155,20 @@ const NEAR_ZERO: f32 = 0.05;
 // through GAS — every `*Coefficient` tried, weapon attack power — held in memory
 // and did nothing, and was dropped (.spec/CHEATS.md, .spec/DECISIONS.md D12).
 pub const CHEATS: &[Cheat] = &[
-    // 생존
+    // Survival
     toggle("god", Group::Survival, "KEEP_HEALTH_CAP_AT_MAXIMUM", &[Fill(a::ENDURANCE_CAP, a::ENDURANCE_MAX)], true),
     toggle("stamina", Group::Survival, "INFINITE_STAMINA", &[Fill(a::ENDURANCE, a::ENDURANCE_CAP)], true),
     // Experiments (.spec/CHEATS-RESEARCH.md §6): whether the game's own systems heed these.
     // Faction decides both who the enemies notice and whose blows land, so a ghost
     // is ignored and cannot strike — for getting past, not for fighting.
     toggle("ghost", Group::Survival, "GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK", &[Effect::Ghost], true),
-    // 전투
+    // Combat
     toggle("lymbic", Group::Combat, "INFINITE_LYMBIC_ENERGY", &[Fill(a::LYMBIC, a::LYMBIC_MAX)], false),
     // Coefficients like these held in memory but did nothing for every one tried in
     // play (.spec/CHEATS.md); these two are kept only until someone tries them.
     toggle("lymbic_cost", Group::Combat, "NO_LYMBIC_COST", &[Fixed(a::LYMBIC_COST, 0.0)], false),
     toggle("skill_cooldown", Group::Combat, "NO_SKILL_COOLDOWN", &[Fixed(a::SKILL_COOLDOWN, NEAR_ZERO)], false),
-    // 이동 — plain fields, not attributes: the values the game actually moves by.
+    // Movement — plain fields, not attributes: the values the game actually moves by.
     slider("speed", Group::Movement, "WALK_SPEED_DEFAULT_450", &[Chosen(a::WALK_SPEED)], 300.0, 2000.0, 900.0, true),
     // The hero's own time dilation speeds up everything it does — attacks, dodges,
     // movement — and leaves enemies alone.

@@ -1,4 +1,4 @@
-//! Phase 3 (.spec/GUIDE.md §27): the puzzles near the hero with their answers kept
+//! Phase 3 (.spec/FEATURES.md §3): the puzzles near the hero with their answers kept
 //! hidden until asked for (F6), the vault notebook (F7), the enemies left (F8).
 
 use super::super::theme::INLINE;

@@ -746,9 +746,9 @@ mod tests {
             [7u8; 16],
             Deed {
                 kind: Kind::GoodDeed,
-                title: "헛간 구조".into(),
+                title: "시험 선행".into(),
                 tags: "Secrets.GoodDeeds.BarnRescue".into(),
-                place: "하데아".into(),
+                place: "시험 장소".into(),
             },
         );
         deeds.insert(
@@ -761,7 +761,7 @@ mod tests {
             },
         );
         let mut seen = HashMap::new();
-        seen.insert("Quest01".to_string(), ("가족 재회".to_string(), "부모에 대한 단서".to_string()));
+        seen.insert("Quest01".to_string(), ("시험 퀘스트".to_string(), "시험 단서".to_string()));
         let (d, s) = parse(&render(&deeds, &seen));
         assert_eq!((d, s), (deeds, seen));
     }

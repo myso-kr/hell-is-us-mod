@@ -1,84 +1,211 @@
-# 미니맵 3단계 — 지도 배경 조사 기록
+# Map — background research and drawing
 
-미니맵에 배경 지도를 깔 수 있는지 조사한 기록. 결론과 선택지는 맨 아래.
-(2026-10-02, Steam 빌드 24045435)
+§1–6: research into whether a background map can be laid under the minimap, and the approach that
+was chosen. §7–11: how the map is drawn. Started 2026-10-02, Steam build 24045435.
 
-## 1. 에셋 열기
+## 1. Opening the assets
 
-- pak/IoStore 는 AES 암호화 (utoc 플래그 Compressed|Encrypted|Signed|Indexed).
-- **AES 키: 실행 파일에서 직접 찾음.** AESDumpster 방식 — `.text` 에서 같은 베이스 레지스터의
-  연속 오프셋 8곳에 32비트 즉시값을 쓰는 코드(`C7 4x dd imm32`)를 찾아 후보 126개 →
-  `pakchunk0-Windows.pak` 의 암호화된 인덱스 첫 블록을 각 후보로 풀어 FString 마운트 포인트
-  (`int32 길이` + `../../../`)가 나오는 것이 **정확히 하나**.
-- **키는 저장소·문서에 적지 않는다.** 필요하면 같은 방법으로 다시 찾는다 (스크립트는 아래 절차).
-  사용자 PC 밖으로도 보내지 않는다.
-- 도구: retoc v0.1.5 (https://github.com/trumank/retoc, 릴리스 zip sha256 확인).
-  `retoc --aes-key <키> list --path --size <utoc>` 로 경로 목록,
-  `retoc --aes-key <키> to-legacy --no-shaders --no-script-objects -f <이름> <Paks> <출력>` 으로
-  필요한 에셋만 .uasset/.uexp 로.
-- 목록 규모: pakchunk0 19,897 / pakchunk1 77,568 / pakchunk2 4,794 청크.
+- The pak/IoStore files are AES-encrypted (utoc flags Compressed|Encrypted|Signed|Indexed).
+- **The AES key was found in the executable itself**, AESDumpster-style: search `.text` for code that
+  writes 32-bit immediates (`C7 4x dd imm32`) to 8 consecutive offsets from the same base register,
+  which gives 126 candidates. Decrypting the first block of the encrypted index of
+  `pakchunk0-Windows.pak` with each candidate, **exactly one** yields an FString mount point
+  (`int32 length` + `../../../`).
+- **The key is never written into the repository or the documents.** Re-derive it with the same
+  procedure when needed. It is also never sent off the user's PC.
+- Tool: retoc v0.1.5 (https://github.com/trumank/retoc; release zip sha256 verified).
+  `retoc --aes-key <key> list --path --size <utoc>` lists paths;
+  `retoc --aes-key <key> to-legacy --no-shaders --no-script-objects -f <name> <Paks> <out>` extracts
+  just the needed assets as .uasset/.uexp.
+- Listing sizes: pakchunk0 19,897 / pakchunk1 77,568 / pakchunk2 4,794 chunks.
 
-## 2. 지도 관련 에셋
+## 2. Map-related assets
 
-| 에셋 | 내용 |
+| Asset | Contents |
 |---|---|
-| `UI/Interaction/APC/WorldMap/APC_WorldMap_CloseBG_Img` | 15360×8640 DXT1, mip 1개 (66 MB) |
+| `UI/Interaction/APC/WorldMap/APC_WorldMap_CloseBG_Img` | 15360×8640 DXT1, 1 mip (66 MB) |
 | `…/APC_WorldMap_MiddleBG_Img` | 7680×4320 DXT1 |
 | `…/APC_WorldMap_FarBG_Img`, `…_Holder_Img` | 3840×2160 DXT1 |
-| `GameData/StoryUnits/WMA_<지역>/…` | 지역(World Map Area)별 이름·설명·초상화·이동(Travel) 데이터 |
-| `Editor/Tools/MiniMap/Icons/*` | 개발용 미니맵 도구의 아이콘 2개뿐 — 지역 지도 이미지는 출시 빌드에 없음 |
-| `UI/HUD/HUD_CompassDial_*_Img` | 언어별 나침반 눈금 이미지 |
+| `GameData/StoryUnits/WMA_<region>/…` | Per-region (World Map Area) name, description, portrait, travel data |
+| `Editor/Tools/MiniMap/Icons/*` | Only 2 icons from a development minimap tool — no regional map images ship in the release build |
+| `UI/HUD/HUD_CompassDial_*_Img` | Per-language compass dial images |
 
-텍스처 디코딩: 쿠킹된 `.uexp` 에서 `PF_DXT1\0` 다음 12바이트(FirstMipToSerialize, NumMips,
-벌크 플래그) 뒤가 바로 블록 데이터. 크기는 문자열 앞 SizeX/SizeY. BC1 은 numpy 로 풀었다.
+Texture decoding: in a cooked `.uexp`, the block data starts right after `PF_DXT1\0` plus 12 bytes
+(FirstMipToSerialize, NumMips, bulk flags). The size is the SizeX/SizeY before the string. BC1 was
+decoded with numpy.
 
-## 3. 무엇이 들어 있나
+## 3. What the map shows
 
-`APC_WorldMap_*BG` 는 **장갑차(APC) 안에서 지역을 고르는 국가 전체 지도**(Hadea) — 도시
-(Trisk, Kastel, Libane, Loblina, Lethe, Dalmask, Valde, Losilus, Yvel, Pyrean, Golmore),
-지역 경계, 등고선. 탐험 지역(예: Senedra Forest)은 각자 **별도 월드**
-(`SenedraForest_Root_WP`)라 이 지도의 좌표와 이어지지 않고, 지도 위에서는 작은 점 크기다.
+`APC_WorldMap_*BG` is **the whole-country map (Hadea) used to pick a region from inside the armoured
+vehicle (APC)**: cities (Trisk, Kastel, Libane, Loblina, Lethe, Dalmask, Valde, Losilus, Yvel,
+Pyrean, Golmore), region borders and contour lines. Each explorable region (e.g. Senedra Forest) is a
+**separate world** (`SenedraForest_Root_WP`), so its coordinates do not map onto this image, where it
+is only a small dot.
 
-→ **미니맵 배경으로는 쓸모가 적다.** 지역 안에서 길을 찾는 데 필요한 해상도도, 월드 좌표와의
-대응도 없다.
+So **it is of little use as a minimap background**: it has neither the resolution for finding a way
+inside a region nor any correspondence to world coordinates.
 
-## 4. 선택지 — **사용자 결정 (2026-10-02): B**
+## 4. Options — **user decision (2026-10-02): B**
 
-- **A. 국가 지도 오버레이:** 별도 단축키로 큰 창에 국가 지도를 띄우고, 지금 있는 지역(WMA)을
-  표시. 미니맵 배경은 아님. 추출 이미지는 사용자 PC 에서 추출해 `Mods\` 에 둠 (배포 불가).
-- **B. 게임 월드에서 직접 지도 만들기:** 로드된 레벨의 정적 메시(건물·바위·벽, 테스트 지역에서
-  80 m 안에만 3,396개)의 위치와 크기(Bounds)를 위에서 본 윤곽으로 그려 미니맵 배경으로.
-  에셋 추출 없이 실시간, 지역마다 자동. 2단계와 같은 액터 순회를 재사용.
-- **C. 3단계는 접고 Phase 1 (UE4SS) 로.**
+- **A. Country map overlay:** a separate key opens the country map in a large window and marks the
+  current region (WMA). Not a minimap background. The image would be extracted on the user's PC into
+  `Mods\` (cannot be distributed).
+- **B. Build the map from the game world:** draw the top-down outlines of the loaded levels' static
+  meshes (buildings, rocks, walls — 3,396 within 80 m in the test region) from their positions and
+  bounds as the minimap background. No asset extraction, live, automatic for every region, and it
+  reuses the stage 2 actor walk.
+- **C. Drop stage 3 and move to Phase 1 (UE4SS).**
 
-## 5. B 구현 기록 (2026-10-02)
+## 5. Implementing B (2026-10-02)
 
-- 재료(리플렉션으로 확인): 정적 메시 액터 9,696개 — 루트가 `StaticMeshComponent`
-  (`RelativeLocation`, `RelativeRotation`(pitch, **yaw**, roll), `RelativeScale3D`, `StaticMesh`,
-  `AttachParent`), 메시는 `UStaticMesh.ExtendedBounds` (+0x200, 56바이트: Origin·BoxExtent·Radius, double).
-- `geometry.rs`: 메시 상자를 yaw 로 돌리고 스케일해 위에서 본 사각형(Footprint) + 높이 범위.
-  붙어 있는(AttachParent 있는) 컴포넌트는 상대 좌표라 제외. 30 cm 미만·150 m 초과 제외.
-  액터마다 한 번만 읽어 캐시, 3초마다 새로 로드된 액터만 추가. 첫 읽기 약 290 ms, 이후 거의 0.
-- 그리기(`raster::draw_map`): 주인공 발(캡슐 중심 −90 cm) 기준 −1.5 m ~ +2.5 m 높이에 걸친 것만
-  (천장·다른 층 제외). 높이 80 cm 미만은 바닥, 이상은 벽. 25 m 넘게 넓은 벽(절벽·큰 바위)은 상자가
-  실제 모양보다 훨씬 커서 걸을 수 있는 땅을 덮으므로 제외.
-- 첫 시도는 반투명 사각형을 그대로 겹쳐 그려 덩어리가 됐다 → 바닥·벽을 각각 마스크에 합집합으로
-  그린 뒤 한 번만 일정한 투명도로 깔고, 마스크 가장자리에 윤곽선. 겹침이 쌓이지 않는다.
-- 미리보기: `examples/preview.rs` (저장소 밖) 로 실제 게임 데이터 한 프레임을 이미지로 렌더링해
-  확인. 테스트 지역(야외, z≈1261)에서 폐허의 벽·건물 윤곽이 깔끔하게 나옴.
-- 패널 지도 탭 '벽·바닥 윤곽' 스위치 (minimap.txt `terrain`).
-- **아직:** 게임 화면에서 확인, 던전(지하) 확인, 많은 메시가 있는 곳의 프레임 시간.
+- Inputs (confirmed via reflection): 9,696 static mesh actors whose root is a `StaticMeshComponent`
+  (`RelativeLocation`, `RelativeRotation` (pitch, **yaw**, roll), `RelativeScale3D`, `StaticMesh`,
+  `AttachParent`). The mesh's `UStaticMesh.ExtendedBounds` is at +0x200: 56 bytes, Origin · BoxExtent
+  · Radius, as doubles.
+- `src/read/geometry.rs`: the mesh box rotated by yaw and scaled gives a top-down rectangle
+  (`Footprint`) plus a height range. Attached components (with an `AttachParent`) are in relative
+  coordinates and are skipped, as are footprints under 30 cm or over 150 m. Each actor is read once
+  and cached; every 3 s only newly loaded actors are added. The first read takes about 290 ms, later
+  ones almost nothing.
+- Drawing (`raster::draw_map` in `src/map/raster.rs`): only meshes spanning −1.5 m to +2.5 m around
+  the hero's feet (capsule centre −90 cm) are drawn, which drops ceilings and other floors. Under
+  80 cm tall is floor, otherwise wall. Walls wider than 25 m (cliffs, large rocks) were dropped
+  because their boxes are far larger than the real shape and cover walkable ground (§6 reversed this).
+- The first attempt overlaid translucent rectangles directly and produced blobs. Now floors and walls
+  are each drawn as a union into a mask, laid down once with a fixed opacity, and outlined at the
+  mask edge — overlaps no longer accumulate.
+- Preview: `examples/preview.rs` (not committed) renders one frame of real game data to an image. In
+  the test region (outdoors, z≈1261) ruin walls and building outlines came out cleanly.
+- Panel Map tab switch "Wall and floor outlines" (minimap.txt `terrain`).
+- **Open at the time:** checking in the game, checking dungeons (underground), frame time where
+  there are many meshes.
 
-## 6. 사용자 피드백 1차 → 높이 층과 등고선 (2026-10-02)
+## 6. First user feedback → height bands and contours (2026-10-02)
 
-- 피드백: 전체적으로 좋음. ① 반경을 줄였을 때 반경에 다 안 들어오는 지형 오브젝트가 안 그려짐
-  ② 높낮이 구분이 어려움 — 고도선 같은 개선 필요.
-- ① 재현해 보니 원 가장자리 자르기는 정상. 원인은 "폭 25 m 넘는 서 있는 메시 제외" 규칙 — 큰 지형일수록
-  작은 반경에 다 안 들어오는데, 바로 그것들이 빠져 있었다. → 빼지 않고 '절벽·바위' 층으로 흐리게.
-- ② 발 기준 높이로 층을 나눔 (`raster::band`): 깊은 곳(< −4 m) · 낮은 곳(−4 ~ −1.2 m) ·
-  같은 높이(−1.2 ~ +0.6 m) · 높은 곳(+0.6 ~ +3 m) · 절벽·바위(25 m 넘는 서 있는 것) · 벽(내 높이에
-  서 있는 것). 층마다 합집합 마스크 + 자기 색 윤곽선 → 높이가 바뀌는 곳에 선 = 등고선 역할.
-  세로 범위를 −1.5 ~ +2.5 m 에서 −8 ~ +3 m 로 넓힘. 머리 위 평평한 것(천장)은 계속 제외.
-- 지도 탭 '벽·바닥 윤곽' 아래에 층 색 범례.
-- 미리보기로 확인: 계단·구덩이(파랑), 단·발판(모래색), 벽(밝은 선)이 구분됨. 절벽·바위는 상자가 커서
-  넓은 직사각형으로 보이지만 흐려서 아래를 가리지 않음.
+- Feedback: good overall, but (1) with a smaller radius, terrain objects that do not fit fully inside
+  the radius were not drawn; (2) heights were hard to tell apart — something like contour lines was
+  needed.
+- (1) Clipping at the circle edge turned out to be correct. The cause was the rule dropping standing
+  meshes wider than 25 m: the larger the terrain feature, the less likely it fits inside a small
+  radius, and those were exactly the ones being dropped. They are now kept, faded, as a
+  "cliffs and rocks" band.
+- (2) Bands by height relative to the feet (`raster::band`): deep (< −4 m) · low (−4 to −1.2 m) ·
+  level (−1.2 to +0.6 m) · high (+0.6 to +3 m) · cliffs and rocks (standing, wider than 25 m) · wall
+  (standing at the hero's height). Each band is a union mask with an outline in its own colour, so a
+  line appears wherever height changes — acting as contours. The vertical range widened from −1.5 to
+  +2.5 m to −8 to +3 m. Flat things overhead (ceilings) are still excluded.
+- A band colour legend sits under "Wall and floor outlines" in the Map tab.
+- Checked with the preview: stairs and pits (blue), ledges and platforms (sand), walls (bright lines)
+  are distinguishable. Cliff and rock boxes show as wide rectangles because the boxes are large, but
+  they are faded and do not hide what lies beneath.
+
+## 7. Big map; hiding when a game menu opens (2026-10-02)
+
+- Default key F3 (rebindable in the panel; if any of the five keys collide, all reset to defaults).
+  A square 80% of the game window's height, centred, north up, radius 250 m by default (50–1000).
+  Many pixels to draw, so it renders every third frame. The small minimap hides while the big map is
+  shown. (§10 later removed the dedicated big map key.)
+
+Hiding when a game menu is open:
+- Two signals: (1) the system cursor is visible while the game window has focus (`GetCursorInfo`; it
+  is hidden during play); (2) the game is paused — `World.PersistentLevel.WorldSettings.Pauser` is not
+  null.
+- Either one hides the minimap, compass and big map. The panel's Map tab has a game-menu box with the
+  on/off switch and the live signals (setting `hide_in_menus`).
+- **Unverified:** whether the inventory (Datapad) actually shows the cursor or pauses, and whether it
+  does so when opened with a gamepad. If not, look for another signal such as HUD widget visibility.
+
+## 8. Terrain shading and contour map modes (2026-10-02)
+
+Requested: a toggle for hill-shading or contour rendering. It draws the routing heightmap
+(ROUTES.md §3) on the map.
+
+- Setting `relief` = off / shading / contours / both (default both). Map tab "Terrain view". Separate
+  from the existing "Wall and floor outlines" (structure height bands).
+- `src/map/relief.rs` **bakes** a square around the hero (the larger map radius + 150 m) into a
+  world-space grid: cells ≥ 1 m, at most 1024 per side. Per cell: height (bilinear from the source),
+  shading (light from the north-west at 45°, relative to flat), water (the ROUTES.md §3 water runs).
+  Baking runs on its own thread and repeats when the hero moves 100 m, the scene (obstacle pass)
+  changes or the map grows. Measured: 540² cells in 31 ms.
+- Drawing (`raster::draw_relief`): map pixel → world is only rotation and scale, so it is affine
+  (first pixel plus row/column increments). Height is bilinear per pixel first, and a line is drawn
+  **where a pixel's 2 m / 10 m interval differs from its neighbour's**, giving a 1 px contour at any
+  zoom. Shading is tinted over ±15 m around the feet: lower is bluer, higher is ochre. Water is blue.
+- Cost (600 px map, 280k pixels inside the circle): 20 ms without terrain → contours 39, shading or
+  both 54 ms. The 240 px minimap costs a sixth of that. The big map already draws every third frame,
+  and it all runs on the overlay thread, independent of the game's frames. (§9 cut these costs.)
+
+## 9. Rendering performance (2026-10-02)
+
+Requested: research performance improvements for rendering. A benchmark on real data (195 things,
+15,747 structures, 55 goals, a 67-point route, 1024² terrain) broke down the cost per feature — one
+`draw_map` frame, release build, average of 10 runs.
+
+| Size | State | Before (ms) | After (ms) |
+|---|---|---|---|
+| 240 px (minimap) | Empty map | 3.2 | 0.6 |
+| | Wall and floor outlines | 50 | 3.5 |
+| | Everything (outlines + shading + contours) | 38 | 6.2 |
+| 864 px (big map) | Empty map | 34 | 3.6 |
+| | Wall and floor outlines | 190 | 11 |
+| | Shading / contours | 90 / 81 | 14 / 16 |
+| | Everything | 261 | 27 |
+
+Causes and fixes:
+1. **Lines, circles and rings scanned their whole bounding box** — one diagonal 600 px route line
+   touched 360k pixels. Now only the x-span each row actually touches (`Canvas::rows` in
+   `src/map/canvas.rs`). Rings skip the inner hole.
+2. **The background disc was drawn every frame** (an 864 px disc is 580k pixels). Now drawn once per
+   size, kept in a `thread_local`, and memcpy'd.
+3. **Floating-point blending** → integer source-over (`over`).
+4. **Wall and floor outlines**: six map-sized masks per frame (864² × 4 B × 6 ≈ 18 MB) plus 15k
+   anti-aliased polygons. Now a single u8 class buffer filled with non-AA scanlines (`fill_convex`);
+   on overlap the later band wins; colouring and edges are done once.
+5. **Terrain**: per pixel, an inverse world transform (trig), a bilinear sample and a colour
+   computation. Now colours are precomputed per texel at bake time (rebaked when foot height changes
+   by 3 m), pixel → texel uses row/column increments, and only contour heights are bilinear.
+6. **Row-parallel work**: both terrain passes and outline colouring are split into row chunks with
+   `std::thread::scope`, one per core (≤ 8).
+7. **Loop**: "sleep 50 ms + work" became deadline-based (sleep minus the work time), so drawing time
+   no longer adds to the frame interval.
+
+In the same change: big map **opacity** (20–100%), applied as `UpdateLayeredWindow`'s
+SourceConstantAlpha, so it costs nothing.
+
+## 10. Outline (Diablo-style) style; a key that cycles display modes (2026-10-02)
+
+Requested: the big map covered too much of the screen — make it like Diablo's overlay map, with a
+transparent background and solid outlines only. Also: switch between big map and minimap in the
+panel settings, and have the single map key cycle through display modes, as most games do.
+
+- `View.outline` (`src/map/view.rs`): no disc background (fully transparent), no border ring. Lines
+  only, no fill:
+  - Structure bands: solid edges for **walls and high ground only**, plus a 1 px dark outer border so
+    they read on any background. Cliff and rock boxes are left out because they are larger than the
+    real shape, and the blue of low/deep ground because it is confused with water — contours show
+    the terrain instead.
+  - Terrain: contours (the thick 10 m lines a little darker) and a **solid blue shoreline** (a dry
+    pixel next to a wet one).
+  - Route, trail, icons, hero and N are unchanged.
+- Settings: `big_outline` (default on), `mini_outline` (default off). Panel: "Style: Outline /
+  Filled" on the minimap and big map cards.
+- Display mode `display` = minimap / big map / off (the old `show false` reads as off).
+  `cycle_modes` = which modes the map key cycles through (a bit set, at least one). Each press of the
+  map key (default F9) steps minimap → big map → off, through the chosen modes only. **The dedicated
+  big map key was removed**, leaving four keys: map display mode, marker, compass, next goal.
+
+## 11. Floors and compass distance cues (2026-10-03)
+
+- Requested: layered above/below-ground rendering (the current floor sharp, other floors faded);
+  compass icon size and opacity conveying distance; up/down arrows with the height difference for
+  goals.
+- Compass (`pin_look` in `src/map/compass.rs`): on a log scale from 10 m to 200 m, size goes 1.15 →
+  0.7 and opacity 1 → 0.35 (the target only down to 0.7). A height difference ≥ 3 m (`FLOOR_DZ`) adds
+  ▲/▼ next to the pin. Under the target, a label like `85m ▼12m` (above in sky blue, below in orange).
+- Map: icons and goals more than 3 m above or below the feet fade over 3–6 m down to one-third
+  opacity and get ▲/▼ (`floor_alpha`, `floor_arrow`). The structure bands now draw standing things
+  (walls) on **the floor above** (base 3–12 m up) and **the floor below / underground** (top 1.5–15 m
+  down) very faintly, like ghosts — previously they were not drawn at all. Included in outline mode.
+- Measured (Jova, the Vitalis house): the Family Reunion goal is 11–14 m below (underground). The
+  grid route was flat and did not know the underground entrance, which led to using the game navmesh
+  (ROUTES.md §6).

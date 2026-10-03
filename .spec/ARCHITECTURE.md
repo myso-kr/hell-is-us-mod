@@ -1,138 +1,191 @@
-# 구조
+# Architecture
 
-## 게임
+How the code is laid out, and how it finds its way through the game's memory.
 
-- Hell Is Us (Rogue Factor / Nacon), Steam AppID **1620730**, 실행 파일
-  `HellIsUs\Binaries\Win64\HellIsUs-Win64-Shipping.exe` (155 MiB, 암호화 없음 —
-  디스크에서 읽힘). Denuvo·EAC 없음.
-- Unreal Engine **5.5.4** (PCGamingWiki; 실행 파일의 MegaLights 와 일치).
-  버전 리소스는 `UE5-CL-0` 뿐이라 정확한 빌드 문자열은 실행 파일에 없음.
-- 내부 코드명 **Charlie**: `CharliePlayerController`, `CharlieCharacterHero`,
+## The game
+
+- *Hell Is Us* (Rogue Factor / Nacon), Steam app **1620730**. The executable is
+  `HellIsUs\Binaries\Win64\HellIsUs-Win64-Shipping.exe` (155 MiB). It is not encrypted and reads fine
+  from disk. There is no Denuvo and no anti-cheat.
+- Unreal Engine **5.5.4** (PCGamingWiki; consistent with MegaLights in the executable). The version
+  resource only says `UE5-CL-0`, so the exact engine build string is not in the binary.
+- The internal codename is **Charlie**: `CharliePlayerController`, `CharlieCharacterHero`,
   `CharlieHeroAbilitySystemComponent`, `CharlieGameInstance`, `CharlieCheatManager`, …
-- 능력치는 GAS 속성. 네이티브 세트 클래스(실행 파일의 UTF-16 등록 이름):
-  `EnduranceAttributeSet`, `LymbicAttributeSet`, `DamageAttributeSet`,
-  `WeaponAttributeSet`, `LocomotionAttributeSet`, `PoiseAttributeSet`,
-  `PlayerDefenseAttributeSet`, `PlayerAttributeSet`, `StanceAttributeSet`,
-  `HealthAttributeSet`, `CharlieAttributeSet`, …
-- **체력은 스태미나의 상한**: 맞으면 `EnduranceCap` 이 줄고, `Endurance` 는 그 아래에서
-  움직인다 (CE 테이블의 "health" = EnduranceCap).
-- 플레이어 블루프린트: `StoryHero_BP_C`. CE 테이블 기준 +0x688 ASC, ASC +0x1088
-  SpawnedAttributes — **참고만 하고 코드에는 쓰지 않는다** (리플렉션으로 찾음).
-- pak: IoStore, utoc 플래그 Compressed|Encrypted|Signed|Indexed. AES 키 공개된 것 없음.
+- Stats are GAS attributes in native sets (their UTF-16 registration names are in the executable):
+  `EnduranceAttributeSet`, `LymbicAttributeSet`, `DamageAttributeSet`, `WeaponAttributeSet`,
+  `LocomotionAttributeSet`, `PoiseAttributeSet`, `PlayerDefenseAttributeSet`, `PlayerAttributeSet`,
+  `StanceAttributeSet`, `HealthAttributeSet`, `CharlieAttributeSet`, …
+- **Health is the ceiling on stamina.** A hit lowers `EnduranceCap`, and `Endurance` moves underneath
+  it. The Cheat Engine table's "health" is `EnduranceCap`.
+- The player blueprint is `StoryHero_BP_C`. The Cheat Engine table puts the ASC at +0x688 and
+  `SpawnedAttributes` at ASC +0x1088. Those numbers are a cross-check only; the code finds both by
+  reflection.
+- Paks are IoStore with utoc flags Compressed | Encrypted | Signed | Indexed. No AES key has been
+  published; the survey tool finds it in the executable at run time (SURVEY.md, MAP.md §1).
 
-## 메모리를 따라가는 길
+## Following memory to the hero
 
 ```
-이미지 .data 스캔
-  ├─ FNamePool: 블록 0 이 "None","ByteProperty" 로 시작하는 유일한 풀   (names::discover)
-  └─ GEngine:   클래스 계보에 "GameEngine" 이 있고 Default__ 가 아닌 객체를
-                가리키는 전역 — 객체가 하나여야 함                      (anchors::find_engine)
-FField 레이아웃: LAYOUTS 4개 중 GameEngine.GameInstance → GameInstance 가 되는 것
+scan the image's writable data
+  ├─ FNamePool: the one pool whose block 0 starts "None", "ByteProperty"      (names::discover)
+  └─ GEngine:   the one global pointing at a non-default object whose class
+                derives from GameEngine                                       (anchors::find_engine)
+FField layout: of the 4 candidates in LAYOUTS, the one under which
+               GameEngine.GameInstance leads to a GameInstance
 
-GEngine ─GameInstance→ ─LocalPlayers[0]→ ─PlayerController→ ─Pawn→ 주인공
-   주인공 ─(AbilitySystemComponent 를 가리키는 속성)→ ASC ─SpawnedAttributes→ TArray<세트>
-   주인공 ─RootComponent→ ─RelativeLocation (f64×3, cm)
-   컨트롤러 ─ControlRotation (f64×3: pitch, yaw, roll)
+GEngine ─GameInstance→ ─LocalPlayers[0]→ ─PlayerController→ ─Pawn→ hero
+   hero ─(the property pointing at an AbilitySystemComponent)→ ASC ─SpawnedAttributes→ TArray<set>
+   hero ─RootComponent→ ─RelativeLocation (f64×3, cm)
+   controller ─ControlRotation (f64×3: pitch, yaw, roll)
 ```
 
-이름 → 오프셋 해석은 `player::learn` 이 붙은 뒤 처음 주인공이 있을 때 한 번 하고
-(`Attached.chain`), 이후 매 틱은 그 오프셋으로 포인터만 따라간다.
+`player::learn` resolves names to offsets once, the first time a hero exists after attaching
+(`Attached.chain`). After that every tick follows pointers by those offsets.
 
-엔진 레이아웃 상수 (`names.rs`): UObject `ClassPrivate` +0x10, `NamePrivate` +0x18,
-`OuterPrivate` +0x20; UStruct `SuperStruct` +0x40, `ChildProperties` +0x50. FField 쪽
-(Next, Name, ElementSize, Offset_Internal)은 엔진 버전마다 달라 후보에서 고른다.
-UE 5.6(dungeons2-mod 실측)은 0x18/0x20/0x34/0x48, **이 게임(UE 5.5)은 0x18/0x20/0x34/0x44** (2026-10-02 실측).
+Engine layout constants (`src/unreal/names.rs`): UObject `ClassPrivate` +0x10, `NamePrivate` +0x18,
+`OuterPrivate` +0x20; UStruct `SuperStruct` +0x40, `ChildProperties` +0x50. The FField members
+(Next, Name, ElementSize, Offset_Internal) differ between engine versions and are chosen from
+candidates: UE 5.6 (measured in dungeons2-mod) uses 0x18/0x20/0x34/0x48; **this game (UE 5.5) uses
+0x18/0x20/0x34/0x44** (measured 2026-10-02).
 
-FName index = (블록 << 16) | (블록 안 오프셋 / 2). 엔트리 = u16 헤더(bit0 wide,
-상위 10비트 길이) + 문자. FNamePool 블록 배열은 풀 +0x10.
+An FName index is `(block << 16) | (offset in block / 2)`. An entry is a u16 header (bit 0 = wide,
+top 10 bits = length) followed by the characters. The block array sits at pool +0x10.
 
-## 쓰기 전 안전장치 (순서대로)
+Other paths the guide uses:
 
-1. 주인공 게이트: 조작 중인 폰의 계보에 `CharlieCharacterHero` (`player::Chain::hero`).
-2. 속성은 세트 클래스 이름 + 속성 이름(`*` 면 유일한 이름)으로 찾고, ElementSize 16.
-3. 대상 첫 8바이트가 공유 속성 vtable — 모든 속성의 4/5 이상이 동의하고 게임 이미지 안.
-   일반 필드는 vtable 대신: 소유 객체 클래스 확인 + 리플렉션상 크기 4.
-4. 유한한 float 만.
-5. 덮어쓰기 전에 원래 값을 파일에 기록 — 기록 실패 시 쓰지 않음 (`hold.rs`).
+- World name: pawn → `OuterPrivate` (level) → `OuterPrivate` (world).
+- Loaded levels: `World.Levels` (+0x178, reflected). A level's actors: `ULevel::Actors` (+0xA0, not
+  reflected — found as the one TArray in the hero's level that contains the hero). Build 24045435:
+  140 levels, 10,671 actors.
+- GUObjectArray, the save objects and the quest data: GUIDE.md §2. Navmesh tiles: ROUTES.md §6.
+  Terrain heightfields: ROUTES.md §3.
 
-## 코드 지도
+Coordinates: UE X is forward, Y right, Z up; yaw runs from +X towards +Y (clockwise seen from above).
+**The game's north is world −Y (yaw 270)**, checked against the game's own compass
+(`MapState.north_yaw`). East is +X.
 
-폴더는 **역할(층)** 으로 나눈다. 아래 층은 위 층을 모른다 (unreal → read → guide/cheat → map → engine → ui).
-모든 모듈은 `lib.rs` 에서 최상위로 다시 내보내므로 `crate::goals`, `hiumod::mem` 처럼 **모듈 이름만으로** 부른다
-(어느 폴더에 있는지는 경로에 드러나지 않음 — 옮겨도 호출부가 안 바뀐다).
+## Safety checks before any write, in order
+
+1. The hero gate: the controlled pawn's class derives from `CharlieCharacterHero`
+   (`player::Chain::hero`).
+2. Attributes are found by set class name plus property name (`*` = the one set that has that name),
+   and must be declared 16 bytes.
+3. The target's first 8 bytes are the shared attribute vtable — at least 4/5 of all attributes must
+   agree, and it must lie inside the game image. Plain fields instead check the owning object's class
+   and that the reflected size is 4.
+4. Finite floats only.
+5. The original value is written to disk before overwriting; if that write fails, nothing is written
+   (`cheat/hold.rs`).
+
+## Code map
+
+Folders are **layers**. A lower layer never knows about a higher one:
+unreal → read → guide/cheat → map → engine → ui. Every module is re-exported at the top of `lib.rs`,
+so callers name it by module only (`crate::goals`, `hiumod::mem`) and a move between folders does
+not touch them.
 
 ```
 src/
-  main.rs  cli.rs       CLI 명령 (doctor/list/get/set/hold/restore/pose/ui), 인자 해석
-  engine/               mod.rs (Engine 루프: 붙기·게이트·hold, 파생값 1초마다·Arc 공유) · attached.rs (붙은 게임과
-                        그 질의·캐시, extras 의 Reach 구현) · snapshot.rs (패널·오버레이가 읽는 유일한 것)
-  unreal/               게임 메모리와 언리얼 리플렉션
-    mem.rs              Memory trait, 포인터 사슬, 테스트용 Fake
-    names.rs anchors.rs FNamePool·GEngine 찾기, 클래스 이름·계보·속성
+  main.rs cli.rs        the CLI (doctor/list/get/set/hold/restore/pose/ui) and argument parsing
+  engine/               mod.rs: the engine loop (attach, gate, holds; derived lists once a second, shared by Arc)
+                        attached.rs: the attached game, its queries and caches (implements extras' Reach)
+                        snapshot.rs: the only thing the panel and the overlay read
+  unreal/               game memory and Unreal reflection
+    mem.rs              the Memory trait, pointer chains, a Fake for tests
+    names.rs anchors.rs FNamePool and GEngine discovery; class names, ancestry, properties
     gobjects.rs         GUObjectArray
-    player.rs           리플렉션으로 체인 학습, 주인공 게이트, 위치·방향
-    usmap.rs probe.rs   .usmap 쓰기, doctor 하위 명령
-  read/                 리플렉션으로 읽는 세계
-    actors.rs           미니맵 액터 분류 (Kind 6 / Sub 23)
-    attr.rs             속성 세트 읽기·쓰기 (Session)
-    knowledge.rs        아는 사실·태그·조사
-    terrain.rs obstacles.rs navmesh.rs geometry.rs   지형 높이, 장애물 껍질, 내비메시(A*+funnel), 정적 메시 윤곽
-  cheat/                cheats.rs (표) · hold.rs (원래 값 기록·복구) · extras.rs (주인공 밖 대상; 게임은 Reach 트레이트로만)
-  guide/                어디로, 왜
-    goals.rs            안내 목표 (페이로드·NPC·퀘스트 아이템), Gate
-    quests.rs           퀘스트 저널·비밀(선행·미스터리·타임루프), 시간 예산 읽기
-    survey.rs           tools/survey 결과 (Mods\survey\*.json) 조회
-    missables.rs        놓칠 수 있는 것 (assets/missables.tsv)
-    pathfind.rs         장애물 격자 A* (내비메시 없을 때)
-    target.rs           안내 대상 고르기 (자동·건너뛰기·막힘 → 여는 것), 순환 키
-  map/                  지도 상태와 그리기
-    minimap.rs          MapState (경로·설정·레이어), minimap.txt — pins·view 를 다시 내보냄
-    pins.rs view.rs     지도 핀 (PinKind 24종·Marker) · 표시 방식·지형 모드·투영 (View)
-    canvas.rs           미리 곱한 알파 픽셀 버퍼, 도형, 벡터 글꼴
-    compass.rs          나침반 띠, 층 표시(흐림·위아래 화살표)
-    raster.rs           draw_map (한 프레임) — canvas·compass 를 다시 내보냄
-    relief.rs icons.rs  지형 굽기, assets/{icons,pins}/*.svg 래스터화
-  i18n/                 게임 언어 따르기 (.spec/I18N.md): culture.rs (프로필의 TextCulture) · names.rs (게임 고유명사:
-                        Mods\locale) · text.rs (모드 문구 표 assets/i18n, 키 → 문구) · fill.rs (trf! 실행 시 채움). tr!("KEY")/trf! 매크로
-  infra/                log.rs logfile.rs (hiumod.log) · paths.rs (Mods\ 폴더, 모든 파일 경로의 뿌리) ·
-                        settings.rs · verify.rs · backup.rs (세이브 백업) · memstat.rs (자기 메모리)
-  game/                 밖에서 본 게임: locate.rs (설치), launch.rs, process.rs (RPM/WPM)
-  ui/                   패널·오버레이 (Windows 전용)
-    mod.rs              Request·Shared·worker 스레드·백업/메모리 로그 스레드
-    panel/              eframe 패널: mod.rs (틀·헤더·탭·콘솔 창) + 탭마다 한 파일
-                        groups · map · guide · quests · collect · saves · debug
-    overlay/            오버레이 스레드: mod.rs (프레임 루프·창·키) · route.rs (목표까지 경로, 내비메시→격자, 스레드)
-                        · bake.rs (지형 굽기) · hud.rs (핀 목표·나침반 표시·추적기 줄)
-    tracker.rs pen.rs   퀘스트 추적기, GDI 한글 글자
-    console.rs hotkey.rs layered.rs tw.rs   드롭다운 콘솔, 단축키·창 순서, 레이어드 창, 카드 레이아웃
-assets/                 icons/ (종류 23) · pins/ (핀 24) · i18n/ (모드 문구 번역) · missables.tsv — 코드에 박지 않는 데이터
-tools/survey/           C# + CUE4Parse 조사기 (결과는 커밋 안 함)
-examples/               일회용 탐침 (gitignore)
+    player.rs           learning the chain by reflection, the hero gate, position and heading
+    usmap.rs probe.rs   writing .usmap mappings; the doctor sub-commands (DOCTOR.md)
+  read/                 the world, read through reflection
+    actors.rs           map actor classification (6 kinds, 23 sorts)
+    attr.rs             attribute sets: read and write (Session)
+    knowledge.rs        known facts, tags, investigations from the save
+    puzzles.rs          dials, keypads and item placements near the hero (FEATURES.md §3)
+    terrain.rs obstacles.rs navmesh.rs geometry.rs   heightfields, obstacle hulls, the game navmesh, static-mesh outlines
+  cheat/                cheats.rs (the table) · hold.rs (originals and restore) · extras.rs (targets other than the hero; reaches the game only through Reach)
+  guide/                where to go, and why
+    goals.rs            guidance goals (payloads, NPCs, quest items) and the gate on them
+    quests.rs           the quest journal and secrets (good deeds, mysteries, timeloops), read on a time budget
+    survey.rs tables.rs the survey (Mods\survey\*.json) and its tables: spawners, vaults
+    missables.rs        good deeds that can be missed (assets/missables.tsv)
+    pathfind.rs         grid A* round obstacles, when there is no navmesh (ROUTES.md)
+    target.rs           choosing the target: auto, skip, blocked → what opens it; the cycle key
+  map/                  map state and drawing
+    minimap.rs          MapState (trail, settings, layers), minimap.txt; re-exports pins and view
+    pins.rs view.rs     map pins (24 PinKinds, Marker) · display modes, terrain modes, projection (View)
+    canvas.rs           premultiplied-alpha pixel buffer, shapes, vector font
+    compass.rs          the compass strip and floor cues (fading, up/down arrows)
+    raster.rs           draw_map (one frame); re-exports canvas and compass
+    relief.rs icons.rs  terrain baking; rasterising assets/{icons,pins}/*.svg
+    symbols.rs          the vault symbols (assets/symbols), recoloured
+  i18n/                 following the game's language (I18N.md): culture.rs (TextCulture from the profile) ·
+                        names.rs (the game's own names, Mods\locale) · text.rs (the mod's text tables, assets/i18n) ·
+                        fill.rs (runtime fill for trf!) — tr!("KEY") / trf! macros
+  infra/                log.rs logfile.rs (hiumod.log) · paths.rs (the Mods\ folder; every file path starts here) ·
+                        settings.rs · verify.rs · backup.rs (save backups) · memstat.rs (this process's memory) ·
+                        gamedata.rs runtime.rs (reading the survey automatically; the .NET 8 runtime — SURVEY.md §8)
+  game/                 the game seen from outside: locate.rs (install), launch.rs, process.rs (RPM/WPM),
+                        achievements.rs (Steam's achievement cache, FEATURES.md §4)
+  ui/                   the panel and the overlays (Windows only)
+    mod.rs              Request, Shared, the worker thread, the backup and memory-log thread
+    panel/              the eframe panel: mod.rs (frame, header, sidebar, console window) and one file per page:
+                        groups · map · guide · quests · collect · deep · saves · debug
+    overlay/            the overlay thread: mod.rs (frame loop, windows, keys) · route.rs (the route to the goal,
+                        navmesh first then grid, own thread) · bake.rs (terrain baking) · hud.rs (pins, compass, tracker lines)
+    tracker.rs pen.rs   the quest tracker; GDI text
+    console.rs hotkey.rs layered.rs   the drop-down console; hotkeys and window order; layered windows
+    tw.rs theme.rs svg.rs             card layout (PANEL.md §1) · palette and spacing (§3–4) · SVG to egui textures
+assets/                 icons/ (23 sorts) · pins/ (24) · symbols/ (8 vault symbols) · i18n/ (the mod's text, 12 languages) ·
+                        missables.tsv — data that does not belong in code
+tests/data_files.rs     integration tests over the data file formats
+tools/survey/           the C# + CUE4Parse survey tool (its output is never committed)
+tools/site/             the GitHub Pages generator (SITE.md) · tools/video/  the introduction video (SITE.md)
+docs/                   generated site — edit tools/site, not this
+examples/               throwaway probes against the running game (gitignored)
 ```
 
-규칙
-- 새 모듈은 역할 폴더에 넣고 그 폴더 `mod.rs` 와 `lib.rs` 의 `pub use` 에 한 줄씩.
-- 파일 경로는 `paths::data_dir()` 에서만 시작. 데이터·아이콘은 `assets/` 파일로.
-- UI 는 게임 메모리를 읽지 않는다 (Snapshot 만). 안내 규칙은 guide/, 그리기는 map/ 에.
-- 한 파일이 ~700 줄을 넘으면 관심사로 나눈다 (panel → panel/, raster → canvas/compass).
+Rules:
 
-좌표: UE X 앞, Y 오른쪽, Z 위, yaw 는 +X 에서 +Y 쪽으로(위에서 보면 시계 방향).
-**게임의 북쪽 = 월드 −Y (yaw 270)** — 게임 나침반과 비교해 확인 (`MapState.north_yaw`). 동쪽 = +X.
-월드 이름 = 폰 → OuterPrivate(레벨) → OuterPrivate(월드) 의 이름.
-로드된 레벨 = `World.Levels` (+0x178, 리플렉션). 레벨의 액터 = `ULevel::Actors` (+0xA0, 리플렉션 밖 —
-주인공 레벨에서 주인공을 담은 유일한 TArray 로 찾음). 빌드 24045435: 레벨 140, 액터 10,671.
+- A new module goes in its layer's folder, with one line in that folder's `mod.rs` and one in
+  `lib.rs`'s `pub use`.
+- File paths start from `paths::data_dir()` only. Data and icons live in `assets/` files.
+- The UI never reads game memory; it reads the Snapshot. Guidance rules go in `guide/`, drawing in
+  `map/`.
+- When a file grows past ~700 lines, split it by concern (as panel → `panel/`, raster →
+  canvas/compass).
 
-패널 스레드 규칙: **게임 메모리는 worker 스레드만 만진다.** 미니맵도 스냅숏만 읽는다. `Attached` 는 `RefCell`
-을 가지므로 Sync 가 아니다 — worker 밖으로 넘기지 않는다.
+Threads: **only the worker thread touches game memory.** The overlay reads snapshots too.
+`Attached` holds `RefCell`s and is not `Sync`; it never leaves the worker.
 
-## 테스트 고정물
+## Test fixtures
 
-`anchors::tests::image()` 가 PE 헤더·쓰기 가능 섹션·이름 풀·GEngine·GameInstance 를
-가짜 메모리에 만들고, `player::tests::world()` 가 그 위에 로컬 플레이어·컨트롤러·
-주인공·ASC·위치를 얹는다. 클래스·속성은 `names::fixture::Pool` 로 (`class`, `inherit`).
+`anchors::tests::image()` builds a PE header, a writable section, a name pool, GEngine and a
+GameInstance in fake memory. `player::tests::world()` adds a local player, controller, hero, ASC and
+position on top. Classes and properties come from `names::fixture::Pool` (`class`, `inherit`).
 
-## 문서·예제·테스트 규칙 (2026-10-03)
-- 문서는 모두 `.spec/` (한국어 인수인계·조사·결정 + 영어 참고 PLAN·ANCHORS·CHEATS). `docs/` 는 GitHub Pages 홈페이지만.
-- `examples/` 는 실행 중인 게임에 대는 일회용 탐침 (gitignore). 남길 가치가 있으면 `doctor` 하위 명령으로 옮긴다
-  (예: `doctor saves`, `doctor locale`).
-- 단위 테스트는 각 파일 안 `#[cfg(test)]`, 파일 형식을 공개 API 로 묶어 보는 통합 테스트는 `tests/` (data_files.rs).
+## Conventions for documents, examples and tests
+
+- All documentation lives in `.spec/`, in English. `docs/` is only the generated website.
+- `examples/` holds throwaway probes against the running game (gitignored). Anything worth keeping
+  becomes a `doctor` sub-command (`doctor saves`, `doctor locale`).
+- Unit tests sit in each file under `#[cfg(test)]`. Integration tests that exercise a file format
+  through the public API go in `tests/` (`data_files.rs`).
+
+## Memory
+
+Measured 2026-10-03 after a long-running panel (an earlier build) showed 1.3 GB:
+
+- Re-measured, the panel sat at 230–275 MB, swinging ±20 MB every 20 s — repeated allocation rather
+  than a leak.
+- The engine alone, headless at the same 10 Hz for 150 s: flat around 50 MB. Not the cause.
+- The overlay's heavy work alone, headless on real data — 300 big-map frames on a 1700² canvas (54 ms
+  each), 20 terrain bakes, navmesh routes (2 ms) and grid routes (288 ms): peak 112 MB. Not the cause.
+- The panel's usual ~250 MB is egui and OpenGL (the panel and the console viewport), fonts (Malgun
+  Gothic 13 MB, Segoe UI Symbol) and the layered windows' DIBs.
+
+The 1.3 GB spike never reproduced, so the tool now records what would catch it: `memstat.rs` logs the
+working set, private bytes and peak every minute (`memory: working … · private … · peak …`) and shows
+them on the debug page. One cost was cut regardless: the lists derived from the survey (needs,
+hand-overs, deadlines, collections, stories, the journal) were rebuilt every engine step (10 Hz); they
+are now rebuilt once a second and shared with the snapshot by `Arc`, so the panel and the overlay copy
+a pointer per frame instead of the lists.

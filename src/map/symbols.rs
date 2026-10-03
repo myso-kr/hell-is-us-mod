@@ -4,7 +4,7 @@
 //!
 //! The game numbers them 1–8 (`ECacheSymbols::CacheSymbol1…8`): Plutchik's eight
 //! emotions in alphabetical order — matched against every vault's code and the
-//! guides, and seen right at a vault door (.spec/GUIDE.md §29).
+//! guides, and seen right at a vault door (.spec/FEATURES.md §5).
 
 /// The symbols, by number − 1: their names and SVGs.
 pub const NAMES: [&str; 8] = ["admiration", "amazement", "ecstasy", "grief", "loathing", "rage", "terror", "vigilance"];

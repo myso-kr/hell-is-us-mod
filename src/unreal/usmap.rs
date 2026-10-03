@@ -1,6 +1,6 @@
 //! A `.usmap` mappings file from the game's live reflection: what the survey tool
 //! (tools/survey, CUE4Parse) needs to read cooked assets, whose properties are stored
-//! unversioned — in schema order, without names (.spec/ITEMS.md §3.1).
+//! unversioned — in schema order, without names (.spec/SURVEY.md §3.1).
 //!
 //! Written as usmap version 0 (Initial), uncompressed — the plainest form readers take:
 //! - u16 magic 0x30C4, u8 version 0, u8 compression 0, u32 size, u32 size

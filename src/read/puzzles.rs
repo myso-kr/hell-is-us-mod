@@ -1,5 +1,5 @@
 //! The puzzles near the hero and their answers, read from the game as it holds them
-//! (.spec/GUIDE.md §27, F6):
+//! (.spec/FEATURES.md §3, F6):
 //! - a dial puzzle (`DialPuzzleActionComponent.Dials` → each `DialComponent`'s
 //!   `DialState` of `NbDialState`, and `DialSolution`) — the vault doors among them;
 //! - a keypad or a computer (`KeypadRuneComponent.Rune.ExpectedCode`);

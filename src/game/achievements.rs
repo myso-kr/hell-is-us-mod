@@ -3,7 +3,7 @@
 //! name, its name and description in each language, hidden, and the stat that
 //! counts its progress — and `UserGameStats_<account>_1620730.bin` — the unlocked
 //! bits, unlock times and stat values. Both are binary KeyValues. Steam writes the
-//! user file when the game reports a change (.spec/GUIDE.md §28).
+//! user file when the game reports a change (.spec/FEATURES.md §4).
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -273,13 +273,13 @@ mod tests {
                         map(&[(
                             "bits",
                             map(&[
-                                ("0", ach("Act01_Complete", "So It Begins", "시작이군", None)),
+                                ("0", ach("Act01_Complete", "First Steps", "첫걸음", None)),
                                 (
                                     "1",
                                     ach(
                                         "GoodDeeds",
                                         "Deeds",
-                                        "선행",
+                                        "선행 시험",
                                         Some(map(&[
                                             ("max_val", Kv::Int(26)),
                                             ("value", map(&[("operand1", s("DEEDS_STAT"))])),
@@ -313,8 +313,8 @@ mod tests {
         let (schema, user) = (parse(&b).unwrap(), parse(&u).unwrap());
         let a = read(&schema, Some(&user), "koreana");
         assert_eq!(a.len(), 2);
-        assert_eq!((a[0].name.as_str(), a[0].unlocked, a[0].time), ("시작이군", true, Some(99)));
+        assert_eq!((a[0].name.as_str(), a[0].unlocked, a[0].time), ("첫걸음", true, Some(99)));
         assert_eq!((a[1].unlocked, a[1].progress), (false, Some((2, 26))));
-        assert_eq!(read(&schema, None, "german")[0].name, "So It Begins", "English when the language is missing");
+        assert_eq!(read(&schema, None, "german")[0].name, "First Steps", "English when the language is missing");
     }
 }

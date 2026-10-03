@@ -1,5 +1,5 @@
 //! This process's own memory: what the panel's debug tab and the log show, and what
-//! the memory investigations measured (.spec/GUIDE.md §25).
+//! the memory investigations measured (.spec/ARCHITECTURE.md (Memory)).
 
 /// (working set, private bytes) of this process, in bytes.
 #[cfg(windows)]

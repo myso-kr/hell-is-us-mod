@@ -1,5 +1,5 @@
 //! What every world hands out, from the survey of the game's maps (tools/survey,
-//! `Mods\survey\*.json`; .spec/ITEMS.md): pickups, devices, markers, NPCs and what
+//! `Mods\survey\*.json`; .spec/SURVEY.md): pickups, devices, markers, NPCs and what
 //! their conversations give, hand-overs — with where they are.
 //!
 //! The live goals (goals.rs) only know what is loaded around the hero. The survey

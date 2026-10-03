@@ -3,7 +3,7 @@ name = "hiumod"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.82"
-description = "Single-player cheats and a minimap overlay for Hell Is Us (Steam) — external memory, no game files modified"
+description = "A companion for Hell Is Us on PC: minimap, quest guide, puzzle answers and single-player cheats — no game files modified"
 license = "MIT"
 repository = "https://github.com/myso-kr/hell-is-us-mod"
 

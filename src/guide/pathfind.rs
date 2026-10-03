@@ -1,5 +1,5 @@
 //! A walking route from the hero to the guide's goal: A* over a grid of what stands in
-//! the way (.spec/GUIDE.md §6–7).
+//! the way (.spec/ROUTES.md §1–2).
 //!
 //! The game keeps no ground navmesh in memory here, so the grid is drawn from the
 //! collision shapes of the world's meshes (obstacles.rs): anything at the hero's level

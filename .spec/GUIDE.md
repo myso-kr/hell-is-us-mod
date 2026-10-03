@@ -1,549 +1,158 @@
-# 나침반 HUD 와 퀘스트 목표 안내 — 조사와 설계
+# Compass HUD and quest goal guidance — research and design
 
-사용자 요청 (2026-10-02): 나침반 HUD 를 화면 위 가운데에 고정하고, 퀘스트 목표까지의 경로
-안내를 켜고 끄는 기능. 조사 결과, 결정, 구현 기록. Steam 빌드 24045435.
+Requested 2026-10-02: a compass HUD fixed at the top centre of the screen, and a switchable guide
+that points the way to quest goals. This document holds the research, the decisions and the
+implementation notes. Steam build 24045435.
 
-## 1. 게임 쪽 사실 (웹 조사)
+Related documents: the route to a goal is in [ROUTES.md](ROUTES.md), map drawing in
+[MAP.md](MAP.md), the panel in [PANEL.md](PANEL.md), feature stages (F1–F11) in
+[FEATURES.md](FEATURES.md), game data in [SURVEY.md](SURVEY.md).
 
-- 웨이포인트·퀘스트 로그·맵 마커 없음이 설계 의도. 디렉터: "방향을 가리키는 마법 나침반도, 쇼핑
-  리스트식 퀘스트 로그도 없다" — https://game8.co/articles/latest/hell-is-us-has-no-map-or-quest-markers-to-test-your-navigational-skills
-- 게임 안 나침반은 아이템. 쓰면 화면 위에 방위가 잠깐 뜨고 사라짐, 목표를 가리키지 않음 —
-  https://game8.co/games/Hell-is-Us/archives/545878
-- Datapad: Investigations(메인 6개), People, Items, Locations, Research, Exploration(Good Deeds,
-  Mysteries, Timeloops) — https://hellisus.wiki.fextralife.com/Investigations
-- 지역 순서: Senedra Forest → Acasa Marshes → Vyssa Hills → Lake Cynon → Lethe → Talju → Marastan →
-  Jeljin → Arcas Spire → Auriga Museum → Plains of Mist — https://hellisus.wiki.fextralife.com/Walkthrough
-- 목표·마커를 보여 주는 모드는 없음 (Nexus 36개, GitHub, FearLess 확인). 공식 접근성 옵션에도 없음 —
-  https://steamdeckhq.com/game-reviews/hell-is-us/
-- 나침반 스트립 투영: 시야각 안이면 `x = tan(Δyaw)/tan(FOV/2)·W/2`, 시야보다 넓은 띠는 선형 —
-  https://vazgriz.com/467/flight-simulator-in-unity3d-part-2/
+## 1. Facts about the game (web research)
 
-## 2. 게임 메모리 쪽 사실 (로컬 조사, 읽기만)
+- No waypoints, quest log or map markers — by design. The director: there is no magic compass
+  pointing the way and no shopping-list quest log —
+  https://game8.co/articles/latest/hell-is-us-has-no-map-or-quest-markers-to-test-your-navigational-skills
+- The in-game compass is an item. Using it shows the cardinal directions at the top of the screen
+  briefly; it never points at a goal — https://game8.co/games/Hell-is-Us/archives/545878
+- Datapad sections: Investigations (6 main ones), People, Items, Locations, Research, Exploration
+  (Good Deeds, Mysteries, Timeloops) — https://hellisus.wiki.fextralife.com/Investigations
+- Region order: Senedra Forest → Acasa Marshes → Vyssa Hills → Lake Cynon → Lethe → Talju →
+  Marastan → Jeljin → Arcas Spire → Auriga Museum → Plains of Mist —
+  https://hellisus.wiki.fextralife.com/Walkthrough
+- No existing mod shows goals or markers (checked 36 Nexus mods, GitHub, FearLess). The official
+  accessibility options have nothing either — https://steamdeckhq.com/game-reviews/hell-is-us/
+- Compass strip projection: inside the field of view, `x = tan(Δyaw)/tan(FOV/2)·W/2`; a strip wider
+  than the field of view is linear — https://vazgriz.com/467/flight-simulator-in-unity3d-part-2/
+
+## 2. Facts about game memory (local research, read-only)
 
 ### GUObjectArray
-- `FUObjectArray` 가 이미지 +0x9304460 (청크 배열 포인터 +0x9304470), 객체 255,987개, 청크 4개.
-  찾는 법: 쓰기 가능 섹션에서 (Objects, PreAllocated, Max, Num, MaxChunks, NumChunks) 모양이고 항목
-  1..31 의 객체 `InternalIndex`(+0xC)가 제 슬롯과 같은 곳. 항목 0x18 바이트, 청크당 64K.
-- 서브시스템은 리플렉션 밖이라 이것으로만 찾을 수 있다.
+- `FUObjectArray` is at image +0x9304460 (chunk array pointer at +0x9304470): 255,987 objects in
+  4 chunks. Found by scanning writable sections for the shape (Objects, PreAllocated, Max, Num,
+  MaxChunks, NumChunks) where the `InternalIndex` (+0xC) of the objects in items 1..31 matches their
+  own slot. Items are 0x18 bytes; 64K items per chunk.
+- Subsystems are outside reflection, so this is the only way to find them.
 
-### 퀘스트는 "사실(Fact)" 지식 그래프
-- `QuestData` (`Quest01_DA` …): `QuestElements`(관련 신원: 사람·장소·물건), `QuestLinks`(관계).
-- `FactData` 계열(`QuestStatusData`, `TextFact`, `LinkFact`, `TypeFact`, `ImageFact` …):
-  `bIsQuest`(+0x4c), `AssociatedIdentity`(+0x50), `AssociatedQuestData`(+0x58).
-- **좌표 필드는 어디에도 없다.** 위치 사실도 텍스트(`Herbalist_SenedraForest_Location_TextFact`).
-- 서브시스템: `QuestEventSubsystem`(월드), `FlowSubsystem`(Flow 그래프), `ResearchGameSubsystem`,
-  `GoldenPathSubsystem`(CDO 만 — 출시 빌드에서는 안 만들어짐), `Bragi` 는 음악, `Bifrost` 는 지역 이동.
+### Quests are a knowledge graph of facts
+- `QuestData` (`Quest01_DA`, …): `QuestElements` (related identities: people, places, things) and
+  `QuestLinks` (relations).
+- The `FactData` family (`QuestStatusData`, `TextFact`, `LinkFact`, `TypeFact`, `ImageFact`, …):
+  `bIsQuest` (+0x4c), `AssociatedIdentity` (+0x50), `AssociatedQuestData` (+0x58).
+- **There is no coordinate field anywhere.** Even location facts are text
+  (`Herbalist_SenedraForest_Location_TextFact`).
+- Subsystems: `QuestEventSubsystem` (world), `FlowSubsystem` (Flow graphs),
+  `ResearchGameSubsystem`, `GoldenPathSubsystem` (CDO only — never instantiated in the shipping
+  build). `Bragi` is music, `Bifrost` is travel between regions.
 
-### 주인공의 지식 = 저장 상태
-`CharlieSaveSubsystem.SaveSystem` → `CharlieSaveSystem.Saves` → `CharlieSaveGame` (슬롯마다 하나,
-`SaveDate` 가장 새 것이 현재 플레이). `CharlieSaveGame.Player` (`CharlieSavePlayerState`, 1440 바이트):
+### The hero's knowledge is the save state
+`CharlieSaveSubsystem.SaveSystem` → `CharlieSaveSystem.Saves` → `CharlieSaveGame` (one per slot; the
+one with the newest `SaveDate` is the current playthrough). `CharlieSaveGame.Player`
+(`CharlieSavePlayerState`, 1440 bytes):
 
-| 필드 | 내용 (테스트 세이브) |
+| Field | Contents (test save) |
 |---|---|
-| `Knowledge.KnownFacts` | 아는 사실 124개 (`CharlieFactState.KnowledgeDataPath`, 소프트 경로) |
-| `Knowledge.FactTags` | 태그 28개: `Quest.Facts.SenedraMedKitGiven`, `Secrets.Mystery.CaddellsBrothersTreasureStarted/Completed` … |
-| `Datums.QuestStates` | 진행 중 조사: `Quest01_DA` (Family Reunion) |
-| `Datums.DatumStates` | 알게 된 신원 10개 (부모, 약초꾼, OMSIF, APC, 지역 …) + 새 사실 |
-| `SecretsState` | Good Deeds 26, Mysteries 43, Timeloops 14 (항목 상태) |
-| `CurrentSavePoint`, `World.SeenCheckpoints` | 마지막 저장 지점, 들른 저장 지점 4개 |
+| `Knowledge.KnownFacts` | 124 known facts (`CharlieFactState.KnowledgeDataPath`, a soft path) |
+| `Knowledge.FactTags` | 28 tags: `Quest.Facts.SenedraMedKitGiven`, `Secrets.Mystery.CaddellsBrothersTreasureStarted/Completed`, … |
+| `Datums.QuestStates` | Active investigations: `Quest01_DA` (Family Reunion) |
+| `Datums.DatumStates` | 10 learned identities (parents, herbalist, OMSIF, APC, regions, …) plus new facts |
+| `SecretsState` | Good Deeds 26, Mysteries 43, Timeloops 14 (item states) |
+| `CurrentSavePoint`, `World.SeenCheckpoints` | Last save point; 4 visited save points |
 
-소프트 경로(`FSoftObjectPtr`) = 약한 포인터 8 + 패키지 FName + 에셋 FName + 하위 경로 → 에셋 FName
-인덱스로 객체 이름과 바로 비교할 수 있다.
-**미확인:** 저장 객체가 플레이 중 실시간으로 갱신되는지, 저장할 때만 갱신되는지.
+A soft path (`FSoftObjectPtr`) is an 8-byte weak pointer + package FName + asset FName + sub-path,
+so the asset FName index can be compared directly with an object's name.
 
-### 월드의 상호작용 오브젝트가 주는 것
-`InteractableDynamicPayloadActor` 계열(아이템·퍼즐·트리거)에 붙은 컴포넌트:
-- `PayloadRuneComponent.Rune.PayloadData`: `ContainedFacts`(TSet<FactData*>), `BaseIdentity`,
-  `TagFacts`(GameplayTagContainer), `ItemsToAdd` … — **쓰면 받는 사실·태그**.
-- `WorldLocationRuneComponent.Rune.WorldLocation` (FVector) — 자기 위치.
-- `QuestListener` 액터: 퀘스트 상태 사실을 참조(`FactTag_Quest02Started`)하고 이벤트를 받음.
+**Unverified:** whether the save object updates live during play or only when the game saves.
 
-## 3. 결론 — 목표 위치는 계산할 수 있다
+### What interactable world objects carry
+Components attached to the `InteractableDynamicPayloadActor` family (items, puzzles, triggers):
+- `PayloadRuneComponent.Rune.PayloadData`: `ContainedFacts` (TSet<FactData*>), `BaseIdentity`,
+  `TagFacts` (GameplayTagContainer), `ItemsToAdd`, … — **the facts and tags you receive by using it**.
+- `WorldLocationRuneComponent.Rune.WorldLocation` (FVector) — its own position.
+- `QuestListener` actors reference quest status facts (`FactTag_Quest02Started`) and receive events.
 
-게임은 목표 좌표를 갖고 있지 않지만, **"주인공이 아직 모르는 사실·태그를 주는 오브젝트"의 위치**는
-알 수 있다. 그중:
-- 사실의 `AssociatedQuestData` 가 진행 중 조사이거나 태그가 `Quest.` 로 시작 → **퀘스트 목표**
-- 태그가 `Secrets.` 로 시작 → **비밀(미스터리·선행·타임루프)**
-- 나머지 → **단서**(기록물·연구 자료 등)
-이미 쓴 오브젝트(`bHasBeenActivated`)는 2단계와 같이 뺀다.
+## 3. Conclusion — goal positions can be computed
 
-한계: 대화로 얻는 사실(NPC)은 오브젝트가 아니라 빠진다. 지역 사이 이동 목표(다른 월드)는 안 보인다.
+The game stores no goal coordinates, but it does expose **the position of every object that would
+give the hero a fact or tag they do not know yet**. These are classified as:
+- **Quest goal** — a fact whose `AssociatedQuestData` is an active investigation, or a tag starting
+  with `Quest.`
+- **Secret** (mystery, good deed, timeloop) — a tag starting with `Secrets.`
+- **Clue** — everything else (records, research material, …)
 
-## 4. 설계
+Objects already used (`bHasBeenActivated`) are excluded, as in stage 2.
 
-- **나침반 HUD:** 게임 창 위 가운데에 고정된 클릭 통과 띠(레이어드 창, 미니맵과 같은 방식).
-  카메라 yaw 기준 ±90° 를 선형으로, 15° 눈금, N/E/S/W, 각도. 핀: 안내 대상(강조 + 거리),
-  사용자 마커, 저장 지점, 퀘스트 목표. 범위 밖 대상은 양 끝에 화살표.
-- **안내:** 패널 '안내' 탭 — 대상 목록(퀘스트 목표 / 비밀 / 단서 / 마커 / 저장 지점, 거리순),
-  하나 고르면 나침반 핀 강조 + 미니맵에 주인공→대상 선. '가장 가까운 퀘스트 목표 자동 안내' 스위치,
-  대상 순환 단축키, 안내 끄기.
-- **경로:** 1차는 직선 방향·거리. NavMesh(Recast) 경로는 바깥에서 dtNavMesh 를 읽는 공개 사례가 없어
-  다음 단계 후보로 남긴다.
+Limits: facts obtained through dialogue (NPCs) are not objects and are missed (see §6 for how NPC
+goals were later handled). Goals in another region (a different world) are not visible.
 
-## 5. 구현 기록 (2026-10-02)
+## 4. Design
 
-| 파일 | 하는 일 |
+- **Compass HUD:** a click-through strip fixed at the top centre of the game window (a layered
+  window, the same technique as the minimap). ±90° around the camera yaw, linear, ticks every 15°,
+  N/E/S/W and the heading in degrees. Pins: the guide target (highlighted, with distance), user
+  markers, save points, quest goals. Targets outside the strip get an arrow at the nearer end.
+- **Guide:** the panel's Guide tab — a target list (quest goals / secrets / clues / markers / save
+  points, nearest first). Choosing one highlights its compass pin and draws a line from the hero to
+  it on the minimap. Options: an auto-guide switch for the nearest quest goal, a key to cycle
+  targets, and turning guidance off.
+- **Route:** the first version gave only straight-line direction and distance. A NavMesh (Recast)
+  route was deferred because there was no public example of reading `dtNavMesh` from outside the
+  process. Routes were later built, first on an obstacle grid and then on the game's navmesh — see
+  [ROUTES.md](ROUTES.md).
+
+## 5. Implementation notes (2026-10-02)
+
+Paths below are the current ones (see the code map in [ARCHITECTURE.md](ARCHITECTURE.md)); at the
+time several of these lived in different files.
+
+| File | What it does |
 |---|---|
-| `names.rs` | 구조체 리플렉션: `struct_of`(StructProperty → ScriptStruct), `inner_of`(배열 안쪽 속성), `field_type`(FFieldClass 이름), `path`(객체 → 구조체 안 필드 경로) |
-| `gobjects.rs` | GUObjectArray 찾기(유일해야 함), 모든 객체, 클래스 이름으로 객체 찾기 |
-| `knowledge.rs` | 가장 새 `CharlieSaveGame` → 아는 사실·태그·진행 중 조사 (FName 인덱스 집합) |
-| `goals.rs` | 상호작용 오브젝트의 페이로드(사실·태그) 1회 읽어 캐시, 지식과 비교해 퀘스트/비밀/단서 분류, 쓴 것 제외 |
-| `engine.rs` | `Attached::goals` — GUObjectArray 1회, 저장 슬롯 60초, 지식 2초, 페이로드 2초 주기 |
-| `raster.rs` | 획 글꼴(N E S W 숫자 m k . -), `draw_compass`(±90° 선형, 15° 눈금, 8방위, 핀, 대상 거리), 미니맵에 목표 마름모·대상 점선 |
-| `ui/layered.rs` | 레이어드 창 공용 (미니맵·나침반) |
-| `ui/minimap.rs` | 오버레이 스레드: 미니맵 + 나침반 + 안내 대상 고르기(`settle_target`, `cycle`) |
-| `ui/panel.rs` | '안내' 탭: 나침반 켜기·키, 자동 안내, 종류 칩, 현재 대상, 진행 중 조사, 갈 곳 목록(거리순, 눌러서 안내) |
-
-- 키(기본): 미니맵 F9, 마커 F6, **나침반 F10, 다음 목표 F11** — 넷 다 패널에서 바꿈, 겹치면 모두 기본값으로.
-- 자동 안내: 고른 곳이 없거나 사라지면(써서 없어짐) 가장 가까운 퀘스트 목표로.
-- 방위: 처음엔 N = 월드 +X 로 했으나 **사용자 확인 결과 게임의 북쪽이 우리 나침반의 W 로 나옴** (2026-10-02)
-  → 게임 북쪽 = 월드 yaw 270° (−Y). `MapState.north_yaw`(기본 270)를 나침반 눈금·핀, 미니맵·큰 지도의 북쪽 위
-  회전·N 표시·화살표에 모두 적용. 지역마다 다를 경우를 대비해 패널 안내 탭에 '북쪽 보정'(−Y/+X/+Y/−X).
-  UE yaw 는 위에서 볼 때 시계 방향이라 게임 동쪽 = +X.
-- 실측(테스트 세이브, Senedra Forest): 사실 124 · 태그 28 · 조사 `Quest01_DA` → 갈 곳 11곳
-  (퀘스트 3: APC 문 열기 `Quest.Facts.APCAcquired` 90 m, Arcas Spire 문, Arcas Spire 책 /
-  비밀 6: 림빅 문 2, 피의 여왕 창고, 타임루프 시작·완료, 밀수꾼 피란민 / 단서 2). 첫 읽기 ~1초.
-- 미리보기(`examples/preview.rs`, 저장소 밖)로 실제 데이터 한 프레임 확인: 나침반 방위·대상 거리,
-  미니맵 점선 방향이 서로 맞음.
-- **아직:** 게임 화면 확인, 저장 상태가 실시간인지(아이템을 주운 직후 목록에서 빠지는지),
-  대화로 얻는 사실(오브젝트 아님)은 목표로 안 나옴, 다른 지역(월드) 목표는 안 보임, NavMesh 경로는 다음.
-
-## 6. A* 이동 경로와 큰 지도 (2026-10-02, 사용자 요청)
-
-요청: ① A* 로 실제 이동 경로 ② 미니맵을 화면 가운데에 넓게 — 단, 인벤토리 등 게임 메뉴가 열리면 오버레이를
-꺼야 함.
-
-### A* (`pathfind.rs`)
-- 게임 NavMesh(Recast `dtNavMesh`)는 리플렉션 밖이고 바깥에서 읽는 공개 사례도 없어, **이미 가진 데이터로 격자**:
-  주인공 높이의 벽(미니맵 '벽' 층) = 400, 절벽·바위(상자가 실제보다 큼) = 12, 빈 땅 = 3, 지나온 길 = 1.
-  벽도 완전히 막지 않아 상자에 갇힌 목표도 경로가 나온다.
-- 격자: 주인공과 목표를 감싼 상자 + 40 m, 한 변 최대 400칸, 칸은 최소 1 m. 8방향 A*, 옥타일 거리 휴리스틱.
-- 줄 당기기: 두 점 사이 직선이 벽을 지나지 않으면 곧게. 처음엔 절벽도 막는 것으로 쳐서 야외에서 135점이 됐고,
-  벽만 막게 바꾸자 13점·360 m (같은 목표, 22 ms).
-- 다시 계산: 목표가 바뀌거나, 주인공이 5 m 넘게 움직이거나, 1초마다 (오버레이 스레드).
-- 그리기: 미니맵·큰 지도에 목표 색 경로선(검은 테두리), 원 밖은 잘라냄. 나침반은 경로상 8 m 앞 지점 방향을
-  가리키고 거리는 경로 길이.
-- 한계: 지형(Landscape) 높낮이·물·떨어지는 곳을 모름 — 열린 땅은 다 걸을 수 있다고 본다. 층이 다른 곳(계단 위
-  목표)은 벽 판정이 주인공 높이 기준이라 어긋날 수 있다.
-
-### 큰 지도
-- 기본 F3 (패널에서 바꿈, 다섯 키가 서로 겹치면 모두 기본값으로). 게임 창 높이의 80% 정사각형, 가운데, 북쪽 위,
-  반경 기본 250 m (50–1000). 그릴 픽셀이 많아 3프레임에 한 번. 큰 지도가 떠 있는 동안 작은 미니맵은 숨김.
-
-### 게임 메뉴가 열리면 숨기기
-- 신호 두 가지: ① 게임 창에 포커스가 있을 때 시스템 커서가 보임(`GetCursorInfo`, 플레이 중엔 숨겨짐)
-  ② 게임 일시정지 — `World.PersistentLevel.WorldSettings.Pauser` 가 비어 있지 않음.
-- 둘 중 하나면 미니맵·나침반·큰 지도 모두 숨김. 패널 지도 탭 '게임 메뉴' 상자에 켜기와 실시간 신호 표시.
-- **미확인:** 인벤토리(Datapad)가 실제로 커서를 띄우거나 일시정지하는지, 게임패드로 열 때도 그런지.
-  안 되면 HUD 위젯 표시 상태 같은 다른 신호를 찾는다.
-
-## 7. 경로가 지형을 무시한 문제 → 충돌 형상 장애물 (2026-10-02)
-
-피드백: "실제 이동경로가 실제 지형지물과 관계없이 그려진다."
-
-### 원인
-§6 의 격자는 정적 메시 '액터'의 **렌더 상자**만 알았다 — 벽도 '비싸지만 지날 수 있음', 바위·절벽·나무는
-대부분 **인스턴스 메시**라 아예 없었고, 지형 경사는 모름.
-
-### 게임 NavMesh 는 없다 (조사)
-- `RecastNavMesh` 액터 1개(World Partition, 정적 생성, 반사 속성은 +0x650 에서 끝)가 있지만
-  액터 → 구현 → dtNavMesh → 타일 사슬에서 `DNAV` 헤더를 못 찾음.
-- 프로세스 메모리 전체(7–14 GB) 를 `DNAV`(Detour 타일)·`DTLR`(TileCache) 매직으로 훑어도 **0개**.
-  이 지역에는 지상 내비게이션 데이터가 메모리에 없다.
-- `VoxelNavigationData` 인스턴스는 `DroneNavigationData-Drone` — 드론용 3D 내비.
-
-### 해결: 충돌 형상 장애물 (`obstacles.rs`)
-- 메시의 **충돌 형상** `UStaticMesh.BodySetup.AggGeom` (Box/Sphere/Sphyl/Convex, 모두 반사됨)을 메시 공간 점들로
-  (메시당 캐시). 나무는 줄기 캡슐, 이끼·풀은 형상 없음 → 자연히 제외. `CollisionTraceFlag` 가 복잡형(3)이면 렌더 경계로.
-- 배치마다 세계 좌표로: 인스턴스 행렬(`PerInstanceSMData`, FMatrix double 행 우선) → 컴포넌트의
-  **`ComponentToWorld`** (반사 밖, USceneComponent+0x1D0 — 주인공 루트에서 `RelativeLocation` 과 같은 이동값을 가진
-  유일한 FTransform 으로 찾음). 2D 볼록 껍질 + 높이 범위.
-- 충돌 끔(`BodyInstance.CollisionEnabled`=0) 이나 겹침 전용 프로필(NoCollision, OverlapAll, Trigger …)은 제외.
-- GUObjectArray 를 한 스텝에 1.2만 개씩 훑어 한 바퀴마다 교체. 클래스별 필드 오프셋 캐시로 한 바퀴 76초 → 2.5초.
-- 실측: 장애물 69,231개 (Foliage 인스턴스 71k·HISM 10k·ISM 3.7k 중 충돌 있는 것), 주인공 높이를 막는 것 5,838개.
-
-### A* 변경 (`pathfind.rs`)
-- 장애물이 발 기준 +45 cm(계단)보다 높고 +180 cm(머리)보다 아래에 걸치면 **완전히 막음**. 길이 없을 때만 두 번째
-  패스에서 비싼 비용(400)으로 통과 허용. 시작·목표 주변 1.2 m 는 비움(목표 오브젝트 자체가 충돌체인 경우).
-- 칸 50 cm, 한 변 최대 600칸. 실측: 바위·절벽 띠의 틈으로 돌아가는 경로 14점·146 m·18 ms.
-- 남은 한계: 지형(Landscape) 경사·절벽 면은 여전히 모름 (CPU 쪽 높이 충돌 데이터가 없음 — 256개 컴포넌트의
-  높이맵은 GPU 텍스처). 물도 모름.
-
-### §7.1 여전히 가로지른다는 피드백 (2026-10-02)
-- **얇은 장애물 누수**: 칸 *중심*이 다각형 안일 때만 막아서, 칸(50 cm)보다 얇은 울타리·벽이 새었다 →
-  장애물을 주인공 반경 35 cm 만큼 부풀려 찍음(다각형 변까지 거리). 대각선으로 막힌 두 모서리 사이를 비집지 않음.
-  줄 당기기 검사는 칸당 3회 샘플.
-- **검색 범위**: 두 끝을 감싼 상자 + 40 m 안에 돌아갈 길이 없으면 곧장 '비싼 통과'로 넘어갔다 →
-  여유 40 m → 150 m → 400 m 순서로 넓혀 다시 찾은 뒤에야 통과를 허용.
-- **불확실 표시**: 통과 구간은 `Path.through` 로 표시해 지도에 **노란 점선**, 안내 탭에 경고. 실측:
-  35점/176 m(통과 2구간) → 18점/344 m, 통과는 원형 구조물 경계 한 곳(수 m)뿐.
-- 단순 충돌 형상이 없는 메시 조사(반경 80 m): BlockAll 인데 형상 없음 2,165개는 거의 도로 선·마른 풀·데칼
-  (Road_Line, Dead_Grass) — 렌더 경계로 대체하면 길을 막으므로 **제외 유지**. 복잡형(플래그 3)만 경계로 대체.
-
-## 8. 물·경사·다리 — 지형 높이맵 (2026-10-02)
-
-피드백: "물을 감지하지 못한다." 선택지(바깥 방식으로 물 추가 vs UE 주입으로 물리 질의)를 비교해 **바깥 방식 유지**(D15).
-
-### 물은 충돌이 아니다
-- 수면 메시: `Deep_Water_04_SM` = 5 km × 5 km 평면(z −182, `NoCollision`), `Shallow_Water_*` = 프로필
-  `BlockMaterialCast&Camera`(카메라만 막음 → 이제 통과 가능 목록).
-- 죽는 물: **`DeadlyWaterAcasa01~09_PassiveInteract_BP`** 의 `TriggerEvent` BoxComponent(`OverlapOnlyPawn`) 12개.
-  호수 바닥(z ≈ −793)부터 수면 바로 아래(−193)까지. 하지만 상자가 커서(최대 400 × 250 m) **기슭의 땅도 2D로 덮는다**
-  → "상자 안 + 지면이 상자 윗면보다 낮음" 이 물.
-- 첫 시도(풀·바위 인스턴스 원점을 지면 표본으로)는 실패: 맨땅엔 표본이 없어 거의 모두 물이 됨.
-
-### 지형 높이맵을 찾음 (CPU 쪽 Chaos heightfield)
-- `LandscapeHeightfieldCollisionComponent`(256개) → `HeightfieldRef` = 반사된 `CookedPhysicalMaterials`(+0x580, 16 B)
-  **바로 뒤 네이티브 멤버**(+0x590) → `FHeightfieldGeometryRef::HeightfieldGeometry`(+0x30) → `Chaos::FHeightField`.
-- `GeomData`: Heights TArray<u16> +0x20 · Scale (double×3) +0x50 = (100, 100, 0.78125) · MinValue +0x80 · MaxValue +0x88 ·
-  NumRows/NumCols (u16) +0x90 · Range +0x98 · HeightPerUnit +0xA0 (= Range/65535).
-- 높이 = `(Min + h·HPU)·Scale.z + 컴포넌트 z`, 행 = Y. 4가지 해석을 풀·식생 1,345개와 대조: 이 해석이 중앙 오차 28 cm,
-  하위 10% −1 cm(풀이 지면에 붙음). 검증용으로 헤더 일관성(정사각, 개수, HPU·65535 ≈ Max−Min) 확인.
-- (막다른 길: `LandscapeComponent+0x6C8 → +0x358` 은 컴포넌트마다 제각각 — 버림.)
-
-### 쓰임
-- **물**: 상자 안이고 지형 < 윗면인 2 m 칸(행 단위 묶음 1,104개). 수면 위로 솟은 충돌체(다리·부두·바위)가 덮은 칸은 뺌.
-- **경사**: 정점마다 미리 계산(이웃 차분). 40° 넘으면 비용 12, 55° 넘으면 60 (막지는 않음 — 구조물 아래 지형일 수 있어서).
-- **칸마다 걷는 면**: 지형 높이, 또는 그 칸을 덮는 **바닥**(두께 < 1.5 m, 면적 ≥ 4 m², 윗면이 지형·주인공보다 1.5 m 이내 위)의
-  윗면. 장애물은 그 칸의 걷는 면 **또는** 주인공 발 기준으로 몸높이(+45~+180 cm)에 걸치면 막음. 두께 20 cm 미만은 막지 않음.
-  → 언덕 아래·위의 바위도 인식, **다리 교각은 데크를 막지 않음**(주인공이 석조 다리 위에 있던 실측 사례에서 발견).
-- 실측: 다리 위 출발 → 물가를 따라 북쪽으로 돌아 마을로 355 m. 물 건넘 없음. 계산 ~0.3–0.5 s 라 **별도 스레드**로.
-- 남은 한계: 바닥·벽 구분은 형상 비율 추정(2층 구조, 경사로, 계단은 부정확할 수 있음). 지형이 로드 안 된 곳은 모름.
-
-## 9. 지형 음영·등고선 지도 모드 (2026-10-02)
-
-요청: "지형음영이나 등고선 렌더링 모드 토글." §8 의 높이맵을 지도에 그린다.
-
-- 설정 `relief` = 끔 / 음영 / 등고선 / 둘 다 (기본 둘 다). 지도 탭 "지형 표시". 기존 "벽·바닥 윤곽"(구조물 높이 띠)과 별개.
-- `relief.rs`: 주인공 주변 정사각형(지도 반경 중 큰 쪽 + 150 m)을 세계 좌표 격자로 **굽는다** — 칸 ≥ 1 m, 한 변 ≤ 1024.
-  칸마다 높이(bilinear 원본), 음영(북서 45° 빛, 평지 대비), 물(§8 물 구간). 별도 스레드, 주인공이 100 m 움직이거나
-  장면(장애물 패스)이 바뀌거나 지도가 커지면 다시. 실측 540² 칸 31 ms.
-- 그리기(`raster::draw_relief`): 지도 픽셀 → 세계 좌표는 회전·축척뿐이라 첫 픽셀 + 행/열 증분(아핀). 픽셀마다 높이를
-  bilinear 로 먼저 구해 **이웃 픽셀과 2 m / 10 m 구간이 달라지는 곳**에 선 → 어떤 확대에서도 1 px 등고선.
-  음영 색은 주인공 발 기준 ±15 m 에 걸쳐 낮으면 푸르게, 높으면 황토색. 물은 파랑.
-- 비용(600 px 지도, 원 안 28만 픽셀): 지형 없이 20 ms → 등고선 39 · 음영/둘 다 54 ms. 미니맵 240 px 은 그 1/6.
-  큰 지도는 원래 3프레임마다 그림. 오버레이 스레드라 게임 프레임과 무관.
-
-## 10. 렌더링 성능 (2026-10-02)
-
-요청: "렌더링 최적화를 위한 퍼포먼스 개선을 연구." 실제 데이터 벤치(195개 사물, 구조물 15,747, 목표 55, 경로 67점,
-지형 1024²)로 기능별 비용을 분해 — 한 프레임 draw_map, release, 10회 평균.
-
-| 크기 | 상태 | 이전 | 이후 |
-|---|---|---|---|
-| 240 px (미니맵) | 빈 지도 | 3.2 ms | 0.6 |
-| | 벽·바닥 윤곽 | 50 | 3.5 |
-| | 전부 (윤곽 + 음영 + 등고선) | 38 | 6.2 |
-| 864 px (큰 지도) | 빈 지도 | 34 | 3.6 |
-| | 벽·바닥 윤곽 | 190 | 11 |
-| | 음영 / 등고선 | 90 / 81 | 14 / 16 |
-| | 전부 | 261 | 27 |
-
-원인과 처방:
-1. **선·원·테두리가 경계 상자 전체를 훑음** — 대각선 600 px 경로 선 하나가 36만 픽셀. → 행마다 닿는 x 구간만(`Canvas::rows`).
-   테두리(ring)는 안쪽 구멍을 건너뜀.
-2. **배경 원판을 매 프레임 그림**(864 px 원 58만 픽셀). → 크기별로 한 번 그려 thread_local 에 두고 memcpy.
-3. **부동소수 블렌딩** → 정수 source-over(`over`).
-4. **벽·바닥 윤곽**: 프레임마다 지도 크기 마스크 6장(864² × 4 B × 6 ≈ 18 MB) + 안티앨리어싱 다각형 15k개.
-   → u8 분류 버퍼 하나에 비AA 스캔라인(`fill_convex`), 겹치면 뒤 띠가 이김, 색칠·가장자리 한 번.
-5. **지형**: 픽셀마다 세계 좌표 역변환(삼각함수)·bilinear·색 계산. → 색을 굽기 단계에서 텍셀마다 미리(발 높이 3 m 바뀌면
-   다시 굽기), 픽셀 → 텍셀을 행/열 증분으로, 등고선용 높이만 bilinear.
-6. **행 단위 병렬화**: 지형 두 단계와 윤곽 색칠을 `std::thread::scope` 로 코어 수(≤ 8)만큼 행 묶음 분할.
-7. **루프**: "50 ms 잠 + 작업" → 마감 기준(작업 시간을 빼고 잠) — 그리는 시간이 프레임 간격에 더해지지 않음.
-
-같은 작업에서: 큰 지도 **불투명도**(20–100 %) — `UpdateLayeredWindow` 의 SourceConstantAlpha 라 비용 0.
-
-## 11. 패널 콘솔 레이아웃 (2026-10-02)
-
-요청: "북쪽보정과 안내/지도 통합, 패널 좌우로 더 크게, SaaS 콘솔 스타일 2열."
-- 너비 470 → 960. 왼쪽 사이드바(172): 게임·게이트 상태, 메뉴(치트: 생존/전투/이동 · 도구: 지도·안내/디버그).
-- **지도 · 안내** 한 페이지 2열 — 왼쪽: 미니맵(지형 표시·벽 윤곽 포함), 큰 지도(반경·불투명도), 표시할 것, 이 지역.
-  오른쪽: 나침반·방향(**북쪽 보정**), 안내, 진행 중인 조사, 갈 곳, 단축키 5개 한곳, 게임 메뉴.
-- 치트 페이지 2열 — 왼쪽: 그룹 치트, 오른쪽: 켜진 치트 요약(값과 게임의 현재 값) · 알아둘 것.
-- 저장된 탭 `guide` 는 `map` 으로 읽음. 지도 설정 변경 감지는 MapState 전체 비교.
-
-## 12. 패널 그리드 레이아웃 (2026-10-02)
-
-피드백: "grid layout 시스템 도입 필요 — 내부 패널이 서로 겹친다."
-- 원인: egui `columns`·`Grid` 는 내용에 맞춰 커지고 자르지 않는다. 2열 카드(열 ≈ 370 px) 안의 고정 180 px 슬라이더,
-  4개짜리 선택 버튼 줄, 줄바꿈 없는 긴 라벨이 열을 넘어 옆 카드 위에 그려졌다.
-- `ui/layout.rs`:
-  - `grid(ui, n, …)` — 정확히 같은 폭의 열(간격 12), 각 열은 그 사각형으로 **잘림**, 가장 높은 열만큼 자리 차지.
-  - `field(ui, 라벨, …)` — 라벨 칸 112 px 고정(넘치면 말줄임), 컨트롤은 남은 폭 안에서. 슬라이더 폭 = 남은 폭 − 70.
-  - `choices` (넘치면 줄바꿈하는 버튼 줄), `note` (폭에 맞춰 줄바꿈하는 작은 설명), `switch` (스위치 + 줄바꿈 설명).
-- 지도·안내 페이지와 치트 페이지를 모두 이것으로. 북쪽 보정은 4버튼 → 드롭다운, "진행 방향을 위로" 스위치 →
-  "위쪽: 북쪽(N) / 카메라 방향". 미니맵 카드에서 지형 카드를 분리. 목표·갈 곳 이름은 말줄임(마우스를 올리면 전체).
-
-## 13. 윤곽선(디아블로식) 스타일 · 표시 방식 순환 키 (2026-10-02)
-
-요청: "큰 지도가 화면을 너무 가린다 — 디아블로 미니맵처럼 배경 투명, 실선 외곽선으로만." 그리고 "큰 지도/미니맵 전환은
-패널 설정으로, 미니맵 키 하나로 표시 방식을 순환(대다수 게임 방식)."
-
-- `View.outline`: 원판 배경 없음(완전 투명), 테두리 원 없음. 채움 없이 선만:
-  - 구조물 띠는 **벽·높은 곳만** 가장자리 실선 + 바깥 1 px 어두운 테두리(어떤 배경에서도 읽히게). 절벽·바위 상자는
-    실제보다 커서, 낮은/깊은 곳의 파랑은 물과 헷갈려서 뺌 — 지형은 등고선이 대신 보여 줌.
-  - 지형은 등고선(굵은 10 m 선 조금 더 진하게)과 **물가 파란 실선**(젖은 픽셀 옆에 마른 픽셀).
-  - 경로·지나온 길·아이콘·주인공·N 은 그대로.
-- 설정: `big_outline`(기본 켬), `mini_outline`(기본 끔). 패널: 미니맵·큰 지도 카드의 "스타일: 윤곽선 / 채움".
-- 표시 방식 `display` = 미니맵 / 큰 지도 / 끔 (예전 `show false` 는 끔으로 읽음). `cycle_modes` = 지도 키가 도는
-  모드(비트, 최소 1개). 지도 키(기본 F9)를 누를 때마다 미니맵 → 큰 지도 → 끔 순서로, 고른 것만. **큰 지도 전용 키는 없앰**
-  (단축키 4개: 지도 표시 방식 · 마커 · 나침반 · 다음 목표).
-
-## 14. 12열 그리드 · 최대 높이와 본문 스크롤 (2026-10-03)
-
-피드백: "넘치는 내용을 잘라내는 게 아니라 12-cols grid 로 내부 요소가 폭에 맞춰져야", "가로폭·최대폭을 적용해 각 레이아웃
-안에서 스크롤 — 접기·펼치기를 쓰면 즉시 화면보다 커진다."
-
-- `ui/layout.rs::row(ui, spans, min, add)`: 12열. 칸 폭 = 열 폭 × span + 간격, 열 폭 = (가용 폭 − 간격×11)/12.
-  칸이 `min` 보다 좁아지면 그 행은 **세로로 쌓임**(반응형, 카드 최소 300 px). 칸마다 글자 줄바꿈 기본. 잘라내기 없음.
-- 칸 안 요소가 폭을 따름: `field` 라벨 열 = 칸의 4/12 (72–150 px), 컨트롤은 나머지(줄바꿈 허용), 슬라이더 = 나머지 − 70.
-  `choices`·`note`·`switch` 는 줄바꿈.
-- 배치: 패널 `[2, 10]`(사이드바 / 본문), 지도·안내와 치트 페이지 `[6, 6]`. 디버그의 넓은 표만 가로 스크롤.
-- 높이: 창 = 내용 높이, **최대 모니터 높이의 85 %**. 본문은 세로 `ScrollArea`(최대 = 그 높이 − 제목·여백·하단 바) 안 —
-  펼치면 창이 커지는 대신 안에서 스크롤. 사이드바와 하단 바는 고정.
-
-## 15. 패널을 CSS Flexbox/Grid 로 (taffy) · 설정 축약 (2026-10-03)
-
-요청: "Tailwind 의 동적 flexbox·grid 를 그대로" → `egui_taffy 0.14`(egui 0.36, taffy 0.9 — W3C Flexbox/Grid 구현, MIT).
-- `ui/tw.rs`: Tailwind 이름 그대로의 스타일 — `col`/`row`/`wrap`(flex, gap, items), `grow`(grow basis-0 min-w-0), `full`(w-full),
-  `cards(min)` = `grid grid-cols-[repeat(auto-fit,minmax(320px,1fr))]`, `sidebar(172)` = `grid grid-cols-[172px_1fr]`.
-  컴포넌트: `card`, `field`(라벨 basis-1/3 72–150, 컨트롤 grow wrap), `switch`, `choices`, `slider`(트랙 grow + 값 상자 별도 노드 — 폭 추측 없음),
-  `block`(grow min-w-0, 줄바꿈 글·목록), `w`(shrink-0 nowrap 위젯).
-- 시행착오 (캡처로 확인): ① 루트를 `auto` 로 두면 CSS 대로 fit-content → 카드가 320 px 한 열로 접힘 → `w-full`.
-  ② 작은 위젯을 줄바꿈 모드로 재면 첫 프레임 폭 0 에서 한 글자씩 접힌 크기로 측정 → `w` 는 nowrap. ③ 행 안의 글 블록에 grow
-  가 없으면 좁게 잰 폭에 갇힘 → `block` 에 grow.
-- 창 크기: 너비 = 사이드바 + 간격 + 페이지(카드 360 × 열 수 + 간격, 디버그 620) + 스크롤바, 모니터의 90 % 이하. 높이 = 내용,
-  모니터의 85 % 이하, 넘으면 본문 스크롤.
-- 설정 축약(요청 "과한 요소 축약 — F9 순환은 기본값으로"): 화면에서 뺌(저장값은 유지) — F9 순환, 북쪽 보정, 지형 색 설명·구조물 수,
-  큰 지도 설명, 표시할 것 설명, 진행 중인 조사 카드, 갈 곳·단축키 설명, 게임 메뉴 카드(스위치는 미니맵 카드로), 지역 이름·좌표,
-  치트 페이지 "알아둘 것" 카드. 위치 저장 설명은 한 줄로.
-
-## 16. 경로가 앞뒤로 뒤집히는 문제 (2026-10-03)
-- 사용자: "안내대로 가다가 갑자기 뒤로 가라고 해서 뒤로 가면 다시 정방향으로 안내함".
-- 원인: 경로를 1초(또는 5 m 이동)마다 새로 계산해 **무조건 교체** — 거의 같은 두 우회로(앞쪽 / 지나온 길로 되돌아가는
-  쪽)가 계산마다 번갈아 이김. 지나온 길이 일반 땅의 1/3 비용이라 되돌아가는 쪽이 자주 이김.
-- 수정: ① `pathfind::better` — 새 경로는 남은 옛 경로(벗어난 거리 + 남은 길이)의 85% 보다 짧을 때, 옛 경로에서 15 m 넘게
-  벗어났을 때, 옛 경로만 장애물을 넘는 추정 구간이 있을 때만 교체. 목표가 바뀌면 바로 교체. ② TRAIL 비용 1 → 2 (OPEN 3).
-- 2차(같은 날): "중간 포인트가 고정된 채로 경로가 갱신되지 않음" — 1차 기준(15% 짧을 때만 교체)이 너무 끈적했음. 모서리를
-  질러가면 가장 가까운 구간이 지난 구간으로 남아 나침반이 지난 꺾임점을 계속 가리킴.
-  수정: ① 교체 = 새 경로가 지금 방향과 **같은 쪽(100° 이내)** 이면 항상, 6 m 넘게 벗어나면 항상, 뒤로 돌리는 경로는
-  15% 짧을 때만. ② `next_point` 는 가장 가까운 구간보다 3 m 안쪽으로 가까운 구간 중 **가장 뒤의 구간**에서 다음 점을 고름.
-
-## 17. 물 위·가파른 지형을 지나는 경로 (2026-10-03)
-- 사용자: "물 위로 지나가는 길이 빈번히 안내됨" + "가파른 지형으로 갈 수 없는 지형을 관통" + "점프가 없어 오를 수 없는
-  경사는 우회해야".
-- **물**: 다리 아래를 마른 땅으로 두려고 "수면 위로 솟은 장애물 아래 2 m 칸 = 마른 땅" 규칙을 썼는데, Acasa 늪의 나무·바위·
-  갈대가 전부 해당 → 물에 구멍이 숭숭 → 경로가 그 사이로 물을 건넘. 수정: **데크만** 마른 땅 — 윗면이 수면 −0.5 m ~
-  +3 m, 두께 < 2 m, 위에서 본 넓이 ≥ 2 m². 실측(Acasa): 물 넓이 22,952 → 28,988 m² (+26%).
-- **경사**: 40° 이상은 비용만 12/60 → 절벽도 비싸게 지나감. 수정: **45° 초과(rise/run > 1.0, 언리얼 기본 보행 각도)는
-  막음**, 35–45° 비용 12. 막힌 경사는 다른 장애물처럼 길이 전혀 없을 때만 추정 구간(노란 점선)으로 넘음.
-
-## 18. 층 표현·나침반 거리감 (2026-10-03)
-- 사용자: 지상/지하 입체 렌더링(같은 층 선명, 다른 층 흐리게), 나침반 아이콘 크기·투명도로 거리감, 목표의 위/아래를
-  화살표와 높이 차이로.
-- 나침반(`raster::pin_look`): 10 m → 200 m 로그 척도로 크기 1.15 → 0.7, 불투명도 1 → 0.35(타겟은 0.7 까지만).
-  높이 차 ≥ 3 m(`FLOOR_DZ`)면 핀 옆 ▲/▼. 타겟 아래 라벨 `85m ▼12m`(위 하늘색, 아래 주황).
-- 지도: 아이콘·목표가 발 높이와 3 m 넘게 차이나면 3–6 m 에 걸쳐 1/3 불투명도까지 흐려지고 ▲/▼(`floor_alpha`,
-  `floor_arrow`). 구조물 밴드에 **위층**(바닥이 3–12 m 위)·**아래층·지하**(윗면이 1.5–15 m 아래)인 서 있는 것(벽)을
-  유령처럼 아주 옅게 — 전엔 아예 안 그렸음. 윤곽선 모드에도 포함.
-- 실측(Jova, Vitalis 집): 가족 재회 목표가 11–14 m 아래(지하). 경로는 평면이라 지하 입구를 모름 → 다음 과제:
-  게임 내비메시(아래).
-
-## 19. 게임 내비메시 발견 (2026-10-03)
-- `RecastNavMesh` 액터는 없지만 월드 파티션 **`NavigationDataChunkActor`**(이 지역 18개) → `NavDataChunks`(+0x2A8) →
-  `RecastNavMeshDataChunk`("RecastNavMesh_…-Default") +0x30 = TArray<FRecastTileData>(**원소 0x48**: +0x14 TileDataSize,
-  +0x18 TSharedPtr<FRawData>{obj, ctrl}, obj+0 = 원시 타일 바이트; +0x28/+0x30 압축 타일 캐시 — 안 씀). 처음엔 0x40 으로
-  읽어 4/5 가 쓰레기로 보였음.
-- 원시 타일 헤더 0x58: u16 version(7)·layer·polyCount·vertCount, i32 x·y, u16 개수들(링크·디테일·BV·오프메시…),
-  +0x28 double bmin[3]/bmax[3]. 정점 0x58 부터 double[3](Recast: x, 위, z → 언리얼 (−x, −z, 위)), 그 뒤 폴리 32 B
-  (u32 firstLink, u16 verts[6], u16 neis[6], u16 flags, u8 vertCount, u8 area|type<<6). 정점·폴리만 씀 — 나머지 구간
-  크기 공식은 맞추다 말았음(필요 없음).
-- 실측(Jova): 타일 3,906, 폴리 22,898. 타일 경계 가장자리 14,726 중 14,213 연결. 지하(58 폴리)는 지상과 **끊겨 있음**
-  — 비밀 사무실 문(`VitalisOfficeOpened`, 퍼즐/열쇠)이 닫혀 있어서.
-
-## 20. 내비메시 경로 (2026-10-03)
-- `navmesh.rs`: 타일 해독 → 폴리 그래프(타일 안 이웃 = neis 1-기반, 타일 사이 = 같은 축 선 위에서 겹치고 높이 60 cm
-  이내인 경계 가장자리) → 위치 찾기(2D 포함 + 높이 가까운 층, 없으면 5 m 안 가까운 중심) → 폴리 A*(포털 중점) →
-  funnel 로 펴기. 경로 계산 ≈ 0.1–4 ms.
-- **막힌 목표**(문·퍼즐 너머): 닿을 수 있는 폴리 중 목표에 가장 가까운 곳(높이 차 2배 가중)까지 걷는 경로 + 마지막
-  구간 "관통"(노란 점선). 추적기: "닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저".
-- **퍼즐 고려**(사용자: "문을 열기 위한 퍼즐 요소도 고려"): 경로가 관통이면 그 목표를 `blocked` 로 기억. 자동 안내는
-  걸어서 닿는 목표를 먼저; 원하는 목표가 모두 막혔으면 가장 가까운 막힌 목표 40 m 안의 **닿는 Open 목표**(쪽지·열쇠·
-  레버·퍼즐 장치)로, 없으면 막힌 목표 자체로.
-- 엔진: 퀘스트 패스가 `NavigationDataChunkActor` 를 모으고, `navmesh::Nav` 가 액터 집합이 바뀌면 스텝마다 2개씩 타일을
-  읽어 다 읽으면 만들고 게시(`Snapshot.nav`). 오버레이 경로 스레드: 내비메시 먼저, 플레이어가 내비메시 밖이면 격자.
-
-- 드론용 `VoxelNavigationDataChunk`("DroneNavigationData-Drone")도 있음 — 비행용이라 보행 경로엔 안 씀.
-
-## 21. NPC 대화를 마치면 다음 목표로 (2026-10-03)
-- 사용자: "퀘스트 진행을 위한 NPC 와의 대화가 마무리됐는데 다음 타겟으로 자동 전환되지 않음".
-- 원인: NPC 목표는 대화 그래프의 **모든 갈래** 페이로드를 합침 — 아직 조건(주제 해금)이 안 된 갈래의 사실이 남아 있어
-  대화를 마쳐도 "새로 얻을 것이 있는 곳" 으로 남았음.
-- 수정: NPC 가 주는 사실·태그 중 아는 수가 늘면(그 NPC 와의 대화가 무언가를 줬음) 그 NPC 는 **대화 끝** — 그때 알던
-  `Conversation.` 태그 수를 기록. 그 수가 늘 때까지(다른 곳에서 새 주제가 열림) 목표에서 뺌. 이름으로
-  `Mods\talked.txt` 에 남겨 재시작해도 유지. 조사 DB 의 "필요한 것" 도 같은 판정.
-- 안내 카드에 **"건너뛰기"**: 모드가 보지 못한 사이 끝난 목표를 이번 실행 동안 넘기고 다음 목표로.
-
-## 22. 패널 키 ` (~) · CLI 콘솔 (2026-10-03)
-- 사용자: "패널 오픈 단축키를 `(~)로 변경하고, cli 명령어를 쓸 수 있는 콘솔 오버레이 — 패널이 열리면 명령어 입력이 가능한
-  콘솔 창".
-- 단축키: `VK_OEM_3`(` ~), 게임·패널에 포커스가 있을 때만(폴링, 그대로). F8 은 이제 미니맵 키로 고를 수 있음.
-- 콘솔(`ui/console.rs`): 패널 아래 220 px 띠(제목 줄 "콘솔 ▾" 로 접기). 입력한 명령은 **같은 실행 파일을 그 인자로**
-  창 없이(CREATE_NO_WINDOW) 실행해 stdout/stderr 를 한 줄씩 스트리밍(`[hiumod]` 로그는 일반 출력 색). 자체 명령
-  `help`(CLI 사용법)·`clear`. 앞의 `hiumod` 는 떼고, 맨 `hiumod`(패널을 하나 더 띄움)는 거절. ↑/↓ 이전 명령, Esc 중지,
-  패널이 닫히면 실행 중인 명령도 종료. 패널이 열리면 커서가 콘솔 입력에. 입력의 ` 는 지움(패널 키).
-- 2차(같은 날, 사용자: "하프라이프처럼 최상단에 반투명한 UI"): 콘솔을 패널 아래 띠에서 **게임 창 맨 위에서 내려오는 반투명
-  창**으로. egui 즉시 뷰포트(제목 "Hell Is Us Mod — console", 장식 없음·투명·항상 위·작업표시줄 없음), 게임 창 폭 ×
-  높이 38%(최소 180 px), 배경 (8, 10, 14, α200). 패널이 보일 때만 그려짐 — eframe 은 숨은 동안 프레임을 안 그리므로
-  ` 로 숨기거나 보일 때 hotkey.rs 가 제목으로 찾아 같이 숨기고 보임. 열리면 그 창이 키보드를 가져감.
-
-
-## 23. 1단계 기능 (2026-10-03, 설계 문서의 F2·F3·F5·F9)
-- **F9 세이브 백업**(`backup.rs`): `%LOCALAPPDATA%\HellIsUs\Saved\SaveGames\*.sav` 의 수정 시각을 2초마다 보고, 바뀐 뒤 3초
-  잠잠하면 `Mods\backups\<시각>\` 로 전부 복사, 최근 20개. 패널 "세이브" 탭: 최근 3개, 지금 백업, 폴더 열기.
-- **F5 미스터리·타임루프**: `SecretsSubsystem.Mysteries`(MysteryData 0x70, 43개)·`Timeloops`(TimeloopSecretData 0x78, 14개)
-  가 선행과 같은 배치(Guid +0x18, 시작 태그 +0x28, 완료 +0x30, Title +0x38). 세이브 `SecretsState.Mysteries/Timeloops`
-  도 같은 원소. `quests::Kind::{Mystery, Timeloop}`, 캐시 줄 `mystery`/`timeloop`. 실측: 미스터리 5·타임루프 2 진행 중.
-- **F2 전달 안내**: 조사 DB 의 NPC 마다 거래 전부(`Entry.trades`: 원하는 아이템, 돌려주는 사실·태그) — 처음엔 첫 거래만
-  기억해 허브상(빈 젖병, 금시계)의 금시계를 놓쳤음. 가진 아이템이고 보상이 아직 새것이면 "건네줄 수 있는 것". 실측:
-  금시계 → Senedra 허브상, 악보 2 → Acasa 바이올리니스트.
-- **F3 지도 핀**: `minimap::Marker {at, kind: PinKind(잠긴 문·퍼즐·나중에·표시), note}`, `marker W x y z kind 메모…`
-  (옛 줄은 표시로). 핀 id 는 비트 62(조사 DB 는 63) — 오버레이가 이 지역 핀을 목표로 끼워 안내·경로가 되고, 지도에선
-  다이아몬드 대신 핀으로. 패널: 새 핀 종류, 가까운 순 목록(종류 바꾸기·메모·안내·지우기).
-- **탭 분리**(사용자: "너무 많은 요소가 한 패널에 집중되지 않도록"): 지도 / 안내 / 퀘스트 / 세이브 / 디버그.
-
-## 24. 2단계 기능 · 핀 24종 · 그리드 균형 (2026-10-03)
-- **F1 놓치기 쉬운 선행**(`missables.rs` + `assets/missables.tsv`): 마감은 게임 데이터에 없음 → 공략의 놓치는 것 표(Game8·
-  PowerPyx)를 데이터 파일로. 마감 지점(1막 끝·Quest03·Talju 트럭·문화부·세 번째 키스톤)을 메인 퀘스트 상태로 판정:
-  임박/나중/지남. 같은 줄기의 선행 여러 개(A Light in the Dark 1–4)는 모두. 퀘스트 탭 카드 + 추적기 경고 줄.
-  실측: 1막 중 — Land of Milk and Honey 임박.
-- **F11 키스톤 순서**: 2막(Quest02 완료, 키스톤 3개 미완)에서 남은 키스톤을 권장 순서(공포→분노→환희)로, 다음 키스톤 전
-  임박 선행.
-- **F4 수집 진행도**: 조사 DB 아이템 경로의 폴더(Relics, LoreItems, Research, Cosmetic, Drone, WeaponModules, Weapons,
-  DefensiveGears, Lymbic, CraftingTomes)로 분류, 세이브 GUID 로 획득. 수집품만 주는 배치물이 조사 DB 를 읽을 때 빠지던
-  버그 수정. 월드에 놓인 것만(NPC 보상·상점 제외) — 놓인 곳 수는 게임 집계보다 많을 수 있음(같은 아이템 여러 곳).
-- **F10 들을 이야기가 남은 NPC**: NPC 엔 세이브 ID 가 없어(227명 모두) "대화했는지" 는 못 앎 → 대화 그래프가 아직 모르는
-  사실·태그를 주는 NPC. 수집 탭.
-- **안내 도우미** `guide_to` + `MapState.adhoc`: 로드 안 된 조사 DB 장소(수집품·NPC)도 오버레이가 목표로 끼워 안내.
-- **핀 24종**: `assets/pins/<word>.svg`(핀 모양 + 흰 기호), `PinKind` 24, 옛 단어(locked, later) 이어받음, 패널은 드롭다운.
-- **그리드 균형**: 지도 탭 = [미니맵·지형·큰 지도·단축키] / [표시할 것·지도 핀], 세이브 탭 = [백업] / [세이브 파일].
-
-## 25. 메모리 분석 (2026-10-03)
-- 관찰: 오래 켠 패널(이전 빌드)이 1.3 GB. 다시 재 보니 230–275 MB 에서 20초마다 ±20 MB 출렁임(누수보다 할당 반복).
-- 엔진만 헤드리스로(같은 10 Hz, 150초): 50 MB 안팎에서 평평 — 엔진은 원인 아님.
-- 오버레이의 무거운 일만 헤드리스로(실데이터): 큰 지도 1700² 캔버스 300장 그리기(장당 54 ms), 지형 굽기 20회, 내비메시
-  경로(2 ms)·격자 경로(288 ms) — 최고 112 MB. 오버레이 계산도 원인 아님.
-- 패널의 평소 ~250 MB 는 egui·OpenGL 창(패널 + 콘솔 뷰포트), 글꼴(맑은 고딕 13 MB·Segoe UI Symbol), 레이어드 창 DIB.
-  1.3 GB 급등은 재현 못 함 → 원인 후보를 잡을 장치를 넣음:
-  - `memstat.rs`: 작업 집합·전용·최고. 1분마다 로그(`memory: working … · private … · peak …`), 디버그 탭에 표시.
-- 줄인 것: 조사 DB 파생값(필요한 것·전달·마감·수집·이야기·저널)을 스텝(10 Hz)마다 다시 만들던 것을 1초에 한 번, 스냅샷엔
-  `Arc` 로 공유 — 패널·오버레이가 프레임마다 복사하던 목록이 포인터 복사로.
-
-## 26. (번호 비움 — 구조 정리는 ARCHITECTURE.md 코드 지도)
-
-## 27. 3단계 기능 (2026-10-03, 설계 문서의 F6·F7·F8)
-게임 데이터에서 직접 읽음 — 공략 문구 없음.
-
-**F6 퍼즐 도우미** (`read/puzzles.rs`, 안내 탭 '근처 퍼즐')
-- 퀘스트 패스가 모든 객체를 훑을 때 퍼즐 컴포넌트도 모음 (`quests.rs` Role::Puzzle). 1초마다 주인공 40 m 안의 것을 읽음.
-- 다이얼: `DialPuzzleActionComponent.Dials` → `DialComponent.{DialState, DialSolution, NbDialState}` → "다이얼 n: k칸 돌리기 (지금 a → b)".
-  `bIsDialsLocked` 또는 전부 맞으면 풀림. 칸 번호는 0부터인 값을 +1 해서 보여 줌 — 금고 코드의 기호 번호와 같은 기준 (2026-10-03 게임에서 금고를 열어 확인).
-- 키패드·컴퓨터: `KeypadRuneComponent.Rune.ExpectedCode` (문자열). 열렸는지는 액터의 `KeypadAction`/`ComputerAccessAction.bHasBeenActivated`.
-- 물건 놓기(열쇠 문·림빅 막대·사진 등): `ItemPlacementActionComponent.Solution` → 아이템 하나 또는 `ItemPlacementCondition.Solution` 목록. 이름은 게임 번역.
-- 답은 기본으로 숨김 — '답 보기' 를 눌러야 보임 (이번 실행 동안만 기억).
-
-**F7 금고 수첩** (`guide/tables.rs` vaults, 수집 탭)
-- 표: `Gameplay/Research/CacheData/VOFK0n_*_CacheData_DA` (ResearchCacheData) — GUID, 이름·지역·단서(문자열 테이블 → `{g:ns/key}`),
-  `NumberOfLoreEntriesToUnlock`, `Code` (ECacheSymbols 4개 → 기호 번호 1–8). tools/survey 가 `Mods\survey\vaults.json` 으로.
-- 세이브 `Player.ResearchState`: `KnownLoreEntries` (연구 수), `KnownCacheEntries` (모든 금고가 처음부터 있음 — +0x11 bIsShownToPlayer 로만 '알려짐'),
-  `OpenedCaches` (GUID). 상태: 열림 / 정보 있음 (표시됨 또는 연구 수 ≥ 필요 수) / 잠김 (연구 n/m).
-- 금고 문 위치: 조사가 `VOFK_<지역>_DialPuzzle_Interact_BP` 액터를 `"vault": true` 로 남김 → '안내' 버튼.
-- 코드는 숨김, '코드 보기' 로. 기호 그림은 게임에 텍스처로 없어(재질) 번호로만.
-
-**F8 남은 적 무리** (`guide/tables.rs` hollows, 수집 탭)
-- 표: `GameData/Spawner/<World>_Root_WP_Spawner_DT` (SpawnerLymbicEntityData: SpawnerSerializeGuid, EntitiesToSpawn, SpawnerLocation,
-  TimeloopActorID) — 11개 지역 522개 스포너. `Mods\survey\spawners.json`.
-- 판정: 세이브 `World.RegionStates` 에 그 스포너 GUID 의 상태가 있으면 처치한 것. 실측: 기록 없는 스포너 곁(≤5 m)엔 살아 있는 적,
-  기록 있는 곳은 대부분 없음 (예외 2 — 이웃 스포너의 적으로 봄). 2026-10-03 게임에서 무리를 처치하자 수가 줄어드는 것 확인.
-  기록의 Data 는 1바이트(F8)뿐 — SerializeSpawnerState(DefeatedLymbicEntities) 가 그대로 저장되진 않음.
-- 지역별 무리·적 수, 타임루프별, '가장 가까운 곳' 안내. 업적 쪽 실시간 값: `CharlieAchievementsUnlockerSubsystem.AdditionalClearedMapInformation`
-  (지역·타임루프별 bAll…EnemyKilled) — 지금은 표시 안 함.
-
-데이터 갱신: `doctor survey` (전체, ~2분) 또는 tools/survey `--tables` (표만, 몇 초).
-
-**퍼즐 목록** (F6 확장, 안내 탭 '퍼즐 목록')
-- 근처 40 m 만 보던 것을 모든 지역으로: 조사기가 퍼즐 액터의 컴포넌트를 `"puzzle"` 로 남김 — 다이얼(`DialComponent` 이름순, NbDialState·DialSolution),
-  키패드(`KeypadRuneComponent.Rune.ExpectedCode`), 물건 놓기(`Solution` → 아이템, 또는 조건 객체의 Solution 목록; 블루프린트 패키지 export 까지 따라감).
-- 실제 분포: 다이얼 24 (3개×10칸 8, 3개×6칸 1, 4개×8/4칸 3, 금고 4개×8칸 12), 코드 33 (3자리 4, 4자리 8, 5자리 7, 6자리 14), 물건 놓기 212.
-  같은 위치·종류의 복제는 하나로.
-- 풀었는지: 세이브에 그 액터 GUID 상태가 있으면 ✓. 이 지역 남은 것 먼저, 거리순, 답 숨김·안내. 열쇠·물건 놓기는 체크해야 보임.
-
-
-## 28. 업적 진행 (2026-10-03, 웨이브 D)
-- Steam API 없이 Steam 캐시를 읽음 (`game/achievements.rs`): `<Steam>\appcache\stats\UserGameStatsSchema_1620730.bin` (40개 업적의
-  API 이름·언어별 이름·설명·숨김·진행 통계) + `UserGameStats_<계정>_1620730.bin` (달성 비트·시각·통계 값). 둘 다 바이너리 KeyValues.
-- 게임 언어 → Steam 언어 (koreana·japanese·schinese·brazilian …). 진행 표시 12개 (선행 /26, 미스터리 /43, 유물 /29, 물건 놓기 /25 …).
-- 수집 탭 '업적' 카드: 남은 것부터, 숨겨진 업적은 '보기' 전까지 가림. 10초마다 다시 읽음 — Steam 이 게임의 보고를 받아 파일을 쓸 때 반영.
-- 게임 쪽 표(`AchievementsDefinitions_DT`)는 이름이 개발용 자리표시라 쓰지 않음.
-
-## 29. 금고 문양 (2026-10-03)
-- 금고 코드 기호 1–8 = 플루치크의 여덟 감정, 알파벳순: 1 Admiration · 2 Amazement · 3 Ecstasy · 4 Grief · 5 Loathing ·
-  6 Rage · 7 Terror · 8 Vigilance (각 언어 이름은 i18n 표, 게임 공식 용어가 있으면 그것 — 한국어 희열·분노·공포·비탄). 여섯 금고 코드(vaults.json)와 공략(Fextralife·DualShockers 등)의
-  기호 이름을 대조해 확정 — 예: 잡목림 [7,1,6,2] = 공포·감탄·격노·놀람. 게임 금고 문에서 맞는 것 확인.
-- 그림: 웹의 문양 이미지를 참고만 해서(저장소에 넣지 않음) 직접 그린 SVG — `assets/symbols/<이름>.svg` (100×100, 흰 선 4,
-  둥근 끝). 다른 색은 `#ffffff` 를 바꿔서 (`map/symbols.rs`).
-- 패널 SVG: `ui/svg.rs` — resvg 로 래스터화해 egui 텍스처로, (문서, 크기)별로 한 번만 만들어 컨텍스트 메모리에 보관.
-  금고 수첩의 코드, 근처 퍼즐·퍼즐 목록의 금고 문 다이얼 답이 문양으로 나오고, 마우스를 올리면 이름.
-
-## 30. 패널 배치 — 메이슨리 · SVG 아이콘 (2026-10-03)
-- 카드 배치: 고정 2열 그리드 대신 메이슨리 (`tw::masonry`). 카드마다 직전 프레임의 높이를 egui 메모리에 두고, 순서대로
-  지금까지 가장 짧은 열에 넣음 — 열 높이가 고르게. 처음 보는 카드는 240 px 로 가정.
-- 열 수는 동적 (`Panel::fit_columns`): 그 페이지의 카드가 5개 이상이면 3열, 아니면 2열 — 모니터 폭(90%)에 들어가는 만큼까지.
-  창 폭은 열 수 × 카드 폭으로 따라감. 수집 탭(6장)은 넓은 모니터에서 3열.
-- SVG 아이콘 (`ui/svg.rs`, 같은 문서·크기는 한 번만 래스터화): 지도 '표시할 것' 의 종류·세부, 핀 종류 고르기와 핀 목록,
-  안내 목표의 단계(퀘스트·비밀·단서 → 핀 아이콘), 저널 항목(메인·선행·미스터리·타임루프), 필요한 것·건네줄 것·이야기(NPC/아이템),
-  수집 분류, 퍼즐·금고·적 무리 행, 금고 문양.
-
-## 31. 언어별 다듬기 (2026-10-03)
-- 언어마다 그 언어 사용자(게임 UI 번역가·PC 게이머) 역할의 에이전트 하나가 자기 표만 다듬음 — 12개 언어.
-  맥락: 키마다 화면 요소 종류(버튼·카드 제목·안내·오류·콘솔·지도)와 쓰이는 코드 위치를 뽑은 파일, 각 언어 게임 공식 텍스트(Mods\locale).
-- 공통 규칙: 키·자리표시자·`{g:…}` 그대로, 숫자는 "라벨: {count}" 꼴로 어떤 수에도 자연스럽게, 이름 뒤 격·조사·접미사가 깨지지
-  않는 구문 (독·폴·러 격변화, 튀르키예어 접미사, 한국어 조사), 게임 공식 용어 우선 (기력·재사용 대기시간·APC·Gram·Pobudzenie …).
-- 정리 중 발견: 같은 한국어("이동", "코드·암호")에서 만든 키가 겹침 → `LOAD_POSITION`, `PIN_CODE` 로 분리, 중복 키 테스트 추가.
-
-
-## 32. 패널 테마 (2026-10-03)
-- `ui/theme.rs` 한 곳에 팔레트·모서리·egui visuals: 바탕 #0E1217 · 면 #13181F · 카드 #1A2028 · 테두리 #2A323D · 글자 #D9E1EA ·
-  흐린 글자 #8B96A3 · 강조(림빅 블루) #5A9CE6 / 깊은 강조 #22344D · 상태 OK #8FD17A · 대기 #E8C06A · 오류 #F08278.
-- 흩어져 있던 색(카드·사이드바·칩·콘솔·토글·제목)을 모두 테마 값으로. 홈페이지(docs/)도 같은 팔레트.
-- 규칙: 강조색은 고른 것·켜진 것·살아 있는 것에만, 상태색 셋은 상태에만.
-
-## 33. 여백 체계 (2026-10-03)
-- 4px 단위 네 값만 (`ui/theme.rs`): TIGHT 4 (아이콘–글자), INLINE 8 (한 줄의 컨트롤·카드 안 행), BLOCK 12 (카드 사이·묶음 사이·창 여백),
-  PAD 16 (카드 안쪽). 흩어져 있던 4·5·6·7·8·10·14 를 모두 이 넷으로.
-- 카드: 안쪽 16 사방 동일, 행 간격 8, 강조 막대는 제목 높이에 맞춤. 카드 폭 372.
-- 사이드바: 상태 줄 사이 8, 메뉴 항목 28px·간격 2, 묶음(치트/도구) 사이 12. 제목줄 30px, 구분선 위아래 여백.
-- (같은 날 2차) 탭마다 직접 클릭해 캡처하며 고친 것:
-  - 창 바탕이 egui 기본 회색이던 것 — `theme::install` 뒤의 `set_visuals(dark)` 가 덮어썼음, 삭제.
-  - 카드 안 행 간격이 들쭉날쭉하던 것 — `tw::col` 이 flex 열이라 남는 높이를 자라는(grow) `block` 들에 나눠 줬음.
-    열은 이제 한 칸 grid (`minmax(0,1fr)`): 행 높이는 내용으로만. 행(row) 안 block 은 여전히 grow 로 남은 폭을 채움.
-  - 폼 라벨 칸 1/3·최대 150 → 42 %·최대 200 (라벨이 일찍 줄바꿈되던 것).
-  - 여러 줄 항목(놓치기 쉬운 선행·업적·적 무리)은 `tw::item` (간격 2) 으로 머리·설명을 묶어, 카드 간격 8 은 항목 사이에만.
-  - 안내 '갈 곳' 목록이 잘리던 것 — block 안 ScrollArea 는 지난 프레임 높이에 갇힘 → `min_scrolled_height`.
-
-## 34. 게임 데이터 자동 읽기와 .NET 8 런타임 (2026-10-03)
-- 사용자가 `doctor survey` 를 칠 필요 없음. 패널이 주인공 조작 중 + 런타임 있음일 때 `gamedata::next(build)`:
-  `Mods\survey` 에 json 이 없거나 `Mods\survey\BUILD` 가 지금 Steam 빌드와 다르면 survey(+locale), 아니면
-  `Mods\locale
-ames.tsv` 가 없으면 locale. 같은 exe 를 `doctor survey|locale` 로 창 없이 실행, 끝나면 `generation` 증가 →
-  attached 의 Guide::fresh 가 survey·tables 를 다시 읽음, 이름은 i18n::follow_game 이 names 가 비면 다시 읽음.
-  stamp 없는 예전 survey 는 지금 빌드 것으로 보고 stamp. 실패하면 사이드바에 이유, 자동 재시도 없음 (콘솔에서 다시).
-- 런타임 (`infra/runtime.rs`): PATH·%ProgramFiles%\dotnet (설치 직후 PATH 가 옛것)·Mods\dotnet 순으로
-  `--list-runtimes` 에 `Microsoft.NETCore.App 8.` 이 있는 호스트. 패널은 `available()` (15 초마다 백그라운드 확인) 만 씀.
-- 설치는 사용자 버튼으로만 (소프트웨어를 깔기 때문): ① winget `Microsoft.DotNet.Runtime.8` (머신 전체, UAC, Windows Update 로 갱신)
-  ② 실패·없음 → 공식 dotnet-install.ps1 `-Runtime dotnet -Channel 8.0 -InstallDir Mods\dotnet -NoPath` (사용자 전용, 관리자 불필요).
-  실측: ② 11 초, 71 MB. survey 도구를 런타임 포함으로 배포하는 안(zip +31 MB)은 사용자 결정으로 기각.
-- 조사: Microsoft 배포 문서(FDD/SCD), winget 무인 설치 옵션, dotnet-install 스크립트(비관리자), FDD apphost 의 "You must install .NET" 대화상자.
-
-- 사이드바 상태 묶음(게임·주인공 게이트·게임 데이터)은 두 크기만: 제목 small DIM, 상태 값 본문 크기, 덧붙는 설명(빌드·PID,
-  해야 할 일)은 small. "● 연결됨\nv… · PID …" 는 줄을 나눠 첫 줄만 본문 크기.
+| `src/unreal/names.rs` | Struct reflection: `struct_of` (StructProperty → ScriptStruct), `inner_of` (an array's inner property), `field_type` (FFieldClass name), path from an object to a field inside a struct |
+| `src/unreal/gobjects.rs` | Finds GUObjectArray (must be unique), enumerates all objects, finds objects by class name |
+| `src/read/knowledge.rs` | Newest `CharlieSaveGame` → known facts, tags and active investigations (sets of FName indices) |
+| `src/guide/goals.rs` | Reads each interactable's payload (facts, tags) once and caches it; compares with knowledge to classify quest / secret / clue; drops used objects |
+| `src/engine/attached.rs` | `Attached::goals` — GUObjectArray once; save slots every 60 s, knowledge every 2 s, payloads every 2 s (was `engine.rs`) |
+| `src/map/compass.rs`, `src/map/raster.rs` | Stroke font (N E S W, digits, m k . -); `draw_compass` (±90° linear, 15° ticks, 8 directions, pins, target distance); goal diamonds and a dashed line to the target on the minimap (was all in `raster.rs`) |
+| `src/ui/layered.rs` | Shared layered-window code (minimap and compass) |
+| `src/ui/overlay/`, `src/guide/target.rs` | Overlay thread: minimap + compass; choosing the guide target (`settle_target`, `cycle`) now lives in `guide/target.rs` (was `ui/minimap.rs`) |
+| `src/ui/panel/guide.rs` | Guide tab: compass toggle and key, auto-guide, kind chips, current target, active investigations, Places list (nearest first, click to guide) (was `ui/panel.rs`) |
+
+- Default keys at the time: minimap F9, marker F6, **compass F10, next goal F11**. All four can be
+  rebound in the panel; if any two collide, all reset to defaults. (The map keys were later
+  reorganised — see MAP.md §10.)
+- Auto-guide: when nothing is chosen, or the chosen goal disappears (because it was used), switch to
+  the nearest quest goal.
+- North: the first version used N = world +X, but **the user found that the game's north showed up
+  as W on our compass** (2026-10-02). So game north = world yaw 270° (−Y). `MapState.north_yaw`
+  (default 270) drives the compass ticks and pins, north-up rotation of the minimap and big map, the
+  N label and arrows. In case it differs per region, the Guide tab has a north correction
+  (−Y / +X / +Y / −X). UE yaw runs clockwise seen from above, so game east = +X.
+- Measured (test save, Senedra Forest): 124 facts, 28 tags, investigation `Quest01_DA` → 11 places:
+  - 3 quest goals: open the APC door (`Quest.Facts.APCAcquired`, 90 m), the Arcas Spire door, the
+    Arcas Spire book;
+  - 6 secrets: two Lymbic doors, the Blood Queen's storehouse, a timeloop start and completion, the
+    smuggler's refugee;
+  - 2 clues.
+
+  First read takes about 1 s.
+- A preview tool (`examples/preview.rs`, not committed) rendered one frame from real data: compass
+  bearing and target distance agreed with the direction of the dashed line on the minimap.
+- **Open at the time:** checking in the game itself; whether the save state is live (does an item
+  drop off the list right after pickup?); dialogue facts (not objects) never appear as goals; goals
+  in other regions (worlds) are not visible; NavMesh routes were next (since done — ROUTES.md §6–7).
+
+## 6. Moving to the next goal after an NPC conversation (2026-10-03)
+
+- Report: after finishing the conversation with an NPC needed to progress a quest, the guide did not
+  switch to the next target.
+- Cause: an NPC goal merges the payloads of **every branch** of its dialogue graph. Facts from
+  branches whose condition (a topic unlock) was not yet met remained, so after the conversation the
+  NPC still counted as a place with something new to get.
+- Fix: when the number of known facts and tags among those an NPC gives goes up (the conversation
+  gave something), that NPC is **talked out**. The count of known `Conversation.` tags at that moment
+  is recorded, and the NPC stays out of the goals until that count rises (a new topic opened
+  elsewhere). Records are kept by name in `Mods\talked.txt` so they survive a restart. The research
+  DB's "needed" list uses the same rule.
+- The guide card has a **skip** button ("This goal is done or out of reach — skip to the next one
+  (this session)"): it passes over a goal that finished while the mod was not watching, for the rest
+  of the run, and moves to the next goal.

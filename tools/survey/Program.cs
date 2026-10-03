@@ -1,7 +1,7 @@
 // tools/survey — reads the game's cooked World Partition maps and lists what the quest
 // guide needs: everything that hands something out (pickups, devices, markers), NPCs
 // and their conversations, hand-overs — with where they are and their save GUID
-// (.spec/ITEMS.md).
+// (.spec/SURVEY.md).
 //
 // Runs on the player's PC only. The AES key is passed in (hiumod finds it in the
 // executable); nothing is written but the survey JSON.
@@ -137,7 +137,7 @@ File.WriteAllText(flowsFile, flows.ToString(Formatting.Indented));
 Console.Error.WriteLine($"flows: {flows.Count}");
 Tables.Write(provider, outDir);
 
-/// The game's own tables the guide reads as they are (.spec/ITEMS.md §6):
+/// The game's own tables the guide reads as they are (.spec/FEATURES.md §3):
 /// spawners.json — every world's spawners (`<World>_Root_WP_Spawner_DT`): the save GUID,
 ///   the enemies it spawns, where, and the timeloop it belongs to (the "every Hollow"
 ///   achievement counts them);

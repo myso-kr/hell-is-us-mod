@@ -1,57 +1,113 @@
-# 홈페이지 (GitHub Pages, docs/)
+# Website (GitHub Pages, docs/)
 
-`docs/` 는 생성물입니다. 고칠 곳은 `tools/site/`, 만든 뒤 `python tools/site/build.py`.
+`docs/` is generated output. Edit the sources in `tools/site/`, then run `python tools/site/build.py`.
+The one exception is `docs/assets/media/`, which `tools/video/render.mjs` writes directly (see Video).
 
-| 파일 | 내용 |
+| File | Contents |
 |---|---|
-| `tools/site/template.html` | 한 장짜리 시맨틱 HTML, `{{키}}` 자리 — 모르는 키가 있으면 빌드 실패 |
-| `tools/site/strings/<lang>.json` | 12개 언어 문구 (빠진 키는 영어로). 언어별 원어민 페르소나 에이전트가 게임 공식 용어로 작성 |
-| `tools/site/site.css` | 패널과 같은 팔레트 (`src/ui/theme.rs`) |
-| `tools/site/site.js` | three.js 히어로 + 스포일러 데모·등장 애니메이션 |
-| `tools/site/config.json` | 사이트·저장소 주소 — 형제 저장소처럼 `myso-kr/hell-is-us-mod` → https://myso-kr.github.io/hell-is-us-mod/ |
-| `tools/site/og.png` | 공유 미리보기 (1200×630, 히어로 스크린샷) |
+| `tools/site/template.html` | Single semantic HTML page with `{{key}}` placeholders. An unknown key fails the build. |
+| `tools/site/strings/<lang>.json` | Copy for 12 languages; a missing key falls back to English. Each language was written by a native-speaker persona agent using the game's official terms. |
+| `tools/site/site.css` | Same palette as the panel (`src/ui/theme.rs`). |
+| `tools/site/site.js` | three.js hero, spoiler demo, entrance animations. |
+| `tools/site/config.json` | Site and repository URLs (`base_url`, `repo_url`, `releases_url`, `license_url`) and `video_date`. Like the sibling repositories, `myso-kr/hell-is-us-mod` → https://myso-kr.github.io/hell-is-us-mod/ |
+| `tools/site/og.png` | Social preview (1200×630, hero screenshot). |
+| `tools/site/favicon.svg` | Favicon. |
 
-## 디자인
-- 콘셉트: "지도도 나침반도 없다 — 원한다면." 게임 아트 디렉션의 지형 등고선 모티프. 히어로는 three.js 지형을
-  셰이더로 등고선만 그리고 안개 속에 두며, 골짜기를 따라 림빅 블루 경로가 그려져 끝의 신호등(목표)까지 감 —
-  미니맵·길안내를 말 대신 보여 줌. 위쪽엔 게임에 없는 나침반 띠. 포인터·스크롤에 카메라가 천천히 반응.
-- 서체: Fira Sans Extra Condensed (제목, 게임 UI 의 압축 산세리프 느낌) + IBM Plex Sans (본문), CJK 는 Noto Sans KR/JP/SC.
-- 참고: 웹 리서치한 Opus 원샷 프롬프트 사례 — "한 가지 기억할 순간(히어로)에 집중, 나머지는 조용히",
-  기본값(크림 배경·이탤릭 강조·01/02 라벨) 금지, prefers-reduced-motion 존중, 1440/390 폭 검증.
-- 접근성: 건너뛰기 링크, 랜드마크, aria-labelledby, 포커스 링, reduced-motion 이면 정지 프레임, WebGL 없으면 CSS 등고선.
+What `build.py` writes:
 
-## SEO · AEO · GEO
-- 언어별 정적 페이지 (`/`, `/ko/` …) — 3D 없이도 본문 전부 HTML. `hreflang` 12개 + x-default, canonical, OG/Twitter (locale·alternate).
-- JSON-LD: SoftwareApplication(about: VideoGame Hell Is Us), FAQPage, HowTo(설치 3단계), WebSite — 언어마다 그 언어로.
-- FAQ 는 사람들이 실제로 묻는 꼴 ("Hell Is Us 에 지도가 있나?", "금고 코드는 어디?") + 자기완결 답 → 답변 엔진 인용용.
-- `sitemap.xml` (xhtml:link 대체 언어), `robots.txt`, `llms.txt` (LLM 용 요약 — 기능·FAQ·링크), `.nojekyll`.
-- 게임 이미지·에셋 미사용 (상표·저작권). 아이콘·문양은 모드용으로 그린 SVG.
+- `docs/index.html` (English, also x-default) and `docs/<lang>/index.html` for the other 11 languages.
+- `docs/sitemap.xml`, `robots.txt`, `llms.txt`, `.nojekyll`.
+- `docs/assets/`: `site.css`, `site.js`, `favicon.svg`, `og.png`, and copies of the mod's `assets/icons`,
+  `assets/symbols` and `assets/pins` (these three folders are deleted and recopied on every build).
+- It does not touch `docs/assets/media/`, so the video exists in the repository only once.
 
-## 배포
-1. `python tools/site/build.py` → 커밋.
-2. GitHub 저장소 Settings → Pages → Deploy from branch → `main` / `/docs`.
-   비공개 저장소는 Pages 에 유료 플랜(Pro 이상) 필요.
-3. 확인: 로컬 `python -m http.server -d docs`, Edge headless 로 1440·390 폭 스크린샷.
+## Design
 
-## 성능 (2026-10-03)
-- 두 해상도: 지형(등고선 셰이더 — 비용의 거의 전부)은 CSS 픽셀 0.66 배 렌더 타깃에 그려 선형 보간으로 확대.
-  경로선·신호등은 화면 해상도(최대 1.5×, MSAA)로 그 위에 — 지형 깊이만 원해상도로 다시 채워(색 쓰기 끔) 언덕 뒤는 가려짐.
-  MSAA 는 원해상도 패스(확대·깊이·경로)에만 걸려 싸다. 30 fps 상한.
-- 적응형: 그린 프레임 간격이 1.5배 넘는 게 20번 이어지면 배율 −0.15 (최저 0.45), 빠른 게 240번이면 +0.1 (최고 0.85).
-- 지형 160×160 (전 220×220, 약 5만 삼각형 — 120 이하는 등고선이 사각형마다 꺾임), 경로 튜브 220×4, 원거리 230 m.
-- 화면 밖·탭 숨김이면 그리지 않음. 첫 페인트 뒤 idle 에 시작 (본문 표시를 막지 않음), Save-Data 면 CSS 등고선만.
+- **Concept:** "No map. No compass. Unless you want one." The motif is the terrain contour lines of the
+  game's art direction. The hero is a three.js terrain drawn as contour lines only by a shader, set in
+  fog; a Lymbic-blue path traces the valleys to a beacon (the goal). It shows the minimap and route
+  guidance instead of describing them. A compass strip, which the game does not have, runs across the
+  top. The camera responds slowly to pointer and scroll.
+- **Type:** Fira Sans Extra Condensed for headings (close to the game UI's condensed sans) and IBM Plex
+  Sans for body text; Noto Sans KR/JP/SC for CJK (loaded only on those language pages).
+- **References:** researched examples of one-shot Opus page prompts: focus on one memorable moment (the
+  hero) and keep the rest quiet; avoid the stock defaults (cream background, italic emphasis, 01/02
+  labels); respect `prefers-reduced-motion`; verify at 1440 and 390 px widths.
+- **Accessibility:** skip link, landmarks, `aria-labelledby`, focus rings, a still frame under reduced
+  motion, CSS contour lines when WebGL is unavailable.
 
-## 영상 (2026-10-03)
-- 31 초 무음 소개 영상. `tools/video/scene.html` 한 장 — 모든 픽셀이 t 의 함수(`window.seek(t)`), 시계·rAF·난수 없음.
-  `tools/video/render.mjs` 가 Edge(headless, puppeteer-core)로 프레임마다 seek → 스크린샷 → ffmpeg 파이프(디스크에 프레임 없음).
-  `npm install && npm run render` → `docs/assets/media/` 에 (build.py 는 이 폴더를 건드리지 않음 — 저장소에 한 벌만) hiumod-intro.mp4 (H.264 CRF 24, faststart), .webm (VP9),
-  poster.jpg. GIF 는 만들지 않음(용량, 사용자 결정) — README 는 poster.jpg 를 webm 링크로. GitHub README 는 저장소 안
-  영상 파일을 인라인 재생하지 않음(웹 UI 로 올린 user-attachments 주소만) → 저장소 공개 후 그 방식으로 바꿀 수 있음. `--stills 1,5,10` 로 키프레임만 먼저 확인.
-- 콘티: 0–7 s "No map. No compass. / Unless you want one." + 나침반 띠 → 7–10 s 카메라가 위로 올라가 지형이 지도가 됨(안개 옅어짐),
-  아이콘 등장 → 10–13 s 원형 미니맵으로 줄어 오른쪽 → 13–18 s 퀘스트 추적기 카드(거리 줄어듦) → 18–23 s 예시 금고, 커서가
-  "Show answer" 누르면 기호가 하나씩 → 23–27 s 12개 언어의 "지도" → 27–31 s 로고·URL, 어둠으로 (반복 재생이 이어짐).
-- 게임 것 없음: 지형은 노이즈, 아이콘·기호는 모드 SVG, 문구는 일반적인 말(실제 퀘스트 이름 없음). 리서치: Opus 5.5 결정론적
-  HTML→프레임→ffmpeg 파이프라인(Hugging Face 블로그), Remotion 방식(React 컴포넌트, useCurrentFrame) — 의존성을 줄이려 전자.
-- 사이트: 히어로 바로 아래 `.film` — muted loop playsinline, preload none + poster, 화면에 보일 때만 재생,
-  reduced-motion 이면 컨트롤만. JSON-LD VideoObject (`config.json` 의 video_date). 문구 video_title/label/caption 12개 언어.
+## SEO, AEO, GEO
 
+- One static page per language (`/`, `/ko/`, …). All content is in the HTML, readable without the 3D
+  scene. 12 `hreflang` alternates plus x-default, canonical, OpenGraph/Twitter tags with locale and
+  alternate locales.
+- JSON-LD, in the page's language: `SoftwareApplication` (about: `VideoGame` Hell Is Us, Rogue Factor /
+  Nacon, Steam app 1620730), `FAQPage` (6 questions), `HowTo` (3 install steps), `VideoObject`,
+  `WebSite`.
+- FAQ questions are phrased the way people actually ask them ("Does Hell Is Us have a map?", "Where
+  are the vault codes?"), with self-contained answers that answer engines can quote.
+- `sitemap.xml` (with `xhtml:link` language alternates), `robots.txt`, `llms.txt` (a plain summary for
+  language models: features, FAQ, links, and an unofficial-fan-tool notice).
+- No game images or assets (trademark and copyright). Icons and symbols are SVGs drawn for the mod.
+
+## Deployment
+
+1. Run `python tools/site/build.py` and commit.
+2. GitHub repository Settings → Pages → Deploy from branch → `main` / `/docs`. Pages on a private
+   repository needs a paid plan (Pro or above).
+3. Check locally with `python -m http.server -d docs`, and take headless Edge screenshots at 1440 and
+   390 px widths.
+
+## Performance (2026-10-03)
+
+- **Two resolutions:** the terrain (the contour shader, nearly all of the cost) renders to a target at
+  0.66× CSS pixels and is upscaled with linear filtering. The path and beacon are drawn on top at
+  screen resolution (up to 1.5×, MSAA). The terrain depth is refilled at full resolution with color
+  writes off, so hills still hide the path behind them. MSAA applies only to the full-resolution passes
+  (upscale, depth, path), so it is cheap. Capped at 30 fps.
+- **Adaptive:** if the drawn frame interval exceeds 1.5× the target 20 times in a row, the scale drops by
+  0.15 (minimum 0.45); after 240 fast frames it rises by 0.1 (maximum 0.85).
+- **Geometry:** terrain 160×160 (was 220×220, about 50,000 triangles; at 120 or below the contours bend
+  visibly at every quad), path tube 220×4, far plane 230 m.
+- Nothing is drawn while off-screen or while the tab is hidden. Rendering starts at idle after first
+  paint, so it never blocks the text; with Save-Data only the CSS contours are used.
+
+## Video (2026-10-03)
+
+A 31-second silent introduction.
+
+- **Scene:** `tools/video/scene.html`, a single page where every pixel is a function of `t`
+  (`window.seek(t)`, `window.DURATION = 31`): no clock, no `requestAnimationFrame`, no randomness.
+- **Render:** `tools/video/render.mjs` serves the repository on a local port, opens the scene in
+  headless Edge (puppeteer-core; Chrome via `CHROME=path`) at 1920×1080, and for each frame seeks,
+  screenshots, and pipes the PNG into ffmpeg; no frames are written to disk. The same scene always
+  renders the same video. Requires Edge or Chrome and ffmpeg on `PATH`.
+- **Commands:** `cd tools/video && npm install && npm run render`. `node render.mjs --only poster` (or
+  `--only video`) renders one part; `--stills 1,5,10` writes those keyframes to `tools/video/stills/`
+  for checking first; `--fps` defaults to 30.
+- **Outputs:** frames are first encoded to a high-quality master, `tools/video/master.mp4` (H.264
+  CRF 14, not committed), which is then re-encoded straight into `docs/assets/media/`:
+  - `hiumod-intro.mp4` (H.264 CRF 24, faststart, no audio);
+  - `hiumod-intro.webm` (VP9, CRF 38);
+  - `poster.jpg` (frame at 5.2 s).
+  `tools/video/.gitignore` excludes `node_modules/`, `master.mp4` and `stills/`.
+- **No GIF** (file size; the user's decision). The README shows `poster.jpg` linked to the WebM on the
+  site. GitHub READMEs do not play video files stored in the repository inline (only `user-attachments`
+  URLs uploaded through the web UI), so this could switch to that once the repository is public.
+- **Storyboard:**
+  - 0–7 s: "No map. No compass. / Unless you want one." with the compass strip.
+  - 7–10 s: the camera rises and the terrain becomes a map (fog thins); icons appear.
+  - 10–13 s: it shrinks into a round minimap on the right.
+  - 13–18 s: a quest tracker card, with the distance counting down.
+  - 18–23 s: an example vault; the cursor clicks "Show answer" and the symbols appear one by one.
+  - 23–27 s: the word "map" in 12 languages.
+  - 27–31 s: logo and URL, fade to dark (looping playback continues from the start).
+- **Nothing from the game:** the terrain is noise, icons and symbols are the mod's SVGs, and the text is
+  generic (no real quest names).
+- **Research:** a deterministic HTML → frames → ffmpeg pipeline with Opus 5.5 (Hugging Face blog) versus
+  the Remotion approach (React components, `useCurrentFrame`). The former was chosen for fewer
+  dependencies.
+- **On the site:** `.film`, directly below the hero: `muted loop playsinline`, `preload="none"` with the
+  poster, plays only while visible; under reduced motion it shows controls only. JSON-LD `VideoObject`
+  (`uploadDate` from `config.json` `video_date`, duration `PT31S`). Strings `video_title`,
+  `video_label`, `video_caption` in 12 languages.

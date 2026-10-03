@@ -1,58 +1,104 @@
-# 작업 절차
+# Runbook
 
-## 빌드와 테스트
+How to build, run, check and release. Every command runs from the repository root unless it says
+otherwise.
+
+## Build and test
 
 ```
-cd %USERPROFILE%\hell-is-us-mod
-cargo fmt                                  # rustfmt.toml: 한 줄 120자
-cargo clippy --all-targets -- -D warnings  # CI와 같은 기준
-cargo test                                 # 42개, 게임 없이
+cargo fmt                                  # rustfmt.toml: 120 columns
+cargo clippy --all-targets -- -D warnings  # the same bar as CI
+cargo test                                 # no game needed; tests that read a real install skip without one
 cargo build --release                      # target\release\hiumod.exe
 ```
 
-## 실행 중인 패널 교체
+## Replacing a running panel
 
-`target\release\hiumod.exe` 가 실행 중이면 release 빌드의 링크가 실패한다.
-켜진 치트가 있으면 **사용자에게 닫아 달라고 한다** (전투 중에 갑자기 무적이 풀리면
-안 됨). 그동안 확인은 debug 빌드(`target\debug\hiumod.exe doctor`, 읽기 전용)로.
+While `target\release\hiumod.exe` runs, the release link fails. Never kill the process: closing it
+another way skips putting cheats back. Either:
 
-## 게임 상태 확인 (모두 읽기만 함)
+- build elsewhere — `cargo build --release --target-dir target/next` — and ask the user to restart
+  from it; or
+- close the panel with its own × (which restores originals), copy the new build over, start it again.
+  With "keep these cheats on next time" set, it switches them back on once the hero can be controlled.
+
+If cheats are on, ask the user first: losing god mode mid-fight is not acceptable. Read-only checks
+can use the debug build meanwhile (`target\debug\hiumod.exe doctor`).
+
+## Checking the panel
+
+Layout bugs show up only on screen. Click each sidebar page and capture the window (a small
+PowerShell script with `SetCursorPos`/`mouse_event` and `CopyFromScreen` over the window's
+`DwmGetWindowAttribute` rect does it), then look at every capture. PANEL.md §4 lists what was fixed
+this way.
+
+## Checking the game (all read-only)
 
 ```
-hiumod doctor          # 설치·빌드·앵커·레이아웃·체인·게이트·위치·속성·치트 표
-hiumod list            # 주인공의 모든 속성 세트와 속성의 현재 값
+hiumod doctor          # install, build, anchors, layout, chain, gate, position, attributes, cheat table
+hiumod list            # every attribute set and attribute on the hero, with current values
 hiumod get Endurance EnduranceCap
-hiumod pose            # 위치·방향을 0.5초마다 (Ctrl+C 로 끝)
+hiumod pose            # position and heading every 0.5 s (Ctrl+C to stop)
+hiumod doctor survey   # the guide's data from the game files (the panel does this itself)
 ```
 
-- 메인 메뉴에서는 앵커(이름 풀·GEngine·레이아웃)까지만 ok 이고 `player:` 에서 멈춘다.
-  정상이다 — 세이브를 불러온 뒤 다시.
-- 붙을 때마다 이미지의 쓰기 가능 섹션을 훑는다. 게임이 막 켜진 직후에는 GEngine 이
-  아직 없을 수 있다 ("still starting up?").
+- In the main menu, `doctor` gets as far as the anchors (name pool, GEngine, layout) and stops at
+  `player:`. That is expected; load a save and run it again.
+- Every attach scans the image's writable data. Right after the game starts, GEngine may not exist yet
+  ("still starting up?").
+- DOCTOR.md has the probes (`inspect`, `find`, `dump`, `watch`, `scan`, `saves`).
 
-## 새 치트 추가
+## Adding a cheat
 
-1. `hiumod list` 로 속성의 정확한 이름을 찾는다.
-2. `src/cheats.rs` 의 `mod a` 에 상수(`any("Name")`, 이름이 여러 세트에 있으면
-   `attr("SetName", "Name")`)를, `CHEATS` 에 행을 추가한다. 처음엔 `verified: false`.
-3. `cargo test` — 표 검사 테스트가 id 중복·범위·복구 누락을 잡는다.
-4. `doctor` 의 `cheat table:` 이 ok 인지 → 패널에서 켜고 디버그 탭 → 사용자가 ✓.
+1. Find the attribute's exact name with `hiumod list` (or a field with the doctor probes).
+2. Add a constant and a row to `src/cheat/cheats.rs` (`any("Name")`, or `attr("SetName", "Name")` when
+   the name is in more than one set; targets other than the hero go in `src/cheat/extras.rs`). Start with
+   `verified: false`, and add its label key to every `assets/i18n/*.tsv`.
+3. `cargo test` — the table tests catch duplicate ids, bad ranges and missing restores.
+4. `doctor`'s `cheat table:` line must say ok. Switch it on in the panel, watch the debug page, and let
+   the user mark it ✓; then set `verified: true` and update CHEATS.md.
 
-## 게임 업데이트 대응
+## After a game update
 
-이 도구에는 빌드별 숫자가 없다. 업데이트 후 할 일은 확인뿐이다.
+The tool holds no per-build numbers for the engine chain; after an update, checking is the job.
 
-1. 게임을 켜고 세이브를 불러온 뒤 `hiumod doctor`.
-2. 실패한 줄에 따라:
-   - `name pool` / `GEngine` → 탐색 조건이 깨짐. `names.rs::discover`,
-     `anchors.rs::find_engine` 의 조건을 확인 (후보가 0개인지 여러 개인지가 메시지에 나옴).
-   - `FField layout` → 엔진이 올라갔다. `names::LAYOUTS` 에 새 후보를 추가.
-   - `no property X` → 엔진/게임이 속성 이름을 바꿨다. `player.rs` 의 이름을 고친다.
-   - `cheat table: not in the game` / `in N sets` → `cheats.rs` 행을 고친다.
-3. `.spec/ANCHORS.md` 의 빌드 표에 새 빌드와 결과를 적는다.
+1. Start the game, load a save, run `hiumod doctor`.
+2. By the failing line:
+   - `name pool` / `GEngine` — a discovery condition broke. Check `names::discover` and
+     `anchors::find_engine` (the message says whether 0 or several candidates were found).
+   - `FField layout` — the engine moved. Add a candidate to `names::LAYOUTS`.
+   - `no property X` — a property was renamed. Fix the name in `player.rs`.
+   - `cheat table: not in the game` / `in N sets` — fix the row in `cheats.rs`.
+3. Native offsets used by a few cheats (stack counts, weapon XP — ANCHORS.md) need checking with
+   `doctor watch`.
+4. The panel re-reads the guide's game data by itself when the Steam build changes (SURVEY.md §8).
+5. Add the build and the result to ANCHORS.md and `game::TESTED_BUILD`.
 
-## 커밋
+## The website and the video
 
-- 메시지 끝에 시스템이 지정한 Co-Authored-By 줄.
-- 게임 파일(.exe/.dll/.pak/.utoc/.ucas/.uasset/.sav)과 `Mods/` 는 절대 커밋하지 않는다
-  (.gitignore + CI hygiene). 추출한 텍스처·AES 키도 마찬가지.
+```
+python tools/site/build.py               # docs/ from tools/site (CI fails if docs/ differs)
+cd tools/video && npm install && npm run render       # docs/assets/media: WebM, MP4, poster
+node render.mjs --stills 2,5,11,20       # keyframes to check before a full render
+```
+
+Edit `tools/site`, never `docs/` directly. SITE.md has the details.
+
+## Releasing
+
+1. In CHANGELOG.md, rename the newest heading `Unreleased — X.Y.Z` to `X.Y.Z`; set the same version in
+   Cargo.toml.
+2. `git tag vX.Y.Z && git push origin vX.Y.Z`.
+3. `release.yml` checks the three agree, builds the zip with `tools/package.ps1` on Windows, checks
+   that nothing from the game is in it, and publishes it with the verified build, install steps, the
+   changelog section and a SHA-256.
+
+`powershell tools/package.ps1` builds the same zip locally (`dist\hiumod-<version>.zip`).
+
+## Committing
+
+- English messages; the subject at most 72 characters, details in the body. End with the
+  Co-Authored-By line the session specifies.
+- Never commit the game's files (.exe/.dll/.pak/.utoc/.ucas/.uasset/.sav), `Mods/`, the survey or locale
+  output, extracted textures, or the AES key. `.gitignore` and the CI hygiene job both guard this.
+- No local paths or user names in committed files; write `%USERPROFILE%\…` instead.

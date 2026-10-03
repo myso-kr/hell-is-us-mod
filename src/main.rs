@@ -309,7 +309,7 @@ fn probe(args: &[String]) -> R {
             save("sdk.txt", &text)
         }
         Some(sub @ ("survey" | "locale")) => {
-            // Mappings first, then the survey tool over the game's maps (.spec/ITEMS.md),
+            // Mappings first, then the survey tool over the game's maps (.spec/SURVEY.md),
             // then the game's text in every language (.spec/I18N.md); `locale` only that.
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
             std::fs::write(dir.join("HellIsUs.usmap"), &bytes).map_err(|e| e.to_string())?;
@@ -362,7 +362,7 @@ fn probe(args: &[String]) -> R {
             Ok(())
         }
         Some("usmap") => {
-            // The survey tool's mappings (.spec/ITEMS.md §3.1).
+            // The survey tool's mappings (.spec/SURVEY.md §3.1).
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
             let path = dir.join("HellIsUs.usmap");
             std::fs::write(&path, &bytes).map_err(|e| format!("{}: {e}", path.display()))?;

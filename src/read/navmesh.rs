@@ -1,6 +1,6 @@
 //! The game's own walking navmesh, read from memory: what its AI walks on — floors,
 //! stairs, cellars, bridges — so a route can go down to a cellar or up a stair, which
-//! the grid of obstacles (pathfind.rs) cannot (.spec/GUIDE.md §19–20).
+//! the grid of obstacles (pathfind.rs) cannot (.spec/ROUTES.md §6–7).
 //!
 //! World Partition keeps it in `NavigationDataChunkActor`s: `NavDataChunks` (+0x2A8)
 //! holds a `RecastNavMeshDataChunk` whose `Tiles` (+0x30) are 0x48-byte records —

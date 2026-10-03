@@ -1,5 +1,5 @@
 //! The .NET 8 runtime the survey tool needs (tools/survey, framework-dependent), found
-//! or installed (.spec/GUIDE.md §34).
+//! or installed (.spec/SURVEY.md §8).
 //!
 //! Installing is the player's choice (a button in the panel), and goes the way most
 //! Windows tools fetch a prerequisite:

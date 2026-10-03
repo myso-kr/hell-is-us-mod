@@ -1,5 +1,5 @@
 //! The game's own tables the guide reads (`Mods\survey`, written by tools/survey
-//! `--tables` or a full survey; .spec/GUIDE.md §27):
+//! `--tables` or a full survey; .spec/FEATURES.md §3):
 //! - `spawners.json` — every world's spawners: the "every Hollow" achievement counts
 //!   them (F8). A spawner the save keeps a state for (`World.RegionStates`, by its
 //!   GUID) has been beaten — checked against the live enemies in play.

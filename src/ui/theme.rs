@@ -1,6 +1,6 @@
 //! The panel's look in one place: a palette (the homepage, docs/, uses the same),
 //! the corner radii, and egui's visuals set from them — so cards, the sidebar, the
-//! chips and every egui widget agree (.spec/GUIDE.md §32).
+//! chips and every egui widget agree (.spec/PANEL.md §3).
 //!
 //! Hell Is Us is grey and foggy, its UI cold and sparse; the mod keeps that — a dark
 //! slate ground, one accent (Lymbic blue) for what is chosen or live, and the three

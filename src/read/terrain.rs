@@ -1,4 +1,4 @@
-//! The ground's height, from the landscape's physics heightfields (.spec/GUIDE.md §8).
+//! The ground's height, from the landscape's physics heightfields (.spec/ROUTES.md §3).
 //!
 //! Landscape heights are not reflected, but Chaos keeps each collision component's
 //! heightfield on the CPU for the physics: `LandscapeHeightfieldCollisionComponent`

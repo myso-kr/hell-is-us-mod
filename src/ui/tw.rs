@@ -1,5 +1,5 @@
 //! The panel's layout, as Tailwind writes it: CSS Flexbox and Grid, computed by taffy
-//! (through egui_taffy) from what each widget measures (.spec/GUIDE.md §15).
+//! (through egui_taffy) from what each widget measures (.spec/PANEL.md §1).
 //!
 //! Hand-computed widths kept running past a card's edge — a value box wider than
 //! guessed, a label wrapping to two lines. Here every widget is a node that reports

@@ -1,6 +1,6 @@
 //! The lie of the land for the map: the landscape's heights around the hero, baked
 //! into a square of texels with their shading and water, so a frame only looks them
-//! up (.spec/GUIDE.md §9).
+//! up (.spec/MAP.md §8).
 //!
 //! Baking reads the heightfields (terrain.rs) once per texel — too slow for every
 //! frame, quick enough off the overlay thread whenever the hero has moved far or the

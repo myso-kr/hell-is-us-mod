@@ -1,6 +1,6 @@
 //! The game data the guide reads — `Mods\survey` (the maps) and `Mods\locale` (the
 //! game's text) — made on this machine without the player typing `doctor survey`
-//! (.spec/GUIDE.md §34).
+//! (.spec/SURVEY.md §8).
 //!
 //! Once the hero is in control and the .NET 8 runtime is there (runtime.rs), the panel
 //! asks `next`: the survey when there is none or it was made on another Steam build

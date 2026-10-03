@@ -50,8 +50,8 @@ Read about it in your language:
    administrator rights into the game's `Mods` folder if winget can't.
 
 **Status:** attaches to Steam build `24045435`, where `doctor` passes every check.
-Four cheats are verified in play — `god`, `stamina`, `speed` and `hero_time`; the rest
-say *unverified* in the panel until someone confirms them.
+Twelve cheats are verified in play; the three not yet tried say *unverified* in the
+panel until someone confirms them (see [CHEATS.md](.spec/CHEATS.md)).
 
 ## What it does
 

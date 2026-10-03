@@ -1,98 +1,164 @@
-# 결정 기록
+# Decisions
 
-각 항목: 무엇을 정했나 · 왜 · 버린 대안. 번호는 바꾸지 않는다.
+Each entry: what was decided, why, and what was given up. Numbers never change; a later decision that
+replaces an earlier one says so.
 
-## D1. Phase 0 은 바깥 프로세스로 (dungeons2-mod 구조 재사용)
+## D1. Phase 0 runs as an external process, reusing dungeons2-mod
 
-- 결정: DLL 주입 없이 `ReadProcessMemory`/`WriteProcessMemory`. 코드는 dungeons2-mod
-  에서 복사해 고침.
-- 이유: 같은 UE5 + GAS 게임이라 이름 풀·속성 해석·hold·패널을 그대로 쓸 수 있다.
-  사용자가 조사 결과의 권고(외부 패널 → 미니맵 오버레이 → 필요하면 UE4SS)를 승인.
-  안티치트가 없어 주입도 가능하지만, 외부 방식은 게임 파일을 하나도 건드리지 않고
-  UE4SS 의 dwmapi.dll 프록시와 충돌하지 않는다.
-- 버린 대안: UE4SS Lua 부터 시작 — 게임 안 UI 는 좋지만 치트 검증 도구(디버그 탭,
-  원래 값 복구)를 새로 만들어야 함. ROADMAP 5 로 미룸.
-- combolands-mod(MelonLoader/Unity), big-dragon-mod(CDP/웹)는 엔진이 달라 해당 없음.
+- Decision: no DLL injection — `ReadProcessMemory` / `WriteProcessMemory`, with code copied from
+  dungeons2-mod and adapted.
+- Why: both are UE5 + GAS games, so the name pool, attribute resolution, holds and the panel carry
+  over. The user approved the research's recommendation (external panel → minimap overlay → UE4SS only
+  if needed). With no anti-cheat, injection would also work, but the external route touches no game
+  file and cannot clash with UE4SS's dwmapi.dll proxy.
+- Given up: starting with UE4SS Lua. An in-game UI is nicer, but the cheat verification tooling (the
+  debug page, restoring originals) would have to be rebuilt. Deferred to ROADMAP.
+- combolands-mod (MelonLoader/Unity) and big-dragon-mod (CDP/web) are different engines and do not
+  apply.
 
-## D2. 빌드별 앵커 표를 두지 않는다
+## D2. No per-build anchor table
 
-- 결정: dungeons2-mod 의 `anchors.rs` (버전 → GEngine RVA·체인 오프셋 표)를 버리고,
-  붙을 때마다 FNamePool·GEngine 을 찾고 체인을 리플렉션 이름으로 배운다.
-- 이유: Steam 은 자동 업데이트가 잦고 (조사 시점에 막 패치됨, CE 테이블은 이미 낡음),
-  빌드마다 사람이 doctor 결과를 붙여 넣는 절차가 필요 없게 하려고. 이름으로 찾으면
-  틀린 객체에 쓸 위험도 줄어든다 — 이름이 안 맞으면 거부.
-- 대가: 붙을 때 .data(약 6 MiB) 스캔 비용. 탐색이 유일하지 않으면 동작하지 않음.
-- 알 수 없는 빌드를 거부하지 않는다 — 대신 모든 단계가 이름·클래스 검사를 통과해야 한다.
+- Decision: drop dungeons2-mod's `anchors.rs` table (version → GEngine RVA and chain offsets). Find
+  the FNamePool and GEngine on every attach and learn the chain by reflected names.
+- Why: Steam updates often (the game had just been patched during research and the Cheat Engine table
+  was already stale). Nobody should have to paste `doctor` output for each build. Finding things by name
+  also lowers the risk of writing to the wrong object: when a name does not match, the tool refuses.
+- Cost: scanning `.data` (about 6 MiB) on attach. If a search is not unique, the tool does not run.
+- Unknown builds are not refused; instead every step has to pass its name and class checks.
 
-## D3. 솔로 게이트 대신 주인공 게이트
+## D3. A hero gate instead of a solo gate
 
-- 결정: 싱글 전용 게임이라 플레이어 수 대신 "조작 중인 폰이 `CharlieCharacterHero`"
-  를 게이트로. 닫히면 토글은 **일시 정지** (dungeons2-mod 처럼 끄고 복구하지 않음).
-- 이유: 게이트는 로딩·메뉴·시네마틱마다 닫힌다. 그때마다 꺼지면 사용자가 다시 켜야 함.
-  쓰기 대상이 주인공임을 보장하는 것이 목적 — 적·NPC 의 ASC 에 쓰지 않는다.
-- 복구(`restore`, 패널 닫기)도 게이트가 열려 있을 때만.
+- Decision: this game is single-player only, so the gate is "the controlled pawn is a
+  `CharlieCharacterHero`", not a player count. While the gate is closed, toggles **pause**; they are
+  not switched off and restored as in dungeons2-mod.
+- Why: the gate closes for every load, menu and cinematic. Switching off each time would make the user
+  switch everything back on. The point is to guarantee that writes land on the hero — never on an
+  enemy's or NPC's ASC.
+- Restoring (`restore`, closing the panel) also happens only while the gate is open.
 
-## D4. 속성은 이름으로, 세트는 `*` 허용
+## D4. Attributes by name; `*` for the set
 
-- 결정: dungeons2-mod D4 와 같이 이름으로 찾되, 세트 이름을 모를 때 `*` 로 "그 이름이
-  유일한 세트". 둘 이상이면 거부하고 세트를 적으라고 말한다.
-- 이유: 세트 클래스 이름은 실행 파일에서 찾았지만(ARCHITECTURE) 어떤 속성이 어느 세트에
-  있는지는 게임을 켜야 안다. 유일성 검사로 안전하고, `doctor` 가 해석된 세트를 보여 준다.
+- Decision: as dungeons2-mod D4, attributes are found by name. When the set's name is not known, `*`
+  means "the one set that has this name"; more than one is refused, with a request to name the set.
+- Why: the set classes are known from the executable (ARCHITECTURE.md), but which attribute is in
+  which set is only known with the game running. Uniqueness keeps it safe, and `doctor` shows what
+  resolved.
 
-## D5~D9: dungeons2-mod 에서 그대로
+## D5–D9. Carried over from dungeons2-mod
 
-- 치트는 표 한 곳에서 (D5), 원래 값은 디스크에 먼저 (D6), 설정 유지는 사용자가 켠 것
-  기준 (D8), 패널은 별도 창 + 폴링한 F8 (D9). 이유는 `~/dungeons2-mod/.spec/DECISIONS.md`.
+Cheats live in one table (D5); originals go to disk first (D6); remembered settings follow what the
+user switched on (D8); the panel is its own window with a polled hotkey (D9). The reasons are in
+`~/dungeons2-mod/.spec/DECISIONS.md`.
 
-## D10. 데이터는 설치 루트의 `Mods\`
+## D10. Data lives in the install root's `Mods\`
 
-- 결정: `...\steamapps\common\Hell Is Us\Mods\`. `HellIsUs\` 안이 아니라 옆.
-- 이유: dungeons2-mod D7 과 같은 자리. Steam 무결성 검사는 배포 파일만 본다.
-- 열린 문제: UE4SS·pak 모드도 쓰게 되면 이름이 겹칠 수 있다 — `Mods\hiumod\` 로 옮길지
-  dungeons2-mod 와 함께 사용자에게 물을 것.
+- Decision: `...\steamapps\common\Hell Is Us\Mods\` — beside `HellIsUs\`, not inside it.
+- Why: the same place as dungeons2-mod D7. Steam's integrity check only looks at shipped files.
+- Open: if UE4SS or pak mods are ever used too, names could collide — whether to move to
+  `Mods\hiumod\` is a question for the user, together with dungeons2-mod.
 
-## D12. 효과 없는 계수 속성은 일반 필드로 대체
+## D11. The first minimap had no map image (replaced by D16)
 
-- 결정: GAS 속성 쓰기가 값은 유지되는데 효과가 없으면, 그 결과가 실제로 쓰이는 일반
-  UPROPERTY(이동 컴포넌트 `MaxWalkSpeed`, 액터 `CustomTimeDilation`)를 쓴다.
-  `Session::add_fields` — 소유 객체의 클래스를 먼저 확인(주인공 / CharacterMovementComponent),
-  4바이트 float 만, 유한한 값만, 원래 값 기록은 속성과 같은 경로.
-- 이유: 첫 플레이 테스트에서 계수형 속성 5개가 실패. GAS 는 수정자가 걸린 속성을
-  FAggregator(자체 BaseValue)로 다시 계산하고, 피해 계산은 GameplayEffect 실행 때 캡처한
-  값을 쓴다 — 속성 세트 메모리만 바꿔서는 닿지 않는 경로. Endurance 처럼 게임이 매번 직접
-  읽는 값만 효과가 있었다.
-- 버린 대안: 집계기 BaseValue 직접 쓰기 — `ActiveGameplayEffects.AttributeAggregatorMap`
-  은 UPROPERTY 가 아니라 리플렉션으로 찾을 수 없고, 바깥 프로세스에서 TMap 을 고정 오프셋으로
-  따라가야 함. Phase 1(UE4SS 에서 GameplayEffect 적용)에서 다시 본다.
-- 보너스: `attack_speed`, `dodge_speed` 둘 대신 `hero_time` 하나 — 주인공만 빨라지고
-  적은 그대로일 것으로 기대 (공격·회피·이동이 함께). 아직 플레이로 확인하지 않음.
+- Decision (2026-10-02): the first minimap drew only position, heading, the trail and user markers.
+- Why: the map textures are inside AES-encrypted paks, and extracted assets cannot be redistributed. A
+  trail and markers already cover most of "not getting lost in a game without a map".
+- Later: the game's world map turned out to be a country map, unusable as a background (MAP.md §3–4),
+  so the map is drawn from the world itself (D16).
 
-## D13. 미니맵 창은 eframe 이 아니라 레이어드 Win32 창
+## D12. Coefficient attributes that do nothing are replaced by plain fields
 
-- 결정: 미니맵은 별도 스레드의 `WS_EX_LAYERED | WS_EX_TRANSPARENT` 창, 직접 만든 작은
-  래스터라이저(raster.rs)로 그려 `UpdateLayeredWindow`.
-- 이유: eframe 은 루트 창(패널)이 숨겨지면 프레임을 돌리지 않는다(dungeons2-mod D9).
-  미니맵은 패널을 F8 로 숨긴 동안에도 그려져야 한다. 레이어드 창은 포커스·클릭을 가져가지
-  않아 게임이 마우스를 계속 잡는다. 240px 원 하나라 소프트웨어 그리기로 충분하다.
-- 버린 대안: eframe 의 두 번째 viewport (위 이유), DX12 훅 오버레이 (주입 필요, D1).
+- Decision: when a GAS attribute write holds its value but has no effect, write the plain UPROPERTY
+  whose value the game actually uses (the movement component's `MaxWalkSpeed`, the actor's
+  `CustomTimeDilation`). `Session::add_fields` checks the owning object's class first (hero /
+  CharacterMovementComponent), takes 4-byte floats only and finite values only, and records originals
+  through the same path as attributes.
+- Why: five coefficient attributes failed in the first play test. GAS recomputes attributes that carry
+  modifiers through an FAggregator with its own BaseValue, and damage calculations use values captured
+  when a GameplayEffect executes — writing the attribute set's memory reaches neither. Only values the
+  game reads directly every time, such as Endurance, had an effect.
+- Given up: writing the aggregator's BaseValue. `ActiveGameplayEffects.AttributeAggregatorMap` is not
+  a UPROPERTY, so it cannot be found by reflection, and following a TMap at fixed offsets from outside
+  is fragile. To revisit in-game (applying GameplayEffects), see ROADMAP.
+- `hero_time` replaced `attack_speed` and `dodge_speed`: it speeds up the hero alone (attacks, dodges,
+  movement) and leaves enemies as they are. Verified in play.
 
-## D14. 미니맵 아이콘은 SVG + resvg
+## D13. The overlays are layered Win32 windows, not eframe
 
-- 결정: 종류별 아이콘을 `assets/icons/*.svg` 로 두고, 바이너리에 넣어(`include_str!`) 시작할 때 resvg 로
-  한 번 래스터화. 그리기는 미리 곱한 비트맵 블릿.
-- 이유: 사용자 제안. 점보다 종류가 한눈에 보이고, SVG 파일만 바꾸면 모양을 바꿀 수 있다. resvg 는 순수 Rust 라
-  빌드 도구가 늘지 않는다 (default-features 끔 — 텍스트·래스터 이미지 기능 불필요).
-- 대가: 의존성 추가(usvg, tiny-skia 등). 실패하면 예전처럼 점으로 그린다.
+- Decision: the minimap and other overlays are `WS_EX_LAYERED | WS_EX_TRANSPARENT` windows on their
+  own thread, drawn with a small rasteriser of our own (`map/raster.rs`) and shown with
+  `UpdateLayeredWindow`.
+- Why: eframe stops running frames while its root window (the panel) is hidden (dungeons2-mod D9), and
+  the minimap has to keep drawing while the panel is hidden. Layered windows take neither focus nor
+  clicks, so the game keeps the mouse. Software drawing is enough for a 240 px disc.
+- Given up: a second eframe viewport (the reason above); a DX12-hook overlay (needs injection, D1).
 
-## D15. 물·경사는 바깥 방식으로 (UE 주입 보류)
-- 결정 (2026-10-02, 사용자 승인): 경로가 물을 모르는 문제를 게임 안 물리 질의(UE4SS/DLL, LineTrace) 대신
-  메모리에서 해결 — 죽는 물 트리거 상자 + Chaos 지형 높이맵(.spec/GUIDE.md §8).
-- 이유: D1 유지(게임 파일 무수정, 크래시가 게임으로 번지지 않음). 높이맵을 CPU 에서 찾아 경사까지 해결됨.
-- 다시 볼 때: 2층 구조·계단·경사로에서 경로가 자주 틀리면, 패널은 그대로 두고 물리 질의만 하는 작은 게임 안 모듈을 붙인다.
+## D14. Map icons are SVG files rendered with resvg
 
-## D11. 미니맵은 지도 이미지 없이 먼저
+- Decision: one SVG per kind in `assets/icons/*.svg`, built into the binary (`include_str!`) and
+  rasterised once at start-up with resvg; drawing blits premultiplied bitmaps.
+- Why: the user's suggestion. Kinds read at a glance where dots do not, and changing a shape means
+  changing a file. resvg is pure Rust, so no build tools are added (default features off — no text or
+  raster-image support needed).
+- Cost: more dependencies (usvg, tiny-skia, …). If rasterising fails, dots are drawn as before.
 
-- 결정: 1단계 미니맵은 위치·방향·지나온 경로·사용자 마커만 그린다.
-- 이유: 지도 텍스처는 AES 암호화된 pak 안에 있고, 추출 에셋은 배포할 수 없다.
-  경로+마커만으로도 "지도 없는 게임에서 길 잃지 않기"라는 목적의 대부분을 이룬다.
-- 다음: 게임 자체의 월드맵 텍스처와 숨은 나침반 위젯을 쓰는 방법 (ROADMAP 3·5).
+## D15. Water and slopes from outside the game (no UE injection)
+
+- Decision (2026-10-02, approved by the user): routes learn about water from memory — the deadly-water
+  trigger boxes plus the Chaos terrain heightfields (ROUTES.md §3) — rather than from physics queries
+  made inside the game (UE4SS/DLL, LineTrace).
+- Why: keeps D1 (no game files touched; a crash in the tool cannot take the game with it). Finding the
+  heightfields on the CPU side solved slopes as well.
+- To revisit: if routes are often wrong in two-storey buildings, stairs or ramps, keep the panel as it
+  is and add a small in-game module that only answers physics queries.
+
+## D16. The map is drawn from the world (option B)
+
+- Decision (2026-10-02, the user's choice of B in MAP.md §4): the map background is the loaded static
+  meshes seen from above, later joined by terrain shading and contours from the heightfields
+  (MAP.md §5–8).
+- Why: the game's only map images are the country map used in the APC, which does not cover the
+  explorable areas at a usable scale.
+
+## D17. The panel's layout is CSS Flexbox/Grid (egui_taffy), wrapped in Tailwind names
+
+- Decision (2026-10-03): `ui/tw.rs` wraps egui_taffy with the vocabulary of Tailwind (`col`, `row`,
+  `wrap`, `grow`, `card`, `masonry`). One palette and one spacing scale live in `ui/theme.rs`.
+- Why: hand-rolled egui columns and a 12-column grid kept overlapping or clipping (PANEL.md §6). A real
+  layout engine measures each element instead of guessing widths.
+
+## D18. The guide's game data is read automatically; the .NET 8 runtime is installed on request
+
+- Decision (2026-10-03): once the hero is in control, the panel runs `doctor survey` / `doctor locale`
+  in the background when the data is missing or was made on another Steam build. When the .NET 8
+  runtime is missing, the panel offers to install it: winget first, then Microsoft's dotnet-install
+  script into `Mods\dotnet` (SURVEY.md §8).
+- Why: players should not have to type a command for the guide to work.
+- Given up: shipping the survey output (it would put data extracted from the game into the
+  repository); shipping the survey tool self-contained (+31 MB per download); installing without
+  asking (it puts software on the player's machine).
+
+## D19. The website is generated, static, and one page per language
+
+- Decision (2026-10-03): `tools/site/build.py` renders `docs/` from one template and a string table per
+  language — 12 static pages with hreflang, JSON-LD and a sitemap. The three.js hero is decoration on
+  top of complete HTML (SITE.md).
+- Why: search and answer engines read static text; the 3D scene is not needed to read the page.
+  Generation keeps 12 languages in step; CI fails when `docs/` drifts from `tools/site`.
+
+## D20. The introduction video is rendered deterministically; no GIF
+
+- Decision (2026-10-03): the video is one HTML scene where every pixel is a function of `t`, captured
+  frame by frame and encoded with ffmpeg (SITE.md). WebM (1.7 MB) and MP4 (4.0 MB) only.
+- Why: re-rendering after a change gives the same video. The GIF version was 16.2 MB and was dropped at
+  the user's request; GitHub's README cannot play a video file from the repository anyway, so the README
+  shows the poster linked to the WebM.
+
+## D21. Public repository: history without local paths; authors unchanged
+
+- Decision (2026-10-03): before the repository goes public, the whole history was checked for secrets,
+  game files and text, and personal data. The only finding — a local path with the Windows user name in
+  two documents — was rewritten out of every commit. Commit authors stay as they are, matching the
+  sibling repositories (the user's call). Commit messages are in English with subjects of 72 characters
+  or less.
+- Why: everything in a public history is permanent once pushed; rewriting is only free before the first
+  push.

@@ -1,5 +1,5 @@
 //! Good deeds that fail when a story point passes first, and the order of the act 2
-//! keystones (F1, F11 in .spec/ITEMS.md).
+//! keystones (F1, F11 in .spec/FEATURES.md §2).
 //!
 //! The game keeps no deadline beside a deed: a later scene simply ends it. The
 //! deadlines are a table (`assets/missables.tsv`, from the guides that list the

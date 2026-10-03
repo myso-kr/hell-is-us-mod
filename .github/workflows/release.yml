@@ -117,7 +117,8 @@ jobs:
           BUILD=$(sed -n 's/.*TESTED_BUILD: &str = "\([0-9]*\)".*/\1/p' src/game/mod.rs)
           [ -n "$BUILD" ] || { echo "::error::TESTED_BUILD not found in src/game/mod.rs"; exit 1; }
           # Everything under the newest CHANGELOG heading, up to the next one.
-          awk '/^## /{ if (seen) exit; seen=1; next } seen' CHANGELOG.md > changes.md
+          # '## ' and not '### ': the release's own subsections stay in.
+          awk '/^## [^#]/{ if (seen) exit; seen=1; next } seen' CHANGELOG.md > changes.md
           {
             echo "## Verified game build"
             echo

@@ -1,37 +1,58 @@
-# doctor 확장 — 게임 데이터 조회 도구 (2026-10-03)
+# Doctor extensions — tools for looking up game data (2026-10-03)
 
-요청: "UE 를 이용해 메모리 스캔 doctor 를 인게임 데이터 기반으로 더 충실하게 조회." 효과를 거는 용도가 아니라 조회 도구.
+Request: make the memory-scanning `doctor` query in-game data more thoroughly, using what Unreal
+itself describes. These are lookup tools, not a way to apply effects.
 
-## 결정: UE4SS 없이, 바깥에서
-UE4SS 의 조회 기능(오브젝트 덤프, Live View, SDK 헤더)은 엔진 **반사 데이터**에서 나온다 — 이 크레이트가 이미 바깥에서
-걷는 것과 같다(FNamePool, GUObjectArray, UStruct/FField). 반사 밖(네이티브 필드, 예: 아이템 수량 +0x48)은 UE4SS 덤프도
-이름을 모른다. 그래서 D1(게임 파일 무수정)을 유지하고, 반사 밖은 **빈 구간 표시 · 변화 감시 · 값 스캔**으로 찾는다.
+## Decision: no UE4SS, from outside
 
-## 명령 (모두 읽기만, 결과는 `Mods\doctor\` 에도 저장)
-| 명령 | 하는 일 |
+UE4SS's lookup features (object dump, Live View, SDK headers) come from the engine's **reflection
+data** — the same data this crate already walks from outside (FNamePool, GUObjectArray,
+UStruct/FField). Outside reflection (native fields, e.g. an item's quantity at +0x48) a UE4SS dump
+does not know the names either. So D1 (game files untouched) stays, and fields outside reflection
+are found by **showing the gaps, watching for changes and scanning for values**.
+
+## Commands (all read-only; results are also saved under `Mods\doctor\`)
+
+| Command | What it does |
 |---|---|
-| `doctor inspect <대상> [깊이] [gaps]` | 라이브 객체의 반사 필드 전부를 타입별 값으로(구조체 펼침, 배열 앞 8개, 포인터는 깊이만큼). `gaps`: 필드 사이 네이티브 바이트를 u32(+float 해석)로 |
-| `doctor find <텍스트>` | 모든 클래스·구조체(≈14,000)에서 속성 이름 검색 — `Owner.Prop 타입 @+오프셋 (크기)` |
-| `doctor dump [접두어…]` | SDK 형식 목록(기본 Charlie, Story → 471개, sdk.txt). 구조체·배열 원소 타입 포함 |
-| `doctor watch <대상> [초]` | 0.1 초마다 객체 메모리를 비교, 바뀐 필드를 이름으로·네이티브는 오프셋으로, 시각과 함께 |
-| `doctor scan <대상> <값>` / `scan next <값>` | 객체 안에서 값의 자리(u32/f32/f64) → 게임에서 값을 바꾼 뒤 남는 자리만 |
+| `doctor inspect <target> [depth] [gaps]` | Every reflected field of a live object, as a typed value (structs expanded, the first 8 array elements, pointers followed to `depth`). `gaps`: the native bytes between fields, as u32 (also read as float) |
+| `doctor find <text>` | Searches property names across all classes and structs (≈14,000): `Owner.Prop type @+offset (size)` |
+| `doctor dump [prefix…]` | An SDK-style listing (default prefixes `Charlie`, `Story` → 471 entries, `sdk.txt`), including struct and array element types |
+| `doctor watch <target> [seconds]` | Compares the object's memory every 0.1 s and prints changed fields by name — native ones by offset — with timestamps |
+| `doctor scan <target> <value>` / `scan next <value>` | Where a value (u32/f32/f64) sits in an object; after changing the value in game, `scan next` keeps only the places that still match |
 
-대상: `hero`, `controller`, `asc`, `sets[:N]`, `inventory`, `items[:N]`, `save`(최신 CharlieSaveGame), `world`(WorldSettings),
-`enemy[:N]`, `0x주소`, 클래스 이름`[:N]`.
+Targets: `hero`, `controller`, `asc`, `sets[:N]`, `inventory`, `items[:N]`, `save` (the latest
+`CharlieSaveGame`), `world` (WorldSettings), `enemy[:N]`, `0x<address>`, or a class name `[:N]`.
 
-## 실측 (build 24045435)
-- `inspect items:3 0 gaps` → `CharlieInventoryUseableItem` 의 `· native +0x48..: 0x9 …` — 수량 9 가 반사 밖 첫 워드로 보임.
-- `scan items:3 9` → 1곳(+0x48), `scan next 9` → 그대로 1곳.
-- `find Quantity` → 18개 (`InventoryItem.Quantity`, `ItemData.QuantityMax @+0xd8`, `CraftIngredient.Quantity` …).
-- `dump` → 471개 클래스·구조체, 2,078줄.
+## Measured (build 24045435)
 
-## 사례: 무기 경험치 (2026-10-03)
-1. `find WeaponCurrentXP` → 세이브 `CharlieInventoryItemState.WeaponCurrentXP`(한손검 90, 쌍도끼 1560).
-2. `scan CharlieInventoryWeaponItem:0 90` → 4곳, 쌍도끼 1560 → 2곳(+0x13C, +0x144).
-3. `inspect … gaps` 로 두 무기 꼬리 비교 → 쌍도끼는 다음 레벨 기준 +0x148 = 0 (등급 상한 — 처치해도 안 오름).
-4. 한손검으로 처치하며 `watch`: +0x13C 90→265(누적), +0x140 90→5(레벨 안), +0x148 260→520(다음 기준),
-   +0x130 0→1(레벨), +0x138 3(상한), +0x14C/0x150 700→725(능력치). → `weapon_xp` 치트.
+- `inspect items:3 0 gaps` → `CharlieInventoryUseableItem` shows `· native +0x48..: 0x9 …` — the
+  quantity 9 is the first word outside reflection.
+- `scan items:3 9` → 1 place (+0x48); `scan next 9` → still 1.
+- `find Quantity` → 18 hits (`InventoryItem.Quantity`, `ItemData.QuantityMax @+0xd8`,
+  `CraftIngredient.Quantity`, …).
+- `dump` → 471 classes and structs, 2,078 lines.
 
-## 새 치트를 찾는 순서
-1. `find` 로 이름 후보 → 2. `inspect <대상> 1 gaps` 로 값과 빈 구간 → 3. 게임에서 그 값을 움직이며 `watch` 또는
-`scan` / `scan next` → 4. 오프셋을 반사 필드 기준(예: `ItemData`+8)으로 표현해 코드에.
+## Case study: weapon experience (2026-10-03)
+
+1. `find WeaponCurrentXP` → the save's `CharlieInventoryItemState.WeaponCurrentXP` (one-handed sword
+   90, twin axes 1560).
+2. `scan CharlieInventoryWeaponItem:0 90` → 4 places; twin axes 1560 → 2 places (+0x13C, +0x144).
+3. `inspect … gaps` comparing the two weapons' tails: for the twin axes the next-level threshold at
+   +0x148 is 0 (grade cap — kills no longer raise it).
+4. `watch` while killing with the one-handed sword:
+   - +0x13C 90 → 265 (cumulative XP);
+   - +0x140 90 → 5 (XP within the level);
+   - +0x148 260 → 520 (next threshold);
+   - +0x130 0 → 1 (level);
+   - +0x138 3 (cap);
+   - +0x14C / +0x150 700 → 725 (stats).
+
+   This became the `weapon_xp` cheat (`src/cheat/cheats.rs`, `src/cheat/extras.rs`).
+
+## How to find a new cheat
+
+1. `find` for candidate names.
+2. `inspect <target> 1 gaps` for the values and the gaps.
+3. Move the value in game while running `watch`, or use `scan` / `scan next`.
+4. Express the offset relative to a reflected field (e.g. `ItemData` + 8) in code.
