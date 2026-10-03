@@ -74,6 +74,16 @@ def jsonld(s, lang):
     return json.dumps({'@context': 'https://schema.org', '@graph': graph}, ensure_ascii=False, indent=1)
 
 
+def analytics():
+    """Cloudflare Web Analytics: a cookie-less beacon, only when a token is configured
+    (.spec/SITE.md, "Analytics")."""
+    token = CONFIG.get('analytics_token', '')
+    if not token:
+        return ''
+    return ("<script defer src=\"https://static.cloudflareinsights.com/beacon.min.js\" "
+            f"data-cf-beacon='{{\"token\": \"{token}\"}}'></script>")
+
+
 def render(lang):
     s = strings(lang)
     tpl = open(os.path.join(SITE, 'template.html'), encoding='utf-8').read()
@@ -88,6 +98,7 @@ def render(lang):
         **{k: html.escape(v, quote=True) for k, v in s.items()},
         'lang': hl, 'og_locale': og, 'canonical': url(lang), 'alternates': alternates, 'root': root,
         'cjk_fonts': cjk, 'lang_switch': switch, 'jsonld': jsonld(s, lang), 'og_image': BASE + 'assets/og.png',
+        'analytics': analytics(),
         'repo_url': CONFIG['repo_url'], 'releases_url': CONFIG['releases_url'], 'base': BASE, 'native': NATIVE[lang],
         'og_alternates': '\n'.join(f'<meta property="og:locale:alternate" content="{LANGS[c][1]}">' for c in LANGS if c != lang),
     }

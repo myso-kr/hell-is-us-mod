@@ -111,3 +111,13 @@ A 31-second silent introduction.
   poster, plays only while visible; under reduced motion it shows controls only. JSON-LD `VideoObject`
   (`uploadDate` from `config.json` `video_date`, duration `PT31S`). Strings `video_title`,
   `video_label`, `video_caption` in 12 languages.
+
+## Analytics (2026-10-03)
+
+- Cloudflare Web Analytics, manual setup: the site `myso-kr.github.io` is registered on the account
+  (site tag `ebfc0988eddf474bb5525bc052ff0a15`), and `tools/site/config.json` holds its token
+  (`analytics_token`). The token is public by design — it ships in every page.
+- `build.py` adds the beacon (`static.cloudflareinsights.com/beacon.min.js`, deferred) before `</body>`
+  on every page; with no token, nothing is added. It sets no cookies.
+- Data: visits, pages, referrers, countries, devices and load performance in the Cloudflare dashboard
+  (Analytics & Logs → Web Analytics). Unsampled for 7 days, then aggregated to about 10%.
