@@ -64,6 +64,11 @@ def jsonld(s, lang):
             '@type': 'HowTo', 'inLanguage': LANGS[lang][0], 'name': s['install_title'],
             'step': [{'@type': 'HowToStep', 'position': i, 'name': s[f'install_s{i}_t'], 'text': s[f'install_s{i}_d']} for i in range(1, 4)],
         },
+        {
+            '@type': 'VideoObject', 'name': s['video_title'], 'description': s['video_caption'], 'inLanguage': 'en',
+            'thumbnailUrl': BASE + 'assets/media/poster.jpg', 'contentUrl': BASE + 'assets/media/hiumod-intro.mp4',
+            'uploadDate': CONFIG['video_date'], 'duration': 'PT31S',
+        },
         {'@type': 'WebSite', '@id': BASE + '#site', 'url': BASE, 'name': 'hiumod', 'inLanguage': list(LANGS)},
     ]
     return json.dumps({'@context': 'https://schema.org', '@graph': graph}, ensure_ascii=False, indent=1)
@@ -113,6 +118,8 @@ def main():
         src = os.path.join(SITE, f)
         if os.path.exists(src):
             shutil.copy(src, os.path.join(a, f))
+    # assets/media (the video, its poster) is written there by tools/video/render.mjs
+    # and left alone here: one copy in the repository, not two.
     for sub in ('icons', 'symbols', 'pins'):
         src = os.path.join(ROOT, 'assets', sub)
         dst = os.path.join(a, sub)

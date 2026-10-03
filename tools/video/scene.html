@@ -1,0 +1,375 @@
+<!doctype html>
+<!--
+  The introduction video, as one deterministic page (.spec/SITE.md, "Video").
+  Every pixel is a function of t: render.mjs calls window.seek(t) for each frame and
+  screenshots it. No clocks, no requestAnimationFrame, no unseeded randomness.
+  Nothing from the game: the terrain is noise, the icons and symbols are the mod's own.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>hiumod — introduction</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans+Extra+Condensed:wght@500;600;800&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Sans+KR:wght@500&family=Noto+Sans+JP:wght@500&family=Noto+Sans+SC:wght@500&display=block">
+<style>
+  :root {
+    --ground: #0e1217; --surface: #13181f; --card: #1a2028; --edge: #2a323d; --control: #222a34;
+    --text: #d9e1ea; --dim: #8b96a3; --title: #e6eef7; --accent: #5a9ce6; --deep: #22344d;
+    --ok: #8fd17a; --bad: #f08278;
+    --display: 'Fira Sans Extra Condensed', sans-serif;
+    --body: 'IBM Plex Sans', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans SC', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--ground); color: var(--text); font-family: var(--body); }
+  .layer { position: absolute; inset: 0; }
+  #world { transform-origin: 0 0; }
+  #world canvas { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+  #marks { position: absolute; inset: 0; }
+  .mark { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; }
+  #ring { position: absolute; inset: 0; pointer-events: none; }
+  .shade { background: linear-gradient(to right, rgb(14 18 23 / .85), rgb(14 18 23 / 0) 55%), linear-gradient(to top, rgb(14 18 23 / .9), transparent 40%); }
+
+  /* type */
+  .kicker { font: 600 26px/1 var(--display); letter-spacing: .24em; text-transform: uppercase; color: var(--accent); }
+  .huge { font: 800 168px/.92 var(--display); text-transform: uppercase; color: var(--title); letter-spacing: -.005em; }
+  .caption { position: absolute; left: 160px; bottom: 120px; font: 600 64px/1.05 var(--display); color: var(--title); max-width: 1100px; }
+  .caption small { display: block; margin-top: 18px; font: 400 28px/1.4 var(--body); color: var(--dim); }
+
+  /* compass strip */
+  #compass { position: absolute; top: 64px; left: 50%; width: 900px; height: 40px; margin-left: -450px; overflow: hidden;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 25%, #000 75%, transparent); }
+  #compass .track { position: absolute; top: 0; bottom: 0; left: -400px; right: -400px;
+    background:
+      repeating-linear-gradient(to right, rgb(139 150 163 / .6) 0 2px, transparent 2px 40px) 0 100% / 100% 12px no-repeat,
+      repeating-linear-gradient(to right, rgb(217 225 234 / .8) 0 2px, transparent 2px 200px) 0 100% / 100% 22px no-repeat; }
+  #compass .goal { position: absolute; left: 50%; top: 0; width: 16px; height: 16px; margin-left: -8px; transform: rotate(45deg); background: var(--accent); box-shadow: 0 0 22px var(--accent); }
+
+  /* panel-styled card */
+  .card { position: absolute; background: var(--card); border: 1.5px solid var(--edge); border-radius: 14px; padding: 30px 32px; }
+  .card h3 { font: 600 30px/1 var(--body); color: var(--title); padding-left: 18px; position: relative; margin-bottom: 22px; }
+  .card h3::before { content: ''; position: absolute; left: 0; top: -2px; width: 5px; height: 32px; border-radius: 3px; background: var(--accent); }
+  .row { display: flex; align-items: center; gap: 16px; font-size: 26px; color: var(--text); padding: 12px 14px; border-radius: 9px; }
+  .row img { width: 34px; height: 34px; flex: none; }
+  .row .far { margin-left: auto; color: var(--dim); font-size: 22px; font-variant-numeric: tabular-nums; }
+  .row.on { background: var(--deep); outline: 1.5px solid var(--accent); }
+  .tag { font: 600 18px/1 var(--body); color: var(--bad); border: 1.5px solid var(--bad); border-radius: 20px; padding: 6px 12px; }
+  .note { font-size: 20px; color: var(--dim); padding: 0 14px 6px 64px; margin-top: -6px; }
+
+  /* vault */
+  #vault { left: 50%; top: 50%; width: 860px; margin: -230px 0 0 -430px; }
+  .code { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; margin: 8px 0 30px; }
+  .sym { aspect-ratio: 1; border-radius: 12px; background: var(--ground); border: 1.5px solid var(--edge); position: relative; }
+  .sym i { position: absolute; inset: 16%; background: var(--ok); -webkit-mask: var(--src) center / contain no-repeat; }
+  .btn { display: flex; justify-content: center; align-items: center; height: 72px; border-radius: 9px; border: 1.5px solid var(--edge);
+    background: var(--control); font: 600 26px/1 var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--title); }
+  .cursor { position: absolute; width: 34px; height: 34px; }
+
+  /* languages */
+  #langs { display: grid; grid-template-columns: repeat(4, 300px); gap: 26px 40px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -46%); }
+  #langs div { font: 500 64px/1.1 var(--body); color: var(--title); text-align: center; }
+  #langs span { display: block; font: 500 20px/1 var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-top: 10px; }
+
+  /* end */
+  #end { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #end svg { width: 120px; height: 120px; fill: none; stroke: var(--accent); stroke-width: 1.4; margin-bottom: 34px; }
+  #end h1 { font: 800 150px/1 var(--display); color: var(--title); letter-spacing: .02em; }
+  #end p { font: 400 34px/1.4 var(--body); color: var(--text); margin-top: 24px; }
+  #end .url { font: 600 30px/1 var(--display); letter-spacing: .08em; color: var(--accent); margin-top: 46px; }
+  #veil { background: var(--ground); }
+</style>
+<script type="importmap">{"imports":{"three":"/tools/video/node_modules/three/build/three.module.js"}}</script>
+</head>
+<body>
+<div id="world" class="layer"><canvas id="gl" width="1920" height="1080"></canvas><div id="marks"></div></div>
+<svg id="ring" viewBox="0 0 1920 1080"></svg>
+<div id="shade" class="layer shade"></div>
+
+<div id="s1" class="layer">
+  <div style="position:absolute; left:160px; top:300px">
+    <p class="kicker">Hell Is Us · PC</p>
+    <h1 class="huge" style="margin-top:34px"><span id="t1a">No map.</span><br><span id="t1b">No compass.</span></h1>
+    <h2 class="huge" id="t1c" style="color:var(--accent); font-size:120px; margin-top:26px">Unless you want one.</h2>
+  </div>
+</div>
+<div id="compass"><div class="track"></div><i class="goal"></i></div>
+
+<div id="cap3" class="caption" style="max-width:780px">A live minimap,<br>drawn from the world itself.<small>Walls, floors, contours, your trail — and the route to where you point.</small></div>
+
+<div id="tracker" class="card" style="left:160px; top:150px; width:780px">
+  <h3>Quest tracker</h3>
+  <div class="row on" id="r1"><img src="/assets/pins/quest.svg"><b>Main story</b><span class="far">following</span></div>
+  <div class="row" id="r2"><img src="/assets/icons/npc.svg">Talk to someone who knows<span class="far" id="far">212 m</span></div>
+  <div class="note" id="n2">the next goal, worked out from what your save knows</div>
+  <div class="row" id="r3"><img src="/assets/icons/item_quest.svg">Bring what they asked for<span class="far">✓</span></div>
+  <div class="row" id="r4"><img src="/assets/icons/interact_door.svg">A way through the locked gate<span class="far">↑ 4 m</span></div>
+  <div class="row" id="r5"><span class="tag">SOON</span>A good deed you can still miss</div>
+</div>
+<div id="cap4" class="caption" style="bottom:110px; max-width:780px">A guide that knows<br>where the story goes next.</div>
+
+<div id="vault" class="card">
+  <h3>Example vault</h3>
+  <div class="code">
+    <div class="sym"><i style="--src:url(/assets/symbols/terror.svg)"></i></div>
+    <div class="sym"><i style="--src:url(/assets/symbols/admiration.svg)"></i></div>
+    <div class="sym"><i style="--src:url(/assets/symbols/rage.svg)"></i></div>
+    <div class="sym"><i style="--src:url(/assets/symbols/amazement.svg)"></i></div>
+  </div>
+  <div class="btn" id="show">Show answer</div>
+  <svg class="cursor" id="cursor" viewBox="0 0 24 24"><path d="M4 2 20 12 12 13.5 8 21Z" fill="#e6eef7" stroke="#0e1217" stroke-width="1.5" stroke-linejoin="round"/></svg>
+</div>
+<div id="cap5" class="caption" style="left:0; right:0; margin:0 auto; text-align:center; bottom:96px; max-width:1500px">Every vault. Every puzzle.<small>Hidden until you ask.</small></div>
+
+<div id="s6" class="layer">
+  <p class="kicker" id="k6" style="position:absolute; left:0; right:0; top:170px; text-align:center">In the game's twelve languages</p>
+  <div id="langs"></div>
+</div>
+
+<div id="end" class="layer">
+  <svg viewBox="0 0 24 24"><path d="M12 2 22 12 12 22 2 12Z"/><path d="M12 7 17 12 12 17 7 12Z"/></svg>
+  <h1>hiumod</h1>
+  <p>A companion for <i>Hell Is Us</i> on PC</p>
+  <p style="color:var(--dim); font-size:28px; margin-top:12px">Free · Open source · No game files modified</p>
+  <p class="url">myso-kr.github.io/hell-is-us-mod</p>
+</div>
+<div id="veil" class="layer"></div>
+
+<script type="module">
+import * as THREE from 'three';
+
+const W = 1920, H = 1080;
+window.DURATION = 31;
+
+// --- easing ---------------------------------------------------------------
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const span = (t, a, b) => clamp((t - a) / (b - a));
+const smooth = (x) => x * x * (3 - 2 * x);
+const out = (x) => 1 - Math.pow(1 - x, 3);
+const inout = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const lerp = (a, b, x) => a + (b - a) * x;
+// in at a..a+d, out at b..b+d
+const window_ = (t, a, b, d = 0.6) => smooth(span(t, a, a + d)) * (1 - smooth(span(t, b, b + d)));
+
+// --- terrain (the site's hero, seeded the same) -------------------------------
+function noise2(seed) {
+  const p = new Uint8Array(512); let s = seed;
+  for (let i = 0; i < 256; i++) p[i] = i;
+  for (let i = 255; i > 0; i--) { s = (s * 16807) % 2147483647; const j = s % (i + 1); [p[i], p[j]] = [p[j], p[i]]; }
+  for (let i = 0; i < 256; i++) p[i + 256] = p[i];
+  const g = (h) => (p[h] / 255) * 2 - 1, f = (t) => t * t * (3 - 2 * t);
+  return (x, y) => {
+    const xi = Math.floor(x) & 255, yi = Math.floor(y) & 255, xf = x - Math.floor(x), yf = y - Math.floor(y);
+    const a = g(p[xi] + yi), b = g(p[xi + 1] + yi), c = g(p[xi] + yi + 1), d = g(p[xi + 1] + yi + 1);
+    const u = f(xf), v = f(yf);
+    return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+  };
+}
+const n = noise2(1620730);
+const height = (x, z) => {
+  let h = 0, amp = 1, fr = 0.035;
+  for (let o = 0; o < 5; o++) { h += n(x * fr, z * fr) * amp; amp *= 0.5; fr *= 2.1; }
+  const valley = Math.exp(-((x - Math.sin(z * 0.05) * 14) ** 2) / 220);
+  return h * 13 - valley * 7;
+};
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H, false);
+const scene = new THREE.Scene();
+const ground = new THREE.Color('#0e1217');
+scene.background = ground;
+const camera = new THREE.PerspectiveCamera(48, W / H, 1, 400);
+
+const geo = new THREE.PlaneGeometry(300, 300, 240, 240);
+geo.rotateX(-Math.PI / 2);
+const pos = geo.attributes.position;
+for (let i = 0; i < pos.count; i++) pos.setY(i, height(pos.getX(i), pos.getZ(i)));
+geo.computeVertexNormals();
+const uniforms = {
+  uTime: { value: 0 }, uFog: { value: ground }, uLine: { value: new THREE.Color('#8b96a3') },
+  uAccent: { value: new THREE.Color('#5a9ce6') }, uFocus: { value: new THREE.Vector2() }, uFogDensity: { value: 0.0105 },
+  uGrow: { value: 0 },
+};
+scene.add(new THREE.Mesh(geo, new THREE.ShaderMaterial({
+  uniforms, extensions: { derivatives: true },
+  vertexShader: `varying float vH; varying vec3 vW; varying float vDepth; varying vec3 vN;
+    void main(){ vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; vH = position.y; vN = normal;
+      vec4 mv = viewMatrix * w; vDepth = -mv.z; gl_Position = projectionMatrix * mv; }`,
+  fragmentShader: `uniform float uTime; uniform vec3 uFog; uniform vec3 uLine; uniform vec3 uAccent; uniform vec2 uFocus; uniform float uFogDensity;
+    varying float vH; varying vec3 vW; varying float vDepth; varying vec3 vN;
+    float contour(float v, float step, float width){ float f = abs(fract(v/step-0.5)-0.5)/fwidth(v/step); return 1.0-clamp(f/width,0.0,1.0); }
+    void main(){
+      float minor = contour(vH,1.6,1.0), major = contour(vH,8.0,1.5);
+      float shade = 0.5+0.5*dot(normalize(vN), normalize(vec3(-0.5,0.8,0.3)));
+      vec3 col = mix(uFog, vec3(0.085,0.105,0.13), shade*0.9) + uLine*(minor*0.22+major*0.55);
+      float d = length(vW.xz-uFocus);
+      float ring = smoothstep(2.5,0.0,abs(d-mod(uTime*9.0,140.0)))*smoothstep(140.0,30.0,d);
+      col += uAccent*ring*(minor+major)*0.9;
+      float fog = 1.0-exp(-uFogDensity*uFogDensity*vDepth*vDepth);
+      gl_FragColor = vec4(mix(col,uFog,clamp(fog,0.0,1.0)),1.0);
+    }`,
+})));
+
+// the route along the valley, grown by uGrow
+const pts = [];
+for (let z = 90; z >= -60; z -= 2) { const x = Math.sin(z * 0.05) * 14 + Math.sin(z * 0.17) * 2.5; pts.push(new THREE.Vector3(x, height(x, z) + 0.6, z)); }
+const curve = new THREE.CatmullRomCurve3(pts);
+scene.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 400, 0.35, 8, false), new THREE.ShaderMaterial({
+  uniforms: { uTime: uniforms.uTime, uAccent: uniforms.uAccent, uGrow: uniforms.uGrow },
+  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+  fragmentShader: `uniform float uTime; uniform vec3 uAccent; uniform float uGrow; varying vec2 vUv;
+    void main(){ if (vUv.x > uGrow) discard; float dash = step(0.45, fract(vUv.x*90.0-uTime*1.2));
+      float tip = smoothstep(uGrow-0.04, uGrow, vUv.x); gl_FragColor = vec4(uAccent*(0.55+0.45*dash)+tip*0.6, 0.9); }`,
+})));
+const end = curve.getPoint(1);
+const beacon = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.8, 16, 16, 1, true),
+  new THREE.MeshBasicMaterial({ color: '#5a9ce6', transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+beacon.position.set(end.x, end.y + 8, end.z);
+scene.add(beacon);
+uniforms.uFocus.value.set(end.x, end.z);
+
+// map marks: world points with the mod's icons
+const MARKS = [
+  ['/assets/icons/npc.svg', -18, 30], ['/assets/icons/item_quest.svg', 22, 12], ['/assets/icons/interact_vault.svg', -26, -18],
+  ['/assets/icons/enemy_group.svg', 18, -30], ['/assets/icons/save.svg', 6, 48], ['/assets/icons/interact_puzzle.svg', -8, -42],
+  ['/assets/icons/item_stash.svg', 30, 36], ['/assets/icons/interact_door.svg', -30, 6],
+].map(([src, x, z]) => {
+  const el = document.createElement('img'); el.src = src; el.className = 'mark';
+  document.getElementById('marks').appendChild(el);
+  return { el, at: new THREE.Vector3(x, height(x, z) + 1, z) };
+});
+const player = document.createElement('div');
+player.innerHTML = '<svg viewBox="0 0 24 24" width="56" height="56"><path d="M12 2 20 21 12 16.5 4 21Z" fill="#e6eef7" stroke="#0e1217" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+player.className = 'mark'; player.style.width = player.style.height = '56px'; player.style.margin = '-28px 0 0 -28px';
+document.getElementById('marks').appendChild(player);
+
+const project = (v) => { const p = v.clone().project(camera); return [(p.x + 1) / 2 * W, (1 - p.y) / 2 * H, p.z]; };
+
+// languages
+const LANGS = [['Map', 'English'], ['지도', '한국어'], ['地図', '日本語'], ['地图', '简体中文'], ['Karte', 'Deutsch'], ['Carte', 'Français'],
+  ['Mapa', 'Español'], ['Mappa', 'Italiano'], ['Mapa', 'Polski'], ['Mapa', 'Português'], ['Карта', 'Русский'], ['Harita', 'Türkçe']];
+const langs = document.getElementById('langs');
+const langEls = LANGS.map(([w, l]) => { const d = document.createElement('div'); d.innerHTML = `${w}<span>${l}</span>`; langs.appendChild(d); return d; });
+
+const $ = (id) => document.getElementById(id);
+const show = (el, o, dy = 0) => { el.style.opacity = o; el.style.transform = `translateY(${(1 - o) * dy}px)`; el.style.visibility = o < 0.001 ? 'hidden' : 'visible'; };
+
+// --- the timeline ------------------------------------------------------------
+const OBLIQUE = (t) => {
+  const z = 95 - t * 1.6;
+  return { pos: new THREE.Vector3(Math.sin(t * 0.05) * 10, 26, z), look: new THREE.Vector3(Math.sin((z - 40) * 0.05) * 10, 0, z - 48), up: new THREE.Vector3(0, 1, 0) };
+};
+const OVERHEAD = { pos: new THREE.Vector3(2, 175, 4), look: new THREE.Vector3(2, 0, 3.99), up: new THREE.Vector3(0, 0, -1) };
+
+window.seek = async (t) => {
+  uniforms.uTime.value = t;
+  uniforms.uGrow.value = smooth(span(t, 2.2, 9));
+  beacon.material.opacity = 0.18 + 0.1 * Math.sin(t * 2.0);
+
+  // camera: oblique drift → rises overhead (7–9.8) → stays; back to oblique for the end
+  const rise = inout(span(t, 7, 9.8)), back = inout(span(t, 25.5, 27.5));
+  const a = OBLIQUE(t), b = OVERHEAD, c = OBLIQUE(t - 20);
+  const mix3 = (k) => {
+    const p = a[k].clone().lerp(b[k], rise); return p.lerp(c[k], back);
+  };
+  camera.position.copy(mix3('pos')); camera.up.copy(mix3('up').normalize());
+  camera.lookAt(mix3('look'));
+  camera.fov = lerp(lerp(48, 50, rise), 48, back); camera.updateProjectionMatrix();
+  uniforms.uFogDensity.value = lerp(lerp(0.0105, 0.0032, rise), 0.0105, back);
+  renderer.render(scene, camera);
+
+  // the world shrinks into the minimap (10–12), comes back for the end
+  const shrink = inout(span(t, 10, 12.2)) * (1 - inout(span(t, 25.5, 27.5)));
+  const R = 470, cx = lerp(960, 1450, shrink), cy = 540, s = lerp(1, 0.86, shrink);
+  const world = $('world');
+  const radius = lerp(1300, R / s, shrink);
+  world.style.clipPath = `circle(${radius}px at 960px 540px)`;
+  world.style.transform = `translate(${cx - 960 * s}px, ${cy - 540 * s}px) scale(${s})`;
+  world.style.opacity = (1 - 0.85 * window_(t, 17.6, 25.4, 0.8)) * (1 - 0.55 * smooth(span(t, 27.5, 28.5)));
+  // the ring round the minimap, with north
+  const ringO = smooth(span(shrink, 0.6, 1)) * (1 - window_(t, 17.6, 25.4, 0.8));
+  const Rs = radius * s;
+  $('ring').innerHTML = ringO > 0.01 ? `<g opacity="${ringO}">
+    <circle cx="${cx}" cy="${cy}" r="${Rs + 2}" fill="none" stroke="#2a323d" stroke-width="4"/>
+    <circle cx="${cx}" cy="${cy}" r="${Rs + 2}" fill="none" stroke="#5a9ce6" stroke-width="2" stroke-dasharray="4 18" opacity=".7"/>
+    <text x="${cx}" y="${cy - Rs - 18}" fill="#e6eef7" font-family="Fira Sans Extra Condensed" font-weight="600" font-size="34" text-anchor="middle">N</text></g>` : '';
+
+  // marks on the map: appear as the camera tops out
+  const marksO = smooth(span(t, 8.6, 9.6)) * (1 - smooth(span(t, 25.2, 25.8)));
+  MARKS.forEach((m, i) => {
+    const [x, y] = project(m.at);
+    const pop = out(span(t, 8.8 + i * 0.12, 9.3 + i * 0.12));
+    m.el.style.left = `${x}px`; m.el.style.top = `${y}px`;
+    m.el.style.opacity = marksO * pop; m.el.style.transform = `scale(${0.4 + 0.6 * pop})`;
+  });
+  // the hero walks the route from 9.5 s
+  const u = 0.08 + 0.55 * inout(span(t, 9.5, 18));
+  const here = curve.getPoint(u), ahead = curve.getPoint(Math.min(1, u + 0.01));
+  const [px, py] = project(here), [ax, ay] = project(ahead);
+  player.style.left = `${px}px`; player.style.top = `${py}px`;
+  player.style.opacity = marksO;
+  player.style.transform = `rotate(${Math.atan2(ax - px, -(ay - py))}rad)`;
+
+  // shade under the type
+  $('shade').style.opacity = 1 - 0.6 * smooth(span(t, 8, 9.5)) + 0.6 * smooth(span(t, 26, 27));
+
+  // 1–2: the title, then the compass strip and "unless you want one"
+  show($('t1a'), window_(t, 0.6, 6.6, 0.7), 30);
+  show($('t1b'), window_(t, 1.5, 6.6, 0.7), 30);
+  show($('t1c'), window_(t, 3.6, 6.6, 0.7), 30);
+  document.querySelector('#s1 .kicker').style.opacity = window_(t, 0.2, 6.6);
+  const comp = window_(t, 3.6, 7.2, 0.8);
+  $('compass').style.opacity = comp;
+  $('compass').querySelector('.track').style.transform = `translateX(${Math.sin(t * 0.9) * 120}px)`;
+
+  // 3: the minimap
+  show($('cap3'), window_(t, 9.6, 13.2), 24);
+
+  // 4: the tracker beside the minimap
+  const tr = window_(t, 13.2, 17.6, 0.7);
+  show($('tracker'), tr, 30);
+  ['r1', 'r2', 'n2', 'r3', 'r4', 'r5'].forEach((id, i) => { $(id).style.opacity = smooth(span(t, 13.5 + i * 0.25, 14 + i * 0.25)); });
+  $('far').textContent = `${Math.round(lerp(212, 18, inout(span(t, 14, 17.6))))} m`;
+  show($('cap4'), window_(t, 14, 17.6), 24);
+
+  // 5: the vault — hidden, the click, the answer
+  show($('vault'), window_(t, 18, 22.8, 0.7), 30);
+  const press = window_(t, 19.9, 20.15, 0.12);
+  $('show').style.background = press > 0 ? '#22344d' : '';
+  $('show').style.borderColor = t > 19.9 && t < 22.9 ? '#5a9ce6' : '';
+  $('show').textContent = t > 20.1 ? 'Hide again' : 'Show answer';
+  document.querySelectorAll('.sym i').forEach((el, i) => {
+    const r = out(span(t, 20.2 + i * 0.25, 20.9 + i * 0.25));
+    el.style.filter = `blur(${(1 - r) * 14}px) brightness(${0.5 + 0.5 * r})`;
+    el.style.opacity = 0.5 + 0.5 * r;
+    el.parentElement.style.borderColor = r > 0.95 ? '#22344d' : '';
+  });
+  const cur = $('cursor'), go = inout(span(t, 18.6, 19.8));
+  cur.style.left = `${lerp(760, 470, go)}px`; cur.style.top = `${lerp(520, 335, go) + press * 4}px`;
+  cur.style.opacity = window_(t, 18.5, 21.4, 0.4);
+  show($('cap5'), window_(t, 18.6, 22.8), 24);
+
+  // 6: twelve languages
+  $('s6').style.opacity = window_(t, 23, 26.6, 0.6);
+  $('k6').style.opacity = smooth(span(t, 23.1, 23.7));
+  langEls.forEach((el, i) => {
+    const o = out(span(t, 23.3 + i * 0.1, 23.9 + i * 0.1));
+    el.style.opacity = o; el.style.transform = `translateY(${(1 - o) * 26}px)`;
+    el.style.color = Math.floor((t - 24) / 0.22) % 12 === i && t > 24 && t < 26.4 ? '#5a9ce6' : '';
+  });
+
+  // 7: the end card
+  const e = smooth(span(t, 27.6, 28.4));
+  $('end').style.opacity = e;
+  $('end').style.transform = `translateY(${(1 - out(span(t, 27.6, 28.6))) * 30}px)`;
+
+  // in from dark, out to dark (so the loop joins)
+  $('veil').style.opacity = 1 - smooth(span(t, 0, 0.8)) + smooth(span(t, 30.2, 31));
+};
+
+await document.fonts.ready;
+await Promise.all([...document.images].map((i) => (i.complete ? null : new Promise((r) => { i.onload = i.onerror = r; }))));
+await window.seek(0);
+window.READY = true;
+</script>
+</body>
+</html>

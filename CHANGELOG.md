@@ -329,3 +329,12 @@ been verified in play yet.
   (Microsoft's package) first. If that fails, Microsoft's dotnet-install script puts
   it in `Mods\dotnet` without administrator rights.
 
+- A 31-second introduction video, rendered from one deterministic HTML scene
+  (`tools/video`). It plays on the website and the README links to it.
+  - It contains nothing from the game: the terrain is noise, and the icons and
+    symbols are the mod's own.
+  - WebM is 1.7 MB and MP4 4.0 MB; there is no GIF.
+- Issue templates for game updates, bugs and translations, and a pull request
+  checklist.
+- The history is ready for a public repository. Commits use the GitHub noreply
+  identity, and no local paths remain.

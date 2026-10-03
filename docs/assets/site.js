@@ -244,6 +244,14 @@ for (const v of document.querySelectorAll('.vault')) {
   });
 }
 
+// the film plays while it is on screen (it is muted); with reduced motion it waits
+// for the player's own controls
+for (const v of document.querySelectorAll('.film video')) {
+  if (still) { v.controls = true; v.preload = 'metadata'; continue; }
+  new IntersectionObserver(([e]) => { if (e.isIntersecting) v.play().catch(() => { v.controls = true; }); else v.pause(); },
+    { threshold: 0.35 }).observe(v);
+}
+
 // sections fade up once as they arrive
 const io = new IntersectionObserver((es) => {
   for (const e of es) if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }

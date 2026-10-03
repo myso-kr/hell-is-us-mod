@@ -1,6 +1,8 @@
 # hiumod — a companion for *Hell Is Us*
 
-![No map. No compass. Unless you want one. — hiumod, a minimap, quest guide and puzzle helper for Hell Is Us](docs/assets/og.png)
+[![▶ The 31-second introduction: the world becomes a minimap, the quest tracker follows the story, a vault answer is revealed, twelve languages](docs/assets/media/poster.jpg)](https://myso-kr.github.io/hell-is-us-mod/assets/media/hiumod-intro.webm)
+
+<sub>▶ [Watch the introduction](https://myso-kr.github.io/hell-is-us-mod/assets/media/hiumod-intro.webm) (WebM, 31 s, silent) · [MP4](https://myso-kr.github.io/hell-is-us-mod/assets/media/hiumod-intro.mp4)</sub>
 
 A live minimap, a quest tracker and story guide, every vault and puzzle answer, and
 collectible checklists for *Hell Is Us* on PC — plus a few single-player cheats.

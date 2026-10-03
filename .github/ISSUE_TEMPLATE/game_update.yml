@@ -1,0 +1,50 @@
+name: A game update broke it
+description: Something stopped working after Hell Is Us updated on Steam
+title: "[build ] "
+labels: ["game-update", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        hiumod stores no offsets: it finds the engine and the hero by the names in the
+        game's own reflection. An update only breaks it when it renames something —
+        and `hiumod doctor` names exactly what went missing. That output settles it.
+  - type: input
+    id: build
+    attributes:
+      label: Steam build
+      description: The first line `hiumod doctor` prints, or Steam → Properties → Updates.
+      placeholder: "24045435"
+    validations: { required: true }
+  - type: input
+    id: mod
+    attributes:
+      label: hiumod version
+      placeholder: "0.1.0"
+    validations: { required: true }
+  - type: checkboxes
+    id: broken
+    attributes:
+      label: What stopped working
+      options:
+        - label: It does not attach (the sidebar never says Connected)
+        - label: The hero gate never opens
+        - label: The minimap or big map
+        - label: The compass, guide or routes
+        - label: The quest tracker
+        - label: Puzzles, vaults or enemy groups
+        - label: Reading the game data (survey) fails
+        - label: A cheat
+  - type: textarea
+    id: doctor
+    attributes:
+      label: hiumod doctor
+      description: Load a save, then run `hiumod doctor` (or type `doctor` in the panel's console) and paste everything it prints.
+      render: text
+    validations: { required: true }
+  - type: textarea
+    id: log
+    attributes:
+      label: hiumod.log (optional)
+      description: In `<game folder>\Mods\`. It contains your game path, which you are welcome to redact.
+      render: text

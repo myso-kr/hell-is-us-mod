@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and usage
+    url: https://github.com/myso-kr/hell-is-us-mod/discussions
+    about: For how to use it rather than a bug, please use Discussions.
+  - name: A problem with the game itself
+    url: https://store.steampowered.com/app/1620730/Hell_is_Us/
+    about: This is an unofficial tool. Take problems with the game to Rogue Factor, and please do not report a session played with hiumod to them as a game bug.

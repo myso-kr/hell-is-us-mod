@@ -118,6 +118,9 @@ main > section:not(.hero) { width: var(--wrap); margin: 0 auto; padding: clamp(7
 main > section:not(.hero) { opacity: 0; translate: 0 24px; transition: opacity .9s ease, translate .9s cubic-bezier(.2,.7,.2,1); }
 main > section.in { opacity: 1; translate: 0 0; }
 @media (prefers-reduced-motion: reduce) { main > section:not(.hero) { opacity: 1; translate: none; transition: none; } }
+.film figure { margin: 0; }
+.film video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; border: 1px solid var(--edge); border-radius: 12px; background: var(--surface) center / cover; box-shadow: 0 40px 120px rgb(0 0 0 / .45); }
+.film figcaption { margin-top: 14px; font-size: 14px; color: var(--dim); }
 .intro { display: grid; grid-template-columns: 1fr 1.25fr; gap: 0 64px; }
 .intro h2 { grid-row: span 2; }
 .intro p { color: var(--text); font-size: 18px; }

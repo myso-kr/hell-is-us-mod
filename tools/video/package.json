@@ -1,0 +1,11 @@
+{
+  "name": "hiumod-video",
+  "private": true,
+  "description": "The 30-second introduction video: scene.html rendered frame by frame (render.mjs), encoded with ffmpeg.",
+  "type": "module",
+  "scripts": { "render": "node render.mjs" },
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0",
+    "three": "0.170.0"
+  }
+}

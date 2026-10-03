@@ -10,8 +10,9 @@ dungeons2-mod 의 외부 프로세스 구조를 Hell Is Us(Steam, UE 5.5)로 옮
 
 ## 저장소
 
-- 로컬: `%USERPROFILE%\hell-is-us-mod`
-- GitHub: 아직 없음. 만들 때는 `myso-kr/hell-is-us-mod`, **비공개**로 (공개는 사용자가 결정).
+- 로컬: `%USERPROFILE%\hell-is-us-mod` (원격: github.com/myso-kr/hell-is-us-mod, 공개 예정)
+- GitHub: 아직 없음. `myso-kr/hell-is-us-mod`, **공개** 예정 (사용자 결정, 2026-10-03). 커밋 신원은 GitHub noreply
+  (`myso-kr <1237913+myso-kr@users.noreply.github.com>`) — 기록 전체를 다시 써 실명·이메일·로컬 경로를 지움.
 - CI: `.github/workflows/ci.yml` (dungeons2-mod 와 같음: fmt, clippy -D warnings, test,
   게임 파일 커밋 검사). 원격이 없어 아직 돌지 않음.
 

@@ -40,3 +40,18 @@
 - 적응형: 그린 프레임 간격이 1.5배 넘는 게 20번 이어지면 배율 −0.15 (최저 0.45), 빠른 게 240번이면 +0.1 (최고 0.85).
 - 지형 160×160 (전 220×220, 약 5만 삼각형 — 120 이하는 등고선이 사각형마다 꺾임), 경로 튜브 220×4, 원거리 230 m.
 - 화면 밖·탭 숨김이면 그리지 않음. 첫 페인트 뒤 idle 에 시작 (본문 표시를 막지 않음), Save-Data 면 CSS 등고선만.
+
+## 영상 (2026-10-03)
+- 31 초 무음 소개 영상. `tools/video/scene.html` 한 장 — 모든 픽셀이 t 의 함수(`window.seek(t)`), 시계·rAF·난수 없음.
+  `tools/video/render.mjs` 가 Edge(headless, puppeteer-core)로 프레임마다 seek → 스크린샷 → ffmpeg 파이프(디스크에 프레임 없음).
+  `npm install && npm run render` → `docs/assets/media/` 에 (build.py 는 이 폴더를 건드리지 않음 — 저장소에 한 벌만) hiumod-intro.mp4 (H.264 CRF 24, faststart), .webm (VP9),
+  poster.jpg. GIF 는 만들지 않음(용량, 사용자 결정) — README 는 poster.jpg 를 webm 링크로. GitHub README 는 저장소 안
+  영상 파일을 인라인 재생하지 않음(웹 UI 로 올린 user-attachments 주소만) → 저장소 공개 후 그 방식으로 바꿀 수 있음. `--stills 1,5,10` 로 키프레임만 먼저 확인.
+- 콘티: 0–7 s "No map. No compass. / Unless you want one." + 나침반 띠 → 7–10 s 카메라가 위로 올라가 지형이 지도가 됨(안개 옅어짐),
+  아이콘 등장 → 10–13 s 원형 미니맵으로 줄어 오른쪽 → 13–18 s 퀘스트 추적기 카드(거리 줄어듦) → 18–23 s 예시 금고, 커서가
+  "Show answer" 누르면 기호가 하나씩 → 23–27 s 12개 언어의 "지도" → 27–31 s 로고·URL, 어둠으로 (반복 재생이 이어짐).
+- 게임 것 없음: 지형은 노이즈, 아이콘·기호는 모드 SVG, 문구는 일반적인 말(실제 퀘스트 이름 없음). 리서치: Opus 5.5 결정론적
+  HTML→프레임→ffmpeg 파이프라인(Hugging Face 블로그), Remotion 방식(React 컴포넌트, useCurrentFrame) — 의존성을 줄이려 전자.
+- 사이트: 히어로 바로 아래 `.film` — muted loop playsinline, preload none + poster, 화면에 보일 때만 재생,
+  reduced-motion 이면 컨트롤만. JSON-LD VideoObject (`config.json` 의 video_date). 문구 video_title/label/caption 12개 언어.
+

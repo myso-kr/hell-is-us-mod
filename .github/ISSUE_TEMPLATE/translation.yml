@@ -1,0 +1,26 @@
+name: A translation is wrong or awkward
+description: The mod's own words in one of the twelve languages
+labels: ["translation"]
+body:
+  - type: dropdown
+    id: lang
+    attributes:
+      label: Language
+      options: [English, 한국어, 日本語, 简体中文, Deutsch, Français, Español, Italiano, Polski, Português (Brasil), Русский, Türkçe]
+    validations: { required: true }
+  - type: input
+    id: key
+    attributes:
+      label: Key, if you know it
+      description: "The UPPER_SNAKE key in `assets/i18n/<lang>.tsv`, or the website's key in `tools/site/strings/<lang>.json`."
+  - type: textarea
+    id: now
+    attributes:
+      label: What it says now, and what it should say
+    validations: { required: true }
+  - type: markdown
+    attributes:
+      value: |
+        Names of places, people and items come from the game's own translations on
+        your machine, not from this repository — if one of those is wrong, it is the
+        game's text.

@@ -72,6 +72,17 @@
     <p class="scroll-hint" aria-hidden="true">{{scroll_hint}}</p>
   </section>
 
+  <section class="film" aria-labelledby="film-title">
+    <h2 id="film-title" class="film-title">{{video_title}}</h2>
+    <figure>
+      <video muted loop playsinline preload="none" poster="{{root}}assets/media/poster.jpg" width="1920" height="1080" aria-label="{{video_label}}">
+        <source src="{{root}}assets/media/hiumod-intro.webm" type="video/webm">
+        <source src="{{root}}assets/media/hiumod-intro.mp4" type="video/mp4">
+      </video>
+      <figcaption>{{video_caption}}</figcaption>
+    </figure>
+  </section>
+
   <section class="intro" aria-labelledby="intro-title">
     <h2 id="intro-title">{{intro_title}}</h2>
     <p>{{intro_p1}}</p>
