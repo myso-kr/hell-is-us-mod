@@ -58,6 +58,19 @@ pub fn col(px: f32) -> Style {
     }
 }
 
+/// `grid grid-cols-{n} gap-{px}`: equal columns, each as wide as the others, so tiles in
+/// a row line up and none is left alone on a row of its own.
+pub fn grid(n: usize, px: f32) -> Style {
+    Style {
+        display: Display::Grid,
+        grid_template_columns: vec![taffy::style_helpers::minmax(length(0.0_f32), fr(1.0_f32)); n],
+        align_items: Some(AlignItems::Start),
+        justify_items: Some(AlignItems::Stretch),
+        gap: gap(px),
+        ..Default::default()
+    }
+}
+
 /// `flex flex-row gap-{px} items-center`
 pub fn row(px: f32) -> Style {
     Style {
@@ -236,18 +249,6 @@ pub fn text(tui: &mut Tui, text: impl Into<RichText>) {
 
 /// A titled card: `flex flex-col gap-2 p-4 border rounded`, the accent bar beside its title.
 pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> T {
-    // A raised panel with rounded corners. No accent rail: the accent marks what is
-    // chosen or live, and a mark on every card would mean nothing.
-    fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
-        let rect = container.full_container();
-        ui.painter().rect(
-            rect,
-            super::theme::R_CARD,
-            super::theme::CARD,
-            egui::Stroke::new(1.0, super::theme::EDGE),
-            egui::StrokeKind::Inside,
-        );
-    }
     tui.style(Style { padding: length(super::theme::PAD), ..col(super::theme::INLINE) })
         .add_with_background_ui(background, |tui, _| {
             // The header: the title over a hairline as wide as the card's content.
@@ -259,6 +260,31 @@ pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> 
             body(tui)
         })
         .main
+}
+
+/// A raised panel with rounded corners: a card's, a hero's. No accent rail: the accent
+/// marks what is chosen or live, and a mark on every card would mean nothing.
+fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
+    let rect = container.full_container();
+    ui.painter().rect(
+        rect,
+        super::theme::R_CARD,
+        super::theme::CARD,
+        egui::Stroke::new(1.0, super::theme::EDGE),
+        egui::StrokeKind::Inside,
+    );
+}
+
+/// A page's hero: one full-width panel above the cards, its content in a row that
+/// wraps (an image, then the headline and its numbers).
+pub fn hero<T>(tui: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
+    let style = Style {
+        padding: length(super::theme::PAD),
+        flex_wrap: FlexWrap::Wrap,
+        align_items: Some(AlignItems::Center),
+        ..row(super::theme::PAD)
+    };
+    tui.style(style).add_with_background_ui(background, |tui, _| body(tui)).main
 }
 
 /// What a chip says about a state: done or fine, waiting on something, wrong or about
@@ -389,6 +415,145 @@ pub fn slider<N: egui::emath::Numeric>(
         });
         track | boxed
     })
+}
+
+/// A KPI tile: an icon and a label over a big number, the whole tile pressable (it
+/// opens the page with the places). `lit` draws the number in the state colour it is
+/// given — something that can be done now — else in the title colour; a zero is dim.
+pub fn stat(tui: &mut Tui, icon: impl FnOnce(&mut egui::Ui), value: &str, label: &str, lit: Option<Color32>) -> bool {
+    use super::theme::{CONTROL, CONTROL_HOVER, DIM, EDGE, R_CONTROL, TITLE};
+    w(tui, |ui| {
+        let id = ui.next_auto_id();
+        let hovered = ui.ctx().data(|d| d.get_temp::<bool>(id).unwrap_or(false));
+        let frame = egui::Frame::new()
+            .fill(if hovered { CONTROL_HOVER } else { CONTROL })
+            .stroke(egui::Stroke::new(1.0, EDGE))
+            .corner_radius(R_CONTROL)
+            .inner_margin(egui::Margin::symmetric(10, 7))
+            .show(ui, |ui| {
+                // As wide as its grid cell, less the frame's margins and edge.
+                ui.set_min_width((ui.available_width() - 22.0).max(STAT_W));
+                ui.spacing_mut().item_spacing.y = 2.0;
+                ui.horizontal(|ui| {
+                    ui.spacing_mut().item_spacing.x = 5.0;
+                    icon(ui);
+                    ui.label(RichText::new(label).small().color(DIM));
+                });
+                let colour = match lit {
+                    _ if value == "0" => DIM,
+                    Some(c) => c,
+                    None => TITLE,
+                };
+                ui.label(RichText::new(value).size(20.0).strong().color(colour));
+            });
+        let r = ui.interact(frame.response.rect, id, egui::Sense::click());
+        ui.ctx().data_mut(|d| d.insert_temp(id, r.hovered()));
+        r.clicked()
+    })
+}
+
+/// A KPI tile's least width (px), so a row of them lines up.
+const STAT_W: f32 = 84.0;
+
+/// A horizontal bar chart, one row per label: the part that can be done now in the
+/// accent, the rest of what is left behind it, all to one scale (the longest row), the
+/// counts on the right. Above it, a legend for the two parts.
+pub fn bars(ui: &mut egui::Ui, rows: &[(String, usize, usize)], legend: (&str, &str)) {
+    use super::theme::{ACCENT, CONTROL_HOVER, DIM, TEXT};
+    const LABEL: f32 = 116.0;
+    const COUNT: f32 = 64.0;
+    const ROW: f32 = 18.0;
+    let max = rows.iter().map(|r| r.2).max().unwrap_or(1).max(1) as f32;
+    ui.spacing_mut().item_spacing.y = 4.0;
+    ui.horizontal(|ui| {
+        for (text, colour) in [(legend.0, ACCENT), (legend.1, CONTROL_HOVER)] {
+            let (r, _) = ui.allocate_exact_size(egui::vec2(9.0, 9.0), egui::Sense::hover());
+            ui.painter().rect_filled(r, 2.0, colour);
+            ui.label(RichText::new(text).small().color(DIM));
+            ui.add_space(6.0);
+        }
+    });
+    for (label, now, left) in rows {
+        let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), ROW), egui::Sense::hover());
+        let p = ui.painter();
+        let font = egui::FontId::proportional(12.0);
+        let colour = if *now > 0 { TEXT } else { DIM };
+        let text = p.layout(label.clone(), font.clone(), colour, LABEL - 6.0);
+        p.galley(egui::pos2(rect.left(), rect.center().y - text.size().y / 2.0), text, colour);
+        let track = egui::Rect::from_min_max(
+            egui::pos2(rect.left() + LABEL, rect.center().y - 5.0),
+            egui::pos2((rect.right() - COUNT).max(rect.left() + LABEL + 10.0), rect.center().y + 5.0),
+        );
+        let w = |n: usize| track.width() * n as f32 / max;
+        let all = egui::Rect::from_min_size(track.min, egui::vec2(w(*left), track.height()));
+        p.rect_filled(all, 3.0, CONTROL_HOVER);
+        if *now > 0 {
+            let doable = egui::Rect::from_min_size(track.min, egui::vec2(w(*now).max(3.0), track.height()));
+            p.rect_filled(doable, 3.0, ACCENT);
+        }
+        p.text(
+            egui::pos2(rect.right(), rect.center().y),
+            egui::Align2::RIGHT_CENTER,
+            format!("{now} / {left}"),
+            egui::FontId::monospace(11.0),
+            colour,
+        );
+    }
+}
+
+/// A progress ring: the track, the part done from twelve o'clock clockwise (the accent,
+/// the OK colour once complete), the count in the middle and a label under it.
+pub fn ring(ui: &mut egui::Ui, side: f32, done: usize, all: usize, label: &str) -> egui::Response {
+    use super::theme::{ACCENT, CONTROL_HOVER, DIM, OK, TITLE};
+    let (rect, response) = ui.allocate_exact_size(egui::vec2(side, side + 16.0), egui::Sense::hover());
+    let p = ui.painter();
+    let centre = egui::pos2(rect.center().x, rect.top() + side / 2.0);
+    let width = (side * 0.09).max(4.0);
+    let r = side / 2.0 - width / 2.0 - 1.0;
+    p.circle_stroke(centre, r, egui::Stroke::new(width, CONTROL_HOVER));
+    let frac = if all == 0 { 0.0 } else { (done as f32 / all as f32).clamp(0.0, 1.0) };
+    if frac > 0.0 {
+        let steps = (64.0 * frac).ceil().max(2.0) as usize;
+        let points: Vec<egui::Pos2> = (0..=steps)
+            .map(|i| {
+                let a = -std::f32::consts::FRAC_PI_2 + std::f32::consts::TAU * frac * i as f32 / steps as f32;
+                centre + egui::vec2(a.cos(), a.sin()) * r
+            })
+            .collect();
+        let colour = if done >= all { OK } else { ACCENT };
+        p.add(egui::Shape::line(points, egui::Stroke::new(width, colour)));
+    }
+    p.text(centre, egui::Align2::CENTER_CENTER, done.to_string(), egui::FontId::proportional(side * 0.26), TITLE);
+    p.text(
+        egui::pos2(centre.x, centre.y + side * 0.2),
+        egui::Align2::CENTER_CENTER,
+        format!("/ {all}"),
+        egui::FontId::proportional(side * 0.13),
+        DIM,
+    );
+    p.text(
+        egui::pos2(rect.center().x, rect.bottom() - 6.0),
+        egui::Align2::CENTER_CENTER,
+        label,
+        egui::FontId::proportional(11.5),
+        DIM,
+    );
+    response
+}
+
+/// A thin progress bar `width` px wide (the rest of the row when `None`): `done` of
+/// `all` in the accent, OK once complete.
+pub fn meter(ui: &mut egui::Ui, width: Option<f32>, done: usize, all: usize) {
+    use super::theme::{ACCENT, CONTROL_HOVER, OK};
+    let w = width.unwrap_or_else(|| ui.available_width());
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(w, 6.0), egui::Sense::hover());
+    let p = ui.painter();
+    p.rect_filled(rect, 3.0, CONTROL_HOVER);
+    if all > 0 && done > 0 {
+        let frac = (done as f32 / all as f32).clamp(0.0, 1.0);
+        let part = egui::Rect::from_min_size(rect.min, egui::vec2((rect.width() * frac).max(3.0), rect.height()));
+        p.rect_filled(part, 3.0, if done >= all { OK } else { ACCENT });
+    }
 }
 
 #[cfg(test)]

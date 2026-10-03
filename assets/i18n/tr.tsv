@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Konuma gidildi: {slot}
 COLLECTION	Koleksiyon
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Keşif veri tabanı yok. Konsolda bir kez `doctor survey` çalıştır
 COUNTS_WHAT_LIES_IN_THE_WORLD	Yalnızca dünyada duranları sayar (NPC ödülleri ve dükkânlar hariç) · bu bölge / tümü
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · tümü {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	İyilikler · Gizemler · Zaman Döngüleri
 DONE_IN_PROGRESS_FAILED	Tamamlanan {done} / {all} · devam eden {started} · başarısız {failed}
 NPCS_WITH_MORE_TO_TELL	Daha çok anlatacağı olan NPC'ler ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Tuş takımı · kod
 AT_THE_DOORS_DIALS_THE_PUZZLES	    Kapının önündeki kadranlarda 'Yakındaki bulmacalar' kartı her birinin kaç adım çevrileceğini söyler
 TIMELOOP_LEFT	    Zaman Döngüsü {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m içinde kadran, tuş takımı veya eşya yerleştirme bulmacası yok
-GROUPS_ENEMIES	{place}: {left}/{all} grup · {enemies} düşman
 NEAREST	En yakın
 READS_THE_ANSWER_THE_GAME_HOLDS	Oyunun bildiği cevabı okur. Kendin çözmek istiyorsan basma
 PUZZLES_NEARBY	Yakındaki bulmacalar ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Mahzen tablosu yok. Konsolda bir kez `doctor survey` çalıştır
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Yasak Bilgi Mahzenleri {done}/{all}
-ENEMY_GROUPS_LEFT	Kalan düşman grupları {left}/{all}
 ENEMY_GROUP_LEFT	Kalan düşman grubu
 DIAL_TURN_STEPS_NOW	Kadran {n}: {k} adım çevir (şimdi {now} → {want})
 DIAL_RIGHT	Kadran {n}: doğru
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Kalan kilit taşları, sırasıyla: {keystones}
 MORE_WITH_A_LATER_DEADLINE	Daha sonra süresi dolanlar: {count}
 GO_TO_PAGE	Aç: {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Burada modun bildiği kalan bir şey yok.
-COUNTS_ONLY_OPEN_A_LINE	Yalnızca sayılar. Sayfasını açmak için bir satıra basın.
-LEDGER_QUEST_PLACES	Görev yerleri: {count}
-LEDGER_HANDOVERS	Şimdi teslim edilebilir: {count}
-LEDGER_PUZZLES	Bulmacalar: {count}
-LEDGER_LOCKS	Limbik kilitler: {count} (şimdi açılabilir: {open})
-LEDGER_VAULT_DOORS	Mahzen kapıları: {count}
-LEDGER_COLLECTIBLES	Koleksiyon parçaları: {count}
-LEDGER_ENEMY_GROUPS	Düşman grupları: {count}
-LEDGER_STORIES	Anlatacakları kalan NPC: {count}
 OTHER_REGIONS_CARD	Diğer bölgeler
 NOTHING_LEFT_ELSEWHERE	Diğer bölgelerde modun bildiği kalan bir şey yok.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	Önce şimdi en çok şey yapabileceğiniz yer: teslimler ve çubuklarınızın açtığı kilitler.
-TRIP_ROW	{place} (şimdi: {doable} · kalan: {left})
 MINUTES_AGO	{count} dk önce
 HOURS_AGO	{count} sa önce
 LYMBIC_LOCKS	Limbik kilitler
@@ -540,3 +526,18 @@ ABOUT_COLLECT	koleksiyon parçaları, düşman grupları, başarımlar
 ABOUT_SAVES	kayıt yedekleri
 ABOUT_DEBUG	günlükler, hile denetimi
 OPENS_NOW	Şimdi açılır
+HERO_DOABLE	Şimdi yapılabilir: {count}
+HERO_LEFT	Burada kalan: {count}
+STAT_QUEST_PLACES	Görev yerleri
+STAT_HANDOVERS	Teslimler
+STAT_LOCKS_OPEN	Açılabilir kilitler
+STAT_COLLECTIBLES	Koleksiyon parçaları
+STAT_ENEMY_GROUPS	Düşman grupları
+LEGEND_DOABLE	Şimdi
+LEGEND_LEFT	Kalan
+ACHIEVEMENTS_RING	Başarımlar
+SECRETS_RING	Sırlar
+ENEMY_GROUPS_BEATEN	Yenilen düşman grupları {done}/{all}
+GROUPS_BEATEN	{place}: {done}/{all} yenildi · kalan düşman {enemies}
+PUZZLES_HERE_RING	Buradaki bulmacalar
+VAULTS_RING	Mahzenler

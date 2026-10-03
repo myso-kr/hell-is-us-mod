@@ -96,11 +96,7 @@ impl Panel {
     /// upgrade ones, then each achievement left: its name with progress on the right and
     /// its condition under it; a hidden one's only once unlocked or asked for.
     pub(super) fn achievements_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
-        if self.achievements.as_ref().is_none_or(|(at, _)| at.elapsed() >= std::time::Duration::from_secs(10)) {
-            self.achievements =
-                Some((std::time::Instant::now(), crate::game::achievements::load(&crate::i18n::culture())));
-        }
-        let list = self.achievements.as_ref().map(|(_, l)| l.clone()).unwrap_or_default();
+        let list = self.achievements_list();
         let done = list.iter().filter(|a| a.unlocked).count();
         card(t, &trf!("ACHIEVEMENTS", done = done, all = list.len()), |t| {
             if list.is_empty() {
@@ -138,6 +134,15 @@ impl Panel {
                 });
             }
         });
+    }
+
+    /// Steam's achievements, read again every 10 s.
+    pub(super) fn achievements_list(&mut self) -> Vec<crate::game::achievements::Achievement> {
+        if self.achievements.as_ref().is_none_or(|(at, _)| at.elapsed() >= std::time::Duration::from_secs(10)) {
+            self.achievements =
+                Some((std::time::Instant::now(), crate::game::achievements::load(&crate::i18n::culture())));
+        }
+        self.achievements.as_ref().map(|(_, l)| l.clone()).unwrap_or_default()
     }
 
     /// The shard budget (.spec/JOURNEY.md §3.6), kept short: the shards held as a size ×
@@ -461,7 +466,8 @@ impl Panel {
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
         let (left, all) = list.iter().fold((0, 0), |(l, a), h| (l + h.left, a + h.all));
-        card(t, &trf!("ENEMY_GROUPS_LEFT", left = left, all = all), |t| {
+        // Beaten of all, as every other count on the page reads: progress.
+        card(t, &trf!("ENEMY_GROUPS_BEATEN", done = all - left, all = all), |t| {
             if list.is_empty() {
                 note(t, tr!("NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY"));
                 return;
@@ -470,9 +476,9 @@ impl Panel {
             for h in list.iter() {
                 let mine = here_world.as_deref() == Some(h.world.as_str());
                 let line = trf!(
-                    "GROUPS_ENEMIES",
+                    "GROUPS_BEATEN",
                     place = crate::i18n::place(&h.world),
-                    left = h.left,
+                    done = h.all - h.left,
                     all = h.all,
                     enemies = h.enemies_left
                 );
@@ -495,7 +501,9 @@ impl Panel {
                     });
                     let id = near.map(|at| id_of(&format!("hollow{at:?}")));
                     let on = id.map(|id| state.target == Some(id));
-                    if tw::line(t, on, icon, RichText::new(line).color(colour), |_| {}) {
+                    let beaten = h.all - h.left;
+                    let end = |t: &mut Tui| w(t, |ui| tw::meter(ui, Some(56.0), beaten, h.all));
+                    if tw::line(t, on, icon, RichText::new(line).color(colour), end) {
                         if let (Some(at), Some(id)) = (near, id) {
                             let x = crate::survey::Need {
                                 world: h.world.clone(),
@@ -632,4 +640,30 @@ fn rod_name(item: &str) -> String {
     let mut parts = item.split('_').skip(1);
     let (letter, emotion) = (parts.next().unwrap_or(""), parts.next().unwrap_or(""));
     format!("{emotion} {}", letter.chars().next().unwrap_or('?'))
+}
+
+/// The Puzzles page's hero: what is solved, as rings — this region's dials and keypads,
+/// the Lymbic locks and the vaults everywhere.
+pub(super) fn puzzles_hero(t: &mut Tui, snap: Option<&Snapshot>) {
+    let Some(s) = snap else { return };
+    let here = s.world.clone().map(|w| crate::survey::Survey::world_of(&w).to_string());
+    let mine: Vec<_> = s
+        .catalogue
+        .iter()
+        .filter(|(p, _)| Some(&p.world) == here.as_ref() && p.kind != crate::puzzles::Kind::Placement)
+        .collect();
+    let solved = mine.iter().filter(|(_, done)| *done).count();
+    let locks = s.locks.iter().filter(|l| l.solved).count();
+    let vaults = s.vaults.iter().filter(|v| v.state == VaultState::Opened).count();
+    tw::hero(t, |t| {
+        t.style(tw::grow(tw::grid(3, super::super::theme::PAD))).add(|t| {
+            for (label, d, a) in [
+                (tr!("PUZZLES_HERE_RING"), solved, mine.len()),
+                (tr!("LYMBIC_LOCKS"), locks, s.locks.len()),
+                (tr!("VAULTS_RING"), vaults, s.vaults.len()),
+            ] {
+                w(t, |ui| ui.vertical_centered(|ui| tw::ring(ui, 96.0, d, a, label)));
+            }
+        });
+    });
 }

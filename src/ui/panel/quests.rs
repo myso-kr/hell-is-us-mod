@@ -69,7 +69,7 @@ impl Panel {
                     let label = match x.what.as_str() {
                         "" => format!("{} ({})", x.label, far(x)),
                         w if w == x.label => format!("{w} ({})", far(x)),
-                        w => format!("{w} — {} ({})", x.label, far(x)),
+                        w => format!("{w}: {} ({})", x.label, far(x)),
                     };
                     // A person to talk to, or a thing to take.
                     let npc = x.label.starts_with(trf!("TALK_NPC", p = "").as_str());
@@ -140,7 +140,7 @@ impl Panel {
                             state.route = true;
                         }
                     });
-                    note(t, format!("{} — {}", d.due.label(), d.what));
+                    note(t, format!("{}: {}", d.due.label(), d.what));
                 });
             }
             let passed = list.iter().filter(|d| d.when == When::Passed).count();

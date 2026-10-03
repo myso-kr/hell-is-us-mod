@@ -27,10 +27,19 @@ can use the debug build meanwhile (`target\debug\hiumod.exe doctor`).
 
 ## Checking the panel
 
-Layout bugs show up only on screen. Click each sidebar page and capture the window (a small
-PowerShell script with `SetCursorPos`/`mouse_event` and `CopyFromScreen` over the window's
-`DwmGetWindowAttribute` rect does it), then look at every capture. PANEL.md §4 lists what was fixed
-this way.
+Layout bugs show up only on screen. Open each sidebar page and capture the window, then look at
+every capture. PANEL.md §4 lists what was fixed this way.
+
+- **Never move the user's cursor or take the focus**: the player may be busy in another window. Press
+  controls through **UI Automation** by name (the panel builds with eframe's `accesskit` feature, so
+  every button is in the tree): `AutomationElement.FromHandle(hwnd)`, `FindFirst(Descendants, Name =
+  "퀘스트")`, then `InvokePattern.Invoke()`. Posted `WM_LBUTTONDOWN`/`UP` messages are not reliable:
+  winit tracks the mouse on the first move and Windows answers with a leave at once while the real
+  cursor is elsewhere.
+- Capture with `PrintWindow(hwnd, dc, PW_RENDERFULLCONTENT)`, the window's own rendering, not
+  `CopyFromScreen`: windows over the panel do not show and the panel need not come to the front.
+- Close the panel with its own × (restores the original values), and start it with `Start-Process`,
+  never as a shell's background task (a time limit there kills it with cheats on).
 
 ## Checking the game (all read-only)
 

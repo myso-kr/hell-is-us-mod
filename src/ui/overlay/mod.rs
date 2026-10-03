@@ -47,6 +47,10 @@ const FRAME: Duration = Duration::from_millis(50);
 /// third frame — it is many more pixels.
 const BIG_SHARE: f32 = 0.8;
 const BIG_EVERY: u32 = 3;
+/// The panel's hero map: its side (px), how far it reaches (m) and how often (frames).
+const HERO_PX: usize = 176;
+const HERO_RADIUS_M: f32 = 120.0;
+const HERO_EVERY: u32 = 20;
 const SAVE_EVERY: Duration = Duration::from_secs(10);
 
 pub fn path() -> std::path::PathBuf {
@@ -191,6 +195,39 @@ pub fn run(shared: Arc<Shared>) {
         // the panel shows one too), or it is paused.
         let menu = state.hide_in_menus && ((in_game && cursor_shown()) || paused);
         *shared.menu.lock().unwrap() = (in_game && cursor_shown(), paused);
+
+        // The panel's hero map, while the panel shows (the game has no focus then, so
+        // the minimap below is not drawn): north up, the relief and the places, no route.
+        if tick % HERO_EVERY == 0 && shared.visible.load(Ordering::SeqCst) {
+            if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
+                let view = View {
+                    center: p,
+                    yaw_deg: yaw,
+                    heading_up: false,
+                    scale: (HERO_PX as f32 / 2.0 - 14.0) / (HERO_RADIUS_M * 100.0),
+                    north_deg: state.north_yaw,
+                    outline: false,
+                };
+                let relief = baking.relief(&state, p, &obstacles);
+                let goals = hud::with_pins(&goals, &state, world);
+                let mut cv = Canvas::new(HERO_PX, HERO_PX);
+                draw_map(
+                    &mut cv,
+                    &state,
+                    world,
+                    &view,
+                    &things,
+                    icons.as_ref(),
+                    &footprints,
+                    &goals,
+                    &Default::default(),
+                    relief.as_deref(),
+                );
+                let mut hero = shared.hero.lock().unwrap();
+                let n = hero.as_ref().map_or(0, |h| h.2) + 1;
+                *hero = Some((HERO_PX, cv.px, n));
+            }
+        }
 
         let window = game_window(game).filter(|_| focused && !menu).map(|(_, r)| r);
         match (here, world.as_deref(), window) {

@@ -154,10 +154,13 @@ than four cards (PANEL.md §1).
 - **Region ledger** (`src/guide/ledger.rs`, §3.1): for every region, what is left by kind — quest
   places (a place two quests need counts once), hand-overs possible now, dials and keypads unsolved
   (vault doors and Lymbic locks apart), Lymbic locks (and how many the rods held open), vault doors,
-  collectibles (`Collect::left_by_world`), enemy groups, NPCs with more to tell. Counts only; each line
-  opens the page that lists the places.
-- **Trip planner** (§3.4): the same rows for the other regions, sorted by what can be done there now
-  (hand-overs + locks the rods held open), then by what is left.
+  collectibles (`Collect::left_by_world`), enemy groups, NPCs with more to tell. Shown as the Now
+  page's **hero**: a live north-up map round the hero (the overlay draws it once a second while the
+  panel shows, `Shared::hero`), the region in large type, a "can do now" chip, and six KPI tiles on a
+  3 × 2 grid; a tile opens the page that lists the places.
+- **Trip planner** (§3.4): the same rows for the other regions as a bar chart (`tw::bars`), sorted by
+  what can be done there now (hand-overs + locks the rods held open, in the accent), then by what is
+  left (the bar behind it), all to one scale.
 - **Before you go on** (§3.5): the good deeds whose story point can come any time now (F1's "soon"),
   the act 2 keystone order, and how many deadlines are further off; a button to the Quests page.
 - **Previously** (§3.8, `src/infra/session.rs`): the panel writes `Mods\session.txt` (time, region,

@@ -16,6 +16,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   the Guide and Collect pages. No page has more than four cards now.
 - A **Help** page beside Now at the top of the sidebar: first steps, every page in a line (press to
   open it), the keys as set, and what to do when something is off.
+- Dashboard look: the Now page opens on a hero with a live map of the region, its name and six KPI
+  tiles, and other regions as a bar chart; Collect and Puzzles open on progress rings; collections
+  and enemy groups have progress bars; good deeds, mysteries and timeloops are rings.
 - States read at a glance: chips for "opens now", covered or short, soon or later, a vault's state;
   keys as keycaps; card headers without the accent rail.
 - One look per role: press a line to be guided there (no separate Guide buttons), one small

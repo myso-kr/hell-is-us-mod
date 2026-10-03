@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Spostato alla posizione {slot}
 COLLECTION	Progresso raccolta
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Nessun DB di rilevamento. Esegui `doctor survey` una volta nella console
 COUNTS_WHAT_LIES_IN_THE_WORLD	Conta solo ciò che si trova nel mondo (non ricompense PNG né negozi) · qui / totale
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · totale {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Buone azioni · Misteri · Cronocicli
 DONE_IN_PROGRESS_FAILED	Fatte {done} / {all} · in corso {started} · fallite {failed}
 NPCS_WITH_MORE_TO_TELL	PNG con altro da raccontare ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Tastierino · codice
 AT_THE_DOORS_DIALS_THE_PUZZLES	    Ai quadranti davanti alla porta, la scheda «Enigmi vicini» indica di quanto girare ciascuno
 TIMELOOP_LEFT	    Cronociclo {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	Nessun enigma a quadranti, tastierino o posa di oggetti entro 40 m
-GROUPS_ENEMIES	{place}: {left}/{all} gruppi · {enemies} nemici
 NEAREST	Più vicino
 READS_THE_ANSWER_THE_GAME_HOLDS	Legge la risposta che il gioco conosce. Non premere se vuoi risolverlo da solo
 PUZZLES_NEARBY	Enigmi vicini ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Nessuna tabella delle camere. Esegui `doctor survey` una volta nella console
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Camere del sapere proibito {done}/{all}
-ENEMY_GROUPS_LEFT	Gruppi di nemici rimasti {left}/{all}
 ENEMY_GROUP_LEFT	Gruppo di nemici rimasto
 DIAL_TURN_STEPS_NOW	Quadrante {n}: gira di {k} posizioni (ora {now} → {want})
 DIAL_RIGHT	Quadrante {n}: corretto
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Chiavi di volta rimaste, in ordine: {keystones}
 MORE_WITH_A_LATER_DEADLINE	Scadenze più avanti: {count}
 GO_TO_PAGE	Apri {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Qui non resta nulla che la mod conosca.
-COUNTS_ONLY_OPEN_A_LINE	Solo conteggi: premi una riga per aprirne la pagina.
-LEDGER_QUEST_PLACES	Luoghi delle indagini: {count}
-LEDGER_HANDOVERS	Consegne possibili: {count}
-LEDGER_PUZZLES	Enigmi: {count}
-LEDGER_LOCKS	Blocchi limbici: {count} (apribili ora: {open})
-LEDGER_VAULT_DOORS	Porte delle camere: {count}
-LEDGER_COLLECTIBLES	Collezionabili: {count}
-LEDGER_ENEMY_GROUPS	Gruppi di nemici: {count}
-LEDGER_STORIES	PNG con altro da raccontare: {count}
 OTHER_REGIONS_CARD	Altre regioni
 NOTHING_LEFT_ELSEWHERE	Nelle altre regioni non resta nulla che la mod conosca.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	Prima dove puoi fare di più adesso: consegne e blocchi che le tue barre aprono.
-TRIP_ROW	{place} (ora: {doable} · restano: {left})
 MINUTES_AGO	{count} min fa
 HOURS_AGO	{count} h fa
 LYMBIC_LOCKS	Blocchi limbici
@@ -540,3 +526,18 @@ ABOUT_COLLECT	collezionabili, gruppi di nemici, trofei
 ABOUT_SAVES	copie dei salvataggi
 ABOUT_DEBUG	log, controllo dei trucchi
 OPENS_NOW	Si apre ora
+HERO_DOABLE	{count} da fare ora
+HERO_LEFT	{count} restano qui
+STAT_QUEST_PLACES	Luoghi delle indagini
+STAT_HANDOVERS	Consegne
+STAT_LOCKS_OPEN	Blocchi apribili
+STAT_COLLECTIBLES	Collezionabili
+STAT_ENEMY_GROUPS	Gruppi di nemici
+LEGEND_DOABLE	Fattibile ora
+LEGEND_LEFT	Restano
+ACHIEVEMENTS_RING	Trofei
+SECRETS_RING	Segreti
+ENEMY_GROUPS_BEATEN	Gruppi di nemici sconfitti {done}/{all}
+GROUPS_BEATEN	{place}: {done}/{all} sconfitti · restano {enemies} nemici
+PUZZLES_HERE_RING	Enigmi qui
+VAULTS_RING	Camere

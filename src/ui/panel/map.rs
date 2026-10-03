@@ -25,18 +25,24 @@ impl Panel {
                 0 => self.quest_clues_card(t, guard, snap),
                 _ => self.find_clue_card(t, snap),
             }),
-            Some(Tool::Puzzles) => tw::masonry(t, "puzzles", cols, 4, |t, i| match i {
-                0 => self.puzzles_card(t, guard, snap),
-                1 => self.locks_card(t, guard, snap),
-                2 => self.vaults_card(t, guard, snap),
-                _ => self.catalogue_card(t, guard, snap),
-            }),
-            Some(Tool::Collect) => tw::masonry(t, "collect", cols, 4, |t, i| match i {
-                0 => self.collection_card(t, guard, snap),
-                1 => self.hollows_card(t, guard, snap),
-                2 => self.stories_card(t, guard, snap),
-                _ => self.achievements_card(t, snap),
-            }),
+            Some(Tool::Puzzles) => {
+                super::deep::puzzles_hero(t, snap);
+                tw::masonry(t, "puzzles", cols, 4, |t, i| match i {
+                    0 => self.puzzles_card(t, guard, snap),
+                    1 => self.locks_card(t, guard, snap),
+                    2 => self.vaults_card(t, guard, snap),
+                    _ => self.catalogue_card(t, guard, snap),
+                })
+            }
+            Some(Tool::Collect) => {
+                self.collect_hero(t, snap);
+                tw::masonry(t, "collect", cols, 4, |t, i| match i {
+                    0 => self.collection_card(t, guard, snap),
+                    1 => self.hollows_card(t, guard, snap),
+                    2 => self.stories_card(t, guard, snap),
+                    _ => self.achievements_card(t, snap),
+                })
+            }
             Some(Tool::Quests) => tw::masonry(t, "quests", cols, 4, |t, i| match i {
                 0 => self.quests_card(t, guard, snap),
                 1 => self.deadlines_card(t, guard, snap),

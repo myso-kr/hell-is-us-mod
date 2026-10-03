@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Zu Position {slot} bewegt
 COLLECTION	Sammelfortschritt
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Keine Survey-DB – führe einmal `doctor survey` in der Konsole aus
 COUNTS_WHAT_LIES_IN_THE_WORLD	Gezählt wird nur, was in der Welt liegt (keine NPC-Belohnungen oder Shops) · diese Region / gesamt
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · gesamt {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Gute Taten · Mysterien · Zeitschleifen
 DONE_IN_PROGRESS_FAILED	Erledigt {done} / {all} · laufend {started} · gescheitert {failed}
 NPCS_WITH_MORE_TO_TELL	NPCs mit mehr Infos ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Tastenfeld · Code
 AT_THE_DOORS_DIALS_THE_PUZZLES	    Drehräder an der Tür: Die Karte „Rätsel in der Nähe“ zeigt, wie weit jedes zu drehen ist
 TIMELOOP_LEFT	    Zeitschleife {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	Im Umkreis von 40 m gibt es kein Drehrad-, Tastenfeld- oder Platzierungsrätsel
-GROUPS_ENEMIES	{place}: {left}/{all} Gruppen · {enemies} Gegner
 NEAREST	Am nächsten
 READS_THE_ANSWER_THE_GAME_HOLDS	Liest die Lösung, die das Spiel kennt – nicht drücken, wenn du es selbst lösen willst
 PUZZLES_NEARBY	Rätsel in der Nähe ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Keine Gruftentabelle – führe einmal `doctor survey` in der Konsole aus
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Grüfte des Verbotenen Wissens {done}/{all}
-ENEMY_GROUPS_LEFT	Verbleibende Gegnergruppen {left}/{all}
 ENEMY_GROUP_LEFT	Verbleibende Gegnergruppe
 DIAL_TURN_STEPS_NOW	Drehrad {n}: {k} Schritte drehen (jetzt {now} → {want})
 DIAL_RIGHT	Drehrad {n}: richtig
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Verbleibende Schlusssteine, in dieser Reihenfolge: {keys
 MORE_WITH_A_LATER_DEADLINE	Spätere Fristen: {count}
 GO_TO_PAGE	{page} öffnen ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Hier ist nichts mehr übrig, das die Mod kennt.
-COUNTS_ONLY_OPEN_A_LINE	Nur Anzahlen. Tippe auf eine Zeile, um die Seite zu öffnen.
-LEDGER_QUEST_PLACES	Quest-Orte: {count}
-LEDGER_HANDOVERS	Möglich zu übergeben: {count}
-LEDGER_PUZZLES	Rätsel: {count}
-LEDGER_LOCKS	Lymbische Schlösser: {count} (jetzt zu öffnen: {open})
-LEDGER_VAULT_DOORS	Grufttüren: {count}
-LEDGER_COLLECTIBLES	Sammelobjekte: {count}
-LEDGER_ENEMY_GROUPS	Gegnergruppen: {count}
-LEDGER_STORIES	NPCs mit mehr zu erzählen: {count}
 OTHER_REGIONS_CARD	Andere Regionen
 NOTHING_LEFT_ELSEWHERE	In anderen Regionen ist nichts mehr übrig, das die Mod kennt.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	Wo du jetzt am meisten tun kannst, zuerst: Übergaben und Schlösser, die deine Stäbe öffnen.
-TRIP_ROW	{place} (jetzt: {doable} · übrig: {left})
 MINUTES_AGO	vor {count} Min.
 HOURS_AGO	vor {count} Std.
 LYMBIC_LOCKS	Lymbische Schlösser
@@ -540,3 +526,18 @@ ABOUT_COLLECT	Sammelobjekte, Gegnergruppen, Erfolge
 ABOUT_SAVES	Spielstand-Sicherungen
 ABOUT_DEBUG	Logs, Cheat-Prüfung
 OPENS_NOW	Jetzt zu öffnen
+HERO_DOABLE	{count} jetzt möglich
+HERO_LEFT	{count} hier übrig
+STAT_QUEST_PLACES	Quest-Orte
+STAT_HANDOVERS	Übergaben
+STAT_LOCKS_OPEN	Offene Schlösser
+STAT_COLLECTIBLES	Sammelobjekte
+STAT_ENEMY_GROUPS	Gegnergruppen
+LEGEND_DOABLE	Jetzt möglich
+LEGEND_LEFT	Übrig
+ACHIEVEMENTS_RING	Erfolge
+SECRETS_RING	Geheimnisse
+ENEMY_GROUPS_BEATEN	Gegnergruppen besiegt {done}/{all}
+GROUPS_BEATEN	{place}: {done}/{all} besiegt · {enemies} Gegner übrig
+PUZZLES_HERE_RING	Rätsel hier
+VAULTS_RING	Grüfte

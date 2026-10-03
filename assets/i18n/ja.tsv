@@ -118,7 +118,6 @@ MOVED_TO_POSITION	位置 {slot} へ移動
 COLLECTION	収集状況
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	調査DBがありません。コンソールで `doctor survey` を一度実行してください
 COUNTS_WHAT_LIES_IN_THE_WORLD	ワールドに置かれたものだけを数えます（NPCの報酬・店は除く） · このエリア / 全体
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · 全体 {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	善行 · ミステリー · タイムループ
 DONE_IN_PROGRESS_FAILED	完了 {done} / {all} · 進行中 {started} · 失敗 {failed}
 NPCS_WITH_MORE_TO_TELL	話が残っているNPC ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	キーパッド · 暗証コード
 AT_THE_DOORS_DIALS_THE_PUZZLES	    扉の前のダイヤルでは、「近くのパズル」カードが何目盛り回すかを教えてくれます
 TIMELOOP_LEFT	    タイムループ {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m以内にダイヤル・キーパッド・アイテム配置のパズルはありません
-GROUPS_ENEMIES	{place}: {left}/{all} グループ · 敵 {enemies}
 NEAREST	最寄り
 READS_THE_ANSWER_THE_GAME_HOLDS	ゲームが持つ正解を読み取ります。自力で解きたい場合は押さないでください
 PUZZLES_NEARBY	近くのパズル ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	金庫の表がありません。コンソールで `doctor survey` を一度実行してください
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	禁断の知識の間 {done}/{all}
-ENEMY_GROUPS_LEFT	残りの敵グループ {left}/{all}
 ENEMY_GROUP_LEFT	残りの敵グループ
 DIAL_TURN_STEPS_NOW	ダイヤル {n}: {k}目盛り回す（現在 {now} → {want}）
 DIAL_RIGHT	ダイヤル {n}: 正解
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	残りのキーストーン（推奨順）：{keystones}
 MORE_WITH_A_LATER_DEADLINE	期限がまだ先のもの：{count}
 GO_TO_PAGE	{page}を開く ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	この地域でMODが把握している残りはありません。
-COUNTS_ONLY_OPEN_A_LINE	件数のみ表示。行を押すとそのタブが開きます。
-LEDGER_QUEST_PLACES	クエストの場所：{count}
-LEDGER_HANDOVERS	今渡せるもの：{count}
-LEDGER_PUZZLES	パズル：{count}
-LEDGER_LOCKS	リムビックロック：{count}（今開けられる：{open}）
-LEDGER_VAULT_DOORS	金庫の扉：{count}
-LEDGER_COLLECTIBLES	収集品：{count}
-LEDGER_ENEMY_GROUPS	敵の群れ：{count}
-LEDGER_STORIES	話を聞けるNPC：{count}
 OTHER_REGIONS_CARD	ほかの地域
 NOTHING_LEFT_ELSEWHERE	ほかの地域でMODが把握している残りはありません。
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	今そこでできることが多い順：受け渡しと、手持ちのロッドで開くロック。
-TRIP_ROW	{place}（今：{doable} · 残り：{left}）
 MINUTES_AGO	{count}分前
 HOURS_AGO	{count}時間前
 LYMBIC_LOCKS	リムビックロック
@@ -540,3 +526,18 @@ ABOUT_COLLECT	収集品、敵の群れ、実績
 ABOUT_SAVES	セーブのバックアップ
 ABOUT_DEBUG	ログ、チートの点検
 OPENS_NOW	今開けられる
+HERO_DOABLE	今できること {count}
+HERO_LEFT	この地域の残り {count}
+STAT_QUEST_PLACES	クエストの場所
+STAT_HANDOVERS	受け渡し
+STAT_LOCKS_OPEN	開けられるロック
+STAT_COLLECTIBLES	収集品
+STAT_ENEMY_GROUPS	敵の群れ
+LEGEND_DOABLE	今できる
+LEGEND_LEFT	残り
+ACHIEVEMENTS_RING	実績
+SECRETS_RING	善行・ミステリー・タイムループ
+ENEMY_GROUPS_BEATEN	敵の群れ 撃破 {done}/{all}
+GROUPS_BEATEN	{place}：撃破 {done}/{all} · 残りの敵 {enemies}
+PUZZLES_HERE_RING	この地域のパズル
+VAULTS_RING	金庫

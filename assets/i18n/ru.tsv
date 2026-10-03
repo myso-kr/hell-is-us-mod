@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Переход на позицию {slot}
 COLLECTION	Коллекция
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Базы обследования нет. Один раз выполните `doctor survey` в консоли
 COUNTS_WHAT_LIES_IN_THE_WORLD	Считаются только предметы в мире (без наград NPC и магазинов) · здесь / всего
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · всего {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Благие дела · Тайны · Временные петли
 DONE_IN_PROGRESS_FAILED	Выполнено {done} / {all} · в процессе {started} · провалено {failed}
 NPCS_WITH_MORE_TO_TELL	NPC, которым есть что рассказать ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Кодовая панель · шифр
 AT_THE_DOORS_DIALS_THE_PUZZLES	    У дисков перед дверью карточка «Головоломки рядом» подскажет, на сколько повернуть каждый
 TIMELOOP_LEFT	    Временная петля {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	В радиусе 40 м нет головоломок с дисками, кодовой панелью или размещением предметов
-GROUPS_ENEMIES	{place}: групп {left}/{all} · врагов: {enemies}
 NEAREST	Ближайшее
 READS_THE_ANSWER_THE_GAME_HOLDS	Читает ответ, который знает игра. Не нажимайте, если хотите решить сами
 PUZZLES_NEARBY	Головоломки рядом ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Нет таблицы залов. Один раз выполните `doctor survey` в консоли
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Залы запретного знания {done}/{all}
-ENEMY_GROUPS_LEFT	Осталось групп врагов {left}/{all}
 ENEMY_GROUP_LEFT	Осталась группа врагов
 DIAL_TURN_STEPS_NOW	Диск {n}: повернуть на {k} (сейчас {now} → {want})
 DIAL_RIGHT	Диск {n}: верно
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Оставшиеся краеугольные камни
 MORE_WITH_A_LATER_DEADLINE	С более поздним сроком: {count}
 GO_TO_PAGE	Открыть «{page}» ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Здесь не осталось ничего, о чём знает мод.
-COUNTS_ONLY_OPEN_A_LINE	Только числа. Нажмите строку, чтобы открыть её вкладку.
-LEDGER_QUEST_PLACES	Места заданий: {count}
-LEDGER_HANDOVERS	Можно передать сейчас: {count}
-LEDGER_PUZZLES	Головоломки: {count}
-LEDGER_LOCKS	Лимбические замки: {count} (открываются сейчас: {open})
-LEDGER_VAULT_DOORS	Двери залов: {count}
-LEDGER_COLLECTIBLES	Коллекционные предметы: {count}
-LEDGER_ENEMY_GROUPS	Группы врагов: {count}
-LEDGER_STORIES	NPC, которым есть что рассказать: {count}
 OTHER_REGIONS_CARD	Другие регионы
 NOTHING_LEFT_ELSEWHERE	В других регионах не осталось ничего, о чём знает мод.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	Сначала там, где сейчас можно сделать больше всего: передачи и замки, которые открывают ваши стержни.
-TRIP_ROW	{place} (сейчас: {doable} · осталось: {left})
 MINUTES_AGO	{count} мин назад
 HOURS_AGO	{count} ч назад
 LYMBIC_LOCKS	Лимбические замки
@@ -540,3 +526,18 @@ ABOUT_COLLECT	коллекционные предметы, группы враг
 ABOUT_SAVES	резервные копии сохранений
 ABOUT_DEBUG	журналы, проверка читов
 OPENS_NOW	Открывается
+HERO_DOABLE	Можно сделать сейчас: {count}
+HERO_LEFT	Осталось здесь: {count}
+STAT_QUEST_PLACES	Места заданий
+STAT_HANDOVERS	Передачи
+STAT_LOCKS_OPEN	Замки к открытию
+STAT_COLLECTIBLES	Коллекционные предметы
+STAT_ENEMY_GROUPS	Группы врагов
+LEGEND_DOABLE	Сейчас
+LEGEND_LEFT	Осталось
+ACHIEVEMENTS_RING	Достижения
+SECRETS_RING	Тайны
+ENEMY_GROUPS_BEATEN	Побеждено групп врагов: {done}/{all}
+GROUPS_BEATEN	{place}: побеждено {done}/{all} · осталось врагов: {enemies}
+PUZZLES_HERE_RING	Головоломки здесь
+VAULTS_RING	Залы

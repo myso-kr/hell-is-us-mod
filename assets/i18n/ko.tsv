@@ -118,7 +118,6 @@ MOVED_TO_POSITION	이동 완료: 위치 {slot}
 COLLECTION	수집 진행도
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	조사 DB가 없습니다. 콘솔에서 `doctor survey`를 한 번 실행하세요
 COUNTS_WHAT_LIES_IN_THE_WORLD	월드에 놓인 것만 셉니다 (NPC 보상·상점 제외) · 이 지역 / 전체
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · 전체 {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	선행 · 미스터리 · 타임루프
 DONE_IN_PROGRESS_FAILED	완료 {done} / {all} · 진행 중 {started} · 실패 {failed}
 NPCS_WITH_MORE_TO_TELL	들을 이야기가 남은 NPC ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	키패드·코드
 AT_THE_DOORS_DIALS_THE_PUZZLES	    문 앞 다이얼에서는 '근처 퍼즐' 카드가 각각 몇 칸 돌릴지 알려 줍니다
 TIMELOOP_LEFT	    타임루프 {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다
-GROUPS_ENEMIES	{place}: {left}/{all} 무리 · 적 {enemies}
 NEAREST	가장 가까운 곳
 READS_THE_ANSWER_THE_GAME_HOLDS	게임이 가진 정답을 읽습니다. 직접 풀고 싶다면 누르지 마세요
 PUZZLES_NEARBY	근처 퍼즐 ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	금고 표가 없습니다. 콘솔에서 `doctor survey`를 한 번 실행하세요
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	금지된 지식의 금고 {done}/{all}
-ENEMY_GROUPS_LEFT	남은 적 무리 {left}/{all}
 ENEMY_GROUP_LEFT	남은 적 무리
 DIAL_TURN_STEPS_NOW	다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})
 DIAL_RIGHT	다이얼 {n}: 맞음
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	남은 키스톤, 권장 순서: {keystones}
 MORE_WITH_A_LATER_DEADLINE	마감이 나중인 것: {count}
 GO_TO_PAGE	{page} 열기 ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	이 지역에서 모드가 아는 남은 것이 없습니다.
-COUNTS_ONLY_OPEN_A_LINE	개수만 보여 줍니다. 줄을 누르면 그 탭이 열립니다.
-LEDGER_QUEST_PLACES	퀘스트 장소: {count}
-LEDGER_HANDOVERS	지금 건넬 수 있는 것: {count}
-LEDGER_PUZZLES	퍼즐: {count}
-LEDGER_LOCKS	림빅 잠금: {count} (지금 열 수 있음: {open})
-LEDGER_VAULT_DOORS	금고 문: {count}
-LEDGER_COLLECTIBLES	수집품: {count}
-LEDGER_ENEMY_GROUPS	적 무리: {count}
-LEDGER_STORIES	들을 이야기가 남은 NPC: {count}
 OTHER_REGIONS_CARD	다른 지역
 NOTHING_LEFT_ELSEWHERE	다른 지역에서 모드가 아는 남은 것이 없습니다.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	지금 그곳에서 할 수 있는 일이 많은 순: 건네주기, 가진 막대로 여는 잠금.
-TRIP_ROW	{place} (지금: {doable} · 남음: {left})
 MINUTES_AGO	{count}분 전
 HOURS_AGO	{count}시간 전
 LYMBIC_LOCKS	림빅 잠금
@@ -540,3 +526,18 @@ ABOUT_COLLECT	수집품, 적 무리, 업적
 ABOUT_SAVES	세이브 백업
 ABOUT_DEBUG	로그, 치트 점검
 OPENS_NOW	지금 열 수 있음
+HERO_DOABLE	지금 할 수 있는 일 {count}
+HERO_LEFT	이 지역에 남은 것 {count}
+STAT_QUEST_PLACES	퀘스트 장소
+STAT_HANDOVERS	건네주기
+STAT_LOCKS_OPEN	열 수 있는 잠금
+STAT_COLLECTIBLES	수집품
+STAT_ENEMY_GROUPS	적 무리
+LEGEND_DOABLE	지금 가능
+LEGEND_LEFT	남음
+ACHIEVEMENTS_RING	업적
+SECRETS_RING	선행·미스터리·타임루프
+ENEMY_GROUPS_BEATEN	적 무리 처치 {done}/{all}
+GROUPS_BEATEN	{place}: 처치 {done}/{all} · 남은 적 {enemies}
+PUZZLES_HERE_RING	이 지역 퍼즐
+VAULTS_RING	금고

@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Movido a la posición {slot}
 COLLECTION	Progreso de colección
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Sin BD de estudio. Ejecuta `doctor survey` una vez en la consola
 COUNTS_WHAT_LIES_IN_THE_WORLD	Solo cuenta lo que hay en el mundo (no recompensas de PNJ ni tiendas) · aquí / total
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · total {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Buenas obras · Misterios · Bucles temporales
 DONE_IN_PROGRESS_FAILED	Hecho {done} / {all} · en curso {started} · fallido {failed}
 NPCS_WITH_MORE_TO_TELL	PNJ con más que contar ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Teclado · código
 AT_THE_DOORS_DIALS_THE_PUZZLES	    En los diales de la puerta, la tarjeta «Puzles cercanos» indica cuánto girar cada uno
 TIMELOOP_LEFT	    Bucle temporal {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	No hay ningún puzle de diales, teclado o colocación de objetos a menos de 40 m
-GROUPS_ENEMIES	{place}: {left}/{all} grupos · {enemies} enemigos
 NEAREST	Más cercano
 READS_THE_ANSWER_THE_GAME_HOLDS	Lee la respuesta que tiene el juego. No lo pulses si quieres resolverlo tú
 PUZZLES_NEARBY	Puzles cercanos ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	No hay tabla de cámaras. Ejecuta `doctor survey` una vez en la consola
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Cámaras de conocimiento prohibido {done}/{all}
-ENEMY_GROUPS_LEFT	Grupos de enemigos restantes {left}/{all}
 ENEMY_GROUP_LEFT	Grupo de enemigos restante
 DIAL_TURN_STEPS_NOW	Dial {n}: girar {k} pasos (ahora {now} → {want})
 DIAL_RIGHT	Dial {n}: correcto
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Piedras angulares restantes, en orden: {keystones}
 MORE_WITH_A_LATER_DEADLINE	Con plazo más adelante: {count}
 GO_TO_PAGE	Abrir {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Aquí no queda nada que el mod conozca.
-COUNTS_ONLY_OPEN_A_LINE	Solo cifras: pulsa una línea para abrir su página.
-LEDGER_QUEST_PLACES	Lugares de misión: {count}
-LEDGER_HANDOVERS	Entregas posibles: {count}
-LEDGER_PUZZLES	Puzles: {count}
-LEDGER_LOCKS	Cerraduras límbicas: {count} (abribles ya: {open})
-LEDGER_VAULT_DOORS	Puertas de cámara: {count}
-LEDGER_COLLECTIBLES	Coleccionables: {count}
-LEDGER_ENEMY_GROUPS	Grupos de enemigos: {count}
-LEDGER_STORIES	PNJ con algo más que contar: {count}
 OTHER_REGIONS_CARD	Otras regiones
 NOTHING_LEFT_ELSEWHERE	No queda nada en otras regiones que el mod conozca.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	Primero donde más puedes hacer ahora: entregas y cerraduras que abren tus varas.
-TRIP_ROW	{place} (ahora: {doable} · quedan: {left})
 MINUTES_AGO	hace {count} min
 HOURS_AGO	hace {count} h
 LYMBIC_LOCKS	Cerraduras límbicas
@@ -540,3 +526,18 @@ ABOUT_COLLECT	coleccionables, grupos de enemigos, logros
 ABOUT_SAVES	copias de partidas
 ABOUT_DEBUG	registros, comprobación de trucos
 OPENS_NOW	Se abre ya
+HERO_DOABLE	{count} para hacer ya
+HERO_LEFT	{count} quedan aquí
+STAT_QUEST_PLACES	Lugares de misión
+STAT_HANDOVERS	Entregas
+STAT_LOCKS_OPEN	Cerraduras abribles
+STAT_COLLECTIBLES	Coleccionables
+STAT_ENEMY_GROUPS	Grupos de enemigos
+LEGEND_DOABLE	Se puede ya
+LEGEND_LEFT	Quedan
+ACHIEVEMENTS_RING	Logros
+SECRETS_RING	Secretos
+ENEMY_GROUPS_BEATEN	Grupos de enemigos derrotados {done}/{all}
+GROUPS_BEATEN	{place}: {done}/{all} derrotados · quedan {enemies} enemigos
+PUZZLES_HERE_RING	Puzles aquí
+VAULTS_RING	Cámaras

@@ -98,6 +98,15 @@ All colors and egui visuals are defined in `src/ui/theme.rs`:
 
 ## 5. What can be pressed: four roles, four looks (2026-10-03)
 
+Dashboard parts (2026-10-03, the Now page first; references: Linear, Vercel, "one hero metric and
+4–6 KPIs"): `tw::hero` (a full-width panel above the cards), `tw::stat` (a KPI tile: icon and label
+over a big number, pressable), `tw::grid(n, gap)` (equal columns so tiles line up), `tw::bars` (a
+horizontal bar chart, two parts to one scale, with a legend), `tw::ring` (a progress ring: the count
+in the middle, OK once complete), `tw::meter` (a thin progress bar). Charts are drawn with egui's
+painter. Heroes: Now (live map, region, KPI tiles), Collect (collectibles, enemy groups, achievements,
+secrets as rings), Puzzles (this region's puzzles, Lymbic locks, vaults as rings). Every meter and ring
+shows progress (done of all), so the enemy groups card reads "beaten", not "left".
+
 States are shown as **chips** (`tw::chip`/`tw::pill`, a tone's text on a faint wash of it: OK done or
 fine, WAIT waiting, BAD about to be lost, ACCENT chosen or known, Quiet a plain label); keys as
 **keycaps** (`tw::keycap`). Cards have no accent rail any more: the accent marks what is chosen or

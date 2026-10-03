@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Przeniesiono na pozycję {slot}
 COLLECTION	Postęp zbierania
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Brak bazy badań. Uruchom raz `doctor survey` w konsoli
 COUNTS_WHAT_LIES_IN_THE_WORLD	Liczy tylko rzeczy leżące w świecie (bez nagród od NPC i sklepów) · tutaj / razem
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · razem {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Dobre uczynki · Zagadki · Pętle
 DONE_IN_PROGRESS_FAILED	Ukończone {done} / {all} · w toku {started} · nieudane {failed}
 NPCS_WITH_MORE_TO_TELL	Postacie z czymś do opowiedzenia ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Klawiatura · kod
 AT_THE_DOORS_DIALS_THE_PUZZLES	    Pokrętła przy drzwiach: karta „Zagadki w pobliżu” podpowie, o ile obrócić każde
 TIMELOOP_LEFT	    Pętla {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	W promieniu 40 m nie ma zagadki z pokrętłami, klawiaturą ani układaniem przedmiotów
-GROUPS_ENEMIES	{place}: {left}/{all} grup · wrogów: {enemies}
 NEAREST	Najbliższe
 READS_THE_ANSWER_THE_GAME_HOLDS	Odczytuje odpowiedź, którą zna gra. Nie naciskaj, jeśli chcesz rozwiązać samemu
 PUZZLES_NEARBY	Zagadki w pobliżu ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Brak tabeli skarbców. Uruchom raz `doctor survey` w konsoli
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Skarbce Zakazanej Wiedzy: {done}/{all}
-ENEMY_GROUPS_LEFT	Pozostałe grupy wrogów: {left}/{all}
 ENEMY_GROUP_LEFT	Pozostała grupa wrogów
 DIAL_TURN_STEPS_NOW	Pokrętło {n}: obróć o {k} (teraz {now} → {want})
 DIAL_RIGHT	Pokrętło {n}: dobrze
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Pozostałe kamienie zwornikowe, po kolei: {keystones}
 MORE_WITH_A_LATER_DEADLINE	Z późniejszym terminem: {count}
 GO_TO_PAGE	Otwórz: {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Tu nie zostało nic, o czym mod wie.
-COUNTS_ONLY_OPEN_A_LINE	Tylko liczby. Kliknij wiersz, by otworzyć jego stronę.
-LEDGER_QUEST_PLACES	Miejsca zadań: {count}
-LEDGER_HANDOVERS	Do przekazania teraz: {count}
-LEDGER_PUZZLES	Łamigłówki: {count}
-LEDGER_LOCKS	Zamki limbiczne: {count} (do otwarcia teraz: {open})
-LEDGER_VAULT_DOORS	Drzwi skarbców: {count}
-LEDGER_COLLECTIBLES	Znajdźki: {count}
-LEDGER_ENEMY_GROUPS	Grupy wrogów: {count}
-LEDGER_STORIES	NPC z czymś jeszcze do powiedzenia: {count}
 OTHER_REGIONS_CARD	Inne regiony
 NOTHING_LEFT_ELSEWHERE	W innych regionach nie zostało nic, o czym mod wie.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	Najpierw tam, gdzie teraz zrobisz najwięcej: przekazania i zamki, które otwierają twoje pręty.
-TRIP_ROW	{place} (teraz: {doable} · zostało: {left})
 MINUTES_AGO	{count} min temu
 HOURS_AGO	{count} godz. temu
 LYMBIC_LOCKS	Zamki limbiczne
@@ -540,3 +526,18 @@ ABOUT_COLLECT	znajdźki, grupy wrogów, osiągnięcia
 ABOUT_SAVES	kopie zapisów
 ABOUT_DEBUG	dzienniki, sprawdzanie kodów
 OPENS_NOW	Do otwarcia
+HERO_DOABLE	{count} do zrobienia teraz
+HERO_LEFT	{count} zostało tutaj
+STAT_QUEST_PLACES	Miejsca zadań
+STAT_HANDOVERS	Przekazania
+STAT_LOCKS_OPEN	Zamki do otwarcia
+STAT_COLLECTIBLES	Znajdźki
+STAT_ENEMY_GROUPS	Grupy wrogów
+LEGEND_DOABLE	Teraz
+LEGEND_LEFT	Zostało
+ACHIEVEMENTS_RING	Osiągnięcia
+SECRETS_RING	Sekrety
+ENEMY_GROUPS_BEATEN	Pokonane grupy wrogów {done}/{all}
+GROUPS_BEATEN	{place}: pokonano {done}/{all} · zostało wrogów: {enemies}
+PUZZLES_HERE_RING	Łamigłówki tutaj
+VAULTS_RING	Skarbce

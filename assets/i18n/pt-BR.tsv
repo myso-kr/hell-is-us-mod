@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Movido para a posição {slot}
 COLLECTION	Progresso da coleta
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Sem BD de pesquisa. Execute `doctor survey` uma vez no console
 COUNTS_WHAT_LIES_IN_THE_WORLD	Conta só o que está no mundo (sem recompensas de NPC nem lojas) · esta região / total
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · total {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Boas Ações · Mistérios · Ciclos Temporais
 DONE_IN_PROGRESS_FAILED	Concluído {done} / {all} · em andamento {started} · falhou {failed}
 NPCS_WITH_MORE_TO_TELL	NPCs com mais a contar ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Teclado · código
 AT_THE_DOORS_DIALS_THE_PUZZLES	    Nos mostradores da porta, o cartão "Quebra-cabeças por perto" diz quanto girar cada um
 TIMELOOP_LEFT	    Ciclo Temporal {name}: {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	Nenhum quebra-cabeça de mostrador, teclado ou colocação de itens a 40 m
-GROUPS_ENEMIES	{place}: {left}/{all} grupos · {enemies} inimigos
 NEAREST	Mais próximo
 READS_THE_ANSWER_THE_GAME_HOLDS	Lê a resposta que o jogo tem. Não aperte se quiser resolver sozinho
 PUZZLES_NEARBY	Quebra-cabeças por perto ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Sem tabela de câmaras. Execute `doctor survey` uma vez no console
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Câmaras de Conhecimentos Proibidos {done}/{all}
-ENEMY_GROUPS_LEFT	Grupos de inimigos restantes {left}/{all}
 ENEMY_GROUP_LEFT	Grupo de inimigos restante
 DIAL_TURN_STEPS_NOW	Mostrador {n}: girar {k} passos (agora {now} → {want})
 DIAL_RIGHT	Mostrador {n}: certo
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Pedras angulares restantes, em ordem: {keystones}
 MORE_WITH_A_LATER_DEADLINE	Com prazo mais adiante: {count}
 GO_TO_PAGE	Abrir {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Não resta nada aqui que o mod conheça.
-COUNTS_ONLY_OPEN_A_LINE	Só contagens. Clique numa linha para abrir a página dela.
-LEDGER_QUEST_PLACES	Locais de missão: {count}
-LEDGER_HANDOVERS	Entregas possíveis: {count}
-LEDGER_PUZZLES	Quebra-cabeças: {count}
-LEDGER_LOCKS	Travas límbicas: {count} (abrem agora: {open})
-LEDGER_VAULT_DOORS	Portas de câmara: {count}
-LEDGER_COLLECTIBLES	Colecionáveis: {count}
-LEDGER_ENEMY_GROUPS	Grupos de inimigos: {count}
-LEDGER_STORIES	NPCs com mais a contar: {count}
 OTHER_REGIONS_CARD	Outras regiões
 NOTHING_LEFT_ELSEWHERE	Não resta nada nas outras regiões que o mod conheça.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	Primeiro onde você pode fazer mais agora: entregas e travas que suas hastes abrem.
-TRIP_ROW	{place} (agora: {doable} · restam: {left})
 MINUTES_AGO	há {count} min
 HOURS_AGO	há {count} h
 LYMBIC_LOCKS	Travas límbicas
@@ -540,3 +526,18 @@ ABOUT_COLLECT	colecionáveis, grupos de inimigos, conquistas
 ABOUT_SAVES	backups de saves
 ABOUT_DEBUG	logs, verificação das trapaças
 OPENS_NOW	Abre agora
+HERO_DOABLE	{count} para fazer agora
+HERO_LEFT	{count} restam aqui
+STAT_QUEST_PLACES	Locais de missão
+STAT_HANDOVERS	Entregas
+STAT_LOCKS_OPEN	Travas a abrir
+STAT_COLLECTIBLES	Colecionáveis
+STAT_ENEMY_GROUPS	Grupos de inimigos
+LEGEND_DOABLE	Dá para fazer
+LEGEND_LEFT	Restam
+ACHIEVEMENTS_RING	Conquistas
+SECRETS_RING	Segredos
+ENEMY_GROUPS_BEATEN	Grupos de inimigos derrotados {done}/{all}
+GROUPS_BEATEN	{place}: {done}/{all} derrotados · restam {enemies} inimigos
+PUZZLES_HERE_RING	Quebra-cabeças aqui
+VAULTS_RING	Câmaras

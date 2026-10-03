@@ -27,19 +27,17 @@ impl Panel {
                 let open = self.unfolded_collect == Some(c.label);
                 t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, crate::survey::collect_sort(c.label), 18.0));
-                    let label = trf!(
-                        "COLLECT_HERE_AND_ALL",
-                        sort = crate::i18n::tr(c.label),
-                        got_here = c.here.0,
-                        all_here = c.here.1,
-                        got = c.all.0,
-                        all = c.all.1
-                    );
                     let done = c.here.0 == c.here.1;
-                    if tw::pick(t, open, RichText::new(label).color(if done { DIM } else { super::super::theme::TEXT }))
-                    {
+                    let label = RichText::new(crate::i18n::tr(c.label));
+                    if tw::pick(t, open, label.color(if done { DIM } else { super::super::theme::TEXT })) {
                         self.unfolded_collect = if open { None } else { Some(c.label) };
                     }
+                    // This region on the meter; everywhere, dim, after it.
+                    w(t, |ui| tw::meter(ui, Some(56.0), c.here.0, c.here.1));
+                    let counts = RichText::new(format!("{}/{}", c.here.0, c.here.1)).monospace().size(11.5);
+                    w(t, |ui| ui.label(counts.color(super::super::theme::TEXT)));
+                    let all = RichText::new(format!("{}/{}", c.all.0, c.all.1)).monospace().size(11.5);
+                    w(t, |ui| ui.label(all.color(DIM)));
                 });
                 if open {
                     let mut left = c.left_here.clone();
@@ -77,29 +75,60 @@ impl Panel {
         });
     }
 
+    /// The Collect page's hero: the four counts that make a full game, as rings —
+    /// collectibles taken, enemy groups beaten, achievements, and secrets done.
+    pub(super) fn collect_hero(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+        use crate::quests::Status;
+        let list = snap.map(|s| s.collection.clone()).unwrap_or_default();
+        let (got, all) = list.iter().fold((0, 0), |(g, a), c| (g + c.all.0, a + c.all.1));
+        let hollows = snap.map(|s| s.hollows.clone()).unwrap_or_default();
+        let (left, groups) = hollows.iter().fold((0, 0), |(l, a), h| (l + h.left, a + h.all));
+        let achievements = self.achievements_list();
+        let unlocked = achievements.iter().filter(|a| a.unlocked).count();
+        let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
+        let secrets = snap.map_or(0, |s| s.secret_totals.iter().sum());
+        let done = journal
+            .iter()
+            .filter(|q| crate::quests::Kind::SECRETS.iter().any(|(k, _)| *k == q.kind) && q.status == Status::Completed)
+            .count();
+        tw::hero(t, |t| {
+            t.style(tw::grow(tw::grid(4, super::super::theme::PAD))).add(|t| {
+                for (label, d, a) in [
+                    (tr!("COLLECTION"), got, all),
+                    (tr!("STAT_ENEMY_GROUPS"), groups - left, groups),
+                    (tr!("ACHIEVEMENTS_RING"), unlocked, achievements.len()),
+                    (tr!("SECRETS_RING"), done, secrets),
+                ] {
+                    w(t, |ui| ui.vertical_centered(|ui| tw::ring(ui, 96.0, d, a, label)));
+                }
+            });
+        });
+    }
+
     /// Good deeds, mysteries and timeloops: done of all.
     pub(super) fn secrets_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         use crate::quests::{Kind, Status};
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
         let totals = snap.map_or([0; 3], |s| s.secret_totals);
         card(t, tr!("GOOD_DEEDS_MYSTERIES_TIMELOOPS"), |t| {
-            for (i, (kind, _)) in Kind::SECRETS.iter().enumerate() {
-                let of = |s: Status| journal.iter().filter(|q| q.kind == *kind && q.status == s).count();
-                t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| crate::ui::svg::quest(ui, *kind, 18.0));
-                    w(t, |ui| ui.label(RichText::new(kind.label()).strong()));
-                    text(
-                        t,
-                        trf!(
-                            "DONE_IN_PROGRESS_FAILED",
-                            done = of(Status::Completed),
-                            all = totals[i],
-                            started = of(Status::Started),
-                            failed = of(Status::Failed)
-                        ),
+            // One ring each: done of all; under way and failed on hover.
+            t.style(tw::grid(3, INLINE)).add(|t| {
+                for (i, (kind, _)) in Kind::SECRETS.iter().enumerate() {
+                    let of = |s: Status| journal.iter().filter(|q| q.kind == *kind && q.status == s).count();
+                    let hover = trf!(
+                        "DONE_IN_PROGRESS_FAILED",
+                        done = of(Status::Completed),
+                        all = totals[i],
+                        started = of(Status::Started),
+                        failed = of(Status::Failed)
                     );
-                });
-            }
+                    w(t, |ui| {
+                        ui.vertical_centered(|ui| {
+                            tw::ring(ui, 72.0, of(Status::Completed), totals[i], &kind.label()).on_hover_text(hover);
+                        })
+                    });
+                }
+            });
         });
     }
 

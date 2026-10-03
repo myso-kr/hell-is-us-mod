@@ -65,6 +65,10 @@ pub struct Shared {
     pub route_uncertain: Mutex<bool>,
     /// overlay: the menu signals last seen — (game cursor showing, game paused).
     pub menu: Mutex<(bool, bool)>,
+    /// overlay: a north-up map round the hero for the panel's "now" page, redrawn about
+    /// once a second while the panel shows — (side in px, premultiplied 0xAARRGGBB
+    /// pixels, a counter that moves on with each new one).
+    pub hero: Mutex<Option<(usize, Vec<u32>, u64)>>,
     /// hotkey: where the panel is — the player's place for it, kept across runs.
     pub pos: Mutex<Option<(i32, i32)>>,
     pub quit: AtomicBool,

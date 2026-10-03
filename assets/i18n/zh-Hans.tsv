@@ -118,7 +118,6 @@ MOVED_TO_POSITION	已移动到位置 {slot}
 COLLECTION	收集进度
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	没有调查数据库，请在控制台运行一次 `doctor survey`
 COUNTS_WHAT_LIES_IN_THE_WORLD	只统计世界中放置的物品（不含 NPC 奖励和商店）· 本区域 / 全部
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · 全部 {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	好事 · 谜题 · 时间循环
 DONE_IN_PROGRESS_FAILED	已完成 {done} / {all} · 进行中 {started} · 失败 {failed}
 NPCS_WITH_MORE_TO_TELL	还有话可说的 NPC（{count}）
@@ -387,13 +386,11 @@ KEYPAD_CODE	键盘 · 密码
 AT_THE_DOORS_DIALS_THE_PUZZLES	    门前的转盘处，“附近谜题”卡片会告诉你每个要转几格
 TIMELOOP_LEFT	    时间循环 {name}：{left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m 内没有转盘、键盘或放置物品谜题
-GROUPS_ENEMIES	{place}：{left}/{all} 组 · 敌人 {enemies}
 NEAREST	最近
 READS_THE_ANSWER_THE_GAME_HOLDS	读取游戏持有的答案，想自己解谜就别点
 PUZZLES_NEARBY	附近谜题（{n}）
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	没有宝库表，请在控制台运行一次 `doctor survey`
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	禁忌知识宝库 {done}/{all}
-ENEMY_GROUPS_LEFT	剩余敌人组 {left}/{all}
 ENEMY_GROUP_LEFT	剩余敌人组
 DIAL_TURN_STEPS_NOW	转盘 {n}：转 {k} 格（现 {now} → {want}）
 DIAL_RIGHT	转盘 {n}：已正确
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	剩余的拱心石（建议顺序）：{keystones}
 MORE_WITH_A_LATER_DEADLINE	截止较晚的：{count}
 GO_TO_PAGE	打开“{page}” ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	模组已知的此地区剩余内容：无。
-COUNTS_ONLY_OPEN_A_LINE	只显示数量。点击一行打开对应页面。
-LEDGER_QUEST_PLACES	任务地点：{count}
-LEDGER_HANDOVERS	现在可交付：{count}
-LEDGER_PUZZLES	谜题：{count}
-LEDGER_LOCKS	林比克锁：{count}（现在可开：{open}）
-LEDGER_VAULT_DOORS	宝库门：{count}
-LEDGER_COLLECTIBLES	收集品：{count}
-LEDGER_ENEMY_GROUPS	敌群：{count}
-LEDGER_STORIES	还有话可听的 NPC：{count}
 OTHER_REGIONS_CARD	其他地区
 NOTHING_LEFT_ELSEWHERE	模组已知的其他地区剩余内容：无。
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	按现在能在那里做的事排序：交付物品，以及用已持有的棒能打开的锁。
-TRIP_ROW	{place}（现在：{doable} · 剩余：{left}）
 MINUTES_AGO	{count} 分钟前
 HOURS_AGO	{count} 小时前
 LYMBIC_LOCKS	林比克锁
@@ -540,3 +526,18 @@ ABOUT_COLLECT	收集品、敌群、成就
 ABOUT_SAVES	存档备份
 ABOUT_DEBUG	日志、作弊检查
 OPENS_NOW	现在可开
+HERO_DOABLE	现在可做 {count}
+HERO_LEFT	此地区剩余 {count}
+STAT_QUEST_PLACES	任务地点
+STAT_HANDOVERS	交付
+STAT_LOCKS_OPEN	可开的锁
+STAT_COLLECTIBLES	收集品
+STAT_ENEMY_GROUPS	敌群
+LEGEND_DOABLE	现在可做
+LEGEND_LEFT	剩余
+ACHIEVEMENTS_RING	成就
+SECRETS_RING	善行·谜团·时间回环
+ENEMY_GROUPS_BEATEN	已击败敌群 {done}/{all}
+GROUPS_BEATEN	{place}：已击败 {done}/{all} · 剩余敌人 {enemies}
+PUZZLES_HERE_RING	此地区谜题
+VAULTS_RING	宝库

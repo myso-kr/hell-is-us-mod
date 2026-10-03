@@ -232,6 +232,8 @@ pub struct Panel {
     was_visible: bool,
     /// The collectible sort unfolded in the collect tab.
     unfolded_collect: Option<&'static str>,
+    /// The "now" page's hero map as a texture, and the overlay's counter it was made from.
+    hero_tex: Option<(u64, egui::TextureHandle)>,
     /// The clues page: the word searched for, and the entry opened (its story unit).
     clue_query: String,
     clue_open: Option<String>,
@@ -316,6 +318,7 @@ impl Panel {
             console: Default::default(),
             was_visible: false,
             unfolded_collect: None,
+            hero_tex: None,
             clue_query: String::new(),
             clue_open: None,
             revealed: Default::default(),
@@ -714,7 +717,7 @@ impl Panel {
         let (w, h) = ((r.right - r.left) as f32 / ppp, (r.bottom - r.top) as f32 / ppp);
         let size = egui::vec2(w, (h * super::console::SHARE).max(180.0));
         let builder = egui::ViewportBuilder::default()
-            .with_title("Hell Is Us Mod — console")
+            .with_title("Hell Is Us Mod · console")
             .with_decorations(false)
             .with_transparent(true)
             .with_always_on_top()

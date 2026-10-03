@@ -54,7 +54,7 @@ pub(super) fn game_window(pid: u32) -> Option<(HWND, RECT)> {
 /// egui viewport, so it goes and comes back with the panel here: eframe draws no frames
 /// while the panel is hidden, and would leave it up.
 fn console_window() -> HWND {
-    let title: Vec<u16> = "Hell Is Us Mod — console".encode_utf16().chain([0]).collect();
+    let title: Vec<u16> = "Hell Is Us Mod · console".encode_utf16().chain([0]).collect();
     unsafe { FindWindowW(std::ptr::null(), title.as_ptr()) }
 }
 

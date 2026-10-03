@@ -94,7 +94,7 @@ pub fn draw(
             }
             for (lead, text) in q.leads.iter().take(3) {
                 let line = match text {
-                    Some(t) => format!("· {lead} — {t}"),
+                    Some(t) => format!("· {lead}: {t}"),
                     None => format!("· {lead}"),
                 };
                 y += pen.write(cv, x + 4, y, width - 4, &line, 12, false, DIM, 2) + 2;

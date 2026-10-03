@@ -5,11 +5,12 @@
 use super::super::theme::INLINE;
 use super::*;
 use crate::actors::Sub;
+use eframe::egui::Color32;
 
 impl Panel {
-    /// The cards this page shows: "previously" only while there is one to show.
+    /// The cards this page shows under the hero: "previously" only while there is one.
     pub(super) fn now_cards(&self) -> usize {
-        3 + self.previously_shown() as usize
+        2 + self.previously_shown() as usize
     }
 
     fn previously_shown(&self) -> bool {
@@ -18,14 +19,94 @@ impl Panel {
     }
 
     pub(super) fn now_tab(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        self.hero(t, snap);
         let cols = self.columns;
         let first = !self.previously_shown() as usize;
         tw::masonry(t, "now", cols, self.now_cards(), |t, i| match i + first {
             0 => self.previously_card(t, snap),
             1 => self.before_card(t, state, snap),
-            2 => self.region_card(t, snap),
             _ => self.regions_card(t, snap),
         });
+    }
+
+    /// The page's hero (§3.1): a live map round the hero (the overlay draws it), the
+    /// region in large type, what can be done here now, and a tile per kind of thing
+    /// left — each opens the page that has the places.
+    fn hero(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+        let here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+        let rows = snap.map(ledger).unwrap_or_default();
+        let row = here.as_deref().and_then(|h| rows.iter().find(|r| r.world == h)).cloned().unwrap_or_default();
+        // The overlay's newest map, as a texture once per new frame.
+        let fresh = self.shared.hero.lock().unwrap().as_ref().map(|h| h.2);
+        if fresh.is_some() && fresh != self.hero_tex.as_ref().map(|h| h.0) {
+            if let Some((side, px, n)) = self.shared.hero.lock().unwrap().clone() {
+                let bytes: Vec<u8> =
+                    px.iter().flat_map(|p| [(p >> 16) as u8, (p >> 8) as u8, *p as u8, (p >> 24) as u8]).collect();
+                let image = egui::ColorImage::from_rgba_premultiplied([side, side], &bytes);
+                match self.hero_tex.as_mut() {
+                    Some((at, tex)) => {
+                        tex.set(image, egui::TextureOptions::LINEAR);
+                        *at = n;
+                    }
+                    None => {
+                        let tex = t.egui_ctx().load_texture("now-hero", image, egui::TextureOptions::LINEAR);
+                        self.hero_tex = Some((n, tex));
+                    }
+                }
+            }
+        }
+        let tex = self.hero_tex.as_ref().map(|h| h.1.id());
+        let mut open = None;
+        tw::hero(t, |t| {
+            w(t, |ui| match tex {
+                Some(id) => {
+                    ui.add(egui::Image::new((id, egui::vec2(HERO_MAP, HERO_MAP))));
+                }
+                None => {
+                    let (r, _) = ui.allocate_exact_size(egui::vec2(HERO_MAP, HERO_MAP), egui::Sense::hover());
+                    ui.painter().circle_filled(r.center(), HERO_MAP / 2.0 - 8.0, super::super::theme::CONTROL);
+                }
+            });
+            t.style(tw::grow(tw::col(INLINE))).add(|t| {
+                let title = here.as_deref().map_or(tr!("WAITING_FOR_THE_GAME").to_string(), crate::i18n::place);
+                w(t, |ui| ui.label(RichText::new(title).size(22.0).strong().color(super::super::theme::TITLE)));
+                if here.is_none() {
+                    return;
+                }
+                if row.total() == 0 {
+                    note(t, tr!("NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF"));
+                    return;
+                }
+                t.style(tw::row(INLINE)).add(|t| {
+                    let tone = if row.doable() > 0 { tw::Tone::Accent } else { tw::Tone::Quiet };
+                    tw::chip(t, trf!("HERO_DOABLE", count = row.doable()), tone);
+                    w(t, |ui| ui.label(RichText::new(trf!("HERO_LEFT", count = row.total())).small().color(DIM)));
+                });
+                let ok = super::super::theme::OK;
+                let locks = if row.locks > 0 { format!("{}/{}", row.openable, row.locks) } else { "0".to_string() };
+                let tiles: [(Sub, String, &str, Option<Color32>, Tool); 6] = [
+                    (Sub::Quest, row.quest.to_string(), tr!("STAT_QUEST_PLACES"), None, Tool::Quests),
+                    (Sub::Npc, row.handovers.to_string(), tr!("STAT_HANDOVERS"), Some(ok), Tool::Quests),
+                    (Sub::LymbicLock, locks, tr!("STAT_LOCKS_OPEN"), (row.openable > 0).then_some(ok), Tool::Puzzles),
+                    (Sub::Puzzle, row.puzzles.to_string(), tr!("PUZZLES"), None, Tool::Puzzles),
+                    (Sub::Stash, row.collect.to_string(), tr!("STAT_COLLECTIBLES"), None, Tool::Collect),
+                    (Sub::EnemyGroup, row.groups.to_string(), tr!("STAT_ENEMY_GROUPS"), None, Tool::Collect),
+                ];
+                t.style(tw::grid(3, INLINE)).add(|t| {
+                    for (sort, value, label, lit, page) in tiles {
+                        let icon = |ui: &mut egui::Ui| {
+                            crate::ui::svg::sort(ui, sort, 14.0);
+                        };
+                        if tw::stat(t, icon, &value, label, lit) {
+                            open = Some(page);
+                        }
+                    }
+                });
+            });
+        });
+        if open.is_some() {
+            self.tool = open;
+        }
     }
 
     /// Where the last session left off (§3.8): when, where, the quest followed and what
@@ -46,7 +127,7 @@ impl Panel {
                     });
                     for (subject, last) in q.leads.iter().take(3) {
                         let line = match last {
-                            Some(l) => format!("{subject} — {l}"),
+                            Some(l) => format!("{subject}: {l}"),
                             None => subject.clone(),
                         };
                         note(t, line);
@@ -83,7 +164,7 @@ impl Panel {
                             state.route = true;
                         }
                     });
-                    note(t, format!("{} — {}", d.due.label(), d.what));
+                    note(t, format!("{}: {}", d.due.label(), d.what));
                 });
             }
             if let Some((left, before)) = crate::missables::keystone_advice(&journal, &list) {
@@ -102,75 +183,29 @@ impl Panel {
         });
     }
 
-    /// What is left in the region the hero is in (§3.1), by kind, each a pointer to the
-    /// page that has the places.
-    fn region_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
-        let here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
-        let rows = snap.map(ledger).unwrap_or_default();
-        let title = here.as_deref().map_or(tr!("THIS_REGION").to_string(), crate::i18n::place);
-        card(t, &title, |t| {
-            let Some(here) = here.as_deref() else {
-                note(t, tr!("WAITING_FOR_THE_GAME"));
-                return;
-            };
-            if snap.is_some_and(|s| s.catalogue.is_empty() && s.collection.is_empty()) {
-                note(t, tr!("NO_SURVEY_DB_RUN_DOCTOR_SURVEY"));
-                return;
-            }
-            let Some(r) = rows.iter().find(|r| r.world == here) else {
-                note(t, tr!("NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF"));
-                return;
-            };
-            note(t, tr!("COUNTS_ONLY_OPEN_A_LINE"));
-            let lines: [(Sub, usize, String, Tool); 8] = [
-                (Sub::Quest, r.quest, trf!("LEDGER_QUEST_PLACES", count = r.quest), Tool::Quests),
-                (Sub::Npc, r.handovers, trf!("LEDGER_HANDOVERS", count = r.handovers), Tool::Quests),
-                (Sub::Puzzle, r.puzzles, trf!("LEDGER_PUZZLES", count = r.puzzles), Tool::Puzzles),
-                (Sub::LymbicLock, r.locks, trf!("LEDGER_LOCKS", count = r.locks, open = r.openable), Tool::Puzzles),
-                (Sub::Vault, r.vaults, trf!("LEDGER_VAULT_DOORS", count = r.vaults), Tool::Puzzles),
-                (Sub::Stash, r.collect, trf!("LEDGER_COLLECTIBLES", count = r.collect), Tool::Collect),
-                (Sub::EnemyGroup, r.groups, trf!("LEDGER_ENEMY_GROUPS", count = r.groups), Tool::Collect),
-                (Sub::Npc, r.stories, trf!("LEDGER_STORIES", count = r.stories), Tool::Collect),
-            ];
-            for (sort, n, label, page) in lines {
-                if n == 0 {
-                    continue;
-                }
-                if tw::pick_with(
-                    t,
-                    false,
-                    |ui| {
-                        crate::ui::svg::sort(ui, sort, 18.0);
-                    },
-                    label,
-                ) {
-                    self.tool = Some(page);
-                }
-            }
-        });
-    }
-
-    /// Every other region with something left (§3.4), most to do there now first: a trip
-    /// with the APC that pays.
+    /// Every other region with something left (§3.4) as bars, most to do there now
+    /// first: what can be done now (hand-overs, locks the rods held open) and what is
+    /// left, to one scale.
     fn regions_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         let here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         let rows = crate::ledger::by_trip(snap.map(ledger).unwrap_or_default());
         card(t, tr!("OTHER_REGIONS_CARD"), |t| {
-            let others: Vec<_> = rows.iter().filter(|r| Some(r.world.as_str()) != here.as_deref()).collect();
+            let others: Vec<(String, usize, usize)> = rows
+                .iter()
+                .filter(|r| Some(r.world.as_str()) != here.as_deref())
+                .map(|r| (crate::i18n::place(&r.world), r.doable(), r.total()))
+                .collect();
             if others.is_empty() {
                 note(t, tr!("NOTHING_LEFT_ELSEWHERE"));
                 return;
             }
-            note(t, tr!("SORTED_BY_WHAT_YOU_CAN_DO_THERE"));
-            for r in others {
-                let line =
-                    trf!("TRIP_ROW", place = crate::i18n::place(&r.world), doable = r.doable(), left = r.total());
-                let colour = if r.doable() > 0 { super::super::theme::TEXT } else { DIM };
-                text(t, RichText::new(line).color(colour));
-            }
+            block(t, |ui| tw::bars(ui, &others, (tr!("LEGEND_DOABLE"), tr!("LEGEND_LEFT"))));
         });
     }
 }
+
+/// The hero map's side in the panel (px).
+const HERO_MAP: f32 = 150.0;
 
 /// How long a gap before the "previously" card shows (s): a quick restart is not a break.
 const PREVIOUSLY_AFTER: u64 = 30 * 60;

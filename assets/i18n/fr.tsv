@@ -118,7 +118,6 @@ MOVED_TO_POSITION	Déplacé à la position {slot}
 COLLECTION	Collection
 NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Pas de base d'enquête. Lancez `doctor survey` une fois dans la console
 COUNTS_WHAT_LIES_IN_THE_WORLD	Ne compte que ce qui se trouve dans le monde (ni récompenses de PNJ ni boutiques) · cette région / total
-COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · total {got}/{all}
 GOOD_DEEDS_MYSTERIES_TIMELOOPS	Bonnes actions · Mystères · Boucles temporelles
 DONE_IN_PROGRESS_FAILED	Terminées {done} / {all} · en cours {started} · échouées {failed}
 NPCS_WITH_MORE_TO_TELL	PNJ avec d'autres histoires ({count})
@@ -387,13 +386,11 @@ KEYPAD_CODE	Clavier · code
 AT_THE_DOORS_DIALS_THE_PUZZLES	    Aux cadrans devant la porte, la carte « Puzzles proches » indique de combien tourner chacun
 TIMELOOP_LEFT	    Boucle temporelle {name} : {left}/{all}
 NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	Aucun puzzle de cadrans, de clavier ou de placement d'objets à moins de 40 m
-GROUPS_ENEMIES	{place} : {left}/{all} groupes · {enemies} ennemis
 NEAREST	Le plus proche
 READS_THE_ANSWER_THE_GAME_HOLDS	Lit la réponse que détient le jeu. N'appuyez pas si vous voulez résoudre seul
 PUZZLES_NEARBY	Puzzles proches ({n})
 NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Aucune table de chambres. Exécutez `doctor survey` une fois dans la console
 VAULTS_OF_FORBIDDEN_KNOWLEDGE	Chambres des savoirs interdits {done}/{all}
-ENEMY_GROUPS_LEFT	Groupes d'ennemis restants {left}/{all}
 ENEMY_GROUP_LEFT	Groupe d'ennemis restant
 DIAL_TURN_STEPS_NOW	Cadran {n} : tourner de {k} crans (actuellement {now} → {want})
 DIAL_RIGHT	Cadran {n} : correct
@@ -461,19 +458,8 @@ KEYSTONES_LEFT_IN_ORDER	Pierres angulaires restantes, dans l’ordre : {keystone
 MORE_WITH_A_LATER_DEADLINE	Échéances plus tardives : {count}
 GO_TO_PAGE	Ouvrir {page} ▸
 NOTHING_LEFT_HERE_THE_MOD_KNOWS_OF	Plus rien ici que le mod connaisse.
-COUNTS_ONLY_OPEN_A_LINE	Nombres seulement. Cliquez sur une ligne pour ouvrir sa page.
-LEDGER_QUEST_PLACES	Lieux de quête : {count}
-LEDGER_HANDOVERS	Objets à remettre : {count}
-LEDGER_PUZZLES	Énigmes : {count}
-LEDGER_LOCKS	Verrous lymbiques : {count} (ouvrables maintenant : {open})
-LEDGER_VAULT_DOORS	Portes de chambre : {count}
-LEDGER_COLLECTIBLES	Objets à collectionner : {count}
-LEDGER_ENEMY_GROUPS	Groupes d’ennemis : {count}
-LEDGER_STORIES	PNJ qui ont encore à dire : {count}
 OTHER_REGIONS_CARD	Autres régions
 NOTHING_LEFT_ELSEWHERE	Plus rien dans les autres régions que le mod connaisse.
-SORTED_BY_WHAT_YOU_CAN_DO_THERE	D’abord là où vous pouvez faire le plus maintenant : remises et verrous que vos barres ouvrent.
-TRIP_ROW	{place} (maintenant : {doable} · restant : {left})
 MINUTES_AGO	il y a {count} min
 HOURS_AGO	il y a {count} h
 LYMBIC_LOCKS	Verrous lymbiques
@@ -540,3 +526,18 @@ ABOUT_COLLECT	objets à collectionner, groupes d’ennemis, succès
 ABOUT_SAVES	sauvegardes de secours
 ABOUT_DEBUG	journaux, vérification des triches
 OPENS_NOW	Ouvrable
+HERO_DOABLE	{count} faisables maintenant
+HERO_LEFT	{count} restants ici
+STAT_QUEST_PLACES	Lieux de quête
+STAT_HANDOVERS	Remises
+STAT_LOCKS_OPEN	Verrous ouvrables
+STAT_COLLECTIBLES	Objets à collectionner
+STAT_ENEMY_GROUPS	Groupes d’ennemis
+LEGEND_DOABLE	Faisable
+LEGEND_LEFT	Restant
+ACHIEVEMENTS_RING	Succès
+SECRETS_RING	Secrets
+ENEMY_GROUPS_BEATEN	Groupes d’ennemis vaincus {done}/{all}
+GROUPS_BEATEN	{place} : {done}/{all} vaincus · {enemies} ennemis restants
+PUZZLES_HERE_RING	Énigmes ici
+VAULTS_RING	Chambres
