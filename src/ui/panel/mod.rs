@@ -4,6 +4,7 @@
 
 mod clues;
 mod collect;
+mod consent;
 mod debug;
 mod deep;
 mod groups;
@@ -142,6 +143,7 @@ fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], 
 enum Tool {
     Now,
     Help,
+    Settings,
     Map,
     Guide,
     Quests,
@@ -153,9 +155,10 @@ enum Tool {
 }
 
 impl Tool {
-    const ALL: [Tool; 10] = [
+    const ALL: [Tool; 11] = [
         Tool::Now,
         Tool::Help,
+        Tool::Settings,
         Tool::Map,
         Tool::Guide,
         Tool::Quests,
@@ -167,7 +170,7 @@ impl Tool {
     ];
 
     /// Above the groups in the sidebar, in none.
-    const TOP: [Tool; 2] = [Tool::Now, Tool::Help];
+    const TOP: [Tool; 3] = [Tool::Now, Tool::Help, Tool::Settings];
 
     /// The sidebar's groups: their names (i18n keys) and pages.
     const GROUPS: [(&'static str, &'static [Tool]); 3] = [
@@ -181,6 +184,7 @@ impl Tool {
         match self {
             Tool::Now => "now",
             Tool::Help => "help",
+            Tool::Settings => "settings",
             Tool::Map => "map",
             Tool::Guide => "guide",
             Tool::Quests => "quests",
@@ -196,6 +200,7 @@ impl Tool {
         match self {
             Tool::Now => tr!("NOW"),
             Tool::Help => tr!("HELP"),
+            Tool::Settings => tr!("SETTINGS"),
             Tool::Map => tr!("MAP"),
             Tool::Guide => tr!("GUIDE"),
             Tool::Quests => tr!("QUESTS"),
@@ -212,6 +217,7 @@ impl Tool {
         match self {
             Tool::Now => tr!("ABOUT_NOW"),
             Tool::Help => "",
+            Tool::Settings => tr!("ABOUT_SETTINGS"),
             Tool::Map => tr!("ABOUT_MAP"),
             Tool::Guide => tr!("ABOUT_GUIDE"),
             Tool::Quests => tr!("ABOUT_QUESTS"),
@@ -292,6 +298,8 @@ pub struct Panel {
     /// nothing would come back next time.
     wanted: Vec<Active>,
     keep: bool,
+    /// What the player agreed the mod may show and change; `None` until they chose.
+    consent: Option<crate::settings::Consent>,
     /// The footer's update from GitHub's releases; checked once, at the first frame.
     updater: super::update::Updater,
     update_checked: bool,
@@ -310,6 +318,7 @@ impl Panel {
         let saved = settings::load();
         // The splash first (splash.rs): the hotkey thread leaves the window be till it goes.
         shared.splash.store(true, Ordering::SeqCst);
+        shared.consent.store(saved.consent.map_or(0, |c| c.0), Ordering::SeqCst);
         // A slider takes its saved value if it is still in range, else its default.
         let value = CHEATS
             .iter()
@@ -337,11 +346,18 @@ impl Panel {
             shared,
             tx,
             tab: Group::ALL.into_iter().find(|g| Some(g.id()) == tab).unwrap_or(Group::Survival),
-            tool: if back { Some(Tool::Now) } else { Tool::ALL.into_iter().find(|t| Some(t.id()) == tab) },
+            tool: if saved.consent.is_none() {
+                Some(Tool::Settings)
+            } else if back {
+                Some(Tool::Now)
+            } else {
+                Tool::ALL.into_iter().find(|t| Some(t.id()) == tab)
+            },
             unfolded: [false; 6],
             wanted: resume.clone(),
             keep: saved.keep,
             updater: Default::default(),
+            consent: saved.consent,
             update_checked: false,
             splash: Some(Instant::now()),
             resized_at: Instant::now(),
@@ -406,6 +422,7 @@ impl Panel {
             pos: *self.shared.pos.lock().unwrap(),
             on: self.wanted.iter().map(|a| (a.cheat.to_string(), a.value)).collect(),
             values: self.value.iter().map(|(id, v)| (id.to_string(), *v)).collect(),
+            consent: self.consent,
         }
     }
 
@@ -421,9 +438,43 @@ impl Panel {
         }
     }
 
+    /// Whether the player agreed to this (`Consent`'s bits).
+    fn grants(&self, bit: u8) -> bool {
+        self.consent.is_some_and(|c| c.has(bit))
+    }
+
+    /// Whether a page may show: the map's and the guide's with the map, the puzzles' with
+    /// answers; the rest always.
+    fn allowed(&self, tool: Tool) -> bool {
+        use crate::settings::Consent;
+        match tool {
+            Tool::Map | Tool::Guide => self.grants(Consent::MAP),
+            Tool::Puzzles => self.grants(Consent::ANSWERS),
+            _ => true,
+        }
+    }
+
+    /// The player's choice, kept and handed to the overlay. Cheats taken back are switched
+    /// off now, their original values restored.
+    fn set_consent(&mut self, c: crate::settings::Consent) {
+        use crate::settings::Consent;
+        if self.grants(Consent::CHEATS) && !c.has(Consent::CHEATS) {
+            let _ = self.tx.send(Request::Restore);
+            self.on.clear();
+            self.wanted.clear();
+            self.resume = None;
+            self.sent = Some(Instant::now());
+        }
+        self.consent = Some(c);
+        self.shared.consent.store(c.0, Ordering::SeqCst);
+    }
+
     /// Turn last time's cheats back on — the first time the gate is open.
     fn resume(&mut self, snap: &Snapshot) {
         if snap.gate.is_err() {
+            return;
+        }
+        if !self.grants(crate::settings::Consent::CHEATS) {
             return;
         }
         let Some(resume) = self.resume.take() else { return };
@@ -600,14 +651,16 @@ impl Panel {
     /// The sidebar's pages: the tools, then the cheat groups (the heading counts the
     /// cheats on), each group folded or open under its heading.
     fn nav(&mut self, ui: &mut egui::Ui) {
-        let item = |ui: &mut egui::Ui, on: bool, text: String| {
+        // A page not agreed to stays in the list, greyed and not to be opened: what the
+        // mod could do stays in sight, with where to allow it on hover.
+        let item = |ui: &mut egui::Ui, on: bool, text: String, allowed: bool| {
             let label = RichText::new(text).size(13.0).color(if on { super::theme::TITLE } else { DIM });
             let button = egui::Button::new(label)
                 .fill(if on { super::theme::ACCENT_DEEP } else { Color32::TRANSPARENT })
                 .stroke(if on { egui::Stroke::new(1.0, super::theme::ACCENT) } else { egui::Stroke::NONE })
                 .corner_radius(super::theme::R_CONTROL)
                 .min_size(egui::vec2(ui.available_width(), 28.0));
-            ui.add(button).clicked()
+            ui.add_enabled(allowed, button).on_disabled_hover_text(tr!("CONSENT_NEEDED")).clicked()
         };
         // A group's heading folds it; folding leaves the page shown as it is.
         let heading = |ui: &mut egui::Ui, open: &mut bool, text: String| {
@@ -623,7 +676,7 @@ impl Panel {
         ui.spacing_mut().item_spacing.y = 2.0;
         // The pages a player opens first stand alone at the top, in no group.
         for tool in Tool::TOP {
-            if item(ui, self.tool == Some(tool), tool.label().to_string()) {
+            if item(ui, self.tool == Some(tool), tool.label().to_string(), true) {
                 self.tool = Some(tool);
             }
         }
@@ -634,13 +687,15 @@ impl Panel {
             heading(ui, &mut self.groups_open[i], crate::i18n::tr(name).to_string());
             if self.groups_open[i] {
                 for &tool in *tools {
-                    if item(ui, self.tool == Some(tool), tool.label().to_string()) {
+                    let allowed = self.allowed(tool);
+                    if item(ui, self.tool == Some(tool), tool.label().to_string(), allowed) {
                         self.tool = Some(tool);
                     }
                 }
             }
         }
         ui.add_space(super::theme::BLOCK);
+        let cheats = self.grants(crate::settings::Consent::CHEATS);
         let on = CHEATS.iter().filter(|c| self.on.get(c.id).copied().unwrap_or(false)).count();
         let title = if on > 0 { format!("{}  ({on})", tr!("CHEATS")) } else { tr!("CHEATS").to_string() };
         heading(ui, &mut self.cheats_open, title);
@@ -648,7 +703,7 @@ impl Panel {
             for g in Group::ALL {
                 let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
                 let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
-                if item(ui, self.tool.is_none() && self.tab == g, text) {
+                if item(ui, self.tool.is_none() && self.tab == g, text, cheats) {
                     self.tab = g;
                     self.tool = None;
                 }
@@ -659,6 +714,11 @@ impl Panel {
     /// The page chosen in the sidebar: cards on an auto-fit grid (tw.rs) — side by
     /// side while each can be `CARD_MIN` wide, stacked when not.
     fn page(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+        // A page not agreed to (or a cheat page without the cheats) is the Settings page.
+        let shown = self.tool.map_or(self.grants(crate::settings::Consent::CHEATS), |t| self.allowed(t));
+        if !shown {
+            self.tool = Some(Tool::Settings);
+        }
         // The overlay draws the Map page's preview only while that page shows.
         self.shared.preview_wanted.store(self.tool == Some(Tool::Map), std::sync::atomic::Ordering::SeqCst);
         match self.tab {
@@ -877,9 +937,13 @@ impl Panel {
     fn page_cards(&self) -> usize {
         match self.tool {
             Some(Tool::Now) => self.now_cards(),
-            Some(Tool::Collect) | Some(Tool::Quests) => 4,
-            Some(Tool::Map) | Some(Tool::Puzzles) | Some(Tool::Guide) | Some(Tool::Clues) => 3,
+            Some(Tool::Collect) => 4,
+            Some(Tool::Quests) => 3 + self.grants(crate::settings::Consent::ANSWERS) as usize,
+            Some(Tool::Clues) => 2 + self.grants(crate::settings::Consent::PLACES) as usize,
+            Some(Tool::Map) | Some(Tool::Puzzles) | Some(Tool::Guide) => 3,
             Some(Tool::Help) => 4,
+            // Two columns of questions, whatever the width (consent.rs).
+            Some(Tool::Settings) => 2,
             Some(Tool::Saves) => 2,
             Some(Tool::Debug) => 1,
             None if self.tab == Group::Movement => 3,

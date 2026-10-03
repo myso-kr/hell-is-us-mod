@@ -619,3 +619,27 @@ EVENT_CHANGED	değişti
 HELP_KEY_CONSOLE	Konsolu aç/kapat (kontrol için)
 PANEL_KEY_LABEL	Panel
 KEY_LEFT_OF_1	1’in solundaki tuş (` ve ~ yazan)
+SETTINGS	Ayarlar
+ABOUT_SETTINGS	modun gösterebileceği ve değiştirebileceği şeyler
+CONSENT_TITLE	Önce birkaç soru
+CONSENT_INTRO	Hell Is Us kendi başına keşfedilmek için yapıldı: harita, pusula, görev işareti yok. Bundan istediğin kadarını koru, yardımı yalnızca takıldığın yerlerde aç. Cevaplarını burada istediğin zaman değiştirebilirsin.
+CONSENT_NOT_CHOSEN	Henüz cevaplanmadı: o zamana kadar mod oyuna hiçbir şey eklemez.
+CONSENT_ALL_ON	Hepsine evet
+CONSENT_ALL_OFF	Yardımsız, teşekkürler
+CONSENT_MAP	Sık sık kayboluyor musun?
+CONSENT_MAP_WHAT	Pek çok oyuncu ilk bölgelerde döner durur, neyi kaçırdığını bilemez. Açıkken: mini harita ve büyük harita, pusula, rota, izin, işaretler ve görev izleyici (Harita ve Rehber sayfaları).
+CONSENT_MAP_COST	Karşılığında oyunun bilerek vermediği bir harita olur, yolu kendin bulmanın gerilimi azalır.
+CONSENT_PLACES	Kaçırdıkların seni rahatsız ediyor mu?
+CONSENT_PLACES_WHAT	Oyuncular bir eşyayı saatler sonra bulduklarını ya da onu isteyenin nerede olduğunu bilemediklerini anlatıyor. Açıkken: haritalarda eşya, bulmaca, kişi ve kapılar, gidilecek yerler, kalan koleksiyonlar ve anlatacağı olanların yerleri.
+CONSENT_PLACES_COST	Etrafa senin yerine bakar. Kapalıyken haritalarda arazi, düşmanlar ve kendi işaretlerin kalır; Koleksiyon yalnızca sayıları gösterir.
+CONSENT_ANSWERS	Takıldığında cevabı görmek ister misin?
+CONSENT_ANSWERS_WHAT	Kasa kodları ve kadranlı bulmacalar uzun süre takar, yedi başarım da bir hikâye anından sonra sonsuza dek kaçar. Açıkken: Bulmacalar sayfası (cevaplar, kodlar, Limbik kilitler), iyiliklerin son anları ve kilit taşı sırası.
+CONSENT_ANSWERS_COST	Cevaplar sen isteyene kadar gizli kalır ama son anlar ve sıralar hikâyenin nereye gittiğini önceden söyler.
+CONSENT_CHEATS	Dövüşler ya da tekrar seni yoruyor mu?
+CONSENT_CHEATS_WHAT	Bazı oyuncular aynı beş Hollow Walker türünden ve tekrar eden dövüşlerden yoruluyor. Açıkken: kenar çubuğunda hile grupları (ölümsüzlük, hız, kaynaklar ve daha fazlası); tuttukların bir dahaki sefere yeniden açılır.
+CONSENT_CHEATS_COST	Oyunun değerlerini, dolayısıyla zorluğu ve dengeyi değiştirir. Başarımlar engellenmez. Sonra kapatınca hepsi özgün değerlerine döner.
+CONSENT_NEEDED	Açmak için Ayarlar’da izin ver.
+CONSENT_MAP_YES	Evet, harita ve yön bulmayı aç
+CONSENT_PLACES_YES	Evet, nerede olduklarını göster
+CONSENT_ANSWERS_YES	Evet, cevapları görebileyim
+CONSENT_CHEATS_YES	Evet, hile kullanacağım

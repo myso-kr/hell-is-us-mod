@@ -20,6 +20,13 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   <kbd>F4</kbd> next goal, <kbd>F5</kbd> pin (were F9, F10, F11, F6). If you never changed them, they
   move to the new keys by themselves; keys you chose stay.
 
+### Added
+
+- A **Settings** page that asks, in four short questions built on what players run into, what the
+  mod may do: the map and navigation, where hidden things are, answers and spoilers, cheats. Until
+  you answer, the mod adds nothing to the game; pages you have not allowed stay in the sidebar,
+  greyed. Your answers can be changed any time.
+
 ### Diagnostics
 
 - The engine logs what the Haze links are read from (`haze probe:` lines in `hiumod.log`): no link

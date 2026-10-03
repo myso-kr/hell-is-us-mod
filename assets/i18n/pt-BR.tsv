@@ -619,3 +619,27 @@ EVENT_CHANGED	mudança
 HELP_KEY_CONSOLE	Abrir/fechar o console (para verificar)
 PANEL_KEY_LABEL	Painel
 KEY_LEFT_OF_1	A tecla à esquerda do 1 (com ` e ~)
+SETTINGS	Configurações
+ABOUT_SETTINGS	o que o mod pode mostrar e mudar
+CONSENT_TITLE	Antes, algumas perguntas
+CONSENT_INTRO	Hell Is Us foi feito para ser descoberto sozinho: sem mapa, bússola ou marcadores. Mantenha disso o quanto quiser e ligue ajuda só onde você travar. Dá para mudar as respostas aqui quando quiser.
+CONSENT_NOT_CHOSEN	Ainda sem resposta: até lá, o mod não acrescenta nada ao jogo.
+CONSENT_ALL_ON	Sim para tudo
+CONSENT_ALL_OFF	Sem ajuda, obrigado
+CONSENT_MAP	Você se perde com frequência?
+CONSENT_MAP_WHAT	Muitos andam em círculos nas primeiras áreas sem saber o que perderam. Ligado: minimapa e mapa grande, bússola, rota, seu rastro, marcadores e rastreador de missões (páginas Mapa e Guia).
+CONSENT_MAP_COST	Em troca, um mapa que o jogo omite de propósito, e menos tensão ao achar o caminho.
+CONSENT_PLACES	O que você perdeu te incomoda?
+CONSENT_PLACES_WHAT	Jogadores contam que acharam um item horas depois, ou não sabiam onde estava quem o queria. Ligado: itens, quebra-cabeças, pessoas e portas nos mapas, os lugares para ir e onde estão os colecionáveis restantes e quem tem mais a contar.
+CONSENT_PLACES_COST	Ele explora por você. Desligado, os mapas mantêm o terreno, os inimigos e seus marcadores, e Coleção mostra só os números.
+CONSENT_ANSWERS	Quando travar, quer ver a resposta?
+CONSENT_ANSWERS_WHAT	Códigos de cofres e quebra-cabeças de discos travam por muito tempo, e sete conquistas se perdem para sempre depois de um momento da história. Ligado: a página Quebra-cabeças (respostas, códigos, fechaduras límbicas), os prazos das boas ações e a ordem das pedras angulares.
+CONSENT_ANSWERS_COST	As respostas continuam cobertas até você pedir, mas prazos e ordens adiantam para onde a história vai.
+CONSENT_CHEATS	As lutas ou a repetição estão cansando?
+CONSENT_CHEATS_WHAT	Alguns cansam dos mesmos cinco tipos de Hollow Walker e das lutas repetidas. Ligado: os grupos de trapaças na barra lateral (invencibilidade, velocidade, recursos e mais), e as mantidas voltam na próxima vez.
+CONSENT_CHEATS_COST	Elas mudam os valores do jogo, e com isso a dificuldade e o equilíbrio. Conquistas não são bloqueadas. Desligadas depois, todas voltam ao valor original.
+CONSENT_NEEDED	Permita em Configurações para abrir.
+CONSENT_MAP_YES	Sim, ligar mapa e navegação
+CONSENT_PLACES_YES	Sim, mostre onde estão as coisas
+CONSENT_ANSWERS_YES	Sim, quero poder ver respostas
+CONSENT_CHEATS_YES	Sim, vou usar trapaças

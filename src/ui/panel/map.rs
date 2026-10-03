@@ -107,6 +107,7 @@ impl Panel {
         match self.tool {
             Some(Tool::Now) => self.now_tab(t, guard, snap),
             Some(Tool::Help) => self.help_tab(t, guard),
+            Some(Tool::Settings) => self.settings_tab(t),
             // Where to go: the guide, the places, and the pins the player drops to go back to.
             Some(Tool::Guide) => tw::masonry(t, "guide", cols, 3, |t, i| match i {
                 0 => self.guide_column(t, guard, snap),
@@ -114,11 +115,15 @@ impl Panel {
                 _ => self.marks_column(t, guard, snap),
             }),
             // What is known: the quests' clues, a clue looked up, and who still has more to tell.
-            Some(Tool::Clues) => tw::masonry(t, "clues", cols, 3, |t, i| match i {
-                0 => self.quest_clues_card(t, guard, snap),
-                1 => self.find_clue_card(t, snap),
-                _ => self.stories_card(t, guard, snap),
-            }),
+            // Who has more to tell is where they are: with "where hidden things are".
+            Some(Tool::Clues) => {
+                let n = if self.grants(crate::settings::Consent::PLACES) { 3 } else { 2 };
+                tw::masonry(t, "clues", cols, n, |t, i| match i {
+                    0 => self.quest_clues_card(t, guard, snap),
+                    1 => self.find_clue_card(t, snap),
+                    _ => self.stories_card(t, guard, snap),
+                })
+            }
             Some(Tool::Puzzles) => {
                 super::deep::puzzles_hero(t, snap);
                 tw::masonry(t, "puzzles", cols, 3, |t, i| match i {
@@ -128,6 +133,7 @@ impl Panel {
                 })
             }
             Some(Tool::Collect) => {
+                // Without "where hidden things are", the collection shows counts only.
                 self.collect_hero(t, snap);
                 tw::masonry(t, "collect", cols, 4, |t, i| match i {
                     0 => self.collection_card(t, guard, snap),
@@ -136,12 +142,17 @@ impl Panel {
                     _ => self.achievements_card(t),
                 })
             }
-            Some(Tool::Quests) => tw::masonry(t, "quests", cols, 4, |t, i| match i {
-                0 => self.quests_card(t, guard, snap),
-                1 => self.deadlines_card(t, guard, snap),
-                2 => self.handovers_card(t, guard, snap),
-                _ => self.secrets_card(t, snap),
-            }),
+            // The missable deeds' deadlines tell what the story does next: with answers.
+            Some(Tool::Quests) => {
+                let answers = self.grants(crate::settings::Consent::ANSWERS);
+                let skip = !answers as usize;
+                tw::masonry(t, "quests", cols, 4 - skip, |t, i| match i + (i >= 1) as usize * skip {
+                    0 => self.quests_card(t, guard, snap),
+                    1 => self.deadlines_card(t, guard, snap),
+                    2 => self.handovers_card(t, guard, snap),
+                    _ => self.secrets_card(t, snap),
+                })
+            }
             // How the maps look: nothing else.
             _ => tw::masonry(t, "map", cols, 3, |t, i| match i {
                 0 => self.legend_card(t, guard),

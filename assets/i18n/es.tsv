@@ -619,3 +619,27 @@ EVENT_CHANGED	cambio
 HELP_KEY_CONSOLE	Abrir/cerrar la consola (para comprobar)
 PANEL_KEY_LABEL	Panel
 KEY_LEFT_OF_1	La tecla a la izquierda del 1 (con ` y ~)
+SETTINGS	Ajustes
+ABOUT_SETTINGS	lo que el mod puede mostrar y cambiar
+CONSENT_TITLE	Primero, unas preguntas
+CONSENT_INTRO	Hell Is Us está hecho para descubrirse solo: sin mapa, sin brújula, sin marcadores. Conserva de eso lo que quieras y activa ayuda solo donde te atasques. Puedes cambiar tus respuestas aquí cuando quieras.
+CONSENT_NOT_CHOSEN	Aún sin responder: hasta entonces, el mod no añade nada al juego.
+CONSENT_ALL_ON	Sí a todo
+CONSENT_ALL_OFF	Sin ayuda, gracias
+CONSENT_MAP	¿Te pierdes a menudo?
+CONSENT_MAP_WHAT	Muchos dan vueltas en las primeras zonas sin saber qué se perdieron. Activado: minimapa y mapa grande, brújula, ruta, tu rastro, marcas y seguimiento de misiones (páginas Mapa y Guía).
+CONSENT_MAP_COST	A cambio, un mapa que el juego omite a propósito y menos tensión al buscar tu camino.
+CONSENT_PLACES	¿Te inquieta lo que te perdiste?
+CONSENT_PLACES_WHAT	Hay quien encuentra un objeto horas después o no sabe dónde estaba quien lo pedía. Activado: objetos, puzles, personas y puertas en los mapas, los lugares a los que ir y dónde están los coleccionables restantes y quienes tienen más que contar.
+CONSENT_PLACES_COST	Explora por ti. Desactivado, los mapas conservan el terreno, los enemigos y tus marcas, y Colección solo muestra cifras.
+CONSENT_ANSWERS	Si te atascas, ¿quieres ver la respuesta?
+CONSENT_ANSWERS_WHAT	Los códigos de las cámaras y los puzles de diales atascan mucho, y siete logros se pierden para siempre al pasar un momento de la historia. Activado: la página Puzles (respuestas, códigos, cerraduras límbicas), los plazos de las buenas acciones y el orden de las claves.
+CONSENT_ANSWERS_COST	Las respuestas siguen ocultas hasta que las pidas, pero plazos y órdenes anticipan adónde va la historia.
+CONSENT_CHEATS	¿Te agotan los combates o la repetición?
+CONSENT_CHEATS_WHAT	Hay quien se cansa de los mismos cinco tipos de Hollow Walker y de combates repetidos. Activado: los grupos de trucos en la barra lateral (invencible, velocidad, recursos y más), y los guardados vuelven la próxima vez.
+CONSENT_CHEATS_COST	Cambian los valores del juego, y con ellos la dificultad y el equilibrio. No bloquean logros. Si los desactivas luego, todos vuelven a su valor original.
+CONSENT_NEEDED	Permítelo en Ajustes para abrirlo.
+CONSENT_MAP_YES	Sí, activa mapa y navegación
+CONSENT_PLACES_YES	Sí, muéstrame dónde están
+CONSENT_ANSWERS_YES	Sí, quiero poder ver respuestas
+CONSENT_CHEATS_YES	Sí, usaré trucos

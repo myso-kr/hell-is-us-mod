@@ -619,3 +619,27 @@ EVENT_CHANGED	verändert
 HELP_KEY_CONSOLE	Konsole öffnen/schließen (zum Prüfen)
 PANEL_KEY_LABEL	Panel
 KEY_LEFT_OF_1	Die Taste links neben der 1 (mit ` und ~)
+SETTINGS	Einstellungen
+ABOUT_SETTINGS	was der Mod zeigen und ändern darf
+CONSENT_TITLE	Vorab ein paar Fragen
+CONSENT_INTRO	Hell Is Us will selbst erkundet werden: keine Karte, kein Kompass, keine Questmarker. Behalte davon, so viel du willst, und schalte Hilfe nur dort ein, wo du feststeckst. Deine Antworten kannst du hier jederzeit ändern.
+CONSENT_NOT_CHOSEN	Noch nicht beantwortet: bis dahin fügt der Mod dem Spiel nichts hinzu.
+CONSENT_ALL_ON	Alles ja
+CONSENT_ALL_OFF	Ohne Hilfe, danke
+CONSENT_MAP	Verläufst du dich oft?
+CONSENT_MAP_WHAT	Viele drehen in den ersten Gebieten Runden und wissen nie, was sie verpasst haben. Damit an: Minikarte und große Karte, Kompass, Route, dein Weg, Pins und Quest-Tracker (Seiten Karte und Wegweiser).
+CONSENT_MAP_COST	Dafür gibt es eine Karte, die das Spiel absichtlich weglässt, und weniger Spannung beim eigenen Wegfinden.
+CONSENT_PLACES	Lässt dich los, was du verpasst hast?
+CONSENT_PLACES_WHAT	Spieler erzählen, dass sie Gegenstände erst Stunden später fanden oder nicht wussten, wo die Person war, die sie wollte. Damit an: Gegenstände, Rätsel, Personen und Türen auf den Karten, die Ziele und wo übrige Sammelobjekte und Personen mit mehr zu erzählen sind.
+CONSENT_PLACES_COST	Er übernimmt das Umsehen. Aus, zeigen die Karten Gelände, Gegner und deine Pins, Sammeln nur Zahlen.
+CONSENT_ANSWERS	Willst du die Lösung, wenn du feststeckst?
+CONSENT_ANSWERS_WHAT	Tresorcodes und Drehrätsel halten lange auf, und sieben Erfolge sind nach einem Story-Moment für immer verpasst. Damit an: die Rätselseite (Lösungen, Tresorcodes, Lymbische Schlösser), Fristen verpassbarer guter Taten und die Reihenfolge der Schlusssteine.
+CONSENT_ANSWERS_COST	Lösungen bleiben verdeckt, bis du sie aufdeckst, aber Fristen und Reihenfolgen verraten, wohin die Geschichte geht.
+CONSENT_CHEATS	Zehren Kämpfe oder Wiederholung an dir?
+CONSENT_CHEATS_WHAT	Manche ermüden an denselben fünf Hollow-Walker-Typen und immer gleichen Kämpfen. Damit an: Cheat-Gruppen in der Seitenleiste (Unverwundbarkeit, Tempo, Ressourcen u. a.), und behaltene Cheats gehen beim nächsten Start wieder an.
+CONSENT_CHEATS_COST	Sie ändern Spielwerte, also Schwierigkeit und Balance. Erfolge werden nicht gesperrt. Später ausgeschaltet, kehrt jeder aktive Cheat zum Originalwert zurück.
+CONSENT_NEEDED	Auf der Seite Einstellungen erlauben, um dies zu öffnen.
+CONSENT_MAP_YES	Ja, Karte und Navigation an
+CONSENT_PLACES_YES	Ja, zeig mir, wo was ist
+CONSENT_ANSWERS_YES	Ja, Lösungen zeigen
+CONSENT_CHEATS_YES	Ja, ich nutze Cheats

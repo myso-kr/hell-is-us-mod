@@ -104,8 +104,10 @@ impl Panel {
                 });
             });
         });
-        if open.is_some() {
-            self.tool = open;
+        // The page a tile opens, if the player agreed to it (Settings); the Now page itself
+        // shows whatever the consent.
+        if let Some(page) = open.filter(|p| self.allowed(*p)) {
+            self.tool = Some(page);
         }
     }
 

@@ -27,7 +27,8 @@ impl Panel {
                     RichText::new(format!("   {}", tool.about())).color(DIM).append_to(&mut job, &style, font, valign);
                     ui.add(egui::Button::selectable(false, job).wrap_mode(egui::TextWrapMode::Wrap)).clicked()
                 });
-                if pressed {
+                // A page not agreed to is listed but does not open (Settings allows it).
+                if pressed && self.allowed(tool) {
                     self.tool = Some(tool);
                 }
             }

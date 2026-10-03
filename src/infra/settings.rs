@@ -24,6 +24,26 @@ pub fn path() -> PathBuf {
     crate::paths::data_dir().join("settings.txt")
 }
 
+/// What the player agreed the mod may show or change, one bit each (.spec/CONSENT.md):
+/// the map and the guide, where hidden things are, answers and spoilers, cheats.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct Consent(pub u8);
+
+impl Consent {
+    pub const MAP: u8 = 1;
+    pub const PLACES: u8 = 2;
+    pub const ANSWERS: u8 = 4;
+    pub const CHEATS: u8 = 8;
+    pub const ALL: u8 = 15;
+    /// Their names in settings.txt.
+    const NAMES: [(u8, &'static str); 4] =
+        [(Self::MAP, "map"), (Self::PLACES, "places"), (Self::ANSWERS, "answers"), (Self::CHEATS, "cheats")];
+
+    pub fn has(self, bit: u8) -> bool {
+        self.0 & bit != 0
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Settings {
     /// Turn the cheats that were on back on next time.
@@ -35,11 +55,13 @@ pub struct Settings {
     pub on: Vec<(String, f32)>,
     /// Every slider's last value, on or not.
     pub values: BTreeMap<String, f32>,
+    /// What the player agreed to; `None` until they chose (then nothing is shown).
+    pub consent: Option<Consent>,
 }
 
 impl Default for Settings {
     fn default() -> Settings {
-        Settings { keep: true, tab: None, pos: None, on: Vec::new(), values: BTreeMap::new() }
+        Settings { keep: true, tab: None, pos: None, on: Vec::new(), values: BTreeMap::new(), consent: None }
     }
 }
 
@@ -50,6 +72,10 @@ pub fn parse(text: &str) -> Settings {
         let num = |x: &str| x.parse::<f32>().ok().filter(|v| v.is_finite());
         match f[..] {
             ["keep", v] => s.keep = v == "true",
+            ["consent", ref granted @ ..] => {
+                let bits = Consent::NAMES.iter().filter(|(_, n)| granted.contains(n)).fold(0, |b, (bit, _)| b | bit);
+                s.consent = Some(Consent(bits));
+            }
             ["tab", t] => s.tab = Some(t.to_string()),
             ["pos", x, y] => s.pos = x.parse().ok().zip(y.parse().ok()),
             ["on", id] => s.on.push((id.to_string(), 0.0)),
@@ -71,6 +97,10 @@ pub fn parse(text: &str) -> Settings {
 
 pub fn render(s: &Settings) -> String {
     let mut out = format!("keep {}\n", s.keep);
+    if let Some(c) = s.consent {
+        let names: Vec<&str> = Consent::NAMES.iter().filter(|(b, _)| c.has(*b)).map(|(_, n)| *n).collect();
+        out += &format!("consent {}\n", names.join(" ")).replace(" \n", "\n");
+    }
     if let Some(t) = &s.tab {
         out += &format!("tab {t}\n");
     }

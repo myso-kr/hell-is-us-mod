@@ -619,3 +619,27 @@ EVENT_CHANGED	상태 변화
 HELP_KEY_CONSOLE	콘솔 열기/닫기 (점검용)
 PANEL_KEY_LABEL	패널
 KEY_LEFT_OF_1	숫자 1 왼쪽 키 (` 와 ~ 가 적힌 키)
+SETTINGS	설정
+ABOUT_SETTINGS	모드가 보여 주고 바꿀 것 고르기
+CONSENT_TITLE	몇 가지만 여쭤볼게요
+CONSENT_INTRO	Hell Is Us는 지도도, 나침반도, 퀘스트 표시도 없이 직접 헤매며 알아가도록 만든 게임이에요. 지키고 싶은 경험은 그대로 두고, 막히는 곳에만 도움을 켜 보세요. 답은 언제든 여기서 바꿀 수 있어요.
+CONSENT_NOT_CHOSEN	아직 답하지 않았어요. 답하기 전에는 모드가 게임에 아무것도 더하지 않아요.
+CONSENT_ALL_ON	모두 켜기
+CONSENT_ALL_OFF	도움 없이 할게요
+CONSENT_MAP	자주 길을 잃으시나요?
+CONSENT_MAP_WHAT	초반 지역에서 같은 곳을 맴돌거나, 뭘 놓쳤는지 몰라 불안했다는 플레이어가 많아요. 켜면 미니맵과 큰 지도, 나침반, 경로, 지나온 길, 핀, 퀘스트 추적기가 생겨요 (지도·안내 탭).
+CONSENT_MAP_COST	대신 게임이 일부러 주지 않은 지도가 생겨서, 스스로 길을 찾는 긴장감은 줄어요.
+CONSENT_PLACES	뭘 놓쳤는지 신경 쓰이시나요?
+CONSENT_PLACES_WHAT	몇 시간 뒤에야 아이템을 찾았다거나, 그걸 원하던 사람이 어디 있었는지 모르겠다는 이야기가 많아요. 켜면 지도에 아이템·퍼즐·NPC·문이 표시되고, 갈 곳 목록과 남은 수집품, 이야기가 남은 NPC의 위치를 보여 줘요.
+CONSENT_PLACES_COST	구석구석 직접 둘러보는 재미를 대신해 줘요. 끄면 지도에는 지형과 적, 직접 꽂은 핀만 남고, 수집 탭은 개수만 보여 줘요.
+CONSENT_ANSWERS	막히면 답을 보고 싶으신가요?
+CONSENT_ANSWERS_WHAT	금고 암호나 다이얼 퍼즐에서 오래 막히고, 이야기가 지나가면 영영 놓치는 업적도 7개나 있어요. 켜면 퍼즐 탭(답, 금고 코드, 림빅 잠금)과 놓치기 쉬운 선행의 마감, 키스톤 순서를 보여 줘요.
+CONSENT_ANSWERS_COST	답은 늘 눌러야 보이지만, 마감과 순서는 이야기가 어디로 가는지 미리 알려 줘요.
+CONSENT_CHEATS	전투나 반복이 버거우신가요?
+CONSENT_CHEATS_WHAT	다섯 종의 할로 워커와 비슷한 전투가 반복돼 지친다는 의견이 있어요. 켜면 사이드바에 무적·속도·자원 같은 치트 묶음이 열리고, 켜 둔 치트는 다음 실행 때도 다시 켜져요.
+CONSENT_CHEATS_COST	게임의 값을 바꿔서 난이도와 균형이 달라져요. 업적은 막히지 않아요. 나중에 끄면 켜 둔 치트를 모두 원래 값으로 되돌려요.
+CONSENT_NEEDED	설정 탭에서 허용하면 열 수 있습니다.
+CONSENT_MAP_YES	네, 지도와 길 안내를 켜 주세요
+CONSENT_PLACES_YES	네, 위치를 알려 주세요
+CONSENT_ANSWERS_YES	네, 답을 볼 수 있게 해 주세요
+CONSENT_CHEATS_YES	네, 치트를 쓸게요

@@ -619,3 +619,27 @@ EVENT_CHANGED	changement
 HELP_KEY_CONSOLE	Ouvrir/fermer la console (pour vérifier)
 PANEL_KEY_LABEL	Panneau
 KEY_LEFT_OF_1	La touche à gauche du 1 (avec ` et ~)
+SETTINGS	Réglages
+ABOUT_SETTINGS	ce que le mod peut montrer et changer
+CONSENT_TITLE	D’abord quelques questions
+CONSENT_INTRO	Hell Is Us se découvre seul : ni carte, ni boussole, ni marqueurs de quête. Gardez-en autant que vous voulez et n’activez de l’aide que là où vous bloquez. Vos réponses se changent ici à tout moment.
+CONSENT_NOT_CHOSEN	Pas encore répondu : d’ici là, le mod n’ajoute rien au jeu.
+CONSENT_ALL_ON	Oui à tout
+CONSENT_ALL_OFF	Sans aide, merci
+CONSENT_MAP	Vous perdez-vous souvent ?
+CONSENT_MAP_WHAT	Beaucoup tournent en rond dans les premières zones sans savoir ce qu’ils ont manqué. Activé : mini-carte et grande carte, boussole, itinéraire, votre trace, repères et suivi de quête (pages Carte et Guide).
+CONSENT_MAP_COST	En échange, une carte que le jeu omet exprès, et moins de tension à trouver votre chemin.
+CONSENT_PLACES	Ce que vous avez manqué vous travaille ?
+CONSENT_PLACES_WHAT	Des joueurs trouvent un objet des heures plus tard, ou ne savent plus où était la personne qui le voulait. Activé : objets, énigmes, personnes et portes sur les cartes, les lieux où aller, et où sont les objets restants et les personnes qui ont encore à dire.
+CONSENT_PLACES_COST	Il fouille à votre place. Désactivé, les cartes gardent le terrain, les ennemis et vos repères ; Collection ne montre que des nombres.
+CONSENT_ANSWERS	Bloqué, voudriez-vous la réponse ?
+CONSENT_ANSWERS_WHAT	Les codes des coffres et les énigmes à cadrans bloquent longtemps, et sept succès se manquent à jamais après un moment de l’histoire. Activé : la page Énigmes (réponses, codes, serrures lymbiques), les échéances des bonnes actions et l’ordre des clés de voûte.
+CONSENT_ANSWERS_COST	Les réponses restent cachées tant que vous ne cliquez pas, mais échéances et ordres annoncent la suite de l’histoire.
+CONSENT_CHEATS	Les combats ou la répétition vous usent ?
+CONSENT_CHEATS_WHAT	Certains se lassent des cinq mêmes types de Hollow Walkers et des combats répétés. Activé : les groupes de triches de la barre latérale (invincibilité, vitesse, ressources…), et celles gardées se réactivent la fois suivante.
+CONSENT_CHEATS_COST	Elles changent les valeurs du jeu, donc sa difficulté et son équilibre. Les succès ne sont pas bloqués. Désactivées plus tard, toutes reviennent aux valeurs d’origine.
+CONSENT_NEEDED	Autorisez-le dans Réglages pour l’ouvrir.
+CONSENT_MAP_YES	Oui, activer carte et navigation
+CONSENT_PLACES_YES	Oui, montrez-moi où sont les choses
+CONSENT_ANSWERS_YES	Oui, je veux pouvoir voir les réponses
+CONSENT_CHEATS_YES	Oui, j’utiliserai les triches

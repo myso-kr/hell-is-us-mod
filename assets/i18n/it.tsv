@@ -619,3 +619,27 @@ EVENT_CHANGED	cambiamento
 HELP_KEY_CONSOLE	Apri/chiudi la console (per controllare)
 PANEL_KEY_LABEL	Pannello
 KEY_LEFT_OF_1	Il tasto a sinistra dell’1 (con ` e ~)
+SETTINGS	Impostazioni
+ABOUT_SETTINGS	cosa la mod può mostrare e cambiare
+CONSENT_TITLE	Prima, qualche domanda
+CONSENT_INTRO	Hell Is Us è fatto per essere scoperto da soli: niente mappa, bussola o indicatori. Tieni quanto vuoi di questo e attiva aiuti solo dove ti blocchi. Puoi cambiare le risposte qui in ogni momento.
+CONSENT_NOT_CHOSEN	Non ancora risposto: fino ad allora la mod non aggiunge nulla.
+CONSENT_ALL_ON	Sì a tutto
+CONSENT_ALL_OFF	Senza aiuti, grazie
+CONSENT_MAP	Ti perdi spesso?
+CONSENT_MAP_WHAT	Molti girano in tondo nelle prime zone senza sapere cosa si sono persi. Attivo: minimappa e mappa grande, bussola, percorso, la tua traccia, segnaposti e tracciamento (pagine Mappa e Guida).
+CONSENT_MAP_COST	In cambio, una mappa che il gioco omette di proposito e meno tensione nel trovare la strada.
+CONSENT_PLACES	Ti pesa ciò che ti sei perso?
+CONSENT_PLACES_WHAT	C’è chi trova un oggetto ore dopo o non sa più dov’era chi lo voleva. Attivo: oggetti, enigmi, persone e porte sulle mappe, i luoghi dove andare e dove sono i collezionabili rimasti e chi ha altro da dire.
+CONSENT_PLACES_COST	Esplora al posto tuo. Disattivato, le mappe mostrano terreno, nemici e i tuoi segnaposti; Raccolta solo i numeri.
+CONSENT_ANSWERS	Quando ti blocchi, vuoi la soluzione?
+CONSENT_ANSWERS_WHAT	I codici delle camere e gli enigmi a quadranti bloccano a lungo, e sette obiettivi si perdono per sempre dopo un momento della storia. Attivo: la pagina Enigmi (soluzioni, codici, serrature limbiche), le scadenze delle buone azioni e l’ordine delle chiavi di volta.
+CONSENT_ANSWERS_COST	Le soluzioni restano coperte finché non le chiedi, ma scadenze e ordini anticipano dove va la storia.
+CONSENT_CHEATS	Combattimenti o ripetizioni ti stancano?
+CONSENT_CHEATS_WHAT	Alcuni si stancano degli stessi cinque tipi di Hollow Walker e di combattimenti ripetuti. Attivo: i gruppi di trucchi nella barra laterale (invincibilità, velocità, risorse e altro), e quelli tenuti tornano la volta dopo.
+CONSENT_CHEATS_COST	Cambiano i valori del gioco, e quindi difficoltà ed equilibrio. Gli obiettivi non sono bloccati. Disattivati in seguito, tornano tutti ai valori originali.
+CONSENT_NEEDED	Consentilo in Impostazioni per aprirlo.
+CONSENT_MAP_YES	Sì, attiva mappa e navigazione
+CONSENT_PLACES_YES	Sì, mostrami dove sono
+CONSENT_ANSWERS_YES	Sì, voglio poter vedere le soluzioni
+CONSENT_CHEATS_YES	Sì, userò i trucchi

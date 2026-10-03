@@ -619,3 +619,27 @@ EVENT_CHANGED	状态变化
 HELP_KEY_CONSOLE	打开/关闭控制台 (用于检查)
 PANEL_KEY_LABEL	面板
 KEY_LEFT_OF_1	数字键 1 左边的键 (印有 ` 和 ~)
+SETTINGS	设置
+ABOUT_SETTINGS	Mod 可以显示和更改的内容
+CONSENT_TITLE	先问你几个问题
+CONSENT_INTRO	Hell Is Us 没有地图、指南针和任务标记，要靠自己摸索。想保留的体验就保留，只在卡住的地方打开帮助。你的回答随时可以在这里修改。
+CONSENT_NOT_CHOSEN	还没有回答。回答之前，Mod 不会给游戏添加任何东西。
+CONSENT_ALL_ON	全部打开
+CONSENT_ALL_OFF	不需要帮助
+CONSENT_MAP	你经常迷路吗？
+CONSENT_MAP_WHAT	很多玩家在前期区域里绕圈，总不确定自己漏了什么。打开后：小地图和大地图、指南针、路线、走过的路、标记和任务追踪器（地图与导览页面）。
+CONSENT_MAP_COST	代价是：有了游戏有意不提供的地图，自己找路的紧张感会减少。
+CONSENT_PLACES	你会在意自己漏掉了什么吗？
+CONSENT_PLACES_WHAT	玩家常说几个小时后才找到某件物品，或者忘了想要它的人在哪里。打开后：地图上显示物品、谜题、人物和门，还有要去的地方、剩余收集品和还有话可说的人的位置。
+CONSENT_PLACES_COST	它替你四处查看。关闭时，地图只保留地形、敌人和你自己的标记，收集页面只显示数量。
+CONSENT_ANSWERS	卡住时想看答案吗？
+CONSENT_ANSWERS_WHAT	金库密码和转盘谜题常让玩家卡很久，还有 7 个成就一旦剧情推进就永远错过。打开后：谜题页面（答案、金库密码、林比克锁）、容易错过的善行的截止点和基石顺序。
+CONSENT_ANSWERS_COST	答案仍然要点击才显示，但截止点和顺序会提前透露故事的走向。
+CONSENT_CHEATS	战斗或重复让你吃不消吗？
+CONSENT_CHEATS_WHAT	有玩家对五种空洞行者和反复的战斗感到疲惫。打开后：侧栏出现无敌、速度、资源等作弊分组，保留的作弊下次也会重新开启。
+CONSENT_CHEATS_COST	它们会改变游戏数值，难度和平衡随之改变。不会阻止成就。之后关闭时，所有开启的作弊都会恢复原值。
+CONSENT_NEEDED	在“设置”页面允许后即可打开。
+CONSENT_MAP_YES	是，打开地图与导航
+CONSENT_PLACES_YES	是，告诉我位置
+CONSENT_ANSWERS_YES	是，让我能看答案
+CONSENT_CHEATS_YES	是，我要用作弊

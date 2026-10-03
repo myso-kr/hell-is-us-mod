@@ -619,3 +619,27 @@ EVENT_CHANGED	zmiana
 HELP_KEY_CONSOLE	Otwórz/zamknij konsolę (do sprawdzania)
 PANEL_KEY_LABEL	Panel
 KEY_LEFT_OF_1	Klawisz na lewo od 1 (z ` i ~)
+SETTINGS	Ustawienia
+ABOUT_SETTINGS	co mod może pokazywać i zmieniać
+CONSENT_TITLE	Najpierw kilka pytań
+CONSENT_INTRO	Hell Is Us jest do samodzielnego odkrywania: bez mapy, kompasu i znaczników zadań. Zachowaj tyle, ile chcesz, i włącz pomoc tylko tam, gdzie utkniesz. Odpowiedzi możesz tu zmienić w każdej chwili.
+CONSENT_NOT_CHOSEN	Brak odpowiedzi: do tego czasu mod niczego nie dodaje do gry.
+CONSENT_ALL_ON	Tak dla wszystkiego
+CONSENT_ALL_OFF	Bez pomocy, dziękuję
+CONSENT_MAP	Często się gubisz?
+CONSENT_MAP_WHAT	Wielu krąży po pierwszych obszarach, nie wiedząc, co przegapili. Włączone: minimapa i duża mapa, kompas, trasa, twój ślad, pinezki i śledzenie zadań (strony Mapa i Przewodnik).
+CONSENT_MAP_COST	W zamian: mapa, której gra celowo nie daje, i mniej napięcia przy szukaniu drogi.
+CONSENT_PLACES	Martwi cię to, co przegapiłeś?
+CONSENT_PLACES_WHAT	Gracze opowiadają, że przedmiot znaleźli po godzinach albo nie wiedzieli, gdzie była osoba, która go chciała. Włączone: przedmioty, zagadki, ludzie i drzwi na mapach, miejsca do odwiedzenia oraz gdzie są pozostałe znajdźki i osoby z czymś do powiedzenia.
+CONSENT_PLACES_COST	Rozgląda się za ciebie. Wyłączone: na mapach teren, wrogowie i twoje pinezki, a Kolekcja pokazuje tylko liczby.
+CONSENT_ANSWERS	Gdy utkniesz, chcesz zobaczyć odpowiedź?
+CONSENT_ANSWERS_WHAT	Kody skarbców i zagadki z pokrętłami potrafią długo blokować, a siedem osiągnięć przepada na zawsze po wydarzeniu fabularnym. Włączone: strona Zagadki (odpowiedzi, kody, zamki limbiczne), terminy dobrych uczynków i kolejność zworników.
+CONSENT_ANSWERS_COST	Odpowiedzi są zakryte, dopóki ich nie odsłonisz, ale terminy i kolejność zdradzają, dokąd zmierza historia.
+CONSENT_CHEATS	Męczą cię walki albo powtarzalność?
+CONSENT_CHEATS_WHAT	Niektórych męczy pięć tych samych typów Hollow Walkerów i powtarzalne walki. Włączone: grupy kodów na pasku bocznym (nieśmiertelność, szybkość, zasoby i inne), a zachowane wrócą przy następnym uruchomieniu.
+CONSENT_CHEATS_COST	Zmieniają wartości gry, a więc trudność i balans. Osiągnięcia nie są blokowane. Wyłączone później, wszystkie wracają do pierwotnych wartości.
+CONSENT_NEEDED	Zezwól w Ustawieniach, aby to otworzyć.
+CONSENT_MAP_YES	Tak, włącz mapę i nawigację
+CONSENT_PLACES_YES	Tak, pokaż, gdzie co jest
+CONSENT_ANSWERS_YES	Tak, chcę widzieć odpowiedzi
+CONSENT_CHEATS_YES	Tak, użyję kodów

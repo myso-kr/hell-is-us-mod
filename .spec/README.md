@@ -28,6 +28,7 @@ Reference:
 | [FEATURES.md](FEATURES.md) | The guide's features by stage (F1–F11): backups, pins, missables, puzzles, vaults, enemy groups, achievements |
 | [SURVEY.md](SURVEY.md) | The game-data survey: the tool, its stages, automatic reading and the .NET 8 runtime |
 | [PANEL.md](PANEL.md) | The panel: layout, theme, spacing, console |
+| [CONSENT.md](CONSENT.md) | What the mod may show and change, agreed one thing at a time |
 | [I18N.md](I18N.md) | Languages: following the game's, its own names, the mod's text tables |
 | [SITE.md](SITE.md) | The GitHub Pages site and the introduction video |
 | [RESEARCH.md](RESEARCH.md) | Research before starting: the engine, existing mods, tools, minimap examples |

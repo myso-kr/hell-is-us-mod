@@ -185,6 +185,14 @@ pub fn run(shared: Arc<Shared>) {
                     false,
                 ),
             };
+        // What the player agreed to (settings::Consent): without "where hidden things are"
+        // the maps show the land, the enemies (seen in a fight anyway) and their own pins.
+        let consent = crate::settings::Consent(shared.consent.load(Ordering::SeqCst));
+        let (things, goals) = if consent.has(crate::settings::Consent::PLACES) {
+            (things, goals)
+        } else {
+            (things.into_iter().filter(|t| t.kind() == crate::actors::Kind::Enemy).collect(), Vec::new())
+        };
         // Between the worker's readings, glided (glide.rs).
         let here =
             glide.see(pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32)), Instant::now());
@@ -334,7 +342,10 @@ pub fn run(shared: Arc<Shared>) {
             }
         }
 
-        let window = game_window(game).filter(|_| focused && !menu).map(|(_, r)| r);
+        // No map at all without the map's consent: no minimap, big map, compass or tracker.
+        let window = game_window(game)
+            .filter(|_| focused && !menu && consent.has(crate::settings::Consent::MAP))
+            .map(|(_, r)| r);
         match (here, world.as_deref(), window) {
             (Some((p, yaw)), Some(world), Some(r)) => {
                 state.observe(world, p);

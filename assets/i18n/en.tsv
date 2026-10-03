@@ -619,3 +619,27 @@ EVENT_CHANGED	changed
 HELP_KEY_CONSOLE	Open or close the console (for checking things)
 PANEL_KEY_LABEL	Panel
 KEY_LEFT_OF_1	The key left of 1 (` and ~ on it)
+SETTINGS	Settings
+ABOUT_SETTINGS	what the mod may show and change
+CONSENT_TITLE	A few questions first
+CONSENT_INTRO	Hell Is Us is made to be found out on your own: no map, no compass, no quest markers. Keep as much of that as you want, and turn help on only where you get stuck. You can change your answers here any time.
+CONSENT_NOT_CHOSEN	Not answered yet: until you do, the mod adds nothing to the game.
+CONSENT_ALL_ON	Yes to all
+CONSENT_ALL_OFF	No help, thanks
+CONSENT_MAP	Do you get lost often?
+CONSENT_MAP_WHAT	Many players circle the first areas and are never sure what they missed. With this on: the minimap and big map, the compass, the route, your trail, pins and the quest tracker (the Map and Guide pages).
+CONSENT_MAP_COST	In return there is a map the game leaves out on purpose, and less of the tension of finding your own way.
+CONSENT_PLACES	Does what you missed bother you?
+CONSENT_PLACES_WHAT	Players tell of finding an item hours later, or not knowing where the person was who wanted it. With this on: items, puzzles, people and doors on the maps, the places to go, and where the collectibles left and people with more to tell are.
+CONSENT_PLACES_COST	It does the looking around for you. Off, the maps keep the land, the enemies and your own pins, and Collect shows counts only.
+CONSENT_ANSWERS	When you are stuck, would you like the answer?
+CONSENT_ANSWERS_WHAT	Vault codes and dial puzzles hold players up for a long time, and seven achievements can be missed for good when a story beat passes. With this on: the Puzzles page (answers, vault codes, Lymbic locks), the deadlines of missable good deeds and the keystone order.
+CONSENT_ANSWERS_COST	Answers still stay covered until you press for one, but deadlines and orders tell ahead where the story goes.
+CONSENT_CHEATS	Are the fights or the grind wearing you down?
+CONSENT_CHEATS_WHAT	Some players tire of the same five Hollow Walker types and the fights again and again. With this on: the cheat groups in the sidebar (god mode, speed, resources and more), and the ones you keep turn back on next time.
+CONSENT_CHEATS_COST	They change the game’s values, so its difficulty and balance change. Achievements are not blocked. Turned off later, every cheat on goes back to its original value.
+CONSENT_NEEDED	Allow it on the Settings page to open this.
+CONSENT_MAP_YES	Yes, turn on the map and navigation
+CONSENT_PLACES_YES	Yes, show me where things are
+CONSENT_ANSWERS_YES	Yes, let me see answers
+CONSENT_CHEATS_YES	Yes, I’ll use cheats

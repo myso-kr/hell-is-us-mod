@@ -23,13 +23,15 @@ impl Panel {
                 return;
             }
             note(t, tr!("COUNTS_WHAT_LIES_IN_THE_WORLD"));
+            let places = self.grants(crate::settings::Consent::PLACES);
             for c in list.iter() {
-                let open = self.unfolded_collect == Some(c.label);
+                // Where each one left lies is "where hidden things are": without it, counts.
+                let open = places && self.unfolded_collect == Some(c.label);
                 t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, crate::survey::collect_sort(c.label), 18.0));
                     let done = c.here.0 == c.here.1;
                     let label = RichText::new(crate::i18n::tr(c.label));
-                    if tw::pick(t, open, label.color(if done { DIM } else { super::super::theme::TEXT })) {
+                    if tw::pick(t, open, label.color(if done { DIM } else { super::super::theme::TEXT })) && places {
                         self.unfolded_collect = if open { None } else { Some(c.label) };
                     }
                     // This region on the meter; everywhere, dim, after it.
