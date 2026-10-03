@@ -6,6 +6,20 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## Unreleased — 0.2.2
+
+### Changed
+
+- The console opens and closes with <kbd>Shift</kbd>+<kbd>&#96;</kbd> (showing the panel if it is
+  hidden), instead of a header button that appeared only over a game menu; the header shows the key.
+- The key pickers no longer offer the game's <kbd>F1</kbd> (HUD) and <kbd>F7</kbd> (photo mode) or
+  Steam's <kbd>F12</kbd> (screenshot); a saved key on one goes back to the defaults.
+
+### Diagnostics
+
+- The engine logs what the Haze links are read from (`haze probe:` lines in `hiumod.log`): no link
+  was found in a first fight, and these lines show why.
+
 ## 0.2.1 — 2026-10-04
 
 Verified on Steam build **24045435**, where `hiumod doctor` passes every check.

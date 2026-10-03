@@ -208,8 +208,6 @@ DEBUG	Débogage
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Cheats réactivés (session précédente) : {count}
 CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Fermer : restaurer les valeurs d'origine et quitter
 HIDE_OPENS_IT_AGAIN	Masquer (` pour rouvrir)
-CONSOLE_OPEN	Console ▾
-CONSOLE_CLOSED	Console ▸
 CLI_CONSOLE	Console de commandes CLI
 GAME	Jeu
 CONNECTED_V_PID	● Connecté\nv{version} · PID {pid}
@@ -508,7 +506,7 @@ HELP_A_NO_DATA	Elles sont lues dès que vous contrôlez le héros. Si .NET 8 est
 HELP_Q_RESTORE	Désactiver les triches
 HELP_A_RESTORE	Fermez le panneau avec × ou cliquez sur « {restore} ». Les deux remettent les valeurs d’origine.
 HELP_Q_UPDATE	Après une mise à jour du jeu
-HELP_A_UPDATE	Les données du jeu sont relues automatiquement. Si quelque chose cloche, lancez `doctor` dans la console.
+HELP_A_UPDATE	Les données du jeu sont relues automatiquement. Si quelque chose cloche, ouvrez la console avec Shift+` et lancez `doctor`.
 HELP_Q_REPORT	Signaler un problème
 HELP_A_REPORT	L’onglet « {debug} » ouvre le dossier des journaux. Joignez hiumod.log et verify.txt.
 ABOUT_NOW	où vous en étiez, ce qui reste ici
@@ -618,3 +616,5 @@ EVENT_UNLOCKED	déverrouillé
 EVENT_TRAVEL	voyage permis
 LEGEND_HAZE_LINK	Lien de brume
 EVENT_CHANGED	changement
+CONSOLE_KEY_HINT	Console {key}
+HELP_KEY_CONSOLE	Ouvrir/fermer la console (pour vérifier)

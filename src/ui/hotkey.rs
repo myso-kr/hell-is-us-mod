@@ -16,12 +16,11 @@ use std::time::Duration;
 use windows_sys::Win32::Foundation::{BOOL, HWND, LPARAM, RECT};
 use windows_sys::Win32::Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST};
 use windows_sys::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_OEM_3, VK_RBUTTON};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_OEM_3, VK_RBUTTON, VK_SHIFT};
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    BringWindowToTop, EnumWindows, FindWindowW, GetCursorInfo, GetForegroundWindow, GetWindowRect,
-    GetWindowThreadProcessId, IsIconic, IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, CURSORINFO,
-    CURSOR_SHOWING, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_SHOWWINDOW, SW_HIDE,
-    SW_RESTORE, SW_SHOWNOACTIVATE,
+    BringWindowToTop, EnumWindows, FindWindowW, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId, IsIconic,
+    IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE,
+    SWP_NOSIZE, SWP_NOZORDER, SWP_SHOWWINDOW, SW_HIDE, SW_RESTORE, SW_SHOWNOACTIVATE,
 };
 
 pub(super) fn pid_of(hwnd: HWND) -> u32 {
@@ -70,34 +69,16 @@ pub(super) fn console_under(panel: HWND) {
     }
 }
 
-/// Whether the console may show: the game or the console itself has the keyboard, and
-/// a game menu is open — the cursor shows, or the game is paused. Otherwise it stays
-/// open but out of sight, and its toggle in the panel's header with it.
-fn console_shows(foreground_pid: u32, game_pid: u32, console_is_foreground: bool, cursor: bool, paused: bool) -> bool {
-    let ours = console_is_foreground || (game_pid != 0 && foreground_pid == game_pid);
-    ours && (cursor || paused)
+/// Whether the console, opened by its key, may show: the game or this program (the
+/// panel, the console) has the keyboard. Opened by a key, it no longer waits for a game
+/// menu; out of the game it steps out of the way.
+fn console_shows(foreground_pid: u32, game_pid: u32, own_pid: u32) -> bool {
+    foreground_pid == own_pid || (game_pid != 0 && foreground_pid == game_pid)
 }
 
 pub(super) fn console_allowed(shared: &Shared) -> bool {
-    let foreground = unsafe { GetForegroundWindow() };
-    let console = console_window();
-    let mut ci: CURSORINFO = unsafe { std::mem::zeroed() };
-    ci.cbSize = std::mem::size_of::<CURSORINFO>() as u32;
-    let cursor = unsafe { GetCursorInfo(&mut ci) } != 0 && ci.flags & CURSOR_SHOWING != 0;
-    let paused = shared.menu.lock().unwrap().1;
-    console_shows(
-        pid_of(foreground),
-        shared.game_pid.load(Ordering::SeqCst),
-        !foreground.is_null() && foreground == console,
-        cursor,
-        paused,
-    )
-}
-
-/// Whether the panel's own window is in front (it took the keyboard from a click).
-pub(super) fn panel_in_front(shared: &Shared) -> bool {
-    let panel = shared.hwnd.load(Ordering::SeqCst) as HWND;
-    !panel.is_null() && unsafe { GetForegroundWindow() } == panel
+    let foreground = pid_of(unsafe { GetForegroundWindow() });
+    console_shows(foreground, shared.game_pid.load(Ordering::SeqCst), std::process::id())
 }
 
 pub fn hide(shared: &Shared) {
@@ -275,7 +256,17 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
         if down && !was_down {
             let focus = pid_of(unsafe { GetForegroundWindow() });
             if focus == std::process::id() || (game != 0 && focus == game) {
-                if visible {
+                let shift = unsafe { GetAsyncKeyState(VK_SHIFT as i32) } as u16 & 0x8000 != 0;
+                if shift {
+                    // Shift+`: the console, a tool for checking things rather than for
+                    // play. It is drawn by the panel, so a hidden panel is shown for it.
+                    let open = !shared.console_open.load(Ordering::SeqCst);
+                    shared.console_open.store(open, Ordering::SeqCst);
+                    if open && !visible {
+                        show(&shared, &ctx);
+                    }
+                    ctx.request_repaint();
+                } else if visible {
                     hide(&shared);
                 } else {
                     show(&shared, &ctx);
@@ -308,17 +299,12 @@ mod tests {
     }
 
     #[test]
-    fn the_console_shows_over_a_game_menu_while_the_game_or_it_has_the_keyboard() {
-        // The game in front: only while a menu is open (its cursor, or paused).
-        assert!(console_shows(7, 7, false, true, false));
-        assert!(console_shows(7, 7, false, false, true));
-        assert!(!console_shows(7, 7, false, false, false));
-        // The console in front.
-        assert!(console_shows(42, 7, true, true, false));
-        assert!(!console_shows(42, 7, true, false, false));
-        // Anything else in front — the panel, another program — or no game.
-        assert!(!console_shows(42, 7, false, true, true));
-        assert!(!console_shows(0, 0, false, true, true));
+    fn the_console_shows_while_the_game_or_this_program_has_the_keyboard() {
+        // (in front, the game, this program)
+        assert!(console_shows(7, 7, 42), "the game");
+        assert!(console_shows(42, 7, 42), "the panel or the console");
+        assert!(!console_shows(9, 7, 42), "another program");
+        assert!(!console_shows(0, 0, 42), "no game, nothing of ours");
     }
 
     #[test]

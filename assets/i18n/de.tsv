@@ -208,8 +208,6 @@ DEBUG	Debug
 TURNED_CHEATS_FROM_LAST_TIME_BACK	{count} Cheats vom letzten Mal wieder eingeschaltet
 CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Schließen – Originalwerte wiederherstellen und beenden
 HIDE_OPENS_IT_AGAIN	Ausblenden (mit ` wieder öffnen)
-CONSOLE_OPEN	Konsole ▾
-CONSOLE_CLOSED	Konsole ▸
 CLI_CONSOLE	CLI-Befehlskonsole
 GAME	Spiel
 CONNECTED_V_PID	● Verbunden\nv{version} · PID {pid}
@@ -508,7 +506,7 @@ HELP_A_NO_DATA	Sie werden gelesen, sobald du den Helden steuerst. Fragt es nach 
 HELP_Q_RESTORE	Cheats ausschalten
 HELP_A_RESTORE	Schließe das Panel mit × oder tippe auf „{restore}“. Beides stellt die Originalwerte wieder her.
 HELP_Q_UPDATE	Nach einem Spiel-Update
-HELP_A_UPDATE	Die Spieldaten werden von selbst neu gelesen. Wirkt etwas falsch, führe `doctor` in der Konsole aus.
+HELP_A_UPDATE	Die Spieldaten werden von selbst neu gelesen. Wirkt etwas falsch, öffne mit Shift+` die Konsole und führe `doctor` aus.
 HELP_Q_REPORT	Ein Problem melden
 HELP_A_REPORT	Die Seite „{debug}“ öffnet den Log-Ordner. Hänge hiumod.log und verify.txt an.
 ABOUT_NOW	wo du aufgehört hast, was hier übrig ist
@@ -618,3 +616,5 @@ EVENT_UNLOCKED	entsperrt
 EVENT_TRAVEL	Reise möglich
 LEGEND_HAZE_LINK	Dunst-Verbindung
 EVENT_CHANGED	verändert
+CONSOLE_KEY_HINT	Konsole {key}
+HELP_KEY_CONSOLE	Konsole öffnen/schließen (zum Prüfen)

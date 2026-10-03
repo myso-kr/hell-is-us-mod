@@ -55,7 +55,7 @@
   "install_s1_t": "İndirin",
   "install_s1_d": "Releases sayfasından en son zip dosyasını alın ve istediğiniz yere çıkarın. Yalnızca oyun dizinindeki Mods klasörüne yazar.",
   "install_s2_t": "hiumod.exe'ye çift tıklayın",
-  "install_s2_d": "Oyun açık değilse Steam üzerinden başlatır, oyuna girdiğinizde bağlanır. Paneli göstermek veya gizlemek için ` tuşuna (1'in solundaki tuş) basın.",
+  "install_s2_d": "Oyun açık değilse Steam üzerinden başlatır, oyuna girdiğinizde bağlanır. Paneli göstermek veya gizlemek için ` tuşuna (1'in solundaki tuş) basın. Shift+` kontrol için bir konsol açar.",
   "install_s3_t": "Oyunu bir kez, kendisi okur",
   "install_s3_d": "Kahramanı ilk kez kontrol ettiğinizde hiumod oyunun haritalarını ve metinlerini Mods klasörüne kendisi okur (yaklaşık iki dakika). .NET 8 çalışma zamanı yoksa panel kurmayı önerir.",
   "faq_title": "Sorular",

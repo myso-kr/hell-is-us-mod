@@ -255,8 +255,6 @@ pub struct Panel {
     /// achievements.
     places_grouped: bool,
     achievements_grouped: bool,
-    /// The header's console toggle is showing (see `title_bar`).
-    console_button: bool,
     /// The Map page's previews as textures, likewise: the minimap's, the big map's.
     preview_tex: Option<(u64, egui::TextureHandle)>,
     preview_big_tex: Option<(u64, egui::TextureHandle)>,
@@ -361,7 +359,6 @@ impl Panel {
             hero_tex: None,
             preview_tex: None,
             preview_big_tex: None,
-            console_button: false,
             places_grouped: false,
             achievements_grouped: false,
             clue_query: String::new(),
@@ -472,20 +469,11 @@ impl Panel {
                 if ui.button(" — ").on_hover_text(tr!("HIDE_OPENS_IT_AGAIN")).clicked() {
                     hotkey::hide(&self.shared);
                 }
-                // Only where the console itself can show: over a game menu. Once shown it
-                // stays while the panel keeps the keyboard, which pressing it gives the
-                // panel; else the press would hide it before it lands.
-                self.console_button = hotkey::console_allowed(&self.shared)
-                    || (self.console_button && hotkey::panel_in_front(&self.shared));
-                let label = if self.console.open { tr!("CONSOLE_OPEN") } else { tr!("CONSOLE_CLOSED") };
-                if self.console_button
-                    && ui.selectable_label(self.console.open, label).on_hover_text(tr!("CLI_CONSOLE")).clicked()
-                {
-                    self.console.open = !self.console.open;
-                    if self.console.open {
-                        self.console.focus();
-                    }
-                }
+                // The console is opened and closed by Shift+` (hotkey.rs): a button that
+                // showed only over a game menu was hard to reach. Its key, as a hint.
+                let hint = RichText::new(trf!("CONSOLE_KEY_HINT", key = "Shift+`")).small();
+                ui.label(hint.color(if self.console.open { super::theme::ACCENT } else { DIM }))
+                    .on_hover_text(tr!("CLI_CONSOLE"));
             });
         });
         ui.add_space(super::theme::TIGHT);
@@ -909,9 +897,15 @@ impl Panel {
     /// see-through, as in Half-Life: its own window (an egui viewport), shown while the
     /// panel is and the console is open.
     fn console_window(&mut self, ctx: &egui::Context) {
-        self.shared.console_open.store(self.console.open, std::sync::atomic::Ordering::SeqCst);
-        // Kept while open, made hidden: whether it shows is hotkey.rs `watch`'s call, made
-        // at once as the game's menu opens (no frame runs here then).
+        // Opened and closed by its key (hotkey.rs, `Shared::console_open`); opening puts the
+        // cursor in it. Kept while open, made hidden: whether it shows is `watch`'s call.
+        let open = self.shared.console_open.load(std::sync::atomic::Ordering::SeqCst);
+        if open != self.console.open {
+            self.console.open = open;
+            if open {
+                self.console.focus();
+            }
+        }
         let game = self.shared.game_pid.load(std::sync::atomic::Ordering::SeqCst);
         let open = self.console.open && game != 0;
         let Some((_, r)) = open.then(|| hotkey::game_window(game)).flatten() else {

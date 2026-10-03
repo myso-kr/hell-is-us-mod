@@ -208,8 +208,6 @@ DEBUG	调试
 TURNED_CHEATS_FROM_LAST_TIME_BACK	已重新开启上次的 {count} 项作弊
 CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	关闭：还原原值并退出
 HIDE_OPENS_IT_AGAIN	隐藏（按 ` 键再次打开）
-CONSOLE_OPEN	控制台 ▾
-CONSOLE_CLOSED	控制台 ▸
 CLI_CONSOLE	CLI 命令控制台
 GAME	游戏
 CONNECTED_V_PID	● 已连接\nv{version} · PID {pid}
@@ -508,7 +506,7 @@ HELP_A_NO_DATA	主角可以操控后会读取。如果要求安装 .NET 8，请�
 HELP_Q_RESTORE	关闭作弊
 HELP_A_RESTORE	用 × 关闭面板或点“{restore}”，两者都会恢复原值。
 HELP_Q_UPDATE	游戏更新后
-HELP_A_UPDATE	游戏数据会自动重新读取。若有异常，请在控制台运行 `doctor`。
+HELP_A_UPDATE	游戏数据会自动重新读取。若有异常，请按 Shift+` 打开控制台并运行 `doctor`。
 HELP_Q_REPORT	报告问题
 HELP_A_REPORT	在“{debug}”页可打开日志文件夹，请附上 hiumod.log 和 verify.txt。
 ABOUT_NOW	接着做什么、此地区还剩什么
@@ -618,3 +616,5 @@ EVENT_UNLOCKED	已解锁
 EVENT_TRAVEL	可通行
 LEGEND_HAZE_LINK	雾霭连接
 EVENT_CHANGED	状态变化
+CONSOLE_KEY_HINT	控制台 {key}
+HELP_KEY_CONSOLE	打开/关闭控制台 (用于检查)

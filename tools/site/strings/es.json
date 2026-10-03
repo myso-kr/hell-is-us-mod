@@ -55,7 +55,7 @@
   "install_s1_t": "Descarga",
   "install_s1_d": "Descarga el último zip desde la página de Releases y descomprímelo donde quieras. Solo escribe en la carpeta Mods del directorio del juego.",
   "install_s2_t": "Haz doble clic en hiumod.exe",
-  "install_s2_d": "Si el juego no está abierto, lo inicia a través de Steam y se engancha en cuanto entras. Pulsa ` (la tecla a la izquierda del 1) para mostrar u ocultar el panel.",
+  "install_s2_d": "Si el juego no está abierto, lo inicia a través de Steam y se engancha en cuanto entras. Pulsa ` (la tecla a la izquierda del 1) para mostrar u ocultar el panel. Shift+` abre una consola para comprobar cosas.",
   "install_s3_t": "Lee el juego una vez, por su cuenta",
   "install_s3_d": "La primera vez que controlas al protagonista, hiumod lee por su cuenta los mapas y textos del juego en la carpeta Mods (unos dos minutos). Si falta el runtime de .NET 8, el panel ofrece instalarlo.",
   "faq_title": "Preguntas",

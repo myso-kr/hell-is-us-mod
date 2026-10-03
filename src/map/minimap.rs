@@ -35,8 +35,8 @@ pub struct MapState {
     pub heading_up: bool,
     /// How many metres the map's radius covers.
     pub radius_m: f32,
-    /// The function keys (1–12) that show/hide the map and drop a marker. F7, the
-    /// first choice, is the game's photo mode, so the player picks.
+    /// The function keys that show/hide the map and drop a marker (`usable_key`: not the
+    /// game's or Steam's).
     pub toggle_key: u8,
     pub marker_key: u8,
     /// Which kinds of thing are drawn, one bit per `actors::Kind`.
@@ -432,10 +432,14 @@ pub const ALL_LAYERS: u8 = 0b11_1111;
 /// The layer bits as of this version; files without it predate the save-point kind.
 const LAYERS_VERSION: u8 = 2;
 
-/// F1–F12 (the panel's key is ` now, so F8 is free too).
+/// F1–F12 but those the game and Steam hold by default: F1 shows the game's HUD, F7 is
+/// its photo mode, F12 is Steam's screenshot. (The panel is `, the console Shift+`.)
 pub fn usable_key(k: u8) -> bool {
-    (1..=12).contains(&k)
+    (1..=12).contains(&k) && !TAKEN_KEYS.contains(&k)
 }
+
+/// The function keys the game (F1 HUD, F7 photo mode) and Steam (F12 screenshot) use.
+pub const TAKEN_KEYS: [u8; 3] = [1, 7, 12];
 
 #[cfg(test)]
 mod tests {
@@ -617,8 +621,11 @@ mod tests {
         assert_eq!(old.layers, ALL_LAYERS, "a file from before save points turns them on");
         let off = MapState::parse("layers 31\nlayers_version 2\n");
         assert_eq!(off.layers, 31, "a file that knows of them keeps them off");
-        let k = MapState::parse("toggle_key 12\nmarker_key 5\n");
-        assert_eq!((k.toggle_key, k.marker_key), (12, 5));
+        let k = MapState::parse("toggle_key 11\nmarker_key 5\ncycle_key 4\n");
+        assert_eq!((k.toggle_key, k.marker_key), (11, 5));
+        // The game's and Steam's keys (F1 HUD, F7 photo mode, F12 screenshot) are not taken.
+        let k = MapState::parse("toggle_key 12\nmarker_key 7\ncompass_key 1\n");
+        assert_eq!((k.toggle_key, k.marker_key, k.compass_key), (9, 6, 10));
         let k = MapState::parse("toggle_key 8\nmarker_key 13\n");
         assert_eq!((k.toggle_key, k.marker_key), (8, 6), "F8 is free now; F13 is no key");
         let k = MapState::parse("toggle_key 6\n");

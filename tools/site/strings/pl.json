@@ -55,7 +55,7 @@
   "install_s1_t": "Pobierz",
   "install_s1_d": "Pobierz najnowsze archiwum zip ze strony Releases i rozpakuj je w dowolnym miejscu. Zapisuje wyłącznie do folderu Mods w katalogu gry.",
   "install_s2_t": "Kliknij dwukrotnie hiumod.exe",
-  "install_s2_d": "Jeśli gra nie jest uruchomiona, włącza ją przez Steam i podłącza się, gdy już w niej jesteś. Klawisz ` (na lewo od 1) pokazuje i ukrywa panel.",
+  "install_s2_d": "Jeśli gra nie jest uruchomiona, włącza ją przez Steam i podłącza się, gdy już w niej jesteś. Klawisz ` (na lewo od 1) pokazuje i ukrywa panel. Shift+` otwiera konsolę do sprawdzania.",
   "install_s3_t": "Sam raz odczytuje dane gry",
   "install_s3_d": "Gdy pierwszy raz przejmiesz kontrolę nad bohaterem, hiumod sam odczyta mapy i teksty gry do folderu Mods (ok. 2 minut). Jeśli brakuje środowiska .NET 8, panel zaproponuje jego instalację.",
   "faq_title": "Pytania",

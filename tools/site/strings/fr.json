@@ -55,7 +55,7 @@
   "install_s1_t": "Télécharger",
   "install_s1_d": "Récupérez le dernier zip sur la page Releases et décompressez-le où vous voulez. Il n’écrit jamais ailleurs que dans le dossier Mods du répertoire du jeu.",
   "install_s2_t": "Double-cliquer sur hiumod.exe",
-  "install_s2_d": "Il lance le jeu via Steam s’il n’est pas déjà ouvert et s’y connecte une fois en partie. Appuyez sur ` (la touche à gauche de 1) pour afficher ou masquer le panneau.",
+  "install_s2_d": "Il lance le jeu via Steam s’il n’est pas déjà ouvert et s’y connecte une fois en partie. Appuyez sur ` (la touche à gauche de 1) pour afficher ou masquer le panneau. Shift+` ouvre une console pour vérifier.",
   "install_s3_t": "Il lit le jeu une fois, tout seul",
   "install_s3_d": "La première fois que vous contrôlez le héros, hiumod lit de lui-même les cartes et les textes du jeu dans le dossier Mods (environ deux minutes). Si le runtime .NET 8 manque, le panneau propose de l’installer.",
   "faq_title": "Questions",

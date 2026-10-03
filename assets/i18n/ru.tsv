@@ -208,8 +208,6 @@ DEBUG	Отладка
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Снова включено читов с прошлого раза: {count}
 CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Закрыть: вернуть исходные значения и выйти
 HIDE_OPENS_IT_AGAIN	Скрыть (откроется снова клавишей `)
-CONSOLE_OPEN	Консоль ▾
-CONSOLE_CLOSED	Консоль ▸
 CLI_CONSOLE	Консоль CLI
 GAME	Игра
 CONNECTED_V_PID	● Подключено\nv{version} · PID {pid}
@@ -508,7 +506,7 @@ HELP_A_NO_DATA	Они читаются, как только герой под в
 HELP_Q_RESTORE	Как выключить читы
 HELP_A_RESTORE	Закройте панель кнопкой × или нажмите «{restore}». Оба способа возвращают исходные значения.
 HELP_Q_UPDATE	После обновления игры
-HELP_A_UPDATE	Данные игры перечитываются сами. Если что-то не так, выполните `doctor` в консоли.
+HELP_A_UPDATE	Данные игры перечитываются сами. Если что-то не так, откройте консоль клавишами Shift+` и выполните `doctor`.
 HELP_Q_REPORT	Сообщить о проблеме
 HELP_A_REPORT	Вкладка «{debug}» открывает папку журналов. Приложите hiumod.log и verify.txt.
 ABOUT_NOW	где вы остановились, что здесь осталось
@@ -618,3 +616,5 @@ EVENT_UNLOCKED	разблокировано
 EVENT_TRAVEL	путь открыт
 LEGEND_HAZE_LINK	Связь дымки
 EVENT_CHANGED	перемена
+CONSOLE_KEY_HINT	Консоль {key}
+HELP_KEY_CONSOLE	Открыть/закрыть консоль (для проверки)

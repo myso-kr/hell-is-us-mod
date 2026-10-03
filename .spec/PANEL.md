@@ -121,16 +121,15 @@ areas drawn with the settings as they are, in the colours they are drawn with.
 
 The panel runs **once** (a named mutex; a second start shows the running one and exits) and has a
 **tray icon** (`src/ui/tray.rs`: click shows or hides, right-click menu, Quit closes as × does). It is
-kept inside its monitor's work area (`hotkey.rs` `keep_on_screen`). The console and its header toggle
-show only over a game menu (the game or the console in front, the cursor showing or the game paused).
+kept inside its monitor's work area (`hotkey.rs` `keep_on_screen`). The console opens and closes with
+Shift+` (§6) and shows while the game or this program has the keyboard.
 
 **Each window is handled by its own handle** (2026-10-04, `hotkey.rs` `watch`, every 30 ms), not in
 the panel's frames: egui runs a frame only when something happens in one of its windows, so a
 decision made there waited for the next event, which could be clicks away (the console came up only
 after clicking back and forth between the game and the panel).
 - The console's window is kept by egui while it is open, created hidden; `watch` shows or hides it
-  with `ShowWindow` the moment the condition changes, and asks the panel for a frame so its header
-  toggle follows.
+  with `ShowWindow` the moment the condition changes, and asks the panel for a frame.
 - The panel minimised (its taskbar button) is hidden as its own — does: the console with it, and the
   keyboard given back to the game (`take_focus`, as Windows has already given it to some other
   window and would refuse a plain request). Left minimised, the panel still counted as showing.
@@ -206,8 +205,17 @@ work out which of two alike buttons does what.
 Requested by the user: move the panel hotkey to `` ` `` (~) and add a console overlay for CLI commands that
 is ready for input whenever the panel is open.
 
-- **Hotkey:** `VK_OEM_3` (`` ` `` ~), polled, and only honored while the game or the panel has focus. F8 is
-  now selectable as the minimap key.
+- **Hotkey:** `VK_OEM_3` (`` ` `` ~), polled, and only honored while the game or the panel has focus.
+- **The console's key** (2026-10-04): **Shift+`**, fixed. It first had a toggle in the panel's header
+  that showed only over a game menu, which was hard to reach; a key of its own (F8, settable) was
+  tried and dropped: the console is for checking things, not for play, so it shares the panel's
+  key with Shift. It toggles `Shared::console_open` in the hotkey thread, shows a hidden panel (the
+  console is drawn by it) and puts the cursor in the input; the header keeps the key as a hint. The
+  console shows while it is open and the game or this program has the keyboard.
+- **Function keys left free** (2026-10-04): the game's defaults use F1 (show the HUD) and F7 (photo
+  mode), Steam's F12 takes a screenshot (Game8's and Magic Game World's control lists); the key
+  pickers do not offer them (`minimap::TAKEN_KEYS`), and a saved setting on one goes back to the
+  defaults (F9 map, F6 pin, F10 compass, F11 next goal), which nothing in the game uses.
 - **Console** (`src/ui/console.rs`):
   - A typed command runs **the same executable with those arguments**, without a window
     (`CREATE_NO_WINDOW`), and its stdout/stderr stream in line by line (`[hiumod]` log lines use the
@@ -215,7 +223,7 @@ is ready for input whenever the panel is open.
   - Built-in commands: `help` (CLI usage) and `clear`. A leading `hiumod` is stripped; a bare `hiumod`
     (which would start a second panel) is refused.
   - Up/Down recall earlier commands, Esc stops the running command, and closing the panel stops it too.
-  - When the panel opens, the cursor is in the console input. A typed `` ` `` is removed (it is the panel key).
+  - When the console opens, the cursor is in its input. A typed `` ` `` is removed (it is the panel key).
 - **Placement:** the first version was a 220 px strip under the panel, collapsible from its title line
   ("Console ▾"). The same day, at the user's request ("a translucent UI at the very top, like
   Half-Life"), it became a **translucent window dropping down from the top of the game window**:

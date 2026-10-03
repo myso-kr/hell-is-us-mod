@@ -208,8 +208,6 @@ DEBUG	デバッグ
 TURNED_CHEATS_FROM_LAST_TIME_BACK	前回オンにしていたチート {count}件を再びオンにしました
 CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	閉じる（元の値に戻して終了）
 HIDE_OPENS_IT_AGAIN	隠す（` キーで再表示）
-CONSOLE_OPEN	コンソール ▾
-CONSOLE_CLOSED	コンソール ▸
 CLI_CONSOLE	CLIコンソール
 GAME	ゲーム
 CONNECTED_V_PID	● 接続中\nv{version} · PID {pid}
@@ -508,7 +506,7 @@ HELP_A_NO_DATA	主人公を操作できるようになると読み込みます�
 HELP_Q_RESTORE	チートを切る
 HELP_A_RESTORE	パネルを×で閉じるか、「{restore}」を押してください。どちらも元の値に戻します。
 HELP_Q_UPDATE	ゲームの更新後
-HELP_A_UPDATE	ゲームデータは自動で読み直します。おかしい場合はコンソールで `doctor` を実行してください。
+HELP_A_UPDATE	ゲームデータは自動で読み直します。おかしい場合は Shift+` でコンソールを開き、`doctor` を実行してください。
 HELP_Q_REPORT	問題を報告する
 HELP_A_REPORT	「{debug}」タブからログフォルダを開けます。hiumod.log と verify.txt を添付してください。
 ABOUT_NOW	続きと、この地域の残り
@@ -618,3 +616,5 @@ EVENT_UNLOCKED	解除
 EVENT_TRAVEL	移動可能
 LEGEND_HAZE_LINK	ヘイズの繋がり
 EVENT_CHANGED	状態変化
+CONSOLE_KEY_HINT	コンソール {key}
+HELP_KEY_CONSOLE	コンソールの開閉 (確認用)

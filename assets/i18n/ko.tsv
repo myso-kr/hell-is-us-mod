@@ -208,8 +208,6 @@ DEBUG	디버그
 TURNED_CHEATS_FROM_LAST_TIME_BACK	지난번에 켜 둔 치트 {count}개를 다시 켰습니다
 CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	닫기 (원래 값으로 되돌리고 종료)
 HIDE_OPENS_IT_AGAIN	숨기기 (` 키로 다시 열기)
-CONSOLE_OPEN	콘솔 ▾
-CONSOLE_CLOSED	콘솔 ▸
 CLI_CONSOLE	CLI 콘솔
 GAME	게임
 CONNECTED_V_PID	● 연결됨\nv{version} · PID {pid}
@@ -508,7 +506,7 @@ HELP_A_NO_DATA	주인공을 조작할 수 있게 되면 읽습니다. .NET 8을 
 HELP_Q_RESTORE	치트 끄기
 HELP_A_RESTORE	패널을 ×로 닫거나 '{restore}' 버튼을 누르세요. 둘 다 원래 값으로 되돌립니다.
 HELP_Q_UPDATE	게임 업데이트 뒤
-HELP_A_UPDATE	게임 데이터를 알아서 다시 읽습니다. 이상하면 콘솔에서 `doctor`를 실행하세요.
+HELP_A_UPDATE	게임 데이터를 알아서 다시 읽습니다. 이상하면 Shift+`로 콘솔을 열고 `doctor`를 실행하세요.
 HELP_Q_REPORT	문제 알리기
 HELP_A_REPORT	'{debug}' 탭에서 로그 폴더를 열 수 있습니다. hiumod.log와 verify.txt를 첨부해 주세요.
 ABOUT_NOW	이어서 할 일, 이 지역에 남은 것
@@ -618,3 +616,5 @@ EVENT_UNLOCKED	해제
 EVENT_TRAVEL	이동 가능
 LEGEND_HAZE_LINK	헤이즈 연결
 EVENT_CHANGED	상태 변화
+CONSOLE_KEY_HINT	콘솔 {key}
+HELP_KEY_CONSOLE	콘솔 열기/닫기 (점검용)

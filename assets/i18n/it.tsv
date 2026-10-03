@@ -208,8 +208,6 @@ DEBUG	Debug
 TURNED_CHEATS_FROM_LAST_TIME_BACK	Riattivati {count} trucchi della volta scorsa
 CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Chiudi: ripristina i valori originali ed esce
 HIDE_OPENS_IT_AGAIN	Nascondi (` lo riapre)
-CONSOLE_OPEN	Console ▾
-CONSOLE_CLOSED	Console ▸
 CLI_CONSOLE	Console CLI
 GAME	Gioco
 CONNECTED_V_PID	● Connesso\nv{version} · PID {pid}
@@ -508,7 +506,7 @@ HELP_A_NO_DATA	Vengono letti appena controlli il protagonista. Se chiede .NET 8,
 HELP_Q_RESTORE	Disattivare i trucchi
 HELP_A_RESTORE	Chiudi il pannello con × o premi «{restore}». Entrambi rimettono i valori originali.
 HELP_Q_UPDATE	Dopo un aggiornamento del gioco
-HELP_A_UPDATE	I dati di gioco vengono riletti da soli. Se qualcosa non torna, esegui `doctor` nella console.
+HELP_A_UPDATE	I dati di gioco vengono riletti da soli. Se qualcosa non torna, apri la console con Shift+` ed esegui `doctor`.
 HELP_Q_REPORT	Segnalare un problema
 HELP_A_REPORT	La scheda «{debug}» apre la cartella dei log. Allega hiumod.log e verify.txt.
 ABOUT_NOW	dove eri rimasto, cosa resta qui
@@ -618,3 +616,5 @@ EVENT_UNLOCKED	sbloccato
 EVENT_TRAVEL	viaggio consentito
 LEGEND_HAZE_LINK	Legame della foschia
 EVENT_CHANGED	cambiamento
+CONSOLE_KEY_HINT	Console {key}
+HELP_KEY_CONSOLE	Apri/chiudi la console (per controllare)
