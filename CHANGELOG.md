@@ -19,6 +19,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - Dashboard look: the Now page opens on a hero with a live map of the region, its name and six KPI
   tiles, and other regions as a bar chart; Collect and Puzzles open on progress rings; collections
   and enemy groups have progress bars; good deeds, mysteries and timeloops are rings.
+- The same look on every page: the Guide target as a large panel with its distance; quests with a
+  progress bar each; Clues and Help with KPI tiles and numbered steps; cheats, saves and the debug
+  checks as aligned rows with status chips; achievements with progress bars; Map settings as form
+  rows. Long explanations moved into hover text.
 - States read at a glance: chips for "opens now", covered or short, soon or later, a vault's state;
   keys as keycaps; card headers without the accent rail.
 - One look per role: press a line to be guided there (no separate Guide buttons), one small

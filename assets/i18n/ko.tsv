@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	저장한 지역 안에서만 이동합니다
 CHEATS_ON_COUNT	켜진 치트 ({count})
 VALUE_AND_GAME	{v:.2} (게임 {n:.2})
 ON	켜짐
-COMPASS_AND_HEADING	나침반 · 방향
 COMPASS_F	나침반 (F{key})
 TOP_CENTRE_OF_THE_SCREEN	화면 상단 중앙
 GUIDE	안내
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	퀘스트를 읽는 중입니다. 게임을 불
 MAIN_STORY_AUTO_NOW	메인 스토리 자동: {quest}
 MAIN_STORY_AUTO	메인 스토리 자동
 CLUES	 · 단서 {got}/{all}
-DONE_FAILED	완료 {done}개 · 실패 {failed}개
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	필요한 것: 조사 DB가 없습니다. `hiumod doctor survey`를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다
 NEEDED_LEFT	필요한 것 (남은 {left} / {all})
 OTHER_REGIONS_TAKE_THE_APC	다른 지역 (장갑차로 이동): {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	단서
 FIND_A_CLUE	단서 찾기
 CLUE_TEXT_NOT_READ_YET	데이터패드 글을 아직 읽지 않았습니다. 주인공을 조작할 수 있게 되면 읽습니다 (콘솔에서 `doctor locale`도 됩니다).
 SEARCH_CLUES_HINT	이름이나 낱말 (열쇠, 빅터, 터널…)
-CLUES_KNOWN	데이터패드 항목 {subjects}개에 대해 {facts}가지를 알고 있습니다.
 NO_CLUE_MATCHES	아는 것 중에 맞는 것이 없습니다.
 MORE_LINES	…외 {count}개
 MORE_ENTRIES	…외 항목 {count}개
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	적 무리 처치 {done}/{all}
 GROUPS_BEATEN	{place}: 처치 {done}/{all} · 남은 적 {enemies}
 PUZZLES_HERE_RING	이 지역 퍼즐
 VAULTS_RING	금고
+QUEST_NEEDS	필요한 것
+QUESTS_DONE	완료 {n}
+QUESTS_FAILED	실패 {n}
+STAT_DATAPAD_ENTRIES	데이터패드 항목
+STAT_FACTS_KNOWN	알고 있는 사실
+GUIDE_AUTO	자동 안내
+GUIDE_ROUTE	이동 경로
+GUIDE_BY_HAND	직접 고름
+GUIDE_NO_ROUTE	걸어서 닿는 길 없음
+BACKUP_AUTO	자동
+BACKUP_MANUAL	수동
+HIDE_IN_MENUS	메뉴에서 숨기기

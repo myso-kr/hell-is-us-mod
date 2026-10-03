@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	Ne déplace que dans la région où la position 
 CHEATS_ON_COUNT	Cheats actifs ({count})
 VALUE_AND_GAME	{v:.2} (jeu {n:.2})
 ON	Activé
-COMPASS_AND_HEADING	Boussole et cap
 COMPASS_F	Boussole (F{key})
 TOP_CENTRE_OF_THE_SCREEN	En haut au centre de l'écran
 GUIDE	Guidage
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	Lecture des quêtes. Elles apparaissent quelque
 MAIN_STORY_AUTO_NOW	Histoire principale auto : {quest}
 MAIN_STORY_AUTO	Histoire principale auto
 CLUES	 · indices {got}/{all}
-DONE_FAILED	{done} terminées · {failed} échouées
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Requis : pas de base d'enquête. Lancez `hiumod doctor survey` une fois pour remplir objets et PNJ de toutes les régions
 NEEDED_LEFT	Requis : reste {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	Autres régions (véhicule blindé) : {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	Indices
 FIND_A_CLUE	Chercher un indice
 CLUE_TEXT_NOT_READ_YET	Les textes de la tablette n’ont pas encore été lus. Ils le sont dès que vous contrôlez le héros (ou `doctor locale` dans la console).
 SEARCH_CLUES_HINT	Un nom ou un mot (clé, Victor, tunnel…)
-CLUES_KNOWN	Vous savez {facts} choses sur {subjects} entrées de la tablette.
 NO_CLUE_MATCHES	Rien de ce que vous savez ne correspond.
 MORE_LINES	… et {count} de plus
 MORE_ENTRIES	… et {count} entrées de plus
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	Groupes d’ennemis vaincus {done}/{all}
 GROUPS_BEATEN	{place} : {done}/{all} vaincus · {enemies} ennemis restants
 PUZZLES_HERE_RING	Énigmes ici
 VAULTS_RING	Chambres
+QUEST_NEEDS	Requis
+QUESTS_DONE	{n} terminées
+QUESTS_FAILED	{n} échouées
+STAT_DATAPAD_ENTRIES	Entrées de la tablette
+STAT_FACTS_KNOWN	Faits connus
+GUIDE_AUTO	Guidage auto
+GUIDE_ROUTE	Itinéraire à pied
+GUIDE_BY_HAND	Choisi à la main
+GUIDE_NO_ROUTE	Pas d’itinéraire à pied
+BACKUP_AUTO	Auto
+BACKUP_MANUAL	Manuelle
+HIDE_IN_MENUS	Masquer dans les menus

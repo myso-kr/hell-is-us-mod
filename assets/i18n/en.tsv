@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	Moves only within the region it was saved in
 CHEATS_ON_COUNT	Cheats On ({count})
 VALUE_AND_GAME	{v:.2} (game {n:.2})
 ON	On
-COMPASS_AND_HEADING	Compass and Heading
 COMPASS_F	Compass (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Top center of the screen
 GUIDE	Guide
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	Reading quests. They appear a few seconds after
 MAIN_STORY_AUTO_NOW	Main story, automatic: {quest}
 MAIN_STORY_AUTO	Main story, automatic
 CLUES	 · clues {got}/{all}
-DONE_FAILED	{done} done · {failed} failed
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Needed: no survey DB. Run `hiumod doctor survey` once to fill in items and NPCs in every region
 NEEDED_LEFT	Needed: {left}/{all} left
 OTHER_REGIONS_TAKE_THE_APC	Other regions (take the APC): {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	Clues
 FIND_A_CLUE	Find a Clue
 CLUE_TEXT_NOT_READ_YET	The Datapad's text has not been read yet. It is read once the hero is in control (or `doctor locale` in the console).
 SEARCH_CLUES_HINT	A name or a word (key, Victor, tunnel…)
-CLUES_KNOWN	You know {facts} things about {subjects} Datapad entries.
 NO_CLUE_MATCHES	Nothing you know matches.
 MORE_LINES	…and {count} more
 MORE_ENTRIES	…and {count} more entries
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	Enemy Groups Beaten {done}/{all}
 GROUPS_BEATEN	{place}: {done}/{all} beaten · {enemies} enemies left
 PUZZLES_HERE_RING	Puzzles here
 VAULTS_RING	Vaults
+QUEST_NEEDS	Needed
+QUESTS_DONE	{n} done
+QUESTS_FAILED	{n} failed
+STAT_DATAPAD_ENTRIES	Datapad entries
+STAT_FACTS_KNOWN	Facts known
+GUIDE_AUTO	Auto guide
+GUIDE_ROUTE	Walking route
+GUIDE_BY_HAND	Picked by hand
+GUIDE_NO_ROUTE	No walking route
+BACKUP_AUTO	Auto
+BACKUP_MANUAL	Manual
+HIDE_IN_MENUS	Hide in menus

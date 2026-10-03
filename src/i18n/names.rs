@@ -30,6 +30,9 @@ pub struct Names {
     game: HashMap<(String, String), String>,
     /// The Datapad's facts that have text, by asset name (`facts.tsv`).
     facts: HashMap<String, FactRow>,
+    /// The facts' English text, by (namespace, key): what shows where this language's
+    /// table leaves one empty (Korean has no text for the APC's name).
+    facts_en: HashMap<(String, String), String>,
 }
 
 /// One row of `facts.tsv`: where a fact's text is, and what it is about.
@@ -76,11 +79,21 @@ impl Names {
                 Some(((p.next()?.to_string(), p.next()?.to_string()), unescape(p.next()?)))
             })
             .collect();
-        if let Ok(en) = std::fs::read_to_string(dir.join("en.tsv")) {
-            n.add_sources(&en, &text);
-        }
         if let Ok(facts) = std::fs::read_to_string(dir.join("facts.tsv")) {
             n.facts = parse_facts(&facts);
+        }
+        if let Ok(en) = std::fs::read_to_string(dir.join("en.tsv")) {
+            n.add_sources(&en, &text);
+            let keys: HashSet<(&str, &str)> = n.facts.values().map(|r| (r.ns.as_str(), r.key.as_str())).collect();
+            n.facts_en = en
+                .lines()
+                .filter_map(|l| {
+                    let mut p = l.splitn(3, '\t');
+                    let (ns, key, t) = (p.next()?, p.next()?, p.next()?);
+                    (keys.contains(&(ns, key)) && !t.is_empty())
+                        .then(|| ((ns.to_string(), key.to_string()), unescape(t)))
+                })
+                .collect();
         }
         Some(n)
     }
@@ -92,7 +105,9 @@ impl Names {
             unit: r.unit.clone(),
             track: r.track.clone(),
             category: r.category.clone(),
-            text: self.game_text(&r.ns, &r.key)?,
+            text: self
+                .game_text(&r.ns, &r.key)
+                .or_else(|| self.facts_en.get(&(r.ns.clone(), r.key.clone())).cloned())?,
         })
     }
 

@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	Przenosi tylko w obrębie regionu, w którym zap
 CHEATS_ON_COUNT	Włączone cheaty ({count})
 VALUE_AND_GAME	{v:.2} (gra {n:.2})
 ON	Wł.
-COMPASS_AND_HEADING	Kompas i kierunek
 COMPASS_F	Kompas (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Góra ekranu, środek
 GUIDE	Prowadzenie
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	Wczytywanie zadań. Pojawią się kilka sekund 
 MAIN_STORY_AUTO_NOW	Główna fabuła, auto: {quest}
 MAIN_STORY_AUTO	Główna fabuła, auto
 CLUES	 · wskazówki {got}/{all}
-DONE_FAILED	Ukończone: {done} · nieudane: {failed}
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Potrzeba: brak bazy badań. Uruchom raz `hiumod doctor survey`, by uzupełnić przedmioty i NPC we wszystkich regionach
 NEEDED_LEFT	Potrzeba: zostało {left}/{all}
 OTHER_REGIONS_TAKE_THE_APC	Inne regiony (jedź transporterem): {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	Wskazówki
 FIND_A_CLUE	Znajdź wskazówkę
 CLUE_TEXT_NOT_READ_YET	Teksty datapada nie zostały jeszcze odczytane. Odczyt nastąpi, gdy przejmiesz kontrolę nad bohaterem (albo `doctor locale` w konsoli).
 SEARCH_CLUES_HINT	Imię lub słowo (klucz, Victor, tunel…)
-CLUES_KNOWN	Wiesz {facts} rzeczy o {subjects} wpisach datapada.
 NO_CLUE_MATCHES	Nic z tego, co wiesz, nie pasuje.
 MORE_LINES	… i {count} więcej
 MORE_ENTRIES	… i {count} wpisów więcej
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	Pokonane grupy wrogów {done}/{all}
 GROUPS_BEATEN	{place}: pokonano {done}/{all} · zostało wrogów: {enemies}
 PUZZLES_HERE_RING	Łamigłówki tutaj
 VAULTS_RING	Skarbce
+QUEST_NEEDS	Potrzebne
+QUESTS_DONE	Ukończone: {n}
+QUESTS_FAILED	Nieudane: {n}
+STAT_DATAPAD_ENTRIES	Wpisy datapada
+STAT_FACTS_KNOWN	Znane fakty
+GUIDE_AUTO	Auto prowadzenie
+GUIDE_ROUTE	Trasa piesza
+GUIDE_BY_HAND	Wybrane ręcznie
+GUIDE_NO_ROUTE	Brak trasy pieszej
+BACKUP_AUTO	Auto
+BACKUP_MANUAL	Ręczna
+HIDE_IN_MENUS	Ukryj w menu

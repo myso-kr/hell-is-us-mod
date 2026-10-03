@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	仅限在保存时所在的区域内移动
 CHEATS_ON_COUNT	已开启的作弊（{count}）
 VALUE_AND_GAME	{v:.2}（游戏 {n:.2}）
 ON	开启
-COMPASS_AND_HEADING	指南针 · 朝向
 COMPASS_F	指南针（F{key}）
 TOP_CENTRE_OF_THE_SCREEN	屏幕上方居中
 GUIDE	引导
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	正在读取任务，游戏加载数秒后显�
 MAIN_STORY_AUTO_NOW	主线剧情（自动）：{quest}
 MAIN_STORY_AUTO	主线剧情（自动）
 CLUES	 · 线索 {got}/{all}
-DONE_FAILED	完成 {done} · 失败 {failed}
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	需要：没有调查数据库，运行一次 `hiumod doctor survey` 即可补全各区域的道具和 NPC
 NEEDED_LEFT	需要：剩余 {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	其他区域（乘 APC 前往）：{regions}
@@ -473,7 +471,6 @@ CLUES_TAB	线索
 FIND_A_CLUE	查找线索
 CLUE_TEXT_NOT_READ_YET	尚未读取数据板的文本。主角可以操控后会读取（也可以在控制台输入 `doctor locale`）。
 SEARCH_CLUES_HINT	名字或词语（钥匙、维克多、隧道……）
-CLUES_KNOWN	你对 {subjects} 个数据板条目知道 {facts} 件事。
 NO_CLUE_MATCHES	你知道的内容中没有匹配项。
 MORE_LINES	……还有 {count} 条
 MORE_ENTRIES	……还有 {count} 个条目
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	已击败敌群 {done}/{all}
 GROUPS_BEATEN	{place}：已击败 {done}/{all} · 剩余敌人 {enemies}
 PUZZLES_HERE_RING	此地区谜题
 VAULTS_RING	宝库
+QUEST_NEEDS	所需
+QUESTS_DONE	完成 {n}
+QUESTS_FAILED	失败 {n}
+STAT_DATAPAD_ENTRIES	数据板条目
+STAT_FACTS_KNOWN	已知事实
+GUIDE_AUTO	自动引导
+GUIDE_ROUTE	步行路线
+GUIDE_BY_HAND	手动选择
+GUIDE_NO_ROUTE	没有步行路线
+BACKUP_AUTO	自动
+BACKUP_MANUAL	手动
+HIDE_IN_MENUS	菜单中隐藏

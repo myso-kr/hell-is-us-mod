@@ -2,6 +2,7 @@
 //! as they are set now, and what to do when something is off. Short on purpose: each
 //! line says one thing.
 
+use super::super::theme::{ACCENT, ACCENT_DEEP, INLINE, TEXT, TITLE};
 use super::*;
 
 impl Panel {
@@ -15,12 +16,18 @@ impl Panel {
         });
     }
 
-    /// Every page in one line; pressing it opens the page.
+    /// Every page in one line, its name then what it is for (dim); pressing it opens the page.
     fn pages_card(&mut self, t: &mut Tui) {
         card(t, tr!("HELP_PAGES"), |t| {
             for tool in Tool::ALL.into_iter().filter(|t| *t != Tool::Help) {
-                let line = RichText::new(format!("{}  ·  {}", tool.label(), tool.about()));
-                if tw::pick(t, false, line) {
+                let pressed = block(t, |ui| {
+                    let mut job = egui::text::LayoutJob::default();
+                    let (style, font, valign) = (ui.style().clone(), egui::FontSelection::Default, egui::Align::Center);
+                    RichText::new(tool.label()).color(TEXT).append_to(&mut job, &style, font.clone(), valign);
+                    RichText::new(format!("   {}", tool.about())).color(DIM).append_to(&mut job, &style, font, valign);
+                    ui.add(egui::Button::selectable(false, job).wrap_mode(egui::TextWrapMode::Wrap)).clicked()
+                });
+                if pressed {
                     self.tool = Some(tool);
                 }
             }
@@ -29,14 +36,24 @@ impl Panel {
     }
 }
 
-/// Numbered lines, the number dim.
+/// A numbered sequence: each step's number in a round badge, its text beside it.
 fn steps(t: &mut Tui, lines: &[&str]) {
     for (i, l) in lines.iter().enumerate() {
-        t.style(tw::row(super::super::theme::INLINE)).add(|t| {
-            w(t, |ui| ui.label(RichText::new(format!("{}", i + 1)).color(DIM).strong()));
+        t.style(tw::row(INLINE)).add(|t| {
+            w(t, |ui| badge(ui, i + 1));
             text(t, *l);
         });
     }
+}
+
+/// A step's number: the digit on a small filled circle in the deep accent.
+fn badge(ui: &mut egui::Ui, n: usize) {
+    const SIDE: f32 = 20.0;
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(SIDE, SIDE), egui::Sense::hover());
+    let p = ui.painter();
+    p.circle_filled(rect.center(), SIDE / 2.0, ACCENT_DEEP);
+    p.circle_stroke(rect.center(), SIDE / 2.0 - 0.5, egui::Stroke::new(1.0, ACCENT.gamma_multiply(0.5)));
+    p.text(rect.center(), egui::Align2::CENTER_CENTER, n.to_string(), egui::FontId::proportional(11.5), TITLE);
 }
 
 fn start_card(t: &mut Tui) {
@@ -58,7 +75,7 @@ fn keys_help_card(t: &mut Tui, state: &crate::minimap::MapState) {
             (format!("F{}", state.marker_key), tr!("PLACE_OR_REMOVE_A_MARKER")),
         ];
         for (key, what) in rows {
-            t.style(tw::row(super::super::theme::INLINE)).add(|t| {
+            t.style(tw::row(INLINE)).add(|t| {
                 tw::keycap(t, &key);
                 text(t, what);
             });

@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	Si sposta solo nella regione in cui è stato sal
 CHEATS_ON_COUNT	Trucchi attivi ({count})
 VALUE_AND_GAME	{v:.2} (gioco {n:.2})
 ON	Attivo
-COMPASS_AND_HEADING	Bussola e direzione
 COMPASS_F	Bussola (F{key})
 TOP_CENTRE_OF_THE_SCREEN	In alto al centro dello schermo
 GUIDE	Guida
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	Lettura delle indagini in corso. Compaiono qual
 MAIN_STORY_AUTO_NOW	Storia principale automatica: {quest}
 MAIN_STORY_AUTO	Storia principale automatica
 CLUES	 · indizi {got}/{all}
-DONE_FAILED	{done} fatte · {failed} fallite
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Servono: nessun DB di rilevamento. Esegui `hiumod doctor survey` una volta per compilare oggetti e PNG di ogni regione
 NEEDED_LEFT	Servono: restano {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	Altre regioni (usa il VTT): {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	Indizi
 FIND_A_CLUE	Cerca un indizio
 CLUE_TEXT_NOT_READ_YET	I testi del tablet non sono ancora stati letti: vengono letti appena controlli il protagonista (oppure `doctor locale` nella console).
 SEARCH_CLUES_HINT	Un nome o una parola (chiave, Victor, tunnel…)
-CLUES_KNOWN	Sai {facts} cose su {subjects} voci del tablet.
 NO_CLUE_MATCHES	Nulla di ciò che sai corrisponde.
 MORE_LINES	… e altri {count}
 MORE_ENTRIES	… e altre {count} voci
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	Gruppi di nemici sconfitti {done}/{all}
 GROUPS_BEATEN	{place}: {done}/{all} sconfitti · restano {enemies} nemici
 PUZZLES_HERE_RING	Enigmi qui
 VAULTS_RING	Camere
+QUEST_NEEDS	Necessario
+QUESTS_DONE	{n} completate
+QUESTS_FAILED	{n} fallite
+STAT_DATAPAD_ENTRIES	Voci del tablet
+STAT_FACTS_KNOWN	Fatti noti
+GUIDE_AUTO	Guida automatica
+GUIDE_ROUTE	Percorso a piedi
+GUIDE_BY_HAND	Scelto a mano
+GUIDE_NO_ROUTE	Nessun percorso a piedi
+BACKUP_AUTO	Auto
+BACKUP_MANUAL	Manuale
+HIDE_IN_MENUS	Nascondi nei menu

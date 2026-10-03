@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	Bewegt nur innerhalb der Region, in der gespeich
 CHEATS_ON_COUNT	Aktive Cheats ({count})
 VALUE_AND_GAME	{v:.2} (Spiel {n:.2})
 ON	Ein
-COMPASS_AND_HEADING	Kompass · Richtung
 COMPASS_F	Kompass (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Oben mittig auf dem Bildschirm
 GUIDE	Führung
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	Quests werden gelesen – sie erscheinen wenige
 MAIN_STORY_AUTO_NOW	Hauptgeschichte automatisch – {quest}
 MAIN_STORY_AUTO	Hauptgeschichte automatisch
 CLUES	 · Hinweise {got}/{all}
-DONE_FAILED	{done} erledigt · {failed} gescheitert
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Benötigt: Survey-DB fehlt – einmal `hiumod doctor survey` ausführen, dann erscheinen Gegenstände und NPCs aller Regionen
 NEEDED_LEFT	Benötigt – noch {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	Andere Regionen (mit dem APC fahren): {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	Hinweise
 FIND_A_CLUE	Hinweis suchen
 CLUE_TEXT_NOT_READ_YET	Die Texte des Datenpads sind noch nicht gelesen. Sie werden gelesen, sobald du die Kontrolle über den Helden hast (oder `doctor locale` in der Konsole).
 SEARCH_CLUES_HINT	Ein Name oder ein Wort (Schlüssel, Victor, Tunnel …)
-CLUES_KNOWN	Du weißt {facts} Dinge über {subjects} Einträge des Datenpads.
 NO_CLUE_MATCHES	Nichts, was du weißt, passt dazu.
 MORE_LINES	… und {count} weitere
 MORE_ENTRIES	… und {count} weitere Einträge
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	Gegnergruppen besiegt {done}/{all}
 GROUPS_BEATEN	{place}: {done}/{all} besiegt · {enemies} Gegner übrig
 PUZZLES_HERE_RING	Rätsel hier
 VAULTS_RING	Grüfte
+QUEST_NEEDS	Benötigt
+QUESTS_DONE	{n} erledigt
+QUESTS_FAILED	{n} gescheitert
+STAT_DATAPAD_ENTRIES	Datenpad-Einträge
+STAT_FACTS_KNOWN	Bekannte Fakten
+GUIDE_AUTO	Auto-Führung
+GUIDE_ROUTE	Laufweg
+GUIDE_BY_HAND	Von Hand gewählt
+GUIDE_NO_ROUTE	Kein Laufweg
+BACKUP_AUTO	Auto
+BACKUP_MANUAL	Manuell
+HIDE_IN_MENUS	In Menüs ausblenden

@@ -1,7 +1,30 @@
 //! The quest page: the journal and what the followed quest needs, missable deadlines, hand-overs.
 
-use super::super::theme::INLINE;
+use super::super::theme::{INLINE, TIGHT, TITLE};
 use super::*;
+
+/// A deadline's detail runs to this many characters on the card; the rest is on hover.
+const DETAIL: usize = 64;
+
+/// `done/all`, small and dim, for the end of a line beside its meter.
+fn count(done: usize, all: usize) -> RichText {
+    RichText::new(format!("{done}/{all}")).monospace().size(11.5).color(DIM)
+}
+
+/// A distance at the end of a line, small and dim (nothing when it is unknown).
+fn distance(t: &mut Tui, span: String) {
+    if !span.is_empty() {
+        w(t, |ui| ui.label(RichText::new(span).monospace().size(11.5).color(DIM)));
+    }
+}
+
+/// `s` cut to `n` characters, an ellipsis where it was cut.
+fn clip(s: &str, n: usize) -> String {
+    match s.char_indices().nth(n) {
+        Some((i, _)) => format!("{}…", s[..i].trim_end()),
+        None => s.to_string(),
+    }
+}
 
 impl Panel {
     /// The quest journal: which quest the guide and the tracker follow.
@@ -20,31 +43,39 @@ impl Panel {
                 Some(q) if state.quest.is_none() => trf!("MAIN_STORY_AUTO_NOW", quest = q.name),
                 _ => tr!("MAIN_STORY_AUTO").to_string(),
             };
-            if tw::pick(t, state.quest.is_none(), auto) {
+            if tw::line(t, Some(state.quest.is_none()), |ui| ui.add_space(16.0), auto, |_| {}) {
                 pick = Some(None);
             }
             for q in journal.iter().filter(|q| q.active()) {
-                let tag = q.kind.label();
-                let mut label = format!("[{tag}] {}", q.name);
-                if let Some((got, all)) = q.progress.filter(|(_, all)| *all > 0) {
-                    label += &trf!("CLUES", got = got, all = all);
-                }
-                let on = state.quest.as_deref() == Some(q.key.as_str());
-                let kind = q.kind;
-                if tw::pick_with(
-                    t,
-                    on,
-                    |ui| {
-                        crate::ui::svg::quest(ui, kind, 16.0);
-                    },
-                    label,
-                ) {
+                // The followed quest is marked, whether chosen or followed automatically.
+                let on = Some(&q.key) == followed.as_ref();
+                let (kind, tag) = (q.kind, q.kind.label());
+                let progress = q.progress.filter(|(_, all)| *all > 0);
+                let icon = |ui: &mut egui::Ui| {
+                    crate::ui::svg::quest(ui, kind, 16.0).on_hover_text(tag);
+                };
+                // A main quest's clues: a small meter and the count at the line's end.
+                let end = |t: &mut Tui| {
+                    if let Some((got, all)) = progress {
+                        let hover = trf!("CLUES", got = got, all = all).trim_start_matches([' ', '·']).to_string();
+                        w(t, |ui| tw::meter(ui, Some(40.0), got, all));
+                        w(t, |ui| ui.label(count(got, all)).on_hover_text(hover));
+                    }
+                };
+                if tw::line(t, Some(on), icon, q.name.as_str(), end) {
                     pick = Some(Some(q.key.clone()));
                 }
             }
             let done = journal.iter().filter(|q| q.status == Status::Completed).count();
             let failed = journal.iter().filter(|q| q.status == Status::Failed).count();
-            note(t, trf!("DONE_FAILED", done = done, failed = failed));
+            t.style(tw::row(TIGHT)).add(|t| {
+                tw::chip(t, trf!("QUESTS_DONE", n = done), if done > 0 { tw::Tone::Ok } else { tw::Tone::Quiet });
+                tw::chip(
+                    t,
+                    trf!("QUESTS_FAILED", n = failed),
+                    if failed > 0 { tw::Tone::Bad } else { tw::Tone::Quiet },
+                );
+            });
             // What the followed quest needs, from the survey of every world.
             let needs = snap
                 .and_then(|s| s.needs.iter().find(|(k, _)| Some(k) == followed.as_ref()))
@@ -58,7 +89,19 @@ impl Panel {
                 note(t, tr!("NEEDED_NO_SURVEY_DB_RUN_HIUMOD"));
             } else {
                 let left = needs.iter().filter(|x| !x.done).count();
-                text(t, RichText::new(trf!("NEEDED_LEFT", left = left, all = needs.len())).strong());
+                let all = needs.len();
+                // The header: what is found of all it needs, as a meter.
+                t.style(tw::row(INLINE)).add(|t| {
+                    block(t, |ui| {
+                        ui.label(RichText::new(tr!("QUEST_NEEDS")).strong().color(TITLE)).on_hover_text(trf!(
+                            "NEEDED_LEFT",
+                            left = left,
+                            all = all
+                        ));
+                    });
+                    w(t, |ui| tw::meter(ui, Some(72.0), all - left, all));
+                    w(t, |ui| ui.label(count(all - left, all)));
+                });
                 // This world's, nearest first: press to guide there.
                 let mut mine: Vec<&crate::survey::Need> =
                     needs.iter().filter(|x| !x.done && Some(&x.world) == here_world.as_ref()).collect();
@@ -67,33 +110,34 @@ impl Panel {
                 let far = |x: &crate::survey::Need| here.map_or(String::new(), |h| crate::raster::span(h, x.at));
                 for x in mine.iter().take(8) {
                     let label = match x.what.as_str() {
-                        "" => format!("{} ({})", x.label, far(x)),
-                        w if w == x.label => format!("{w} ({})", far(x)),
-                        w => format!("{w}: {} ({})", x.label, far(x)),
+                        "" => x.label.clone(),
+                        w if w == x.label => w.to_string(),
+                        w => format!("{w}: {}", x.label),
                     };
                     // A person to talk to, or a thing to take.
                     let npc = x.label.starts_with(trf!("TALK_NPC", p = "").as_str());
                     let sort = if npc { crate::actors::Sub::Npc } else { crate::actors::Sub::Quest };
-                    if tw::pick_with(
-                        t,
-                        state.target == Some(x.id),
-                        |ui| {
-                            crate::ui::svg::sort(ui, sort, 16.0);
-                        },
-                        label,
-                    ) {
+                    let span = far(x);
+                    let icon = |ui: &mut egui::Ui| {
+                        crate::ui::svg::sort(ui, sort, 16.0);
+                    };
+                    if tw::line(t, Some(state.target == Some(x.id)), icon, label, |t| distance(t, span)) {
                         guide_to(state, &goals, x);
                     }
                 }
-                // Other worlds: how many, where.
+                // Other worlds: how many each, as chips; the way there on hover.
                 let mut elsewhere: std::collections::BTreeMap<&str, usize> = std::collections::BTreeMap::new();
                 for x in needs.iter().filter(|x| !x.done && Some(&x.world) != here_world.as_ref()) {
                     *elsewhere.entry(x.world.as_str()).or_default() += 1;
                 }
                 if !elsewhere.is_empty() {
-                    let list: Vec<String> =
-                        elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
-                    note(t, trf!("OTHER_REGIONS_TAKE_THE_APC", regions = list.join(" · ")));
+                    t.style(tw::wrap(TIGHT)).add(|t| {
+                        for (world, n) in elsewhere.iter() {
+                            let place = crate::i18n::place(world);
+                            let hover = trf!("TAKE_THE_APC", place = place);
+                            w(t, |ui| tw::pill(ui, format!("{place} {n}"), tw::Tone::Quiet).on_hover_text(hover));
+                        }
+                    });
                 }
             }
             if let Some(p) = pick {
@@ -129,18 +173,34 @@ impl Panel {
                     _ => (tr!("LATER"), tw::Tone::Quiet),
                 };
                 tw::item(t, |t| {
-                    t.style(tw::row(INLINE)).add(|t| {
-                        tw::chip(t, mark, colour);
-                        let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
-                        if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
-                            state.quest = Some(d.key.clone());
-                            state.target = None;
-                            state.chosen = false;
-                            state.guide_auto = true;
-                            state.route = true;
+                    // The title line: when, the deed (press to follow it once it is started),
+                    // and a chip while it is not.
+                    let on = d.started.then_some(state.quest.as_deref() == Some(d.key.as_str()));
+                    let icon = |ui: &mut egui::Ui| {
+                        tw::pill(ui, mark, colour);
+                    };
+                    let end = |t: &mut Tui| {
+                        if !d.started {
+                            let not = tr!("NOT_STARTED").trim().trim_matches(['(', ')']).to_string();
+                            tw::chip(t, not, tw::Tone::Wait);
+                        }
+                    };
+                    if tw::line(t, on, icon, d.title.as_str(), end) {
+                        state.quest = Some(d.key.clone());
+                        state.target = None;
+                        state.chosen = false;
+                        state.guide_auto = true;
+                        state.route = true;
+                    }
+                    // One dim detail line: the deadline, what to do cut short, all of it on hover.
+                    let detail = format!("{}: {}", d.due.label(), d.what);
+                    block(t, |ui| {
+                        let short = clip(&detail, DETAIL);
+                        let r = ui.add(egui::Label::new(RichText::new(short).small().color(DIM)).wrap());
+                        if detail.chars().count() > DETAIL {
+                            r.on_hover_text(detail.as_str());
                         }
                     });
-                    note(t, format!("{}: {}", d.due.label(), d.what));
                 });
             }
             let passed = list.iter().filter(|d| d.when == When::Passed).count();
@@ -180,26 +240,22 @@ impl Panel {
             note(t, tr!("PEOPLE_WHO_WANT_AN_ITEM_YOU"));
             for x in list.iter() {
                 let same = Some(&x.world) == here_world.as_ref();
-                let place = if same {
-                    here.map_or(String::new(), |h| crate::raster::span(h, x.at))
-                } else {
-                    trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world))
+                let label = format!("{} → {}", x.what, x.label.trim_start_matches(trf!("TALK_NPC", p = "").as_str()));
+                let icon = |ui: &mut egui::Ui| {
+                    crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0);
                 };
-                let label =
-                    format!("{} → {} ({place})", x.what, x.label.trim_start_matches(trf!("TALK_NPC", p = "").as_str()));
-                if same {
-                    if tw::pick_with(
-                        t,
-                        state.target == Some(x.id),
-                        |ui| {
-                            crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0);
-                        },
-                        label,
-                    ) {
-                        guide_to(state, &goals, x);
+                // In this world: press to guide there, the distance at the end. Elsewhere: not
+                // pressable, the way there as a chip.
+                let on = same.then_some(state.target == Some(x.id));
+                let end = |t: &mut Tui| {
+                    if same {
+                        distance(t, here.map_or(String::new(), |h| crate::raster::span(h, x.at)));
+                    } else {
+                        tw::chip(t, trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world)), tw::Tone::Quiet);
                     }
-                } else {
-                    text(t, RichText::new(label).color(DIM));
+                };
+                if tw::line(t, on, icon, label, end) {
+                    guide_to(state, &goals, x);
                 }
             }
         });

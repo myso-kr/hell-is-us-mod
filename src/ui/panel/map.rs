@@ -77,7 +77,11 @@ impl Panel {
                 w(t, |ui| ui.selectable_value(&mut state.mini_outline, false, tr!("FILLED")));
             });
             field(t, tr!("ICON_SIZE"), |t| tw::slider(t, &mut state.icon_px, crate::minimap::ICON_PX, 1.0, " px"));
-            switch(t, &mut state.hide_in_menus, tr!("HIDE_EVERY_OVERLAY_WHILE_THE_INVENTORY"));
+            // A short label; the full sentence is the hover text.
+            field(t, tr!("HIDE_IN_MENUS"), |t| {
+                w(t, |ui| toggle(ui, &mut state.hide_in_menus))
+                    .on_hover_text(tr!("HIDE_EVERY_OVERLAY_WHILE_THE_INVENTORY"));
+            });
         });
 
         card(t, tr!("TERRAIN"), |t| {
@@ -147,13 +151,11 @@ impl Panel {
                             if on { colour } else { colour.gamma_multiply(0.3) },
                         );
                     });
-                    t.style(tw::grow(tw::row(INLINE))).add(|t| {
-                        w(t, |ui| crate::ui::svg::kind(ui, k, 18.0));
-                        w(t, |ui| {
-                            ui.label(RichText::new(k.label()).strong().color(if on { Color32::WHITE } else { DIM }))
-                        });
-                        w(t, |ui| ui.label(RichText::new(format!("({total})")).color(DIM)));
-                    });
+                    w(t, |ui| crate::ui::svg::kind(ui, k, 18.0));
+                    // The name takes the rest of the row, so every count lines up at its end.
+                    let name = RichText::new(k.label()).color(if on { super::super::theme::TEXT } else { DIM });
+                    text(t, name);
+                    w(t, |ui| ui.label(RichText::new(total.to_string()).monospace().size(11.5).color(DIM)));
                     if subs > 1 {
                         let hidden = Sub::ALL.iter().filter(|x| x.kind() == k && state.hidden.contains(x)).count();
                         let label = match (self.unfolded[i], hidden) {
@@ -230,7 +232,7 @@ impl Panel {
                                     .desired_width(f32::INFINITY),
                             )
                         });
-                        w(t, |ui| ui.label(RichText::new(far).color(DIM).small()));
+                        w(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
                         if w(t, |ui| ui.selectable_label(state.target == Some(id), tr!("GUIDE"))).clicked() {
                             state.target = Some(id);
                             state.chosen = true;
@@ -267,7 +269,7 @@ impl Panel {
                     }
                 });
             }
-            _ => text(t, RichText::new(tr!("SHOWN_WHILE_THE_HERO_CAN_BE")).color(DIM)),
+            _ => note(t, tr!("SHOWN_WHILE_THE_HERO_CAN_BE")),
         });
     }
 
@@ -293,8 +295,18 @@ impl Panel {
                     "compass_key" => &mut state.compass_key,
                     _ => &mut state.cycle_key,
                 };
-                field(t, label, |t| w(t, |ui| key_picker(ui, id, key, &taken)));
+                field(t, label, |t| w(t, |ui| keycap_picker(ui, id, key, &taken)));
             }
         });
     }
+}
+
+/// `key_picker` drawn as a keycap: the same choices and behaviour, the key in
+/// monospace on the control fill.
+fn keycap_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
+    ui.scope(|ui| {
+        ui.style_mut().override_text_style = Some(egui::TextStyle::Monospace);
+        ui.visuals_mut().widgets.inactive.weak_bg_fill = super::super::theme::CONTROL;
+        key_picker(ui, id, key, taken);
+    });
 }

@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	Yalnızca kaydedildiği bölge içinde taşır
 CHEATS_ON_COUNT	Açık hileler ({count})
 VALUE_AND_GAME	{v:.2} (oyun {n:.2})
 ON	Açık
-COMPASS_AND_HEADING	Pusula ve yön
 COMPASS_F	Pusula (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Ekranın üst ortası
 GUIDE	Rehber
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	Görevler okunuyor. Oyun yüklendikten birkaç 
 MAIN_STORY_AUTO_NOW	Ana hikâye, otomatik: {quest}
 MAIN_STORY_AUTO	Ana hikâye, otomatik
 CLUES	 · ipuçları {got}/{all}
-DONE_FAILED	{done} tamamlandı · {failed} başarısız
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Gereken: keşif veri tabanı yok. Tüm bölgelerdeki eşya ve NPC'leri doldurmak için bir kez `hiumod doctor survey` çalıştır
 NEEDED_LEFT	Gereken: {left} / {all} kaldı
 OTHER_REGIONS_TAKE_THE_APC	Diğer bölgeler (ZPT ile git): {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	İpuçları
 FIND_A_CLUE	İpucu bul
 CLUE_TEXT_NOT_READ_YET	Veri Tableti metinleri henüz okunmadı. Kahramanın kontrolü sizde olduğunda okunur (ya da konsolda `doctor locale`).
 SEARCH_CLUES_HINT	Bir ad ya da sözcük (anahtar, Victor, tünel…)
-CLUES_KNOWN	{subjects} Veri Tableti kaydı hakkında {facts} şey biliyorsunuz.
 NO_CLUE_MATCHES	Bildiklerinizden eşleşen bir şey yok.
 MORE_LINES	… ve {count} tane daha
 MORE_ENTRIES	… ve {count} kayıt daha
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	Yenilen düşman grupları {done}/{all}
 GROUPS_BEATEN	{place}: {done}/{all} yenildi · kalan düşman {enemies}
 PUZZLES_HERE_RING	Buradaki bulmacalar
 VAULTS_RING	Mahzenler
+QUEST_NEEDS	Gerekenler
+QUESTS_DONE	{n} tamamlandı
+QUESTS_FAILED	{n} başarısız
+STAT_DATAPAD_ENTRIES	Veri Tableti kayıtları
+STAT_FACTS_KNOWN	Bilinen gerçekler
+GUIDE_AUTO	Otomatik rehber
+GUIDE_ROUTE	Yürüme rotası
+GUIDE_BY_HAND	Elle seçildi
+GUIDE_NO_ROUTE	Yürüme rotası yok
+BACKUP_AUTO	Otomatik
+BACKUP_MANUAL	Elle
+HIDE_IN_MENUS	Menülerde gizle

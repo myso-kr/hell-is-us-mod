@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	保存したエリア内でのみ移動します
 CHEATS_ON_COUNT	オンのチート ({count})
 VALUE_AND_GAME	{v:.2}（ゲーム {n:.2}）
 ON	オン
-COMPASS_AND_HEADING	コンパス · 方向
 COMPASS_F	コンパス (F{key})
 TOP_CENTRE_OF_THE_SCREEN	画面上部中央
 GUIDE	ガイド
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	クエストを読み込み中です。ゲー�
 MAIN_STORY_AUTO_NOW	メインストーリー自動：{quest}
 MAIN_STORY_AUTO	メインストーリー自動
 CLUES	 · 手がかり {got}/{all}
-DONE_FAILED	完了 {done}件 · 失敗 {failed}件
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	必要なもの: 調査DBなし。`hiumod doctor survey` を一度実行すると、全エリアのアイテム・NPCの位置が埋まります
 NEEDED_LEFT	必要なもの（残り {left} / {all}）
 OTHER_REGIONS_TAKE_THE_APC	他のエリア（APCで移動）: {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	手がかり
 FIND_A_CLUE	手がかりを探す
 CLUE_TEXT_NOT_READ_YET	データパッドの文章はまだ読み込んでいません。主人公を操作できるようになると読み込みます（コンソールの `doctor locale` でも可）。
 SEARCH_CLUES_HINT	名前や言葉（鍵、ヴィクター、トンネル…）
-CLUES_KNOWN	データパッドの項目 {subjects} 件について {facts} 件のことを知っています。
 NO_CLUE_MATCHES	知っていることの中に一致するものはありません。
 MORE_LINES	…ほか {count} 件
 MORE_ENTRIES	…ほか {count} 項目
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	敵の群れ 撃破 {done}/{all}
 GROUPS_BEATEN	{place}：撃破 {done}/{all} · 残りの敵 {enemies}
 PUZZLES_HERE_RING	この地域のパズル
 VAULTS_RING	金庫
+QUEST_NEEDS	必要なもの
+QUESTS_DONE	完了 {n}
+QUESTS_FAILED	失敗 {n}
+STAT_DATAPAD_ENTRIES	データパッドの項目
+STAT_FACTS_KNOWN	知っている事実
+GUIDE_AUTO	自動案内
+GUIDE_ROUTE	移動経路
+GUIDE_BY_HAND	手動で選択
+GUIDE_NO_ROUTE	歩いて行ける道なし
+BACKUP_AUTO	自動
+BACKUP_MANUAL	手動
+HIDE_IN_MENUS	メニューで隠す

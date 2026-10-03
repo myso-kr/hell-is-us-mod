@@ -109,20 +109,23 @@ impl Panel {
             for a in list.iter().filter(|a| self.show_unlocked || !a.unlocked) {
                 let id = id_of(&a.api);
                 let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
-                let progress = a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| format!("{}/{of}", v.min(of)));
-                // The name with progress on the right; under it the condition, which is
-                // what the player needs to read (a hidden one's only once shown).
+                let progress =
+                    a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| (v.clamp(0, of) as usize, of as usize));
+                // The name, then its progress as a meter with the count (a done one: a
+                // chip instead); under it the condition, which is what the player needs
+                // to read (a hidden one's only once shown).
                 tw::item(t, |t| {
                     t.style(tw::row(INLINE)).add(|t| {
-                        let head = if secret {
-                            tr!("HIDDEN_ACHIEVEMENT").to_string()
-                        } else {
-                            format!("{}{}", if a.unlocked { "✓ " } else { "" }, a.name)
-                        };
+                        let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { a.name.clone() };
                         let colour = if a.unlocked { DIM } else { super::super::theme::TEXT };
                         text(t, RichText::new(head).color(colour));
-                        if let Some(p) = progress.filter(|_| !secret) {
-                            w(t, |ui| ui.label(RichText::new(p).small().color(DIM)));
+                        if let Some((done, all)) = progress.filter(|_| !secret && !a.unlocked) {
+                            w(t, |ui| tw::meter(ui, Some(56.0), done, all));
+                            let count = RichText::new(format!("{done}/{all}")).monospace().size(11.5).color(DIM);
+                            w(t, |ui| ui.label(count));
+                        }
+                        if a.unlocked {
+                            tw::chip(t, "✓", tw::Tone::Ok);
                         }
                         if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
                             self.revealed.insert(id);

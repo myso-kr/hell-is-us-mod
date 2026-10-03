@@ -151,7 +151,6 @@ MOVES_ONLY_WITHIN_THE_REGION_IT	Переход только в пределах 
 CHEATS_ON_COUNT	Включённые читы ({count})
 VALUE_AND_GAME	{v:.2} (в игре {n:.2})
 ON	Вкл.
-COMPASS_AND_HEADING	Компас и направление
 COMPASS_F	Компас (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Вверху по центру экрана
 GUIDE	Навигация
@@ -233,7 +232,6 @@ READING_THE_QUESTS_THEY_APPEAR_A	Задания читаются. Появятс
 MAIN_STORY_AUTO_NOW	Основной сюжет (авто): {quest}
 MAIN_STORY_AUTO	Основной сюжет (авто)
 CLUES	 · подсказки {got}/{all}
-DONE_FAILED	Выполнено: {done} · провалено: {failed}
 NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Нужно: базы обследования нет. Один раз выполните `hiumod doctor survey`, и заполнятся предметы и NPC всех регионов
 NEEDED_LEFT	Нужно: осталось {left} / {all}
 OTHER_REGIONS_TAKE_THE_APC	Другие регионы (поездка на БТР): {regions}
@@ -473,7 +471,6 @@ CLUES_TAB	Улики
 FIND_A_CLUE	Найти улику
 CLUE_TEXT_NOT_READ_YET	Тексты планшета ещё не прочитаны. Они читаются, как только герой под вашим управлением (или `doctor locale` в консоли).
 SEARCH_CLUES_HINT	Имя или слово (ключ, Виктор, тоннель…)
-CLUES_KNOWN	Вы знаете {facts} фактов о {subjects} записях планшета.
 NO_CLUE_MATCHES	Ничего из того, что вы знаете, не подходит.
 MORE_LINES	… и ещё {count}
 MORE_ENTRIES	… и ещё {count} записей
@@ -541,3 +538,15 @@ ENEMY_GROUPS_BEATEN	Побеждено групп врагов: {done}/{all}
 GROUPS_BEATEN	{place}: побеждено {done}/{all} · осталось врагов: {enemies}
 PUZZLES_HERE_RING	Головоломки здесь
 VAULTS_RING	Залы
+QUEST_NEEDS	Нужно
+QUESTS_DONE	Выполнено: {n}
+QUESTS_FAILED	Провалено: {n}
+STAT_DATAPAD_ENTRIES	Записи планшета
+STAT_FACTS_KNOWN	Известные факты
+GUIDE_AUTO	Автонавигация
+GUIDE_ROUTE	Пеший маршрут
+GUIDE_BY_HAND	Выбрано вручную
+GUIDE_NO_ROUTE	Нет пешего маршрута
+BACKUP_AUTO	Авто
+BACKUP_MANUAL	Вручную
+HIDE_IN_MENUS	Скрывать в меню
