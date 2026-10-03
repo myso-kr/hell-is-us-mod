@@ -388,8 +388,12 @@ pub struct Scanner {
     records: HashMap<u64, Option<u32>>,
     /// The Haze links as last read with the positions.
     links: Vec<HazeLink>,
-    /// Walkers whose Haze records were logged (the record layout is unconfirmed in play).
-    haze_logged: std::collections::HashSet<u64>,
+    /// Per Walker, the Haze its first record pointed at when last logged: logged again as
+    /// it changes (the Haze is spawned in the fight, after the Walker is first seen).
+    haze_logged: HashMap<u64, u64>,
+    /// `Actor.RootComponent`'s offset, from `refresh`: where a Haze not tracked as a thing
+    /// is found.
+    root_off: u64,
     /// (enemy classes seen, those with `HazeRecords`) as last logged.
     haze_classes: (usize, usize),
     /// Per actor, kept across scans: (its class, where it says it is spent).
@@ -439,6 +443,7 @@ impl Scanner {
     /// A full scan when one is due. `hero` is the hero pawn; `root` is
     /// `Actor.RootComponent`'s offset, `sets` the ability system's `SpawnedAttributes`.
     pub fn refresh(&mut self, m: &dyn Memory, n: &Names, hero: u64, root: u64, sets: u64) -> Result<(), String> {
+        self.root_off = root;
         if self.scanned.is_some_and(|t| t.elapsed() < RESCAN) {
             return Ok(());
         }
@@ -518,15 +523,17 @@ impl Scanner {
         }
         for t in tracked {
             let Some(off) = t.records else { continue };
-            if self.haze_logged.contains(&t.actor) {
-                continue;
-            }
+
             let at = t.actor + off as u64;
             let (data, num) = (mem::read_u64(m, at).unwrap_or(0), mem::read_u32(m, at + 8).unwrap_or(0));
             if num == 0 {
                 continue;
             }
-            self.haze_logged.insert(t.actor);
+            let first = mem::read_u64(m, data + SPAWNED_HAZE).unwrap_or(0);
+            if self.haze_logged.get(&t.actor) == Some(&first) {
+                continue;
+            }
+            self.haze_logged.insert(t.actor, first);
             let walker = n.class(m, t.actor).unwrap_or_default();
             let mut parts = Vec::new();
             for i in 0..num.min(MAX_RECORDS) as u64 {
@@ -587,7 +594,20 @@ impl Scanner {
             }
             for i in 0..num as u64 {
                 let haze = mem::read_u64(m, data + i * HAZE_RECORD + SPAWNED_HAZE).unwrap_or(0);
-                if let Some(&h) = at.get(&haze).filter(|_| haze != t.actor) {
+                if haze == t.actor || !mem::plausible(haze) {
+                    continue;
+                }
+                // Tracked as a thing, or read where it stands: a Haze may be of a class the
+                // things are not sorted into.
+                let h = at.get(&haze).copied().or_else(|| {
+                    let rc = mem::read_u64(m, haze + self.root_off).filter(|&p| mem::plausible(p))?;
+                    let mut b = [0u8; 24];
+                    m.read(rc + location, &mut b).then_some(())?;
+                    let d = |i: usize| f64::from_le_bytes(b[i * 8..i * 8 + 8].try_into().unwrap()) as f32;
+                    let p = [d(0), d(1), d(2)];
+                    p.iter().all(|v| v.is_finite() && v.abs() < 1.0e7).then_some(p)
+                });
+                if let Some(h) = h {
                     links.push((h, walker));
                 }
             }
