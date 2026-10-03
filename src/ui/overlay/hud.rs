@@ -8,6 +8,38 @@ use crate::minimap::MapState;
 use crate::pathfind::Path;
 use crate::raster::Pin;
 
+/// The things to draw: the scanned ones, and for the hero's world what the survey
+/// knows is left — enemy groups not beaten, puzzles not solved (dials and codes),
+/// vault doors not opened.
+pub fn with_survey(things: &[crate::actors::Thing], s: &crate::engine::Snapshot) -> Vec<crate::actors::Thing> {
+    use crate::actors::{Sub, Thing};
+    let mut out = things.to_vec();
+    let Some(world) = s.world.as_deref().map(crate::survey::Survey::world_of) else { return out };
+    for h in s.hollows.iter().filter(|h| h.world == world) {
+        out.extend(h.places.iter().map(|&at| Thing { sub: Sub::EnemyGroup, at }));
+    }
+    out.extend(
+        s.catalogue
+            .iter()
+            .filter(|(p, solved)| !solved && p.world == world && p.kind != crate::puzzles::Kind::Placement)
+            .map(|(p, _)| Thing { sub: Sub::Puzzle, at: p.at }),
+    );
+    out.extend(
+        s.vaults
+            .iter()
+            .filter(|v| v.state != crate::tables::VaultState::Opened)
+            .filter_map(|v| v.door.as_ref().filter(|(w, _)| w == world))
+            .map(|(_, at)| Thing { sub: Sub::Vault, at: *at }),
+    );
+    out
+}
+
+/// Whether an unsolved puzzle is within 15 m of the hero.
+pub fn puzzle_near(s: &crate::engine::Snapshot) -> bool {
+    let Some((p, _)) = s.pose else { return false };
+    s.puzzles.iter().any(|q| !q.solved && ((q.at[0] as f64 - p[0]).powi(2) + (q.at[1] as f64 - p[1]).powi(2)).sqrt() < 1500.0)
+}
+
 /// Which way `to` lies from `from`, as a UE yaw in degrees.
 pub fn bearing(from: [f32; 3], to: [f32; 3]) -> f32 {
     (to[1] - from[1]).atan2(to[0] - from[0]).to_degrees()

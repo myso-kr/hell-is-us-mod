@@ -20,6 +20,8 @@ VERWENDUNG
                                 und der Spieltext in seinen 12 Sprachen
   hiumod doctor locale          nur der Spieltext, nach Mods\locale: Item-, NPC-
                                 und Regionsnamen in der Spielsprache
+  hiumod doctor saves [s]       jedes Speicherobjekt im Speicher alle 5 s: Datum,
+                                Fakten, erledigte Taten — welches das Spiel aktualisiert
   hiumod doctor watch <target> [seconds]
                                 was sich in einem Objekt ändert, benannt oder nativ, während es passiert
   hiumod doctor scan <target> <value>

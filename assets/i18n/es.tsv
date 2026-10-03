@@ -381,3 +381,47 @@ FAIL 안내: {e}	FAIL guía: {e}
 강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Si se cierra a la fuerza, `hiumod restore` lo restaura todo
 적용 중	Aplicando
 되돌릴 것이 없음	Nada que restaurar
+다이얼 퍼즐	Puzle de diales
+물건 놓기 퍼즐	Colocar objetos
+키패드·암호	Teclado · código
+    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    En los diales de la puerta, la tarjeta «Puzles cercanos» indica cuánto girar cada uno
+    코드 (기호 번호): {code}	    Código (números de símbolo): {code}
+    타임루프 {name}: {left}/{all}	    Bucle temporal {name}: {left}/{all}
+40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	No hay ningún puzle de diales, teclado o colocación de objetos a menos de 40 m
+{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} grupos · {enemies} enemigos
+가장 가까운 곳	Más cercano
+게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Lee la respuesta que tiene el juego — no lo pulses si quieres resolverlo tú
+근처 퍼즐 ({n})	Puzles cercanos ({n})
+금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No hay tabla de cámaras — ejecuta `doctor survey` una vez en la consola
+금단의 지식 금고 {done}/{all}	Cámaras de conocimiento prohibido {done}/{all}
+남은 적 무리 {left}/{all}	Grupos de enemigos restantes {left}/{all}
+남은 적 무리	Grupo de enemigos restante
+다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Dial {n}: girar {k} pasos (ahora {now} → {want})
+다이얼 {n}: 맞음	Dial {n}: correcto
+답 보기	Ver respuesta
+숨기기	Ocultar
+스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No hay tabla de spawners — ejecuta `doctor survey` una vez en la consola
+연구 {n}/{need}	Investigación {n}/{need}
+열림 ✓	Abierto ✓
+장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Entrega objetos de investigación a {g:Facts_Tania/Tania_Real_Name} en el blindado para desbloquear información de las cámaras · investigación actual {n}
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Se cuenta por grupo de enemigos (spawner) · un grupo registrado en la partida cuenta como derrotado (estimación)
+정보 있음	Conocido
+코드 보기	Ver código
+코드: {code}	Código: {code}
+필요한 것: {items}	Necesita: {items}
+다이얼 {n}개 · {places}칸	{n} diales · {places} posiciones
+{n}자리 코드	Código de {n} dígitos
+물건 {n}개	{n} objetos
+다이얼 위치 (왼쪽부터, 1부터): {list}	Posiciones (desde la izquierda, desde 1): {list}
+퍼즐 목록 · 이 지역 남은 {left}	Lista de puzles · quedan {left} aquí
+퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No hay lista de puzles — ejecuta `doctor survey` una vez en la consola
+열쇠·물건 놓기 퍼즐도 보기	Mostrar también puertas con llave y colocación de objetos
+안 푼 퍼즐	Puzle sin resolver
+금고 문	Puerta de cámara
+근처에 퍼즐 — 답은 패널 안내 탭에	Puzle cerca — la respuesta está en la pestaña Guía del panel
+연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Objetos de investigación: pulsa la línea Investigación en 'Colección' para ir al más cercano
+업적 {done}/{all}	Logros {done}/{all}
+Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	No se encontró la caché de logros de Steam (Steam/appcache/stats)
+달성한 것도 보기	Mostrar también los desbloqueados
+숨겨진 업적	Logro oculto
+보기	Ver

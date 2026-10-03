@@ -25,7 +25,7 @@ use std::time::{Duration, Instant};
 mod attached;
 mod snapshot;
 
-pub use attached::{attach, Attached};
+pub use attached::{attach, saved_guids, Attached};
 pub use snapshot::{Snapshot, SLOTS};
 
 /// A teleport lands this far above the saved spot (cm), so it does not start in the
@@ -41,7 +41,15 @@ struct Derived {
     collection: Arc<Vec<crate::survey::Collect>>,
     stories: Arc<Vec<crate::survey::Need>>,
     secret_totals: [usize; 3],
+    vaults: Arc<Vec<crate::tables::VaultNote>>,
+    lore_known: usize,
+    hollows: Arc<Vec<crate::tables::Hollows>>,
+    puzzles: Arc<Vec<crate::puzzles::Puzzle>>,
+    catalogue: Arc<Vec<(crate::survey::Placed, bool)>>,
 }
+
+/// Puzzles this near the hero (cm) are read and shown.
+const PUZZLE_REACH: f32 = 4_000.0;
 
 const DERIVE_EVERY: Duration = Duration::from_secs(1);
 
@@ -126,6 +134,11 @@ impl Engine {
             collection: Default::default(),
             stories: Default::default(),
             secret_totals: [0; 3],
+            vaults: Default::default(),
+            lore_known: 0,
+            hollows: Default::default(),
+            puzzles: Default::default(),
+            catalogue: Default::default(),
             deadlines: Default::default(),
             handovers: Default::default(),
             needs: Default::default(),
@@ -163,7 +176,14 @@ impl Engine {
                         if self.derived.as_ref().is_none_or(|(at, _)| at.elapsed() >= DERIVE_EVERY) {
                             let journal = Arc::new(a.journal());
                             let (collection, stories) = snap.world.as_deref().map(|w| a.collection(w)).unwrap_or_default();
+                            let (vaults, lore_known) = a.vaults();
+                            let here = snap.pose.map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
                             let d = Derived {
+                                vaults: Arc::new(vaults),
+                                lore_known,
+                                hollows: Arc::new(a.hollows()),
+                                catalogue: Arc::new(a.catalogue()),
+                                puzzles: Arc::new(here.map(|h| a.puzzles(h, PUZZLE_REACH)).unwrap_or_default()),
                                 needs: Arc::new(a.needs(&journal)),
                                 handovers: Arc::new(a.handovers()),
                                 deadlines: Arc::new(crate::missables::deadlines(&journal, &a.deeds())),
@@ -182,6 +202,11 @@ impl Engine {
                             snap.collection = d.collection.clone();
                             snap.stories = d.stories.clone();
                             snap.secret_totals = d.secret_totals;
+                            snap.vaults = d.vaults.clone();
+                            snap.lore_known = d.lore_known;
+                            snap.hollows = d.hollows.clone();
+                            snap.puzzles = d.puzzles.clone();
+                            snap.catalogue = d.catalogue.clone();
                         }
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();

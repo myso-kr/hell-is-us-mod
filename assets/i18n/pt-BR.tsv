@@ -381,3 +381,47 @@ FAIL 안내: {e}	FAIL guia: {e}
 강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Se o processo for encerrado à força, `hiumod restore` restaura tudo
 적용 중	Aplicando
 되돌릴 것이 없음	Nada a restaurar
+다이얼 퍼즐	Quebra-cabeça de mostradores
+물건 놓기 퍼즐	Colocar itens
+키패드·암호	Teclado · código
+    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    Nos mostradores da porta, o cartão "Quebra-cabeças por perto" diz quanto girar cada um
+    코드 (기호 번호): {code}	    Código (números dos símbolos): {code}
+    타임루프 {name}: {left}/{all}	    Ciclo Temporal {name}: {left}/{all}
+40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	Nenhum quebra-cabeça de mostrador, teclado ou colocação de itens a 40 m
+{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} grupos · {enemies} inimigos
+가장 가까운 곳	Mais próximo
+게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Lê a resposta que o jogo tem — não aperte se quiser resolver sozinho
+근처 퍼즐 ({n})	Quebra-cabeças por perto ({n})
+금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Sem tabela de câmaras — execute `doctor survey` uma vez no console
+금단의 지식 금고 {done}/{all}	Câmaras de Conhecimentos Proibidos {done}/{all}
+남은 적 무리 {left}/{all}	Grupos de inimigos restantes {left}/{all}
+남은 적 무리	Grupo de inimigos restante
+다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Mostrador {n}: girar {k} passos (agora {now} → {want})
+다이얼 {n}: 맞음	Mostrador {n}: certo
+답 보기	Ver resposta
+숨기기	Ocultar
+스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Sem tabela de spawners — execute `doctor survey` uma vez no console
+연구 {n}/{need}	Pesquisa {n}/{need}
+열림 ✓	Aberto ✓
+장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Entregue itens de pesquisa a {g:Facts_Tania/Tania_Real_Name} no APC para liberar informações das câmaras · pesquisa atual {n}
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Contado por grupo de inimigos (spawner) · um grupo registrado no save conta como derrotado (estimativa)
+정보 있음	Conhecido
+코드 보기	Ver código
+코드: {code}	Código: {code}
+필요한 것: {items}	Precisa de: {items}
+다이얼 {n}개 · {places}칸	{n} discos · {places} posições
+{n}자리 코드	Código de {n} dígitos
+물건 {n}개	{n} itens
+다이얼 위치 (왼쪽부터, 1부터): {list}	Posições (da esquerda, a partir de 1): {list}
+퍼즐 목록 · 이 지역 남은 {left}	Lista de quebra-cabeças · restam {left} aqui
+퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Sem lista de quebra-cabeças — execute `doctor survey` uma vez no console
+열쇠·물건 놓기 퍼즐도 보기	Mostrar também portas com chave e colocação de itens
+안 푼 퍼즐	Quebra-cabeça não resolvido
+금고 문	Porta do cofre
+근처에 퍼즐 — 답은 패널 안내 탭에	Quebra-cabeça por perto — a resposta está na aba Guia do painel
+연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Itens de pesquisa: clique na linha Pesquisa em 'Coleção' para ir ao mais próximo
+업적 {done}/{all}	Conquistas {done}/{all}
+Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Cache de conquistas da Steam não encontrado (Steam/appcache/stats)
+달성한 것도 보기	Mostrar também as desbloqueadas
+숨겨진 업적	Conquista oculta
+보기	Ver

@@ -88,10 +88,16 @@ pub enum Sub {
     LymbicLock,
     Translation,
     SavePoint,
+    /// An enemy group (spawner) not beaten yet — from the survey, not the scan.
+    EnemyGroup,
+    /// A puzzle not solved yet (dial, code, item placement) — from the survey.
+    Puzzle,
+    /// A Vault of Forbidden Knowledge's door not opened yet.
+    Vault,
 }
 
 impl Sub {
-    pub const ALL: [Sub; 23] = [
+    pub const ALL: [Sub; 26] = [
         Sub::Feral,
         Sub::Primeval,
         Sub::Negator,
@@ -115,17 +121,20 @@ impl Sub {
         Sub::LymbicLock,
         Sub::Translation,
         Sub::SavePoint,
+        Sub::EnemyGroup,
+        Sub::Puzzle,
+        Sub::Vault,
     ];
 
     pub fn kind(self) -> Kind {
         use Sub::*;
         match self {
-            Feral | Primeval | Negator | Protector | OtherEnemy => Kind::Enemy,
+            Feral | Primeval | Negator | Protector | OtherEnemy | EnemyGroup => Kind::Enemy,
             Medicine | Food | Consumable | Weapon | Gear | Skill | DroneModule | Research | Lore | Quest | Stash
             | OtherItem => Kind::Item,
             Loot => Kind::Loot,
             Npc => Kind::Npc,
-            Door | LymbicLock | Translation => Kind::Interact,
+            Door | LymbicLock | Translation | Puzzle | Vault => Kind::Interact,
             SavePoint => Kind::Save,
         }
     }
@@ -157,6 +166,9 @@ impl Sub {
             LymbicLock => "interact.lock",
             Translation => "interact.translation",
             SavePoint => "save",
+            EnemyGroup => "enemy.group",
+            Puzzle => "interact.puzzle",
+            Vault => "interact.vault",
         }
     }
 
@@ -186,6 +198,9 @@ impl Sub {
             LymbicLock => tr!("림빅 잠금"),
             Translation => tr!("드론 번역"),
             SavePoint => tr!("저장 지점"),
+            EnemyGroup => tr!("남은 적 무리"),
+            Puzzle => tr!("안 푼 퍼즐"),
+            Vault => tr!("금고 문"),
         }
     }
 }

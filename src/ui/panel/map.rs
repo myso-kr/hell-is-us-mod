@@ -14,12 +14,21 @@ impl Panel {
         t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| match self.tool {
             Some(Tool::Guide) => {
                 t.style(tw::col(tw::GAP)).add(|t| self.guide_column(t, &mut guard, snap));
-                t.style(tw::col(tw::GAP)).add(|t| self.goals_card(t, &mut guard, snap));
+                t.style(tw::col(tw::GAP)).add(|t| {
+                    self.puzzles_card(t, snap);
+                    self.catalogue_card(t, &mut guard, snap);
+                    self.goals_card(t, &mut guard, snap);
+                });
             }
             Some(Tool::Collect) => {
-                t.style(tw::col(tw::GAP)).add(|t| self.collection_card(t, &mut guard, snap));
                 t.style(tw::col(tw::GAP)).add(|t| {
+                    self.collection_card(t, &mut guard, snap);
+                    self.hollows_card(t, &mut guard, snap);
+                });
+                t.style(tw::col(tw::GAP)).add(|t| {
+                    self.achievements_card(t);
                     self.secrets_card(t, snap);
+                    self.vaults_card(t, &mut guard, snap);
                     self.stories_card(t, &mut guard, snap);
                 });
             }

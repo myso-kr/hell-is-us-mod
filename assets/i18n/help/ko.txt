@@ -20,6 +20,8 @@ hiumod — Hell Is Us(Steam)용 싱글 플레이 치트·미니맵
                                 그리고 게임의 12개 언어 텍스트
   hiumod doctor locale          게임 텍스트만 Mods\locale 로: 아이템·NPC·지역 이름을
                                 게임 언어로
+  hiumod doctor saves [s]       메모리의 모든 세이브 객체를 5초마다: 날짜·사실·
+                                끝난 선행 — 플레이 중 게임이 어느 것을 갱신하는지
   hiumod doctor watch <대상> [초]
                                 객체에서 바뀌는 것 (이름 있는 필드든 네이티브든) 을 바뀔 때마다
   hiumod doctor scan <대상> <값>

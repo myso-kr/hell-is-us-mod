@@ -10,6 +10,7 @@ mod quests;
 mod collect;
 mod saves;
 mod debug;
+mod deep;
 
 use super::tw::{self, block, card, choices, field, note, switch, text, w};
 use super::{hotkey, Request, Shared};
@@ -199,6 +200,14 @@ pub struct Panel {
     was_visible: bool,
     /// The collectible sort unfolded in the collect tab.
     unfolded_collect: Option<&'static str>,
+    /// Puzzle answers and vault codes asked for, by id (not kept between runs).
+    revealed: std::collections::HashSet<u64>,
+    /// The puzzle list shows key doors and item placements too.
+    show_placements: bool,
+    /// Steam's achievements (game/achievements.rs), read again every 10 s.
+    achievements: Option<(std::time::Instant, Vec<crate::game::achievements::Achievement>)>,
+    /// The achievement card lists the unlocked ones too.
+    show_unlocked: bool,
     /// The save backups, as last listed.
     backups: Vec<(String, std::path::PathBuf)>,
     backups_read: Option<Instant>,
@@ -258,6 +267,10 @@ impl Panel {
             console: Default::default(),
             was_visible: false,
             unfolded_collect: None,
+            revealed: Default::default(),
+            show_placements: false,
+            achievements: None,
+            show_unlocked: false,
             backups: Vec::new(),
             backups_read: None,
             height: 0.0,

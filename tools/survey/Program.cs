@@ -90,6 +90,15 @@ if (opts.ContainsKey("locale"))
     return;
 }
 
+// --tables: only the game's own tables the guide reads (spawners, vaults) — also
+// written at the end of a full survey.
+if (opts.ContainsKey("tables"))
+{
+    Directory.CreateDirectory(Need("out"));
+    Tables.Write(provider, Need("out"));
+    return;
+}
+
 var survey = new Survey(provider);
 if (opts.TryGetValue("peek", out var peek))
 {
@@ -126,6 +135,82 @@ if (File.Exists(flowsFile))
 }
 File.WriteAllText(flowsFile, flows.ToString(Formatting.Indented));
 Console.Error.WriteLine($"flows: {flows.Count}");
+Tables.Write(provider, outDir);
+
+/// The game's own tables the guide reads as they are (.spec/ITEMS.md §6):
+/// spawners.json — every world's spawners (`<World>_Root_WP_Spawner_DT`): the save GUID,
+///   the enemies it spawns, where, and the timeloop it belongs to (the "every Hollow"
+///   achievement counts them);
+/// vaults.json — the Vaults of Forbidden Knowledge (`ResearchCacheData`): GUID, name,
+///   region, clue, research entries to unlock, and the four-symbol code.
+static class Tables
+{
+    public static void Write(DefaultFileProvider provider, string outDir)
+    {
+        // As the mod's {g:namespace/key}: a string table's namespace is its TableNamespace.
+        var nsOf = new Dictionary<string, string?>();
+        string Text(JToken? t)
+        {
+            if (t?["Key"]?.ToString() is not { Length: > 0 } key || t["TableId"]?.ToString() is not { Length: > 0 } table) return "";
+            if (!nsOf.TryGetValue(table, out var ns))
+            {
+                var pkg = table.Split('.')[0];
+                pkg = pkg.StartsWith("/Game/") ? "HellIsUs/Content/" + pkg["/Game/".Length..] : pkg.TrimStart('/');
+                try { ns = provider.LoadPackage(pkg).GetExports().OfType<CUE4Parse.UE4.Assets.Exports.Internationalization.UStringTable>().First().StringTable.TableNamespace; }
+                catch { ns = null; }
+                nsOf[table] = ns;
+            }
+            return ns is null ? "" : $"{ns}/{key}";
+        }
+        IEnumerable<JObject> Exports(string path)
+        {
+            try { return JArray.Parse(JsonConvert.SerializeObject(provider.LoadPackage(path).GetExports())).OfType<JObject>(); }
+            catch (Exception e) { Console.Error.WriteLine($"  {path}: {e.Message}"); return []; }
+        }
+        var spawners = new JObject();
+        foreach (var path in provider.Files.Keys.Where(p => p.StartsWith("HellIsUs/Content/GameData/Spawner/") && p.EndsWith("_Spawner_DT.uasset")).OrderBy(p => p))
+        {
+            var world = Path.GetFileName(path).Replace("_Root_WP_Spawner_DT.uasset", "");
+            var list = new JArray();
+            foreach (var e in Exports(path[..^".uasset".Length]))
+                foreach (var (name, row) in e["Rows"] as JObject ?? new JObject())
+                {
+                    var at = row!["SpawnerLocation"]!;
+                    list.Add(new JObject
+                    {
+                        ["name"] = name.Split('.').Last(),
+                        ["guid"] = row["SpawnerSerializeGuid"],
+                        ["timeloop"] = row["TimeloopActorID"]?.ToString() is { Length: > 0 } t && t != "None" ? t : null,
+                        ["entities"] = row["EntitiesToSpawn"],
+                        ["at"] = new JArray(Math.Round((double)at["X"]!), Math.Round((double)at["Y"]!), Math.Round((double)at["Z"]!)),
+                    });
+                }
+            spawners[world] = list;
+        }
+        File.WriteAllText(Path.Combine(outDir, "spawners.json"), spawners.ToString(Formatting.Indented));
+        Console.Error.WriteLine($"spawners: {spawners.Properties().Sum(p => ((JArray)p.Value).Count)} in {spawners.Count} worlds");
+
+        var vaults = new JArray();
+        foreach (var path in provider.Files.Keys.Where(p => p.StartsWith("HellIsUs/Content/Gameplay/Research/CacheData/") && p.EndsWith(".uasset")).OrderBy(p => p))
+            foreach (var e in Exports(path[..^".uasset".Length]))
+            {
+                var p = e["Properties"];
+                if (p == null) continue;
+                vaults.Add(new JObject
+                {
+                    ["asset"] = e["Name"],
+                    ["guid"] = p["Guid"],
+                    ["name"] = Text(p["Name"]),
+                    ["region"] = Text(p["WorldMapLocation"]),
+                    ["clue"] = Text(p["Clue"]),
+                    ["entries"] = p["NumberOfLoreEntriesToUnlock"],
+                    ["code"] = new JArray((p["Code"] as JArray ?? []).Select(s => int.Parse(s.ToString().Replace("ECacheSymbols::CacheSymbol", "")))),
+                });
+            }
+        File.WriteAllText(Path.Combine(outDir, "vaults.json"), vaults.ToString(Formatting.Indented));
+        Console.Error.WriteLine($"vaults: {vaults.Count}");
+    }
+}
 
 class Survey(DefaultFileProvider provider)
 {
@@ -168,6 +253,56 @@ class Survey(DefaultFileProvider provider)
         (t is JContainer c ? c.Descendants() : [t]).OfType<JValue>().Where(v => v.Type == JTokenType.String)
             .Select(v => (string)v!)
             .Where(s => s.Contains('.') && !s.Contains('/') && !s.Contains('\'') && !s.Contains(' '));
+
+    /// An object a property refers to, through its package (the map's own, or a
+    /// blueprint's): `….X_BP.12` is export 12 of X_BP.
+    UObject? Load(JToken? reference)
+    {
+        var path = (string?)reference?.SelectToken("$..ObjectPath") ?? (string?)reference?["ObjectPath"];
+        if (path == null) return null;
+        var m = System.Text.RegularExpressions.Regex.Match(path, @"^(.*)\.(\d+)$");
+        if (!m.Success) return null;
+        var pkg = m.Groups[1].Value;
+        pkg = pkg.StartsWith("/Game/") ? "HellIsUs/Content/" + pkg["/Game/".Length..] : pkg.TrimStart('/');
+        try
+        {
+            var exports = provider.LoadPackage(pkg).GetExports().ToList();
+            var i = int.Parse(m.Groups[2].Value);
+            return i >= 0 && i < exports.Count ? exports[i] : null;
+        }
+        catch { return null; }
+    }
+
+    /// {kind: dial|keypad|placement, dials: [{places, solution}], code, items} of an
+    /// actor's puzzle components, or null.
+    JObject? PuzzleOf(List<UObject> comps)
+    {
+        var dials = comps.Where(c => c.Class?.Name == "DialComponent").OrderBy(c => c.Name).Select(c => Props(c)).ToList();
+        if (dials.Count > 0 && comps.Any(c => c.Class?.Name?.Contains("DialPuzzleAction") == true))
+            return new JObject
+            {
+                ["kind"] = "dial",
+                ["dials"] = new JArray(dials.Select(d => new JObject
+                {
+                    ["places"] = (int?)d["NbDialState"] ?? 0,
+                    ["solution"] = (int?)d["DialSolution"] ?? 0,
+                })),
+            };
+        var keypad = comps.FirstOrDefault(c => c.Class?.Name == "KeypadRuneComponent");
+        if (keypad != null && Props(keypad)["Rune"]?["ExpectedCode"]?.ToString() is { Length: > 0 } code)
+            return new JObject { ["kind"] = "keypad", ["code"] = code };
+        var placement = comps.FirstOrDefault(c => c.Class?.Name?.Contains("ItemPlacementAction") == true);
+        if (placement != null)
+        {
+            var sol = Props(placement)["Solution"];
+            var items = Paths(sol).Where(x => x.Contains("/Items/")).ToList();
+            if (items.Count == 0 && Load(sol) is { } cond)
+                items = Paths(Props(cond)["Solution"]).Where(x => x.Contains("/Items/")).ToList();
+            if (items.Count > 0)
+                return new JObject { ["kind"] = "placement", ["items"] = new JArray(items.Distinct()) };
+        }
+        return null;
+    }
 
     /// A PayloadData as {items, facts, tags}.
     static JObject Payload(JToken? data) => new()
@@ -219,6 +354,9 @@ class Survey(DefaultFileProvider provider)
             rec["at"] = new JArray(Math.Round(at.T.X), Math.Round(at.T.Y), Math.Round(at.T.Z));
             var layers = actorProps.Properties().Where(p => p.Name.Contains("DataLayer")).SelectMany(p => Objects(p.Value)).Distinct().ToList();
             if (layers.Count > 0) rec["layers"] = new JArray(layers);
+            // A puzzle: its dials (in name order), its keypad code, or the items it takes.
+            var puzzle = PuzzleOf(comps);
+            if (puzzle != null) rec["puzzle"] = puzzle;
             foreach (var c in comps)
             {
                 if (!Wanted.Contains(c.Class?.Name)) continue;
@@ -249,7 +387,10 @@ class Survey(DefaultFileProvider provider)
                         break;
                 }
             }
-            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null) found.Add(rec);
+            // A Vault of Forbidden Knowledge's dial door: where the vault notebook guides to.
+            var vault = rec["class"]!.ToString().StartsWith("VOFK_") && rec["class"]!.ToString().Contains("DialPuzzle");
+            if (vault) rec["vault"] = true;
+            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null || vault || puzzle != null) found.Add(rec);
         }
         return found;
     }

@@ -20,6 +20,8 @@ UŻYCIE
                                 oraz tekst gry w 12 językach
   hiumod doctor locale          tylko tekst gry, do Mods\locale: nazwy przedmiotów, NPC
                                 i regionów w języku gry
+  hiumod doctor saves [s]       każdy obiekt zapisu w pamięci co 5 s: data, fakty,
+                                dobre uczynki — który gra aktualizuje podczas gry
   hiumod doctor watch <target> [seconds]
                                 co zmienia się w obiekcie, nazwanym lub natywnym, na bieżąco
   hiumod doctor scan <target> <value>

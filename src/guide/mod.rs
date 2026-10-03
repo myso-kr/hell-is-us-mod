@@ -3,6 +3,7 @@
 pub mod goals;
 pub mod quests;
 pub mod survey;
+pub mod tables;
 pub mod target;
 pub mod missables;
 pub mod pathfind;

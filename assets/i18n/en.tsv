@@ -381,3 +381,47 @@ FAIL 안내: {e}	FAIL guide: {e}
 강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	If this is killed instead, `hiumod restore` puts things back
 적용 중	Applying
 되돌릴 것이 없음	Nothing to restore
+다이얼 퍼즐	Dial puzzle
+물건 놓기 퍼즐	Item placement
+키패드·암호	Keypad · code
+    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    At the door's dials, the 'Puzzles nearby' card tells how far to turn each
+    코드 (기호 번호): {code}	    Code (symbol numbers): {code}
+    타임루프 {name}: {left}/{all}	    Timeloop {name}: {left}/{all}
+40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	No dial, keypad or item placement puzzle within 40 m
+{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} groups · {enemies} enemies
+가장 가까운 곳	Nearest
+게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Reads the answer the game holds — don't press if you want to solve it yourself
+근처 퍼즐 ({n})	Puzzles nearby ({n})
+금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No vault table — run `doctor survey` once in the console
+금단의 지식 금고 {done}/{all}	Vaults of Forbidden Knowledge {done}/{all}
+남은 적 무리 {left}/{all}	Enemy groups left {left}/{all}
+남은 적 무리	Enemy group left
+다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Dial {n}: turn {k} steps (now {now} → {want})
+다이얼 {n}: 맞음	Dial {n}: right
+답 보기	Show answer
+숨기기	Hide
+스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No spawner table — run `doctor survey` once in the console
+연구 {n}/{need}	Research {n}/{need}
+열림 ✓	Opened ✓
+장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Give research items to {g:Facts_Tania/Tania_Real_Name} in the APC to unlock vault information · research now {n}
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Counted by enemy group (spawner) · a group the save records counts as beaten (estimate)
+정보 있음	Known
+코드 보기	Show code
+코드: {code}	Code: {code}
+필요한 것: {items}	Needs: {items}
+다이얼 {n}개 · {places}칸	{n} dials · {places} places
+{n}자리 코드	{n}-digit code
+물건 {n}개	{n} items
+다이얼 위치 (왼쪽부터, 1부터): {list}	Dial positions (from the left, counting from 1): {list}
+퍼즐 목록 · 이 지역 남은 {left}	Puzzle list · {left} left here
+퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No puzzle list — run `doctor survey` once in the console
+열쇠·물건 놓기 퍼즐도 보기	Show key doors and item placements too
+안 푼 퍼즐	Unsolved puzzle
+금고 문	Vault door
+근처에 퍼즐 — 답은 패널 안내 탭에	Puzzle nearby — the answer is in the panel's Guide tab
+연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Research items: press the Research line under 'Collection' to be guided to the nearest
+업적 {done}/{all}	Achievements {done}/{all}
+Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Steam's achievement cache was not found (Steam/appcache/stats)
+달성한 것도 보기	Show unlocked ones too
+숨겨진 업적	Hidden achievement
+보기	Show

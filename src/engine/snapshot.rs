@@ -47,6 +47,15 @@ pub struct Snapshot {
     pub stories: Arc<Vec<crate::survey::Need>>,
     /// How many good deeds, mysteries and timeloops the game has.
     pub secret_totals: [usize; 3],
+    /// The vault notebook (F7) and the research entries known.
+    pub vaults: Arc<Vec<crate::tables::VaultNote>>,
+    pub lore_known: usize,
+    /// Every world's Hollows left (F8).
+    pub hollows: Arc<Vec<crate::tables::Hollows>>,
+    /// The puzzles near the hero, nearest first, with their answers (F6).
+    pub puzzles: Arc<Vec<crate::puzzles::Puzzle>>,
+    /// Every puzzle in the worlds (the survey) and whether it was solved.
+    pub catalogue: Arc<Vec<(crate::survey::Placed, bool)>>,
     /// Saved positions: (world, where).
     pub slots: [Option<(String, [f64; 3])>; SLOTS],
 }

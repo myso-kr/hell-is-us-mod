@@ -20,6 +20,8 @@ KULLANIM
                                 ve oyunun 12 dildeki metni
   hiumod doctor locale          yalnızca oyun metni, Mods\locale içine: eşya, NPC
                                 ve bölge adları oyunun dilinde
+  hiumod doctor saves [s]       bellekteki her kayıt nesnesi 5 sn'de bir: tarih,
+                                gerçekler, iyilikler — oyunun hangisini güncellediği
   hiumod doctor watch <target> [seconds]
                                 bir nesnede ne değişiyor, adlı veya yerel, değiştikçe
   hiumod doctor scan <target> <value>

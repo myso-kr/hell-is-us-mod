@@ -5,5 +5,6 @@ pub mod attr;
 pub mod knowledge;
 pub mod terrain;
 pub mod obstacles;
+pub mod puzzles;
 pub mod navmesh;
 pub mod geometry;

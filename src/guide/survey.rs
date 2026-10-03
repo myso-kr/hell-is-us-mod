@@ -64,6 +64,56 @@ pub struct Known<'a> {
 pub struct Survey {
     /// By world (`AcasaMarshes`).
     pub worlds: HashMap<String, Vec<Entry>>,
+    /// The Vaults of Forbidden Knowledge's dial doors: (world, where).
+    pub doors: Vec<(String, [f32; 3])>,
+    /// Every puzzle placed in the worlds, with its answer (F6's list).
+    pub puzzles: Vec<Placed>,
+}
+
+/// A puzzle the survey found: where, and what solves it.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Placed {
+    pub world: String,
+    pub class: String,
+    pub at: [f32; 3],
+    /// Its save GUID: a state in the save means it was solved (or used).
+    pub guid: Option<String>,
+    pub kind: crate::puzzles::Kind,
+    /// The dials as the game sets them (`now` 0), the code, or the items.
+    pub answer: crate::puzzles::Answer,
+}
+
+impl Placed {
+    /// A stable id for guiding to it.
+    pub fn id(&self) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        (&self.world, &self.class, self.at.map(|v| v as i32)).hash(&mut h);
+        h.finish() | 1 << 63
+    }
+}
+
+/// A survey puzzle record: `{kind, dials: [{places, solution}], code, items}`.
+fn placed_answer(p: &Value) -> Option<(crate::puzzles::Kind, crate::puzzles::Answer)> {
+    use crate::puzzles::{Answer, Dial, Kind};
+    Some(match p["kind"].as_str()? {
+        "dial" => (
+            Kind::Dial,
+            Answer::Dials(
+                p["dials"]
+                    .as_array()?
+                    .iter()
+                    .map(|d| Dial { now: 0, want: d["solution"].as_u64().unwrap_or(0) as u8, places: d["places"].as_u64().unwrap_or(0) as u8 })
+                    .collect(),
+            ),
+        ),
+        "keypad" => (Kind::Keypad, Answer::Code(p["code"].as_str()?.to_string())),
+        "placement" => (
+            Kind::Placement,
+            Answer::Items(names(&p["items"]).into_iter().map(|i| i.rsplit('/').next().unwrap_or(&i).to_string()).collect()),
+        ),
+        _ => return None,
+    })
 }
 
 fn names(v: &Value) -> Vec<String> {
@@ -207,6 +257,8 @@ impl Survey {
             out
         };
         let mut worlds = HashMap::new();
+        let mut doors = Vec::new();
+        let mut puzzles = Vec::new();
         let Ok(files) = std::fs::read_dir(dir) else { return Survey::default() };
         for f in files.flatten() {
             let path = f.path();
@@ -219,6 +271,24 @@ impl Survey {
             for a in v["actors"].as_array().into_iter().flatten() {
                 let at = a["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
                 let Some(at) = at.filter(|x| x.len() == 3) else { continue };
+                if let Some((kind, answer)) = placed_answer(&a["puzzle"]) {
+                    let p = Placed {
+                        world: world.to_string(),
+                        class: a["class"].as_str().unwrap_or("").to_string(),
+                        at: [at[0], at[1], at[2]],
+                        guid: a["guid"].as_str().map(str::to_string),
+                        kind,
+                        answer,
+                    };
+                    // A blueprint holds a copy per cell it streams in: one is enough.
+                    if !puzzles.iter().any(|q: &Placed| q.world == p.world && (q.at[0] - p.at[0]).hypot(q.at[1] - p.at[1]) < 50.0 && q.kind == p.kind) {
+                        puzzles.push(p);
+                    }
+                }
+                if a["vault"].as_bool() == Some(true) {
+                    doors.push((world.to_string(), [at[0], at[1], at[2]]));
+                    continue;
+                }
                 let mut e = Entry {
                     name: runtime_name(a["name"].as_str().unwrap_or("")),
                     class: a["class"].as_str().unwrap_or("").to_string(),
@@ -247,7 +317,7 @@ impl Survey {
             }
             worlds.insert(world.to_string(), list);
         }
-        Survey { worlds }
+        Survey { worlds, doors, puzzles }
     }
 
     pub fn is_empty(&self) -> bool {

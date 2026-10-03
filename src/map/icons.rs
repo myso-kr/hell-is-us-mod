@@ -42,6 +42,9 @@ fn source(s: Sub) -> &'static str {
         LymbicLock => include_str!("../../assets/icons/interact_lock.svg"),
         Translation => include_str!("../../assets/icons/interact_translation.svg"),
         SavePoint => include_str!("../../assets/icons/save.svg"),
+        EnemyGroup => include_str!("../../assets/icons/enemy_group.svg"),
+        Puzzle => include_str!("../../assets/icons/interact_puzzle.svg"),
+        Vault => include_str!("../../assets/icons/interact_vault.svg"),
     }
 }
 

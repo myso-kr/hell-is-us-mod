@@ -25,7 +25,7 @@ use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
 /// An FString's text: wide characters, count with the terminator.
-fn fstring(m: &dyn Memory, at: u64) -> Option<String> {
+pub fn fstring(m: &dyn Memory, at: u64) -> Option<String> {
     let (data, num) = (mem::read_u64(m, at)?, mem::read_u32(m, at + 8)?);
     if !mem::plausible(data) || !(2..=4096).contains(&num) {
         return None;
@@ -165,6 +165,8 @@ enum Role {
     /// A CharlieSaveGame: the game makes a new one each time it saves — the newest
     /// holds what the hero knows (knowledge.rs).
     Save,
+    /// A dial, keypad or item-placement component (puzzles.rs).
+    Puzzle(crate::puzzles::Kind),
     Fact,
     Other,
 }
@@ -192,6 +194,9 @@ pub struct Quests {
     /// The save-game objects: this pass's, and the last complete one's.
     saves_found: Vec<u64>,
     saves: Vec<u64>,
+    /// Puzzle components: this pass's, and the last complete one's.
+    puzzles_found: Vec<(u64, crate::puzzles::Kind)>,
+    puzzles: Vec<(u64, crate::puzzles::Kind)>,
     nav: Vec<u64>,
     /// `UI_Secrets_ST`: source strings by text key index.
     strings: HashMap<u32, String>,
@@ -318,6 +323,11 @@ impl Quests {
     }
 
     /// The loaded NavigationDataChunkActors, as of the last complete pass.
+    /// The puzzle components, as of the last complete pass.
+    pub fn puzzles(&self) -> &[(u64, crate::puzzles::Kind)] {
+        &self.puzzles
+    }
+
     /// The save-game objects, as of the last complete pass (a few seconds old at most).
     pub fn saves(&self) -> &[u64] {
         &self.saves
@@ -365,6 +375,7 @@ impl Quests {
                 Some("StringTable") => Role::Strings,
                 Some("NavigationDataChunkActor") => Role::NavChunks,
                 Some("CharlieSaveGame") => Role::Save,
+                _ if crate::puzzles::Kind::of(m, n, o).is_some() => Role::Puzzle(crate::puzzles::Kind::of(m, n, o).unwrap()),
                 _ if n.is_a(m, o, "FlowAsset") => Role::Flow,
                 _ if n.is_a(m, o, "FactData") => Role::Fact,
                 _ => Role::Other,
@@ -387,6 +398,11 @@ impl Quests {
                     }
                 }
                 Role::Fact => self.fact(m, n, o),
+                Role::Puzzle(kind) => {
+                    if !n.object(m, o).unwrap_or_default().starts_with("Default__") {
+                        self.puzzles_found.push((o, kind));
+                    }
+                }
                 Role::Save => {
                     if !n.object(m, o).unwrap_or_default().starts_with("Default__") {
                         self.saves_found.push(o);
@@ -428,6 +444,7 @@ impl Quests {
         self.flows = std::mem::take(&mut self.flows_found);
         self.nav = std::mem::take(&mut self.nav_found);
         self.saves = std::mem::take(&mut self.saves_found);
+        self.puzzles = std::mem::take(&mut self.puzzles_found);
         if let Some(s) = self.secrets.take() {
             changed |= self.read_deeds(m, n, s);
         }

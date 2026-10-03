@@ -73,7 +73,7 @@ pub fn vdf_values(text: &str, key: &str) -> Vec<String> {
 }
 
 #[cfg(windows)]
-fn steam_path() -> Option<PathBuf> {
+pub fn steam_path() -> Option<PathBuf> {
     use windows_sys::Win32::System::Registry::{RegGetValueW, HKEY_CURRENT_USER, RRF_RT_REG_SZ};
     let wide = |s: &str| s.encode_utf16().chain([0]).collect::<Vec<u16>>();
     let (key, value) = (wide(r"Software\Valve\Steam"), wide("SteamPath"));
@@ -98,7 +98,7 @@ fn steam_path() -> Option<PathBuf> {
 }
 
 #[cfg(not(windows))]
-fn steam_path() -> Option<PathBuf> {
+pub fn steam_path() -> Option<PathBuf> {
     None
 }
 

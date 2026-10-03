@@ -266,3 +266,12 @@ been verified in play yet.
   written in Korean and wrapped in `tr!`/`trf!`, with an English table and a test
   that every string has a translation. A Japanese or Chinese font is loaded only
   when that is the game's language. The quest-name cache is kept per language.
+- Phase 3, read from the game's data:
+  - Puzzles near the hero, with their answers hidden until asked for: dial turns,
+    keypad and computer codes, and the items a lock or placement takes.
+  - A vault notebook: the six Vaults of Forbidden Knowledge, with state, research
+    progress, clue, code and a guide to the door.
+  - Enemy groups left per region and timeloop, for the every-Hollow achievement,
+    with a guide to the nearest.
+  - tools/survey writes spawners.json and vaults.json (`--tables` for those alone).
+

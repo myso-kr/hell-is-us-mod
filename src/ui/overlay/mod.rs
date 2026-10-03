@@ -137,11 +137,11 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
-        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines) = match shared.snap.lock().unwrap().as_ref() {
+        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines, puzzle_near) = match shared.snap.lock().unwrap().as_ref() {
             Some(s) => (
                 s.pose,
                 s.world.clone(),
-                s.things.clone(),
+                hud::with_survey(&s.things, s),
                 s.footprints.clone(),
                 s.goals.clone(),
                 s.paused,
@@ -150,9 +150,10 @@ pub fn run(shared: Arc<Shared>) {
                 s.nav.clone(),
                 s.needs.clone(),
                 s.deadlines.clone(),
+                hud::puzzle_near(s),
             ),
             None => {
-                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Default::default(), Default::default(), Default::default(), Default::default())
+                (None, None, Vec::new(), Default::default(), Vec::new(), false, Default::default(), Default::default(), Default::default(), Default::default(), Default::default(), false)
             }
         };
         let here = pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
@@ -294,7 +295,11 @@ pub fn run(shared: Arc<Shared>) {
                     // The goal being guided to can only be reached through something.
                     let stuck = state.target.is_some_and(|t| route.blocked.contains(&t));
                     // A deadline due now comes first; then what it still needs.
-                    let line = hud::needs_line(followed, &needs, &deadlines, world);
+                    let mut line = hud::needs_line(followed, &needs, &deadlines, world);
+                    if puzzle_near {
+                        let hint = tr!("근처에 퍼즐 — 답은 패널 안내 탭에");
+                        line = if line.is_empty() { hint.to_string() } else { format!("{line}\n{hint}") };
+                    }
                     let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone());
                     if tracked.as_ref() != Some(&now) {
                         tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck, &line);

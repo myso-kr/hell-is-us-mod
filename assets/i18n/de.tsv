@@ -381,3 +381,47 @@ FAIL 안내: {e}	FAIL Guide: {e}
 강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Wird der Prozess stattdessen beendet, stellt `hiumod restore` alles zurück
 적용 중	Wird angewendet
 되돌릴 것이 없음	Nichts wiederherzustellen
+다이얼 퍼즐	Drehrätsel
+물건 놓기 퍼즐	Gegenstände platzieren
+키패드·암호	Tastenfeld · Code
+    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    An den Drehrädern an der Tür zeigt die Karte „Rätsel in der Nähe“, wie weit jedes zu drehen ist
+    코드 (기호 번호): {code}	    Code (Symbolnummern): {code}
+    타임루프 {name}: {left}/{all}	    Zeitschleife {name}: {left}/{all}
+40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	Im Umkreis von 40 m gibt es kein Drehrad-, Tastenfeld- oder Platzierungsrätsel
+{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} Gruppen · {enemies} Gegner
+가장 가까운 곳	Am nächsten
+게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Liest die Lösung, die das Spiel kennt – nicht drücken, wenn du es selbst lösen willst
+근처 퍼즐 ({n})	Rätsel in der Nähe ({n})
+금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Keine Gruftentabelle – führe in der Konsole einmal `doctor survey` aus
+금단의 지식 금고 {done}/{all}	Grüfte des Verbotenen Wissens {done}/{all}
+남은 적 무리 {left}/{all}	Verbleibende Gegnergruppen {left}/{all}
+남은 적 무리	Verbleibende Gegnergruppe
+다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Drehrad {n}: {k} Schritte drehen (jetzt {now} → {want})
+다이얼 {n}: 맞음	Drehrad {n}: richtig
+답 보기	Lösung zeigen
+숨기기	Ausblenden
+스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Keine Spawner-Tabelle – führe in der Konsole einmal `doctor survey` aus
+연구 {n}/{need}	Forschung {n}/{need}
+열림 ✓	Geöffnet ✓
+장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Gib {g:Facts_Tania/Tania_Real_Name} im APC Forschungsgegenstände, um Informationen zu den Grüften freizuschalten · aktuell {n} Forschung
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Pro Gegnergruppe (Spawner) gezählt · eine im Spielstand vermerkte Gruppe gilt als besiegt (Schätzung)
+정보 있음	Bekannt
+코드 보기	Code zeigen
+코드: {code}	Code: {code}
+필요한 것: {items}	Benötigt: {items}
+다이얼 {n}개 · {places}칸	{n} Drehscheiben · {places} Stellungen
+{n}자리 코드	{n}-stelliger Code
+물건 {n}개	{n} Gegenstände
+다이얼 위치 (왼쪽부터, 1부터): {list}	Stellungen (von links, ab 1): {list}
+퍼즐 목록 · 이 지역 남은 {left}	Rätselliste · hier noch {left}
+퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Keine Rätselliste — führe einmal `doctor survey` in der Konsole aus
+열쇠·물건 놓기 퍼즐도 보기	Auch Schlüsseltüren und Gegenstandsplätze zeigen
+안 푼 퍼즐	Ungelöstes Rätsel
+금고 문	Tresortür
+근처에 퍼즐 — 답은 패널 안내 탭에	Rätsel in der Nähe — Lösung im Panel unter „Führung“
+연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Forschungsgegenstände: Zeile „Forschung“ unter „Sammlung“ drücken, um zum nächsten geführt zu werden
+업적 {done}/{all}	Erfolge {done}/{all}
+Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Steams Erfolgs-Cache nicht gefunden (Steam/appcache/stats)
+달성한 것도 보기	Auch freigeschaltete zeigen
+숨겨진 업적	Verborgener Erfolg
+보기	Zeigen

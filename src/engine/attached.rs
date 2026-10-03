@@ -38,6 +38,8 @@ struct Guide {
     /// The survey of every world (Mods\survey), read once; and what the hero knows and
     /// holds by name, to judge it with — renewed with the knowledge.
     survey: Option<crate::survey::Survey>,
+    /// The game's spawner and vault tables (Mods\survey), read once.
+    tables: Option<crate::tables::Tables>,
     known_facts: HashSet<String>,
     known_tags: HashSet<String>,
     held: HashSet<String>,
@@ -60,7 +62,16 @@ fn mem_ptr(m: &dyn crate::mem::Memory, at: u64) -> Result<u64, String> {
 /// The GUIDs of the placed things the save keeps a state for, in every region
 /// (`World.RegionStates[].ElementStates[].Identifier`), as `XXXXXXXX-XXXXXXXX-…` like the
 /// survey's.
-fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u64) -> HashSet<String> {
+/// A GUID as the survey writes it: four little-endian u32, hex.
+fn guid_at(m: &dyn crate::mem::Memory, at: u64) -> Option<String> {
+    let mut g = [0u8; 16];
+    m.read(at, &mut g).then(|| {
+        let part = |i: usize| u32::from_le_bytes(g[i * 4..i * 4 + 4].try_into().unwrap());
+        format!("{:08X}-{:08X}-{:08X}-{:08X}", part(0), part(1), part(2), part(3))
+    })
+}
+
+pub fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u64) -> HashSet<String> {
     let mut out = HashSet::new();
     let Some((at, p)) = n.path(m, save, &["World", "RegionStates"]) else { return out };
     let size = |field: u64| n.inner_of(m, field).and_then(|i| crate::mem::read_u32(m, i + n.layout.size)).unwrap_or(0) as u64;
@@ -72,13 +83,7 @@ fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u64) -
         return out;
     }
     for region in crate::actors::array_of(m, at, region_size, 64) {
-        for e in crate::actors::array_of(m, region + states.offset as u64, element_size, 100_000) {
-            let mut g = [0u8; 16];
-            if m.read(e, &mut g) {
-                let part = |i: usize| u32::from_le_bytes(g[i * 4..i * 4 + 4].try_into().unwrap());
-                out.insert(format!("{:08X}-{:08X}-{:08X}-{:08X}", part(0), part(1), part(2), part(3)));
-            }
-        }
+        out.extend(crate::actors::array_of(m, region + states.offset as u64, element_size, 100_000).into_iter().filter_map(|e| guid_at(m, e)));
     }
     out
 }
@@ -332,6 +337,70 @@ impl Attached {
         let known =
             crate::survey::Known { facts: &g.known_facts, tags: &g.known_tags, held: &g.held, saved: &g.saved, talked: &g.goals.done_npcs };
         (survey.collection(crate::survey::Survey::world_of(world), &known), survey.stories(&known))
+    }
+
+    /// The research state of the save: entries known, vaults known (in the datapad)
+    /// and opened, by GUID — `Player.ResearchState`.
+    fn research(&self) -> (usize, HashSet<String>, HashSet<String>) {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let save = self.guide.borrow().save;
+        // `shown`: only the entries whose bIsShownToPlayer (+0x11) is set — every vault
+        // has an entry, from the start.
+        let guids = |field: &str, shown: bool| -> (usize, HashSet<String>) {
+            let Some((at, p)) = n.path(m, save, &["Player", "ResearchState", field]) else { return (0, HashSet::new()) };
+            let size = n.inner_of(m, p.field).and_then(|i| crate::mem::read_u32(m, i + n.layout.size)).unwrap_or(16) as u64;
+            let items = crate::actors::array_of(m, at, size.max(16), 4096);
+            let flag = |e: u64| {
+                let mut b = [0u8; 1];
+                !shown || (m.read(e + 0x11, &mut b) && b[0] != 0)
+            };
+            (items.len(), items.into_iter().filter(|&e| flag(e)).filter_map(|e| guid_at(m, e)).collect())
+        };
+        let (lore, _) = guids("KnownLoreEntries", false);
+        (lore, guids("KnownCacheEntries", true).1, guids("OpenedCaches", false).1)
+    }
+
+    /// The vault notebook (F7): every vault, known or opened, with its door; and the
+    /// research entries known.
+    pub fn vaults(&self) -> (Vec<crate::tables::VaultNote>, usize) {
+        let (lore, known, opened) = self.research();
+        let mut g = self.guide.borrow_mut();
+        let g = &mut *g;
+        let tables = g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
+        let doors = g.survey.as_ref().map(|s| s.doors.as_slice()).unwrap_or_default();
+        (tables.vaults(&known, &opened, lore, doors), lore)
+    }
+
+    /// Every world's Hollows left (F8).
+    pub fn hollows(&self) -> Vec<crate::tables::Hollows> {
+        let mut g = self.guide.borrow_mut();
+        let g = &mut *g;
+        let tables = g.tables.get_or_insert_with(|| crate::tables::Tables::load(&crate::paths::data_dir().join("survey")));
+        tables.hollows(&g.saved)
+    }
+
+    /// Every puzzle the survey found, and whether the save says it was solved (its
+    /// GUID has a state).
+    pub fn catalogue(&self) -> Vec<(crate::survey::Placed, bool)> {
+        let g = self.guide.borrow();
+        let Some(survey) = g.survey.as_ref() else { return Vec::new() };
+        survey.puzzles.iter().map(|p| (p.clone(), p.guid.as_ref().is_some_and(|id| g.saved.contains(id)))).collect()
+    }
+
+    /// The puzzles within `reach` (cm) of `here`, with their answers (F6).
+    pub fn puzzles(&self, here: [f32; 3], reach: f32) -> Vec<crate::puzzles::Puzzle> {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let g = self.guide.borrow();
+        let mut out: Vec<crate::puzzles::Puzzle> = g
+            .quests
+            .puzzles()
+            .iter()
+            .filter_map(|&(comp, kind)| crate::puzzles::read(m, n, comp, kind))
+            .filter(|p| ((p.at[0] - here[0]).powi(2) + (p.at[1] - here[1]).powi(2)).sqrt() <= reach && (p.at[2] - here[2]).abs() <= reach)
+            .collect();
+        let d = |p: &crate::puzzles::Puzzle| ((p.at[0] - here[0]).powi(2) + (p.at[1] - here[1]).powi(2)).sqrt();
+        out.sort_by(|a, b| d(a).total_cmp(&d(b)));
+        out
     }
 
     /// Every secret of a kind: how many the game has.

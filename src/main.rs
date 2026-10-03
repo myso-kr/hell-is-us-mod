@@ -305,6 +305,29 @@ fn probe(args: &[String]) -> R {
             log!("{}", trf!("게임 텍스트: {path}", path = hiumod::i18n::names::dir().display()));
             Ok(())
         }
+        Some("saves") => {
+            // Every CharlieSaveGame in memory, every 5 s: which one the game updates as
+            // the hero learns things (.spec/QUESTS.md, live state).
+            let secs: u64 = arg(1).and_then(|s| s.parse().ok()).unwrap_or(120);
+            let started = std::time::Instant::now();
+            while started.elapsed().as_secs() < secs {
+                for s in objects.of_class(m, n, "CharlieSaveGame") {
+                    let date = n.path(m, s, &["SaveDate"]).and_then(|(at, _)| hiumod::mem::read_u64(m, at)).unwrap_or(0);
+                    let k = hiumod::knowledge::read(n, m, s);
+                    let deeds = hiumod::quests::deed_states(m, n, s);
+                    let done = deeds.iter().filter(|d| (2..=3).contains(&d.1)).count();
+                    println!(
+                        "{:>4}s 0x{s:X} date {date} facts {} tags {} deeds done {done}/{}",
+                        started.elapsed().as_secs(),
+                        k.as_ref().map_or(0, |k| k.facts.len()),
+                        k.as_ref().map_or(0, |k| k.tags.len()),
+                        deeds.len()
+                    );
+                }
+                std::thread::sleep(std::time::Duration::from_secs(5));
+            }
+            Ok(())
+        }
         Some("usmap") => {
             // The survey tool's mappings (.spec/ITEMS.md §3.1).
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);

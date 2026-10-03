@@ -438,3 +438,50 @@
   - `memstat.rs`: 작업 집합·전용·최고. 1분마다 로그(`memory: working … · private … · peak …`), 디버그 탭에 표시.
 - 줄인 것: 조사 DB 파생값(필요한 것·전달·마감·수집·이야기·저널)을 스텝(10 Hz)마다 다시 만들던 것을 1초에 한 번, 스냅샷엔
   `Arc` 로 공유 — 패널·오버레이가 프레임마다 복사하던 목록이 포인터 복사로.
+
+## 26. (번호 비움 — 구조 정리는 ARCHITECTURE.md 코드 지도)
+
+## 27. 3단계 기능 (2026-10-03, 설계 문서의 F6·F7·F8)
+게임 데이터에서 직접 읽음 — 공략 문구 없음.
+
+**F6 퍼즐 도우미** (`read/puzzles.rs`, 안내 탭 '근처 퍼즐')
+- 퀘스트 패스가 모든 객체를 훑을 때 퍼즐 컴포넌트도 모음 (`quests.rs` Role::Puzzle). 1초마다 주인공 40 m 안의 것을 읽음.
+- 다이얼: `DialPuzzleActionComponent.Dials` → `DialComponent.{DialState, DialSolution, NbDialState}` → "다이얼 n: k칸 돌리기 (지금 a → b)".
+  `bIsDialsLocked` 또는 전부 맞으면 풀림. 칸 번호는 0부터인 값을 +1 해서 보여 줌 (금고 코드의 기호 번호와 같은 기준이라고 가정 — 미확인).
+- 키패드·컴퓨터: `KeypadRuneComponent.Rune.ExpectedCode` (문자열). 열렸는지는 액터의 `KeypadAction`/`ComputerAccessAction.bHasBeenActivated`.
+- 물건 놓기(열쇠 문·림빅 막대·사진 등): `ItemPlacementActionComponent.Solution` → 아이템 하나 또는 `ItemPlacementCondition.Solution` 목록. 이름은 게임 번역.
+- 답은 기본으로 숨김 — '답 보기' 를 눌러야 보임 (이번 실행 동안만 기억).
+
+**F7 금고 수첩** (`guide/tables.rs` vaults, 수집 탭)
+- 표: `Gameplay/Research/CacheData/VOFK0n_*_CacheData_DA` (ResearchCacheData) — GUID, 이름·지역·단서(문자열 테이블 → `{g:ns/key}`),
+  `NumberOfLoreEntriesToUnlock`, `Code` (ECacheSymbols 4개 → 기호 번호 1–8). tools/survey 가 `Mods\survey\vaults.json` 으로.
+- 세이브 `Player.ResearchState`: `KnownLoreEntries` (연구 수), `KnownCacheEntries` (모든 금고가 처음부터 있음 — +0x11 bIsShownToPlayer 로만 '알려짐'),
+  `OpenedCaches` (GUID). 상태: 열림 / 정보 있음 (표시됨 또는 연구 수 ≥ 필요 수) / 잠김 (연구 n/m).
+- 금고 문 위치: 조사가 `VOFK_<지역>_DialPuzzle_Interact_BP` 액터를 `"vault": true` 로 남김 → '안내' 버튼.
+- 코드는 숨김, '코드 보기' 로. 기호 그림은 게임에 텍스처로 없어(재질) 번호로만.
+
+**F8 남은 적 무리** (`guide/tables.rs` hollows, 수집 탭)
+- 표: `GameData/Spawner/<World>_Root_WP_Spawner_DT` (SpawnerLymbicEntityData: SpawnerSerializeGuid, EntitiesToSpawn, SpawnerLocation,
+  TimeloopActorID) — 11개 지역 522개 스포너. `Mods\survey\spawners.json`.
+- 판정: 세이브 `World.RegionStates` 에 그 스포너 GUID 의 상태가 있으면 처치한 것. 실측: 기록 없는 스포너 곁(≤5 m)엔 살아 있는 적,
+  기록 있는 곳은 대부분 없음 (예외 2 — 이웃 스포너의 적으로 봄). 그래서 패널에 "(추정)".
+  기록의 Data 는 1바이트(F8)뿐 — SerializeSpawnerState(DefeatedLymbicEntities) 가 그대로 저장되진 않음.
+- 지역별 무리·적 수, 타임루프별, '가장 가까운 곳' 안내. 업적 쪽 실시간 값: `CharlieAchievementsUnlockerSubsystem.AdditionalClearedMapInformation`
+  (지역·타임루프별 bAll…EnemyKilled) — 지금은 표시 안 함.
+
+데이터 갱신: `doctor survey` (전체, ~2분) 또는 tools/survey `--tables` (표만, 몇 초).
+
+**퍼즐 목록** (F6 확장, 안내 탭 '퍼즐 목록')
+- 근처 40 m 만 보던 것을 모든 지역으로: 조사기가 퍼즐 액터의 컴포넌트를 `"puzzle"` 로 남김 — 다이얼(`DialComponent` 이름순, NbDialState·DialSolution),
+  키패드(`KeypadRuneComponent.Rune.ExpectedCode`), 물건 놓기(`Solution` → 아이템, 또는 조건 객체의 Solution 목록; 블루프린트 패키지 export 까지 따라감).
+- 실제 분포: 다이얼 24 (3개×10칸 8, 3개×6칸 1, 4개×8/4칸 3, 금고 4개×8칸 12), 코드 33 (3자리 4, 4자리 8, 5자리 7, 6자리 14), 물건 놓기 212.
+  같은 위치·종류의 복제는 하나로.
+- 풀었는지: 세이브에 그 액터 GUID 상태가 있으면 ✓ (추정). 이 지역 남은 것 먼저, 거리순, 답 숨김·안내. 열쇠·물건 놓기는 체크해야 보임.
+
+
+## 28. 업적 진행 (2026-10-03, 웨이브 D)
+- Steam API 없이 Steam 캐시를 읽음 (`game/achievements.rs`): `<Steam>\appcache\stats\UserGameStatsSchema_1620730.bin` (40개 업적의
+  API 이름·언어별 이름·설명·숨김·진행 통계) + `UserGameStats_<계정>_1620730.bin` (달성 비트·시각·통계 값). 둘 다 바이너리 KeyValues.
+- 게임 언어 → Steam 언어 (koreana·japanese·schinese·brazilian …). 진행 표시 12개 (선행 /26, 미스터리 /43, 유물 /29, 물건 놓기 /25 …).
+- 수집 탭 '업적' 카드: 남은 것부터, 숨겨진 업적은 '보기' 전까지 가림. 10초마다 다시 읽음 — Steam 이 게임의 보고를 받아 파일을 쓸 때 반영.
+- 게임 쪽 표(`AchievementsDefinitions_DT`)는 이름이 개발용 자리표시라 쓰지 않음.

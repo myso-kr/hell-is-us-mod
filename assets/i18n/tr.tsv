@@ -381,3 +381,47 @@ FAIL 안내: {e}	FAIL rehber: {e}
 강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Bunun yerine sonlandırılırsa `hiumod restore` her şeyi geri alır
 적용 중	Uygulanıyor
 되돌릴 것이 없음	Geri alınacak bir şey yok
+다이얼 퍼즐	Kadran bulmacası
+물건 놓기 퍼즐	Eşya yerleştirme
+키패드·암호	Tuş takımı · şifre
+    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    Kapının önündeki kadranlarda 'Yakındaki bulmacalar' kartı her birinin kaç adım çevrileceğini söyler
+    코드 (기호 번호): {code}	    Kod (sembol numaraları): {code}
+    타임루프 {name}: {left}/{all}	    Zaman Döngüsü {name}: {left}/{all}
+40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	40 m içinde kadran, tuş takımı veya eşya yerleştirme bulmacası yok
+{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} grup · {enemies} düşman
+가장 가까운 곳	En yakın
+게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Oyunun bildiği cevabı okur — kendin çözmek istiyorsan basma
+근처 퍼즐 ({n})	Yakındaki bulmacalar ({n})
+금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Mahzen tablosu yok — konsolda bir kez `doctor survey` çalıştır
+금단의 지식 금고 {done}/{all}	Yasak Bilgi Mahzenleri {done}/{all}
+남은 적 무리 {left}/{all}	Kalan düşman grupları {left}/{all}
+남은 적 무리	Kalan düşman grubu
+다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Kadran {n}: {k} adım çevir (şimdi {now} → {want})
+다이얼 {n}: 맞음	Kadran {n}: doğru
+답 보기	Cevabı göster
+숨기기	Gizle
+스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Spawner tablosu yok — konsolda bir kez `doctor survey` çalıştır
+연구 {n}/{need}	Araştırma {n}/{need}
+열림 ✓	Açık ✓
+장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Mahzen bilgilerini açmak için ZPT'deki {g:Facts_Tania/Tania_Real_Name} kişisine araştırma eşyaları ver · şu an araştırma {n}
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Düşman grubu (spawner) başına sayılır · kayıtta geçen grup yenilmiş sayılır (tahmin)
+정보 있음	Biliniyor
+코드 보기	Kodu göster
+코드: {code}	Kod: {code}
+필요한 것: {items}	Gerekli: {items}
+다이얼 {n}개 · {places}칸	{n} kadran · {places} konum
+{n}자리 코드	{n} haneli kod
+물건 {n}개	{n} eşya
+다이얼 위치 (왼쪽부터, 1부터): {list}	Kadran konumları (soldan, 1'den): {list}
+퍼즐 목록 · 이 지역 남은 {left}	Bulmaca listesi · burada {left} kaldı
+퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Bulmaca listesi yok — konsolda bir kez `doctor survey` çalıştırın
+열쇠·물건 놓기 퍼즐도 보기	Anahtarlı kapıları ve eşya yerleştirmeyi de göster
+안 푼 퍼즐	Çözülmemiş bulmaca
+금고 문	Kasa kapısı
+근처에 퍼즐 — 답은 패널 안내 탭에	Yakında bulmaca — cevap panelin Rehber sekmesinde
+연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Araştırma eşyaları: 'Koleksiyon' altındaki Araştırma satırına basın, en yakına götürür
+업적 {done}/{all}	Başarımlar {done}/{all}
+Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Steam başarım önbelleği bulunamadı (Steam/appcache/stats)
+달성한 것도 보기	Açılanları da göster
+숨겨진 업적	Gizli başarım
+보기	Göster

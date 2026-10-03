@@ -381,3 +381,47 @@ FAIL 안내: {e}	FAIL guide : {e}
 강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Si le processus est tué, `hiumod restore` remet tout en place
 적용 중	Application en cours
 되돌릴 것이 없음	Rien à restaurer
+다이얼 퍼즐	Puzzle à cadrans
+물건 놓기 퍼즐	Placement d'objets
+키패드·암호	Clavier · code
+    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    Aux cadrans devant la porte, la carte « Puzzles proches » indique de combien tourner chacun
+    코드 (기호 번호): {code}	    Code (numéros de symboles) : {code}
+    타임루프 {name}: {left}/{all}	    Boucle temporelle {name} : {left}/{all}
+40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	Aucun puzzle de cadrans, de clavier ou de placement d'objets à moins de 40 m
+{place}: {left}/{all} 무리 · 적 {enemies}	{place} : {left}/{all} groupes · {enemies} ennemis
+가장 가까운 곳	Le plus proche
+게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Lit la réponse que détient le jeu — n'appuyez pas si vous voulez résoudre seul
+근처 퍼즐 ({n})	Puzzles proches ({n})
+금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Aucune table de chambres — exécutez `doctor survey` une fois dans la console
+금단의 지식 금고 {done}/{all}	Chambres des savoirs interdits {done}/{all}
+남은 적 무리 {left}/{all}	Groupes d'ennemis restants {left}/{all}
+남은 적 무리	Groupe d'ennemis restant
+다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Cadran {n} : tourner de {k} crans (actuellement {now} → {want})
+다이얼 {n}: 맞음	Cadran {n} : correct
+답 보기	Voir la réponse
+숨기기	Masquer
+스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Aucune table de spawners — exécutez `doctor survey` une fois dans la console
+연구 {n}/{need}	Recherche {n}/{need}
+열림 ✓	Ouvert ✓
+장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Confiez des objets de recherche à {g:Facts_Tania/Tania_Real_Name} dans le véhicule blindé pour débloquer les infos des chambres · recherches actuelles {n}
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Compté par groupe d'ennemis (spawner) · un groupe noté dans la sauvegarde compte comme vaincu (estimation)
+정보 있음	Connu
+코드 보기	Voir le code
+코드: {code}	Code : {code}
+필요한 것: {items}	Requis : {items}
+다이얼 {n}개 · {places}칸	{n} cadrans · {places} positions
+{n}자리 코드	Code à {n} chiffres
+물건 {n}개	{n} objets
+다이얼 위치 (왼쪽부터, 1부터): {list}	Positions (depuis la gauche, à partir de 1) : {list}
+퍼즐 목록 · 이 지역 남은 {left}	Liste des énigmes · {left} restantes ici
+퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Pas de liste d'énigmes — lancez `doctor survey` une fois dans la console
+열쇠·물건 놓기 퍼즐도 보기	Afficher aussi les portes à clé et les dépôts d'objets
+안 푼 퍼즐	Énigme non résolue
+금고 문	Porte de chambre
+근처에 퍼즐 — 답은 패널 안내 탭에	Énigme à proximité — réponse dans l'onglet Guide du panneau
+연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Objets de recherche : appuyez sur la ligne Recherches dans « Collection » pour être guidé au plus proche
+업적 {done}/{all}	Succès {done}/{all}
+Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Cache des succès Steam introuvable (Steam/appcache/stats)
+달성한 것도 보기	Afficher aussi ceux débloqués
+숨겨진 업적	Succès caché
+보기	Voir

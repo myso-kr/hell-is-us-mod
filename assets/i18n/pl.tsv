@@ -381,3 +381,47 @@ FAIL 안내: {e}	FAIL przewodnik: {e}
 강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Jeśli proces zostanie ubity, `hiumod restore` przywróci wszystko
 적용 중	Stosowanie
 되돌릴 것이 없음	Nic do przywrócenia
+다이얼 퍼즐	Zagadka z pokrętłami
+물건 놓기 퍼즐	Układanie przedmiotów
+키패드·암호	Klawiatura · kod
+    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    Przy pokrętłach przy drzwiach karta „Zagadki w pobliżu” podpowie, o ile obrócić każde
+    코드 (기호 번호): {code}	    Kod (numery symboli): {code}
+    타임루프 {name}: {left}/{all}	    Pętla {name}: {left}/{all}
+40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	W promieniu 40 m nie ma zagadki z pokrętłami, klawiaturą ani układaniem przedmiotów
+{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} grup · wrogów: {enemies}
+가장 가까운 곳	Najbliższe
+게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Odczytuje odpowiedź, którą zna gra — nie naciskaj, jeśli chcesz rozwiązać samemu
+근처 퍼즐 ({n})	Zagadki w pobliżu ({n})
+금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Brak tabeli skarbców — uruchom raz `doctor survey` w konsoli
+금단의 지식 금고 {done}/{all}	Skarbce Zakazanej Wiedzy {done}/{all}
+남은 적 무리 {left}/{all}	Pozostałe grupy wrogów {left}/{all}
+남은 적 무리	Pozostała grupa wrogów
+다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Pokrętło {n}: obróć o {k} (teraz {now} → {want})
+다이얼 {n}: 맞음	Pokrętło {n}: dobrze
+답 보기	Pokaż odpowiedź
+숨기기	Ukryj
+스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Brak tabeli spawnerów — uruchom raz `doctor survey` w konsoli
+연구 {n}/{need}	Badanie {n}/{need}
+열림 ✓	Otwarte ✓
+장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Przekaż przedmioty badawcze: {g:Facts_Tania/Tania_Real_Name} w transporterze, aby odblokować informacje o skarbcach · obecnie badań: {n}
+적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다 (추정)	Liczone na grupę wrogów (spawner) · grupa zapisana w zapisie gry liczy się jako pokonana (szacunek)
+정보 있음	Znane
+코드 보기	Pokaż kod
+코드: {code}	Kod: {code}
+필요한 것: {items}	Potrzeba: {items}
+다이얼 {n}개 · {places}칸	{n} tarcz · {places} pozycji
+{n}자리 코드	Kod {n}-cyfrowy
+물건 {n}개	Przedmioty: {n}
+다이얼 위치 (왼쪽부터, 1부터): {list}	Pozycje (od lewej, od 1): {list}
+퍼즐 목록 · 이 지역 남은 {left}	Lista zagadek · tutaj zostało {left}
+퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Brak listy zagadek — uruchom raz `doctor survey` w konsoli
+열쇠·물건 놓기 퍼즐도 보기	Pokaż też drzwi na klucz i umieszczanie przedmiotów
+안 푼 퍼즐	Nierozwiązana zagadka
+금고 문	Drzwi skarbca
+근처에 퍼즐 — 답은 패널 안내 탭에	Zagadka w pobliżu — odpowiedź w zakładce Prowadzenie panelu
+연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Przedmioty badawcze: kliknij wiersz Badania w „Kolekcji”, aby iść do najbliższego
+업적 {done}/{all}	Osiągnięcia {done}/{all}
+Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Nie znaleziono pamięci podręcznej osiągnięć Steam (Steam/appcache/stats)
+달성한 것도 보기	Pokaż też odblokowane
+숨겨진 업적	Ukryte osiągnięcie
+보기	Pokaż
