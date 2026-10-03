@@ -17,9 +17,16 @@ fn fixed(px: f32) -> Style {
 /// A cheat's name, growing to fill its row, with an "unverified" chip after it when
 /// it has not been seen working. The game's own value, when there is one, is its hover.
 fn name(t: &mut Tui, c: &Cheat, now: Option<f32>) {
+    let full = crate::i18n::tr(c.label);
+    let (short, aside) = split_label(full);
     block(t, |ui| {
         ui.horizontal_wrapped(|ui| {
-            let r = ui.label(crate::i18n::tr(c.label));
+            let mut r = ui.label(short);
+            // A long aside ("999 = most, stops pick-ups") goes to the hover, so the row
+            // keeps one line; a short one ("base 450") stays in the name.
+            if aside {
+                r = r.on_hover_text(full);
+            }
             if let Some(now) = now {
                 r.on_hover_text(trf!("THE_GAMES_VALUE_NOW", now = now));
             }
@@ -28,6 +35,15 @@ fn name(t: &mut Tui, c: &Cheat, now: Option<f32>) {
             }
         });
     });
+}
+
+/// A cheat's label without a long parenthetical aside, and whether one was cut: an
+/// aside of up to 12 characters (`(base 450)`) is part of the name.
+fn split_label(label: &str) -> (&str, bool) {
+    match label.find(" (").or_else(|| label.find('(')) {
+        Some(at) if label[at..].trim().chars().count() > 14 => (label[..at].trim_end(), true),
+        _ => (label, false),
+    }
 }
 
 impl Panel {

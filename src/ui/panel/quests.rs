@@ -182,7 +182,9 @@ impl Panel {
                     let end = |t: &mut Tui| {
                         if !d.started {
                             let not = tr!("NOT_STARTED").trim().trim_matches(['(', ')']).to_string();
-                            tw::chip(t, not, tw::Tone::Wait);
+                            // Most deeds are not started: grey, so the chips that need
+                            // attention (soon) are the only coloured ones.
+                            tw::chip(t, not, tw::Tone::Quiet);
                         }
                     };
                     if tw::line(t, on, icon, d.title.as_str(), end) {
