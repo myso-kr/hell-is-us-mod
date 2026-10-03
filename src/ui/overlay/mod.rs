@@ -189,7 +189,11 @@ pub fn run(shared: Arc<Shared>) {
         let here =
             glide.see(pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32)), Instant::now());
 
+        let haze_links = shared.snap.lock().unwrap().as_ref().map(|s| s.haze_links.clone()).unwrap_or_default();
         let mut state = shared.map.lock().unwrap();
+        if state.haze_links != *haze_links {
+            state.haze_links = (*haze_links).clone();
+        }
         // The panel changed the icon size: rasterise them again, once.
         if state.icon_px != icon_px {
             icon_px = state.icon_px;

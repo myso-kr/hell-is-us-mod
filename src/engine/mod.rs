@@ -132,6 +132,7 @@ impl Engine {
             pose: None,
             world: None,
             things: Vec::new(),
+            haze_links: Default::default(),
             footprints: Arc::default(),
             goals: Vec::new(),
             collection: Default::default(),
@@ -171,6 +172,14 @@ impl Engine {
                     Ok(t) => {
                         snap.things = t;
                         snap.footprints = a.footprints();
+                        let links = a.haze_links();
+                        // Logged as the count changes: the record layout is read blind
+                        // (HAZE_RECORD), and this is how a fight shows it holds.
+                        static LAST: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+                        if LAST.swap(links.len(), std::sync::atomic::Ordering::Relaxed) != links.len() {
+                            crate::logfile::line(&format!("haze links: {}", links.len()));
+                        }
+                        snap.haze_links = Arc::new(links);
                     }
                     Err(e) => snap.notice = Some(trf!("MINIMAP_ERROR", e = e)),
                 }

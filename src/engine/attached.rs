@@ -224,6 +224,11 @@ impl Attached {
         Ok(s.positions(&self.game, chain.location))
     }
 
+    /// The Hazes and the Hollow Walkers they keep alive, as of the last `things`.
+    pub fn haze_links(&self) -> Vec<crate::actors::HazeLink> {
+        self.scanner.borrow().links()
+    }
+
     /// Put the hero at `p` (cm), standing still: the root component's RelativeLocation
     /// and its ComponentToWorld (what movement reads), and the movement's Velocity.
     pub fn teleport(&self, p: [f64; 3]) -> Result<(), String> {

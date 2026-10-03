@@ -319,7 +319,19 @@ struct Tracked {
     root: u64,
     sub: Sub,
     done: Option<Done>,
+    /// A Hollow Walker's `HazeRecords` (the Hazes that keep it alive): the field's offset.
+    records: Option<u32>,
 }
+
+/// A Haze and a Hollow Walker it keeps alive: where each is (cm).
+pub type HazeLink = ([f32; 3], [f32; 3]);
+
+/// `HazeRecord` (build 24045435): `HazeToSpawn` (a soft class, 40 B) at 0x0 and
+/// `SpawnedHaze` (the Haze actor) at 0x30; 0x38 bytes a record.
+const HAZE_RECORD: u64 = 0x38;
+const SPAWNED_HAZE: u64 = 0x30;
+/// More records than this on one Walker is not a record array.
+const MAX_RECORDS: u32 = 16;
 
 /// The actor's property holding an object of class `want` (or one below it).
 pub(crate) fn component(m: &dyn Memory, n: &Names, actor: u64, want: &str) -> Option<u64> {
@@ -372,6 +384,10 @@ pub struct Scanner {
     levels: Option<u64>,
     actors: Option<u64>,
     kinds: HashMap<u64, Option<Sub>>,
+    /// Per class: where its `HazeRecords` is, if it has one.
+    records: HashMap<u64, Option<u32>>,
+    /// The Haze links as last read with the positions.
+    links: Vec<HazeLink>,
     /// Per actor, kept across scans: (its class, where it says it is spent).
     done: HashMap<u64, (u64, Option<Done>)>,
     tracked: Vec<Tracked>,
@@ -454,7 +470,15 @@ impl Scanner {
                         d
                     }
                 };
-                tracked.push(Tracked { actor, class, root: rc, sub, done });
+                let records = if sub.kind() == Kind::Enemy {
+                    *self
+                        .records
+                        .entry(class)
+                        .or_insert_with(|| n.field(m, actor, "HazeRecords").filter(|p| p.size == 16).map(|p| p.offset))
+                } else {
+                    None
+                };
+                tracked.push(Tracked { actor, class, root: rc, sub, done, records });
             }
         }
         let alive: std::collections::HashSet<u64> = tracked.iter().map(|t| t.actor).collect();
@@ -476,8 +500,15 @@ impl Scanner {
             .collect()
     }
 
+    /// The Hazes and the Walkers they keep alive, as of the last `positions`.
+    pub fn links(&self) -> Vec<HazeLink> {
+        self.links.clone()
+    }
+
     pub fn positions(&mut self, m: &dyn Memory, location: u64) -> Vec<Thing> {
         let mut out = Vec::with_capacity(self.tracked.len());
+        // Where each live actor is, for the Haze links after.
+        let mut at: HashMap<u64, [f32; 3]> = HashMap::new();
         self.tracked.retain(|t| {
             if mem::read_u64(m, t.actor + CLASS) != Some(t.class) {
                 return false;
@@ -493,9 +524,30 @@ impl Scanner {
             let p = [d(0), d(1), d(2)];
             if p.iter().all(|v| v.is_finite()) {
                 out.push(Thing { sub: t.sub, at: p });
+                at.insert(t.actor, p);
             }
             true
         });
+        // Each live Walker's records: the Hazes it hangs on, those that are in play.
+        let mut links = Vec::new();
+        for t in &self.tracked {
+            let (Some(off), Some(&walker)) = (t.records, at.get(&t.actor)) else { continue };
+            let (Some(data), Some(num)) =
+                (mem::read_u64(m, t.actor + off as u64), mem::read_u32(m, t.actor + off as u64 + 8))
+            else {
+                continue;
+            };
+            if !mem::plausible(data) || num > MAX_RECORDS {
+                continue;
+            }
+            for i in 0..num as u64 {
+                let haze = mem::read_u64(m, data + i * HAZE_RECORD + SPAWNED_HAZE).unwrap_or(0);
+                if let Some(&h) = at.get(&haze).filter(|_| haze != t.actor) {
+                    links.push((h, walker));
+                }
+            }
+        }
+        self.links = links;
         out
     }
 }

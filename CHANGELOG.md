@@ -46,6 +46,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   to Guide, the shard budget is its own card on Collect, the nearby puzzles and the puzzle list are
   one card, the secrets ring shows only on Quests, and the sidebar groups the pages as Play, Finding
   the way and System.
+- Hazes are linked on the maps: a thin violet line from each Haze to the Hollow Walkers it keeps
+  alive, so you can see which to kill first (in the legend while enemies are shown).
 - Places named only by the game's internal trigger ("AcasaHermitTombFullyOpened") read as names, with
   what they mark in your language ("Acasa Hermit Tomb · opened").
 - Both sides of the panel have the same margin; the achievements list's order and "show unlocked"

@@ -18,6 +18,8 @@ pub use super::compass::*;
 const BACKGROUND: Rgba = Rgba(16, 18, 22, 170);
 const EDGE: Rgba = Rgba(200, 200, 190, 200);
 const TRAIL: Rgba = Rgba(150, 200, 255, 210);
+/// A Haze's link to a Hollow Walker it keeps alive: the Lymbic violet.
+const HAZE_LINK: Rgba = Rgba(196, 128, 255, 220);
 const HERO: Rgba = Rgba(255, 255, 255, 255);
 const NORTH: Rgba = Rgba(255, 110, 90, 255);
 const OUTLINE: Rgba = Rgba(0, 0, 0, 200);
@@ -791,6 +793,18 @@ pub fn draw_above(
         }
     }
 
+    // A thin line from each Haze to every Hollow Walker it keeps alive, so the one to kill
+    // first shows (JOURNEY §3.7): with the enemies, under their icons.
+    if state.layers & Kind::Enemy.bit() != 0 {
+        let colour = faded(HAZE_LINK, lines);
+        for (haze, walker) in &state.haze_links {
+            let (a, b) = (view.project(*haze), view.project(*walker));
+            if inside(a) || inside(b) {
+                cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 1.4, colour);
+            }
+        }
+    }
+
     // Enemies last, so they sit on top of the rest.
     let mut sorted: Vec<&Thing> = things.iter().filter(|t| state.shows(t.sub)).collect();
     sorted.sort_by_key(|t| std::cmp::Reverse(t.kind()));
@@ -960,6 +974,9 @@ pub fn legend(state: &MapState, outline: bool) -> Vec<(Swatch, Rgba, &'static st
         out.push((Swatch::Fill, Rgba(40, 95, 175, 230), tr!("LEGEND_WATER")));
     }
     out.push((Swatch::Line, TRAIL, tr!("LEGEND_TRAIL")));
+    if state.layers & Kind::Enemy.bit() != 0 {
+        out.push((Swatch::Line, HAZE_LINK, tr!("LEGEND_HAZE_LINK")));
+    }
     out.push((Swatch::Line, Rgba(245, 120, 200, 235), tr!("LEGEND_ROUTE")));
     out.push((Swatch::Dashed, Rgba(255, 220, 60, 235), tr!("LEGEND_BLOCKED")));
     out

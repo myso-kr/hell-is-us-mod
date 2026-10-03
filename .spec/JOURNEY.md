@@ -97,9 +97,18 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
 ### 3.7 Haze links
 - On the minimap, a thin line from each Haze to the Hollow Walkers it keeps alive, so the player sees
   which to kill first. No combat automation.
-- Data: needs a probe — which component on a Hollow holds its link to a Haze. Enemy actors are already
-  classified (actors.rs).
-- Effort: medium, research first.
+- Data (found 2026-10-04 in the reflection data, `doctor find`): `HollowWalker.HazeRecords` (an array,
+  +0xa68 on build 24045435) of `HazeRecord { HazeToSpawn: soft class @0x0 (40 B), SpawnedHaze: object
+  @0x30 }`, 0x38 bytes a record (laid out from the fields; not read from the struct). Other names
+  seen and not needed: `HollowWalkerData.AttachedHaze(s)`, `UmbilicalCord.HazeConnections` (the
+  cord's effect), `*Definition.AssignedHaze(s)` (spawner classes).
+- **Built (2026-10-04):** the actor scan finds each enemy class's `HazeRecords` offset once; each
+  position read links every live Walker to the records' Hazes that are in play (`actors.rs`
+  `links`), through the snapshot to `MapState::haze_links` (never saved), drawn on every map as a
+  thin Lymbic-violet line under the enemy icons while the enemy layer shows, and in the legend.
+  The engine logs "haze links: N" as the count changes. **To check in play:** that a fight with a
+  Haze logs a non-zero count and draws the lines; a zero count beside a Haze means the record size
+  or field differs.
 
 ### 3.8 Previously
 - On the first attach of a session: where the hero was, the followed quest and its next goal, and the
@@ -122,7 +131,7 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
   hierarchy, attached child, or a separate payload actor nearby) — survey pass over one region.
 - **Timeloop prism signature:** which Amine prism (T01/T02/T03 = Greek signatures) each timeloop
   rift needs — look for the rift actor's placement or condition in the survey's flows and placements.
-- **Haze → Hollow link** (§3.7): a `doctor inspect` on a linked Hollow during a fight.
+- **Haze → Hollow link** (§3.7): found in the reflection data; the live check is one fight with a Haze.
 - **Gear upgrade costs** (§3.6): done — the `CraftRecipe` assets under `Gameplay/Crafting/`.
 
 ## 5. Order
@@ -137,7 +146,7 @@ Each: what it shows, the data it needs and whether we have it, and the effort.
 | 6 | §3.9 Completion board | medium — the completionist's last stretch | small–medium | glyph/cap paths |
 | 7 | §3.2 Clue board | medium — the Datapad's worst pain | medium | no |
 | 8 | §3.6 Shard budget | medium — three missable achievements | medium | upgrade costs |
-| 9 | §3.7 Haze links | low–medium | medium | yes |
+| 9 | §3.7 Haze links | low–medium | medium | built; live check pending |
 
 Every proposal is a card or a tracker line with its answers hidden by default, in the 12 languages
 (new text keys in every `assets/i18n` table), and confirmed in play before it counts as done.

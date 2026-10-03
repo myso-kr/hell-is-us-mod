@@ -84,6 +84,9 @@ pub struct MapState {
     /// through (as Diablo's and Path of Exile's maps): icons, route and pins stay solid.
     /// The minimap, small and in a corner, stays solid.
     pub dots: bool,
+    /// Not a setting: the Hazes and the Hollow Walkers they keep alive, put here by the
+    /// overlay from each snapshot so every map draws them. Never saved.
+    pub haze_links: Vec<crate::actors::HazeLink>,
     /// How opaque the map's layers are (percent): the ground (disc, relief, terrain
     /// fills), the lines (contours, shore, edges, trail, route) and the icons (things,
     /// pins, goals, the hero). Both maps; the big map's own opacity multiplies them.
@@ -138,6 +141,7 @@ impl Default for MapState {
             big_outline: true,
             mini_outline: false,
             dots: true,
+            haze_links: Vec::new(),
             opacity: [100, 100, 100],
             hide_in_menus: true,
             route: true,
@@ -592,6 +596,7 @@ mod tests {
             big_outline: false,
             mini_outline: true,
             dots: false,
+            haze_links: Vec::new(),
             opacity: [40, 80, 100],
             north_yaw: 90.0,
             hide_in_menus: false,
