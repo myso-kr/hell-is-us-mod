@@ -36,7 +36,7 @@ game's memory. It modifies no game files.
 | **0** | external process, `ReadProcessMemory` / `WriteProcessMemory` | the panel, cheats, the CLI | working on build 24045435; 12 cheats verified in play |
 | **0b** | the same process, click-through layered windows | minimap, big map, compass, tracker | working in game |
 | **0c** | the same process, plus the survey tool over the game's paks | the guide: goals, routes, quests, puzzles, vaults, collectibles | working in game |
-| 1 | RE-UE4SS (Nexus #43, UE 5.5 preset) | effects only reachable in-game: damage and cooldown cheats, achievement blocking | not started (ROADMAP §5) |
+| 1 | RE-UE4SS (Nexus #43, UE 5.5 preset) | effects only reachable in-game: damage and cooldown cheats, achievement blocking | not started (ROADMAP §6) |
 
 ## The map, as it turned out
 

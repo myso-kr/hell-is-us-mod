@@ -33,7 +33,15 @@ trail across regions, and DPI scaling.
 
 - **Done when:** each is confirmed in play, or fixed, or recorded as a limit with its reason.
 
-## 4. Routes indoors
+## 4. The next features
+
+JOURNEY.md proposes nine features from research into where players struggle, in order: area ledger,
+point-of-no-return check, "previously", the Lymbic key-item chain, trip planner, completion board,
+clue board, shard budget, Haze links. Its §4 lists the research some of them need first.
+
+- **Done when:** each built one is confirmed in play and documented in FEATURES.md.
+
+## 5. Routes indoors
 
 Routes are 2D. The navmesh handles most places; the obstacle-grid fallback can be wrong in two-storey
 interiors, on ramps and on stairs (ROUTES.md, D15).
@@ -42,7 +50,7 @@ interiors, on ramps and on stairs (ROUTES.md, D15).
 - If it is common, D15's fallback: a small in-game module that only answers physics queries, with the
   panel unchanged.
 
-## 5. Phase 1 — inside the game (large; needs its own design)
+## 6. Phase 1 — inside the game (large; needs its own design)
 
 - Candidate: RE-UE4SS (Nexus #43, with a UE 5.5 preset). Lua could revive `CharlieCheatManager`, apply
   GameplayEffects for the cheats that cannot work from outside (damage, defence, healing, i-frames,
@@ -51,7 +59,7 @@ interiors, on ramps and on stairs (ROUTES.md, D15).
 - Read D1 again before deciding: the external design's main benefit is touching no game file.
 - **Done when:** there is a design document with a decision recorded in DECISIONS.md.
 
-## 6. Housekeeping
+## 7. Housekeeping
 
 - D10's open question: whether `Mods\` should become `Mods\hiumod\` if other mod loaders are used.
 - Keep `.spec/` current: a feature is not done until its document says how it works.

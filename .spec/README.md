@@ -24,6 +24,7 @@ Reference:
 | [ROUTES.md](ROUTES.md) | Routes to the goal: obstacles, water and slopes, the game's navmesh |
 | [MAP.md](MAP.md) | The map: why it is drawn from the world, and how it is drawn |
 | [QUESTS.md](QUESTS.md) | The main story and the quest journal and tracker |
+| [JOURNEY.md](JOURNEY.md) | Where players struggle, stage by stage, and the next features proposed for it |
 | [FEATURES.md](FEATURES.md) | The guide's features by stage (F1–F11): backups, pins, missables, puzzles, vaults, enemy groups, achievements |
 | [SURVEY.md](SURVEY.md) | The game-data survey: the tool, its stages, automatic reading and the .NET 8 runtime |
 | [PANEL.md](PANEL.md) | The panel: layout, theme, spacing, console |
