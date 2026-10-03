@@ -10,37 +10,37 @@ impl Panel {
             self.backups = crate::backup::list();
             self.backups_read = Some(Instant::now());
         }
-        card(t, tr!("세이브 백업"), |t| {
-            note(t, trf!("게임이 저장할 때마다 세이브 파일을 복사해 둡니다 (최근 {a0}개)", a0 = crate::backup::KEEP));
+        card(t, tr!("SAVE_BACKUPS"), |t| {
+            note(t, trf!("COPIES_THE_SAVE_FILES_EACH_TIME", count = crate::backup::KEEP));
             for (name, _) in self.backups.iter().take(3) {
                 text(t, RichText::new(name.replace('_', " ")).color(DIM).small());
             }
             if self.backups.is_empty() {
-                text(t, RichText::new(tr!("아직 백업이 없습니다")).color(DIM).small());
+                text(t, RichText::new(tr!("NO_BACKUPS_YET")).color(DIM).small());
             }
             choices(t, |t| {
-                if w(t, |ui| ui.button(tr!("지금 백업"))).clicked() {
+                if w(t, |ui| ui.button(tr!("BACK_UP_NOW"))).clicked() {
                     self.reply = Some(match crate::backup::make("manual") {
-                        Ok(to) => (true, trf!("백업함: {a0}", a0 = to.file_name().unwrap_or_default().to_string_lossy()), Instant::now()),
-                        Err(e) => (false, trf!("백업 실패: {e}", e = e), Instant::now()),
+                        Ok(to) => (true, trf!("BACKED_UP", file = to.file_name().unwrap_or_default().to_string_lossy()), Instant::now()),
+                        Err(e) => (false, trf!("BACKUP_FAILED", e = e), Instant::now()),
                     });
                     self.backups_read = None;
                 }
-                if w(t, |ui| ui.button(tr!("폴더 열기"))).clicked() {
+                if w(t, |ui| ui.button(tr!("OPEN_FOLDER"))).clicked() {
                     let dir = crate::backup::dir();
                     let _ = std::fs::create_dir_all(&dir);
                     let _ = std::process::Command::new("explorer").arg(&dir).spawn();
                 }
             });
-            note(t, tr!(r"되돌리려면 게임을 끈 뒤 백업 폴더의 .sav 파일을 세이브 폴더(%LOCALAPPDATA%\HellIsUs\Saved\SaveGames)에 덮어쓰세요"));
+            note(t, tr!("TO_ROLL_BACK_QUIT_THE_GAME"));
         });
     }
 
     /// The game's own save files and when each was last written.
     pub(super) fn slots_card(&mut self, t: &mut Tui) {
-        card(t, tr!("세이브 파일"), |t| {
+        card(t, tr!("SAVE_FILES"), |t| {
             let Some(dir) = crate::backup::saves() else {
-                note(t, tr!("게임의 세이브 폴더를 찾지 못했습니다"));
+                note(t, tr!("THE_GAMES_SAVE_FOLDER_WAS_NOT"));
                 return;
             };
             let mut files: Vec<(String, std::time::SystemTime, u64)> = std::fs::read_dir(&dir)
@@ -57,10 +57,10 @@ impl Panel {
             for (name, at, len) in files {
                 let ago = at.elapsed().map_or(0, |d| d.as_secs());
                 let when = match ago {
-                    0..60 => tr!("방금").to_string(),
-                    60..3600 => trf!("{a0}분 전", a0 = ago / 60),
-                    3600..86400 => trf!("{a0}시간 전", a0 = ago / 3600),
-                    _ => trf!("{a0}일 전", a0 = ago / 86400),
+                    0..60 => tr!("JUST_NOW").to_string(),
+                    60..3600 => trf!("MIN_AGO", minutes = ago / 60),
+                    3600..86400 => trf!("H_AGO", hours = ago / 3600),
+                    _ => trf!("DAYS_AGO", days = ago / 86400),
                 };
                 field(t, name.trim_end_matches(".sav"), |t| text(t, RichText::new(format!("{when} · {} KB", len / 1024)).color(DIM)));
             }

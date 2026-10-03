@@ -171,7 +171,7 @@ fn parse(text: &str, known: &[Attr]) -> Result<Record, String> {
         let [set, name, b, c] = f[..] else { return Err(bad()) };
         let a = legacy(set, name)
             .or_else(|| known.iter().copied().find(|a| a.set == set && a.name == name))
-            .ok_or_else(|| trf!("{a0}번째 줄: {set}.{name} — 이 버전에 없는 속성", a0 = n + 1, set = set, name = name))?;
+            .ok_or_else(|| trf!("LINE_IS_NO_ATTRIBUTE_THIS_VERSION", line = n + 1, set = set, name = name))?;
         let bits = |s: &str| u32::from_str_radix(s, 16).map(f32::from_bits).map_err(|_| bad());
         out.insert(a, (bits(b)?, bits(c)?));
     }

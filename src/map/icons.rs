@@ -16,7 +16,7 @@ pub struct Icon {
 }
 
 /// A sort's SVG.
-fn source(s: Sub) -> &'static str {
+pub fn source(s: Sub) -> &'static str {
     use Sub::*;
     match s {
         Feral => include_str!("../../assets/icons/enemy_feral.svg"),
@@ -49,7 +49,7 @@ fn source(s: Sub) -> &'static str {
 }
 
 /// A map pin's SVG (`assets/pins/<word>.svg`).
-fn pin_source(k: PinKind) -> &'static str {
+pub fn pin_source(k: PinKind) -> &'static str {
     match k {
         PinKind::LockedDoor => include_str!("../../assets/pins/locked_door.svg"),
         PinKind::LockedChest => include_str!("../../assets/pins/locked_chest.svg"),

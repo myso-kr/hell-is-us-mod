@@ -1,435 +1,436 @@
 # Turkish (tr) translation of the UI strings. Korean source (key) <TAB> translation. \n \t \\ are escapes; {name} placeholders stay as they are.
-생존	Hayatta Kalma
-전투	Savaş
-이동	Hareket
-아이템	Eşyalar
-체력 유지 (상한을 최대로)	Canı koru (üst sınır maksimum)
-스태미나 무한	Sonsuz dayanıklılık
-고스트 (탐험용 — 켜는 동안 공격도 막힘)	Hayalet (keşif için — açıkken saldıramazsın)
-림빅 에너지 무한	Sonsuz Limbik enerji
-림빅 소모 없음	Limbik maliyeti yok
-스킬 쿨다운 없음	Yetenek bekleme süresi yok
-걷기 속도 (기본 450)	Yürüme hızı (varsayılan 450)
-주인공 시간 배속 (기본 1)	Kahraman zaman ölçeği (varsayılan 1)
-게임 속도 (기본 1)	Oyun hızı (varsayılan 1)
-적 속도 (기본 1)	Düşman hızı (varsayılan 1)
-약한 적 (한 방에 처치)	Zayıf düşmanlar (tek vuruşta ölür)
-소모품 줄지 않음	Tüketilebilir eşyalar tükenmez
-무기 경험치 배수 (기본 1)	Silah XP çarpanı (varsayılan 1)
-가진 샤드 수량 (999=최대면 줍기·알림 막힘)	Eldeki parça sayısı (999 = maksimum, toplamayı ve bildirimleri engeller)
-퀘스트 목표	Görev hedefi
-비밀	Sır
-단서	İpucu
-전달: {a0}	Teslim et: {a0}
-대화: {a0}	Konuş: {a0}
-아이템: {a0}	Eşya: {a0}
-새 사실 {a0}개	{a0} yeni bilgi
- · 조건 필요 (열쇠·퍼즐 등 — 가기만 해선 안 됨)	 · bir şey gerekli (anahtar, bulmaca — oraya gitmek yetmez)
-1막 끝까지	1. Perde sonuna kadar
-세 번째 키스톤 전	Üçüncü Kilit Taşından önce
-마감 임박 선행: {a0} ({a1})	Süresi dolmak üzere olan İyilik: {a0} ({a1})
-마감 임박 선행 {n}개 — 퀘스트 탭에서 확인	Süresi dolmak üzere olan {n} İyilik — Görevler sekmesine bak
-메인 {n}	Ana {n}
-선행	İyilik
-미스터리	Gizem
-타임루프	Zaman Döngüsü
-메인 퀘스트 {a0}	Ana görev {a0}
-장소: {a0}	Yer: {a0}
-대화: {p}	Konuş: {p}
- · 조사 DB (아직 로드 안 됨)	 · keşif veri tabanı (henüz yüklenmedi)
- · 조건 필요	 · bir şey gerekli
-유물	Kalıntılar
-기록물	Kayıtlar
-연구 자료	Araştırma
-모자	Şapkalar
-드론 모듈	Drone modülleri
-림빅 스킬	Limbik yetenekler
-무기	Silahlar
-방어구	Savunma teçhizatı
-림빅 막대	Limbik çubuklar
-제작서	Üretim kitapları
-잠긴 문	Kilitli kapı
-잠긴 상자	Kilitli sandık
-림빅 잠금	Limbik kilit
-퍼즐	Bulmaca
-코드·암호	Kod
-열쇠 필요	Anahtar gerekli
-나중에 주울 것	Sonra al
-상인	Tüccar
-만날 사람	Görüşülecek kişi
-퀘스트 단서	Görev ipucu
-위험	Tehlike
-강적	Güçlü düşman
-저장 지점	Kayıt noktası
-지름길	Kestirme
-오를 곳	Tırmanılacak yer
-막다른 길	Çıkmaz sokak
-물·건널 곳	Su geçidi
-둘러볼 곳	Göz atılacak yer
-보물	Hazine
-메모	Not
-거점	Üs
-모르는 것	Bilinmeyen
-표시	İşaret
-핀: {a0}	İğne: {a0}
-미니맵	Mini harita
-큰 지도	Büyük harita
-끔	Kapalı
-음영	Gölgeleme
-등고선	Eş yükselti çizgileri
-둘 다	İkisi de
-위층 (흐리게)	Üst katlar (soluk)
-아래층·지하 (흐리게)	Alt katlar · yeraltı (soluk)
-깊은 곳	Derin
-낮은 곳	Alçak
-같은 높이	Aynı seviye
-높은 곳	Yüksek
-절벽·바위	Uçurumlar ve kayalar
-벽	Duvarlar
-적	Düşmanlar
-전리품	Ganimet
-문·퍼즐	Kapılar ve bulmacalar
-저장	Kayıt
-기타	Diğer
-약품	İlaçlar
-음식	Yiyecek
-기타 소모품	Diğer tüketilebilirler
-퀘스트·비밀	Görevler ve sırlar
-보급품	Malzemeler
-적 전리품 상자	Düşman ganimet sandığı
-문	Kapı
-드론 번역	Drone çevirisi
-명령을 입력하세요 — `help` 로 목록, ↑/↓ 이전 명령, Esc 로 실행 중지	Bir komut yaz — `help` listeyi gösterir, ↑/↓ geçmiş, Esc çalışmayı durdurur
-hiumod 만으로는 패널이 하나 더 열립니다 — 명령을 붙여 주세요 (help)	Tek başına hiumod bir panel daha açar — bir komut ekle (help)
-앞의 명령이 아직 실행 중입니다 (Esc 로 중지)	Son komut hâlâ çalışıyor (Esc durdurur)
-실행 파일을 찾지 못함: {e}	Çalıştırılabilir dosya bulunamadı: {e}
-실행하지 못함: {e}	Çalıştırılamadı: {e}
-(끝남: 코드 {c})	(bitti: kod {c})
-(끝남)	(bitti)
-(중지함)	(durduruldu)
-명령 (help)	Komut (help)
-지도 핀	Harita iğnesi
-패널에서 고른 곳	Panelden seçildi
-필요한 것: 이 지역 {h}곳	Gereken: bu bölgede {h} yer
-필요한 것: 다른 지역 {a}곳 — 장갑차로 이동	Gereken: diğer bölgelerde {a} yer — ZPT ile git
-필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳	Gereken: bu bölgede {h} · diğer bölgelerde {a} yer
-위치 {a0} 저장 ({a1:.0}, {a2:.0}, {a3:.0})	Konum {a0} kaydedildi ({a1:.0}, {a2:.0}, {a3:.0})
-위치 {a0} 로 이동	Konum {a0} noktasına gidildi
-수집 진행도	Toplama ilerlemesi
-조사 DB 가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Keşif veri tabanı yok — konsolda bir kez `doctor survey` çalıştır
-월드에 놓인 것만 셉니다 (NPC 보상·상점은 제외) · 이 지역 / 전체	Yalnızca dünyada duranları sayar (NPC ödülleri ve dükkânlar hariç) · bu bölge / tümü
-{a0}  {a1}/{a2} · 전체 {a3}/{a4}	{a0}  {a1}/{a2} · tümü {a3}/{a4}
-선행 · 미스터리 · 타임루프	İyilikler · Gizemler · Zaman Döngüleri
-완료 {a0} / {a1} · 진행 중 {a2} · 실패 {a3}	Tamamlanan {a0} / {a1} · devam eden {a2} · başarısız {a3}
-들을 이야기가 남은 NPC ({a0})	Anlatacağı daha çok şey olan NPC'ler ({a0})
-대화에서 아직 모르는 사실·단서를 줄 수 있는 사람 (갈래가 잠긴 대화도 포함)	Konuşması sana henüz bilmediğin bir bilgi veya ipucu verebilecek kişiler (kilitli dallar dahil)
-다른 지역: {a0}	Diğer bölgeler: {a0}
-메모리: 사용 {a0} · 전용 {a1} · 최고 {a2} (1분마다 로그에도 남음)	Bellek: kullanılan {a0} · özel {a1} · en yüksek {a2} (her dakika günlüğe de yazılır)
-켜진 치트	Açık hileler
-원래 값 → 넣는 값, 그리고 지금 게임에 들어 있는 값	Orijinal değer → yazılan değer ve oyunun şu anki değeri
-켜진 치트가 없습니다	Açık hile yok
-적·인벤토리 대상	Düşmanlar ve envanter
-매 틱 적용	Her tikte uygulanır
-적용 중 {n:.2}	Uygulanan {n:.2}
-게임이 바꿈 {n:.2}	Oyun değiştirdi {n:.2}
-넣은 값과 다릅니다. 게임이 매 순간 다시 계산하는 값일 수 있습니다.	Yazılan değerden farklı. Oyun bu değeri her an yeniden hesaplıyor olabilir.
-읽을 수 없음	Okunamıyor
-테스트 결과 기록	Test sonuçlarını kaydet
-게임에서 해 보고 눌러 주세요. verify.txt에 저장됩니다.	Oyunda dene, sonra bas. verify.txt dosyasına kaydedilir.
-됨 ✓	Çalışıyor ✓
-안 됨 ✗	Çalışmıyor ✗
-확인됨	Doğrulandı
-미검증	Doğrulanmadı
-로그·기록 폴더 열기	Günlük klasörünü aç
-게임의 현재 값: {now:.2}	Oyundaki şu anki değer: {now:.2}
-적용	Uygula
-아직 게임에서 확인하지 않은 치트입니다. 동작하는지 알려주세요.	Bu hile oyunda henüz doğrulanmadı. Çalışıp çalışmadığını bildir.
-위치 저장 · 이동	Konumları kaydet ve yükle
-슬롯 {a0}	Yuva {a0}
-다른 지역 ({w})	Başka bölge ({w})
-비어 있음	Boş
-저장한 지역 안에서만 이동합니다	Yalnızca kaydedildiği bölge içinde taşır
-켜진 치트 ({a0})	Açık hileler ({a0})
-{v:.2} (게임 {n:.2})	{v:.2} (oyun {n:.2})
-켜짐	Açık
-나침반 · 방향	Pusula ve yön
-나침반 (F{a0})	Pusula (F{a0})
-화면 위 가운데	Ekranın üst ortası
-안내	Rehber
-자동 안내 — 따라가는 퀘스트의 다음 목표로 계속 안내	Otomatik rehber — takip edilen görevin sıradaki hedefine yönlendirmeyi sürdürür
-실제 이동 경로 (A*) — 지형·물·벽을 돌아가는 길, 나침반이 다음 꺾이는 곳을 가리킴	Gerçek yürüme rotası (A*) — arazi, su ve duvarların çevresinden; pusula sıradaki dönüşü gösterir
-다음 목표 ▶	Sıradaki hedef ▶
-이 목표는 끝났거나 지금 갈 수 없음 — 넘기고 다음 목표로 (이번 실행 동안)	Bu hedef bitti ya da şu an ulaşılamıyor — atlayıp sıradakine geç (bu oturumda)
-직접 고른 목표 — 끝날 때까지 유지	Elle seçildi — bitene kadar korunur
-자동으로	Otomatiğe dön
-⚠ 걸어서 닿는 길이 없습니다 — 닫힌 문·퍼즐·열쇠 너머일 수 있음. 닿는 곳까지 안내하고 나머지는 노란 점선	⚠ Yürünebilir yol yok — kapalı kapının, bulmacanın ya da anahtarın ardında olabilir. Gidilebilen yere kadar yönlendirir; gerisi sarı kesikli çizgi
-자동 안내가 꺼져 있습니다 — 위 스위치를 켜거나 '갈 곳' 에서 고르세요	Otomatik rehber kapalı — yukarıdaki anahtarı aç ya da 'Yerler'den seç
-이 근처에서 새로 얻을 것이 있는 곳을 찾지 못했습니다	Yakında alınacak yeni bir şey bulunamadı
-이 지역엔 따라가는 퀘스트의 목표가 없습니다 — 다른 지역에 {elsewhere}곳 (장갑차로 이동)	Takip edilen görevin bu bölgede hedefi yok — diğer bölgelerde {elsewhere} yer (ZPT ile git)
-남은 목표를 모두 건너뛰었습니다	Kalan tüm hedefler atlandı
-따라가는 퀘스트의 목표가 이 근처에 없습니다 — '갈 곳' 에서 직접 고를 수 있습니다	Takip edilen görevin yakında hedefi yok — 'Yerler'den kendin seç
-건너뛴 목표 {a0}개	{a0} hedef atlandı
-되돌리기	Geri al
-갈 곳 ({a0})	Yerler ({a0})
-표시 방식	Görünüm
-위쪽	Yukarı
-북쪽(N)	Kuzey (N)
-카메라 방향	Kamera yönü
-반경	Yarıçap
-스타일	Stil
-윤곽선	Kontur
-채움	Dolgulu
-아이콘 크기	Simge boyutu
-인벤토리·메뉴가 열리면 모든 오버레이 숨기기	Envanter veya menü açıkken tüm katmanları gizle
-지형	Arazi
-지형 표시	Arazi görünümü
-벽·바닥 윤곽	Duvar ve zemin hatları
-불투명도	Opaklık
-표시할 것	Gösterilecekler
-세부 ▲	Ayrıntı ▲
-세부 ▼	Ayrıntı ▼
-세부 ▼ ({h}개 숨김)	Ayrıntı ▼ ({h} gizli)
-지도 핀 · 지나온 길	Harita iğneleri ve iz
-새 핀 (F{a0})	Yeni iğne (F{a0})
-이 지역에 핀이 없습니다 — 잠긴 문·퍼즐 앞에서 F{a0} 를 누르면 꽂힙니다	Bu bölgede iğne yok — kilitli kapı ya da bulmaca önünde F{a0} tuşuna basarak iğne koy
-이 핀 지우기	Bu iğneyi sil
-이 지역	Bu bölge
-지나온 길 {trail}점 · 핀 {count}개	İz {trail} nokta · {count} iğne
-경로 지우기	İzi temizle
-핀 모두 지우기	Tüm iğneleri sil
-주인공을 조작할 수 있을 때 표시됩니다	Kahraman kontrol edilebilirken gösterilir
-단축키	Tuşlar
-지도 표시 방식 전환	Harita görünümünü değiştir
-마커 찍기/지우기	İşaret koy veya kaldır
-나침반 표시/숨김	Pusulayı göster veya gizle
-다음 목표로 안내	Sıradaki hedefe yönlendir
-지도	Harita
-퀘스트	Görevler
-수집	Toplama
-세이브	Kayıtlar
-디버그	Hata ayıklama
-지난번에 켜 둔 치트 {a0}개를 다시 켰습니다	Geçen seferki {a0} hile yeniden açıldı
-닫기 — 원래 값으로 되돌리고 종료	Kapat — orijinal değerleri geri yükler ve çıkar
-숨기기 (` 키로 다시 열기)	Gizle (` tuşu yeniden açar)
-콘솔 ▾	Konsol ▾
-콘솔 ▸	Konsol ▸
-CLI 명령 콘솔	CLI konsolu
-게임	Oyun
-● 연결됨\nv{version} · PID {pid}	● Bağlı\nv{version} · PID {pid}
-실행하는 중 — 켜지면 자동으로 연결	Başlatılıyor — açılınca otomatik bağlanır
-○ 연결 안 됨 — {e}	○ Bağlı değil — {e}
-시작하는 중…	Başlıyor…
-주인공 게이트	Kahraman kapısı
-● 열림 — 조작 중	● Açık — kontrol sende
-○ 닫힘 — {e}	○ Kapalı — {e}
-○ 닫힘	○ Kapalı
-치트	Hileler
-도구	Araçlar
-모두 원래대로 ({pending})	Hepsini sıfırla ({pending})
-다음에도 켜 둔 치트 유지	Bu hileleri bir sonraki sefer de açık tut
-다음 실행 때, 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다.	Bir sonraki çalıştırmada kahramanı kontrol edebildiğinde, şu an açık olan hileler yeniden açılır.
-주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다	Yalnızca kahraman kontrol edilirken değer yazar · başarımlar engellenmez
-퀘스트 추적기 — 화면 오른쪽 가운데	Görev takipçisi — ekranın sağ ortası
-퀘스트를 읽는 중입니다 — 게임을 불러오고 몇 초 뒤에 나옵니다	Görevler okunuyor — oyun yüklendikten birkaç saniye sonra görünür
-메인 스토리 자동 — {a0}	Ana hikâye, otomatik — {a0}
-메인 스토리 자동	Ana hikâye, otomatik
- · 단서 {got}/{all}	 · ipuçları {got}/{all}
-완료 {done}개 · 실패 {failed}개	{done} tamamlandı · {failed} başarısız
-필요한 것: 조사 DB 없음 — `hiumod doctor survey` 를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다	Gereken: keşif veri tabanı yok — tüm bölgelerdeki eşya ve NPC'leri doldurmak için bir kez `hiumod doctor survey` çalıştır
-필요한 것 — 남은 {left} / {a0}	Gereken — {left} / {a0} kaldı
-다른 지역 (장갑차로 이동): {a0}	Diğer bölgeler (ZPT ile git): {a0}
-놓치기 쉬운 선행	Kaçırılabilecek İyilikler
-마감이 있는 선행은 모두 끝났거나 지났습니다	Süreli tüm İyilikler ya tamamlandı ya da süresi geçti
-임박	Yakın
-나중	Sonra
- (시작 전)	 (başlamadı)
-이미 지난 마감 {passed}개 — 그 선행은 실패했을 가능성이 큽니다	Süresi geçen {passed} İyilik — bunlar büyük olasılıkla başarısız oldu
-키스톤 순서	Kilit Taşı sırası
-다음 키스톤 전에: {a0}	Sonraki Kilit Taşından önce: {a0}
-건네줄 수 있는 것	Verilebilecek eşyalar
-지금 가진 아이템을 원하는 사람이 없습니다	Şu an elindeki eşyayı isteyen kimse yok
-건네줄 수 있는 것 ({a0})	Verilebilecek eşyalar ({a0})
-가진 아이템을 원하는 사람 — 대화의 "거래" 로 건넵니다	Elindeki eşyayı isteyen kişiler — konuşmadaki "Takas" ile ver
-{a0} — 장갑차로 이동	{a0} — ZPT ile git
-세이브 백업	Kayıt yedekleri
-게임이 저장할 때마다 세이브 파일을 복사해 둡니다 (최근 {a0}개)	Oyun her kaydettiğinde kayıt dosyalarını kopyalar (son {a0})
-아직 백업이 없습니다	Henüz yedek yok
-지금 백업	Şimdi yedekle
-백업함: {a0}	Yedeklendi: {a0}
-백업 실패: {e}	Yedekleme başarısız: {e}
-폴더 열기	Klasörü aç
-되돌리려면 게임을 끈 뒤 백업 폴더의 .sav 파일을 세이브 폴더(%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)에 덮어쓰세요	Geri dönmek için oyunu kapat ve bir yedeğin .sav dosyalarını kayıt klasörünün (%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames) üzerine kopyala
-세이브 파일	Kayıt dosyaları
-게임의 세이브 폴더를 찾지 못했습니다	Oyunun kayıt klasörü bulunamadı
-방금	az önce
-{a0}분 전	{a0} dk önce
-{a0}시간 전	{a0} sa önce
-{a0}일 전	{a0} gün önce
- · 안내 중	 · yönlendiriyor
-이 지역엔 이 퀘스트의 목표가 없음 — 가까운 다른 퀘스트 목표로 안내	Bu bölgede bu görevin hedefi yok — en yakın diğer görev hedefine yönlendiriyor
-이 지역엔 이 항목의 목표가 없음 — 다른 지역에서 진행	Bu bölgede bu girdinin hedefi yok — başka bir bölgede devam ediyor
-닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저	Kapalı kapı ya da bulmacanın ardında — gidilebilen yere kadar yönlendirir; önce yakındaki not, anahtar veya düzeneğe bak
-살펴볼 곳	İncelenecek yer
-1막 끝 전	1. perdenin sonuna kadar
-1막 끝 전, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — 트럭으로 떠나기 전에 약을 — 아니면 죽음	1. perdenin sonundan önce: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — kamyonla gitmeden ilacı, yoksa ölür
-1막 끝({g:Facts_Shared/Universal_Location_LymbicForge}) 전에 {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}의 아기에게 젖병을 — 아니면 아기가 죽음	1. perdenin sonundan ({g:Facts_Shared/Universal_Location_LymbicForge}) önce: {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name} adlı kişinin bebeğine biberon, yoksa bebek ölür
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 {g:Facts_VillageOfJova/Name_Real} 상황이 바뀌기 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} 사망	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında, {g:Facts_VillageOfJova/Name_Real} değişmeden önce — yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} ölür
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} 사망	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} öncesinde — yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} ölür
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 — {g:Facts_VillageOfJova/Name_Real} 변화 전	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında — {g:Facts_VillageOfJova/Name_Real} değişmeden önce
-{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전	{g:Facts_Shared/Universal_Location_LethePropaganda} — ilk kez ayrılmadan önce
-{g:Facts_Shared/Universal_Location_Talju} 대피 트럭 출발 전	{g:Facts_Shared/Universal_Location_Talju} tahliye kamyonu kalkmadan önce
-{g:Facts_Shared/Universal_Location_Talju} 대피 트럭이 떠나기 전	{g:Facts_Shared/Universal_Location_Talju} tahliye kamyonu kalkmadan önce
-권장 순서 ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 먼저: 일부 아이템이 {g:Facts_Shared/Universal_Location_Talju}에만 있음) — 키스톤마다 시간이 흘러 선행이 끝날 수 있습니다	Önerilen sıra (önce {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: bazı eşyalar yalnızca {g:Facts_Shared/Universal_Location_Talju} bölgesinde) — her kilit taşında zaman geçer ve iyilikler kapanabilir
-세 번째 키스톤을 놓기 전	Üçüncü kilit taşını yerleştirmeden önce
-{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
-포인터를 읽을 수 없음	İşaretçi okunamadı
-게임이 실행 중이 아닙니다	Oyun çalışmıyor
-주인공의 인벤토리를 찾지 못함	Kahramanın envanteri bulunamadı
-주인공 위치를 쓰지 못함	Kahramanın konumu yazılamadı
-WorldSettings.Pauser 없음	WorldSettings.Pauser yok
-세이브 상태를 찾지 못함	Kayıt durumu bulunamadı
-세이브 상태를 읽지 못함	Kayıt durumu okunamadı
-아직 액터를 훑지 않음	Aktörler henüz taranmadı
-게임이 종료됨 — 치트 꺼짐	Oyun kapandı — hileler kapalı
-그런 슬롯이 없음	Böyle bir yuva yok
-그 슬롯에 저장된 것이 없음	Bu yuvada kayıtlı bir şey yok
-원래 값으로 되돌림	Özgün değerler geri yüklendi
-쓰기 실패	Yazma başarısız
-Steam 라이브러리에서 Hell Is Us 설치를 찾지 못함 — --game-dir 로 알려 주세요	Hiçbir Steam kitaplığında Hell Is Us kurulumu bulunamadı — --game-dir ile belirtin
-예상과 다른 실행 파일 경로	Beklenmeyen çalıştırılabilir dosya yolu
-폰에 AbilitySystemComponent 가 없음	Piyonda AbilitySystemComponent yok
-플레이어 컨트롤러 없음	Oyuncu denetleyicisi yok
-폰 없음 — 로딩 중이거나 컷신?	Piyon yok — yükleniyor mu, ara sahne mi?
-조작 중인 폰이 주인공이 아님	Kontrol edilen piyon kahraman değil
-어빌리티 시스템 없음	Yetenek sistemi yok
-레벨 없음	Seviye yok
-월드 없음	Dünya yok
-월드 이름을 읽을 수 없음	Dünya adı okunamadı
-루트 컴포넌트 없음	Kök bileşen yok
-위치를 읽을 수 없음	Konum okunamadı
-방향을 읽을 수 없음	Yön okunamadı
-위치·방향 값이 숫자가 아님	Poz bir sayı değil
-GEngine 이 비어 있음	GEngine boş
-게임 이미지에서 GameEngine 을 찾지 못함 (아직 시작 중?)	Oyun görüntüsünde GameEngine bulunamadı (hâlâ başlıyor mu?)
-아는 FField 레이아웃으로 GameEngine.GameInstance 를 읽지 못함 — 엔진 구조가 바뀜	Bilinen hiçbir FField düzeni GameEngine.GameInstance değerini okuyamıyor — motor yapısı değişti
-속성 세트 배열을 읽을 수 없음	Öznitelik kümesi dizisi okunamadı
-속성 세트 개수를 읽을 수 없음	Öznitelik kümesi sayısı okunamadı
-속성 이름을 하나도 읽지 못함 — 이름 풀이나 클래스 구조가 이 빌드와 맞지 않음	Hiçbir öznitelik adlandırılamadı — ad havuzu veya sınıf yapısı bu sürümle uyuşmuyor
-필드를 읽을 수 없음	Alan okunamadı
-속성을 읽을 수 없음	Öznitelik okunamadı
-유한하지 않은 값은 쓰지 않음	Sonlu olmayan değer yazılmaz
-읽을 수 있는 속성이 없음	Okunabilir öznitelik yok
-미니맵: {e}	Mini harita: {e}
-원래 값을 기록하지 못함 — 치트 꺼짐: {e}	Özgün değerler kaydedilemedi — hileler kapalı: {e}
-{name}: 1..={max} 사이	{name}: 1..={max} aralığında olmalı
-다른 지역에서 저장됨 ({world})	Başka bir bölgede kaydedildi ({world})
-되돌리지 못함: {a0}	Geri yüklenemedi: {a0}
-되돌리지 못함: {a0} — 나중에 `hiumod restore` 를 실행하세요	Geri yüklenemedi: {a0} — daha sonra `hiumod restore` çalıştırın
-`{id}` 은(는) 값을 정할 수 없음 — 가능한 것: {a0}	`{id}` ayarlanamaz — olanlar: {a0}
-{id}: 0..={max} 사이	{id}: 0..={max} aralığında olmalı
-모르는 치트 `{id}` — 가능한 것: {a0}	Bilinmeyen hile `{id}` — olanlar: {a0}
-{id} 에는 값을 줄 수 없음	{id} değer almaz
-{id}: {min}..={max} 사이	{id}: {min}..={max} aralığında olmalı
-{id} 는 한 번 쓰는 값 — hold 가 아니라 `set {id} <값>` 을 쓰세요	{id} bir kez yazılır — hold yerine `set {id} <değer>` kullanın
-인벤토리에 {class} 없음 — 먼저 하나 주우세요	Envanterde {class} yok — önce bir tane alın
-{a0}번째 줄: {set}.{name} — 이 버전에 없는 속성	{a0}. satır: {set}.{name} bu sürümün bildiği bir öznitelik değil
-{a0} 에 Hell Is Us 설치가 없음 — --game-dir 로 알려 주세요	{a0} konumunda Hell Is Us kurulumu yok — --game-dir ile belirtin
-게임 프로세스를 열 수 없음: {a0}	Oyun işlemi açılamadı: {a0}
-프로세스 목록을 얻지 못함: {a0}	İşlem listesi alınamadı: {a0}
-게임 모듈 목록을 얻지 못함: {a0}	Oyun modülleri listelenemedi: {a0}
-{name} 속성이 없음	{name} özelliği yok
-폰이 주인공이 아니라 {a0} — 먼저 세이브를 불러오세요	Piyon kahraman değil, {a0} — önce bir kayıt yükleyin
-속성 세트 배열이 이상함 (num={num}, data=0x{data})	Öznitelik kümesi dizisi hatalı görünüyor (num={num}, data=0x{data})
-속성들의 vtable 이 일치하지 않음 ({n}/{total}, 0x{vt})	Öznitelikler vtable üzerinde uyuşmuyor ({n}/{total}, 0x{vt})
-{ok} 설치 {dir} — Steam 빌드 {build}	{ok} kurulum {dir} — Steam derlemesi {build}
-{ok} 설치: {e}	{ok} kurulum: {e}
-{ok} 프로세스 {pid} — 베이스 0x{base}, 이미지 0x{size} 바이트	{ok} işlem {pid} — taban 0x{base}, imaj 0x{size} bayt
-{ok} 이름 풀 +0x{at}	{ok} ad havuzu +0x{at}
-{ok} FField 레이아웃: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}	{ok} FField düzeni: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
-{ok} 플레이어: {e}	{ok} oyuncu: {e}
-{ok} 주인공: {a0}	{ok} kahraman: {a0}
-{ok} 체인: GEngine {path} → 컨트롤러 +0x{pawn} 폰 → +0x{asc} ASC → +0x{sets} SpawnedAttributes	{ok} zincir: GEngine {path} → denetleyici +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-ok   주인공 게이트: 열림 — 쓰기 허용	ok   kahraman geçidi: açık — yazmaya izin var
-ok   위치: ({x:.0}, {y:.0}, {z:.0}) 방향 {yaw:.1}	ok   poz: ({x:.0}, {y:.0}, {z:.0}) yön {yaw:.1}
-FAIL 위치: {e}	FAIL poz: {e}
-ok   미니맵 대상: {n}개, {ms} ms — {kinds}	ok   mini harita nesneleri: {n} adet, {ms} ms — {kinds}
-FAIL 미니맵 대상: {e}	FAIL mini harita nesneleri: {e}
-ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open} — 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})	ok   rehber: {facts} bilgi, {tags} etiket biliyor; devam eden: {open} — {places} yer, {ms} ms (görev {quest}, sır {secret}, ipucu {clue})
-FAIL 안내: {e}	FAIL rehber: {e}
-{ok} 속성: {e}	{ok} öznitelikler: {e}
-{ok} 속성: 세트 {sets}개, 이름으로 찾은 속성 {count}개, vtable +0x{vt}	{ok} öznitelikler: {sets} set, ada göre bulunan {count} öznitelik, vtable +0x{vt}
-속성 {n}개	{n} öznitelik
-{ok} 치트 표: 이름이 나오는 속성 {n}개가 모두 게임에 있음	{ok} hile tablosu: adı geçen {n} özniteliğin hepsi oyunda var
-{ok} 치트 표: 게임에 없음 — {a0}	{ok} hile tablosu: oyunda yok — {a0}
-플레이어: 됨	oyuncu: çalışıyor
-플레이어: 안 됨	oyuncu: ÇALIŞMIYOR
-{path} 에 씀	{path} dosyasına yazıldı
-클래스·구조체 {s}개의 속성 {p}개	{s} sınıf ve yapıda {p} özellik
-{prefix}(으)로 시작하는 클래스·구조체 {n}개	{prefix} ile başlayan {n} sınıf ve yapı
-매핑: 구조체·클래스 {structs}개, 열거형 {enums}개	Eşlemeler: {structs} yapı ve sınıf, {enums} enum
-실행: {tool} {args}	Çalıştırılıyor: {tool} {args}
-조사 결과: {path}	Araştırma sonucu: {path}
-게임 텍스트: {path}	Oyun metni: {path}
-구조체·클래스 {structs}개, 열거형 {enums}개 — {kb} KB, {path} 에 씀	{structs} yapı ve sınıf, {enums} enum — {kb} KB, {path} dosyasına yazıldı
-객체 {n}개를 {secs}초 동안 지켜봄 — Ctrl+C 로 멈춤	{n} nesne {secs} sn izleniyor — Ctrl+C durdurur
-{all}곳 중 {kept}곳이 이제 {v}	{all} yerin {kept} tanesi artık {v}
-{n}곳이 {v} — 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`	{n} yerde {v} var — oyunda değiştirin, sonra `doctor scan next <yeni değer>`
-이전 hold 가 남긴 원래 값 {n}개 — 지금 값이 아니라 그것을 유지	Önceki bir hold'un bıraktığı {n} özgün değer — mevcut değerler değil, bunlar korunuyor
-유지 중: {a0} — Ctrl+C 로 멈추고 되돌림	Tutuluyor: {a0} — Ctrl+C durdurur ve geri alır
-강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	Bunun yerine sonlandırılırsa `hiumod restore` her şeyi geri alır
-적용 중	Uygulanıyor
-되돌릴 것이 없음	Geri alınacak bir şey yok
-다이얼 퍼즐	Kadran bulmacası
-물건 놓기 퍼즐	Eşya yerleştirme
-키패드·암호	Tuş takımı · şifre
-    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    Kapının önündeki kadranlarda 'Yakındaki bulmacalar' kartı her birinin kaç adım çevrileceğini söyler
-    타임루프 {name}: {left}/{all}	    Zaman Döngüsü {name}: {left}/{all}
-40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	40 m içinde kadran, tuş takımı veya eşya yerleştirme bulmacası yok
-{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} grup · {enemies} düşman
-가장 가까운 곳	En yakın
-게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Oyunun bildiği cevabı okur — kendin çözmek istiyorsan basma
-근처 퍼즐 ({n})	Yakındaki bulmacalar ({n})
-금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Mahzen tablosu yok — konsolda bir kez `doctor survey` çalıştır
-금단의 지식 금고 {done}/{all}	Yasak Bilgi Mahzenleri {done}/{all}
-남은 적 무리 {left}/{all}	Kalan düşman grupları {left}/{all}
-남은 적 무리	Kalan düşman grubu
-다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Kadran {n}: {k} adım çevir (şimdi {now} → {want})
-다이얼 {n}: 맞음	Kadran {n}: doğru
-답 보기	Cevabı göster
-숨기기	Gizle
-스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Spawner tablosu yok — konsolda bir kez `doctor survey` çalıştır
-연구 {n}/{need}	Araştırma {n}/{need}
-열림 ✓	Açık ✓
-장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Mahzen bilgilerini açmak için ZPT'deki {g:Facts_Tania/Tania_Real_Name} kişisine araştırma eşyaları ver · şu an araştırma {n}
-적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다	Düşman grubu (spawner) başına sayılır · kayıtta geçen grup yenilmiş sayılır
-정보 있음	Biliniyor
-코드 보기	Kodu göster
-코드: {code}	Kod: {code}
-필요한 것: {items}	Gerekli: {items}
-다이얼 {n}개 · {places}칸	{n} kadran · {places} konum
-{n}자리 코드	{n} haneli kod
-물건 {n}개	{n} eşya
-다이얼 위치 (왼쪽부터, 1부터): {list}	Kadran konumları (soldan, 1'den): {list}
-퍼즐 목록 · 이 지역 남은 {left}	Bulmaca listesi · burada {left} kaldı
-퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	Bulmaca listesi yok — konsolda bir kez `doctor survey` çalıştırın
-열쇠·물건 놓기 퍼즐도 보기	Anahtarlı kapıları ve eşya yerleştirmeyi de göster
-안 푼 퍼즐	Çözülmemiş bulmaca
-금고 문	Kasa kapısı
-근처에 퍼즐 — 답은 패널 안내 탭에	Yakında bulmaca — cevap panelin Rehber sekmesinde
-연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Araştırma eşyaları: 'Koleksiyon' altındaki Araştırma satırına basın, en yakına götürür
-업적 {done}/{all}	Başarımlar {done}/{all}
-Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Steam başarım önbelleği bulunamadı (Steam/appcache/stats)
-달성한 것도 보기	Açılanları da göster
-숨겨진 업적	Gizli başarım
-보기	Göster
-⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요	⚠ {tested} sürümünde denendi — bir sorun varsa konsolda `doctor` çalıştırın
-감탄	Hayranlık
-놀람	Şaşkınlık
-황홀	Coşku
-비탄	Keder
-혐오	Tiksinti
-격노	Öfke
-공포	Terör
-경계	Uyanıklık
+SURVIVAL	Hayatta Kalma
+COMBAT	Savaş
+MOVEMENT	Hareket
+ITEMS	Eşyalar
+KEEP_HEALTH_CAP_AT_MAXIMUM	Canı koru (üst sınır maksimumda)
+INFINITE_STAMINA	Sonsuz dayanıklılık
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Hayalet (keşif için — açıkken saldıramazsın)
+INFINITE_LYMBIC_ENERGY	Sonsuz Limbik enerji
+NO_LYMBIC_COST	Limbik maliyeti yok
+NO_SKILL_COOLDOWN	Yetenek bekleme süresi yok
+WALK_SPEED_DEFAULT_450	Yürüme hızı (varsayılan 450)
+HERO_TIME_SCALE_DEFAULT_1	Kahraman zaman ölçeği (varsayılan 1)
+GAME_SPEED_DEFAULT_1	Oyun hızı (varsayılan 1)
+ENEMY_SPEED_DEFAULT_1	Düşman hızı (varsayılan 1)
+FRAIL_ENEMIES_ONE_HIT_KILLS	Zayıf düşmanlar (tek vuruşta ölür)
+CONSUMABLES_NEVER_RUN_OUT	Tüketilebilir eşyalar tükenmez
+WEAPON_XP_MULTIPLIER_DEFAULT_1	Silah DP çarpanı (varsayılan 1)
+SHARDS_HELD_999_MAX_BLOCKS_PICKUPS	Eldeki parçalar (999 = maksimum, toplama ve bildirim durur)
+QUEST_GOAL	Görev hedefi
+SECRET	Sır
+CLUE	İpucu
+HAND_OVER	Teslim et: {item}
+TALK_GOAL	Konuş: {npc}
+ITEM	Eşya: {items}
+NEW_FACTS	{count} yeni bilgi
+NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · bir şey gerekli (anahtar, bulmaca — oraya gitmek yetmez)
+UNTIL_THE_END_OF_ACT_1	1. Perde sonuna kadar
+BEFORE_THE_THIRD_KEYSTONE	Üçüncü Kilit Taşından önce
+GOOD_DEED_CLOSING_SOON	İyilik süresi doluyor: {deed} ({deadline})
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	İyilik süresi doluyor: {n} — Görevler sekmesine bak
+MAIN	Ana {n}
+GOOD_DEED	İyilik
+MYSTERY	Gizem
+TIMELOOP	Zaman Döngüsü
+MAIN_QUEST	Ana görev {number}
+PLACE	Yer: {place}
+TALK_NPC	Konuş: {p}
+SURVEY_DB_NOT_LOADED_YET	 · keşif veri tabanı (henüz yüklenmedi)
+NEEDS_SOMETHING	 · bir şey gerekli
+RELICS	Kalıntılar
+RECORDS	Kayıtlar
+RESEARCH	Araştırma
+CAPS	Şapkalar
+DRONE_MODULES	Drone modülleri
+LYMBIC_SKILLS	Limbik yetenekler
+WEAPONS	Silahlar
+DEFENSIVE_GEAR	Savunma teçhizatı
+LYMBIC_RODS	Limbik çubuklar
+CRAFTING_TOMES	Üretim kitapları
+LOCKED_DOOR	Kilitli kapı
+LOCKED_CHEST	Kilitli sandık
+LYMBIC_LOCK	Limbik kilit
+PUZZLE	Bulmaca
+PIN_CODE	Kod
+KEY_NEEDED	Anahtar gerekli
+PICK_UP_LATER	Sonra al
+MERCHANT	Tüccar
+SOMEONE_TO_MEET	Görüşülecek kişi
+QUEST_CLUE	Görev ipucu
+DANGER	Tehlike
+STRONG_ENEMY	Güçlü düşman
+SAVE_POINT	Kayıt noktası
+SHORTCUT	Kestirme
+CLIMB	Tırmanılacak yer
+DEAD_END	Çıkmaz sokak
+WATER_CROSSING	Su geçidi
+LOOK_AROUND	Göz atılacak yer
+TREASURE	Hazine
+NOTE	Not
+BASE	Üs
+UNKNOWN	Bilinmeyen
+MARK	İşaret
+PIN	İğne: {pin}
+MINIMAP	Mini harita
+BIG_MAP	Büyük harita
+OFF	Kapalı
+SHADING	Gölgeleme
+CONTOURS	Eş yükselti çizgileri
+BOTH	İkisi de
+FLOORS_ABOVE_FADED	Üst katlar (soluk)
+FLOORS_BELOW_FADED	Alt katlar · yeraltı (soluk)
+DEEP	Derin
+LOW	Alçak
+SAME_LEVEL	Aynı seviye
+HIGH	Yüksek
+CLIFFS_AND_ROCKS	Uçurumlar ve kayalar
+WALLS	Duvarlar
+ENEMIES	Düşmanlar
+LOOT	Ganimet
+DOORS_AND_PUZZLES	Kapılar ve bulmacalar
+SAVE	Kayıt
+OTHER	Diğer
+MEDICINE	İlaçlar
+FOOD	Yiyecek
+OTHER_CONSUMABLES	Diğer tüketilebilirler
+QUESTS_AND_SECRETS	Görevler ve sırlar
+SUPPLIES	Malzemeler
+ENEMY_LOOT_BOX	Düşman ganimet sandığı
+DOOR	Kapı
+DRONE_TRANSLATION	Drone çevirisi
+TYPE_A_COMMAND_HELP_LISTS_THEM	Bir komut yaz — `help` listeyi gösterir, ↑/↓ geçmiş, Esc çalışmayı durdurur
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	Tek başına hiumod bir panel daha açar — bir komut ekle (help)
+THE_LAST_COMMAND_IS_STILL_RUNNING	Son komut hâlâ çalışıyor (Esc durdurur)
+EXECUTABLE_NOT_FOUND	Çalıştırılabilir dosya bulunamadı: {e}
+COULD_NOT_RUN	Çalıştırılamadı: {e}
+DONE_CODE	(bitti: kod {c})
+DONE	(bitti)
+STOPPED	(durduruldu)
+COMMAND_HELP	Komut (help)
+MAP_PIN	Harita iğnesi
+PICKED_IN_THE_PANEL	Panelden seçildi
+NEEDED_HERE	Gereken: burada {h}
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	Gereken: diğer bölgelerde {a} — ZPT ile git
+NEEDED_HERE_IN_OTHER_REGIONS	Gereken: burada {h} · diğer bölgelerde {a}
+POSITION_SAVED	Konum kaydedildi: {slot} ({x:.0}, {y:.0}, {z:.0})
+MOVED_TO_POSITION	Konuma gidildi: {slot}
+COLLECTION	Koleksiyon
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	Keşif veri tabanı yok — konsolda bir kez `doctor survey` çalıştır
+COUNTS_WHAT_LIES_IN_THE_WORLD	Yalnızca dünyada duranları sayar (NPC ödülleri ve dükkânlar hariç) · bu bölge / tümü
+COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · tümü {got}/{all}
+GOOD_DEEDS_MYSTERIES_TIMELOOPS	İyilikler · Gizemler · Zaman Döngüleri
+DONE_IN_PROGRESS_FAILED	Tamamlanan {done} / {all} · devam eden {started} · başarısız {failed}
+NPCS_WITH_MORE_TO_TELL	Daha çok anlatacağı olan NPC'ler ({count})
+PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	Konuşunca sana yeni bir bilgi veya ipucu verebilecek kişiler (kilitli diyalog dalları dahil)
+OTHER_REGIONS	Diğer bölgeler: {regions}
+MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Bellek: kullanımda {working} · özel {private} · tepe {peak} (dakikada bir günlüğe de yazılır)
+CHEATS_ON	Açık hileler
+ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Orijinal değer → yazılan değer ve oyunun şu anki değeri
+NO_CHEATS_ARE_ON	Açık hile yok
+ENEMIES_AND_INVENTORY	Düşmanlar ve envanter
+APPLIED_EVERY_TICK	Her güncellemede uygulanır
+APPLIED	Uygulanan: {n:.2}
+GAME_CHANGED_IT	Oyun değiştirdi: {n:.2}
+DIFFERS_FROM_WHAT_WAS_WRITTEN_THE	Yazılan değerden farklı. Oyun bu değeri her an yeniden hesaplıyor olabilir.
+UNREADABLE	Okunamıyor
+RECORD_TEST_RESULTS	Test sonuçlarını kaydet
+TRY_IT_IN_THE_GAME_THEN	Oyunda dene, sonra bas. verify.txt dosyasına kaydedilir.
+WORKS	Çalışıyor ✓
+FAILS	Çalışmıyor ✗
+VERIFIED	Doğrulandı
+UNVERIFIED	Doğrulanmadı
+OPEN_THE_LOG_FOLDER	Günlük klasörünü aç
+THE_GAMES_VALUE_NOW	Oyundaki şu anki değer: {now:.2}
+APPLY	Uygula
+NOT_YET_VERIFIED_IN_THE_GAME	Bu hile oyunda henüz doğrulanmadı. Çalışıp çalışmadığını bildir.
+SAVE_AND_LOAD_POSITIONS	Konumları kaydet ve yükle
+SLOT	Yuva {slot}
+ANOTHER_REGION	Başka bölge ({w})
+EMPTY	Boş
+MOVES_ONLY_WITHIN_THE_REGION_IT	Yalnızca kaydedildiği bölge içinde taşır
+CHEATS_ON_COUNT	Açık hileler ({count})
+VALUE_AND_GAME	{v:.2} (oyun {n:.2})
+ON	Açık
+COMPASS_AND_HEADING	Pusula ve yön
+COMPASS_F	Pusula (F{key})
+TOP_CENTRE_OF_THE_SCREEN	Ekranın üst ortası
+GUIDE	Rehber
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Otomatik rehber — takip edilen görevin sıradaki hedefine yönlendirir
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Gerçek yürüme rotası (A*) — arazi, su ve duvarların çevresinden; pusula sıradaki dönüşü gösterir
+NEXT_GOAL	Sıradaki hedef ▶
+THIS_GOAL_IS_DONE_OR_OUT	Bu hedef bitti ya da şu an ulaşılamıyor — atlayıp sıradakine geç (bu oturumda)
+PICKED_BY_HAND_KEPT_UNTIL_IT	Elle seçildi — bitene kadar korunur
+BACK_TO_AUTO	Otomatiğe dön
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ Yürünebilir yol yok — kapalı kapının, bulmacanın ya da anahtarın ardında olabilir. Gidilebilen yere kadar yönlendirir; gerisi sarı kesikli çizgi
+AUTO_GUIDE_IS_OFF_TURN_ON	Otomatik rehber kapalı — yukarıdaki anahtarı aç ya da 'Yerler'den seç
+NOTHING_NEW_TO_GET_FOUND_NEARBY	Yakında alınacak yeni bir şey bulunamadı
+NO_QUEST_GOAL_IN_REGION	Takip edilen görevin bu bölgede hedefi yok — diğer bölgelerde: {elsewhere} (ZPT ile git)
+EVERY_REMAINING_GOAL_WAS_SKIPPED	Kalan tüm hedefler atlandı
+NO_QUEST_GOAL_NEARBY	Takip edilen görevin yakında hedefi yok — 'Yerler'den kendin seç
+GOALS_SKIPPED	{count} hedef atlandı
+UNDO	Geri al
+PLACES	Yerler ({count})
+DISPLAY	Görünüm
+UP_IS	Yukarı
+NORTH_N	Kuzey (N)
+CAMERA	Kamera yönü
+RADIUS	Yarıçap
+STYLE	Stil
+OUTLINE	Kontur
+FILLED	Dolgulu
+ICON_SIZE	Simge boyutu
+HIDE_EVERY_OVERLAY_WHILE_THE_INVENTORY	Envanter veya menü açıkken tüm katmanları gizle
+TERRAIN	Arazi
+TERRAIN_VIEW	Arazi görünümü
+WALL_AND_FLOOR_OUTLINES	Duvar ve zemin hatları
+OPACITY	Opaklık
+SHOW_ON_MAP	Gösterilecekler
+DETAILS_OPEN	Ayrıntı ▲
+DETAILS_CLOSED	Ayrıntı ▼
+DETAILS_HIDDEN	Ayrıntı ▼ ({h} gizli)
+MAP_PINS_AND_TRAIL	Harita iğneleri ve iz
+NEW_PIN_F	Yeni iğne (F{key})
+NO_PINS_IN_THIS_REGION_PRESS	Bu bölgede iğne yok — kilitli kapı ya da bulmaca önünde F{key} ile iğne koy
+REMOVE_THIS_PIN	Bu iğneyi sil
+THIS_REGION	Bu bölge
+TRAIL_POINTS_PINS	İz {trail} nokta · {count} iğne
+CLEAR_TRAIL	İzi temizle
+REMOVE_ALL_PINS	Tüm iğneleri sil
+SHOWN_WHILE_THE_HERO_CAN_BE	Kahraman kontrol edilebilirken gösterilir
+KEYS	Tuşlar
+SWITCH_MAP_DISPLAY	Harita görünümünü değiştir
+PLACE_OR_REMOVE_A_MARKER	İşaret koy veya kaldır
+SHOW_OR_HIDE_THE_COMPASS	Pusulayı göster veya gizle
+GUIDE_TO_THE_NEXT_GOAL	Sıradaki hedefe yönlendir
+MAP	Harita
+QUESTS	Görevler
+COLLECT	Toplama
+SAVES	Kayıtlar
+DEBUG	Hata ayıklama
+TURNED_CHEATS_FROM_LAST_TIME_BACK	Geçen seferki {count} hile yeniden açıldı
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Kapat — orijinal değerleri geri yükler ve çıkar
+HIDE_OPENS_IT_AGAIN	Gizle (` tuşu yeniden açar)
+CONSOLE_OPEN	Konsol ▾
+CONSOLE_CLOSED	Konsol ▸
+CLI_CONSOLE	CLI konsolu
+GAME	Oyun
+CONNECTED_V_PID	● Bağlı\nv{version} · PID {pid}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Başlatılıyor — açılınca otomatik bağlanır
+NOT_CONNECTED	○ Bağlı değil — {e}
+STARTING	Başlıyor…
+HERO_GATE	Kahraman kapısı
+OPEN_IN_CONTROL	● Açık — kontrol sende
+GATE_CLOSED_WHY	○ Kapalı — {e}
+GATE_CLOSED	○ Kapalı
+CHEATS	Hileler
+TOOLS	Araçlar
+RESTORE_ALL	Hepsini geri yükle ({pending})
+KEEP_THESE_CHEATS_ON_NEXT_TIME	Bu hileleri bir sonraki sefer de açık tut
+NEXT_RUN_ONCE_THE_HERO_CAN	Bir sonraki çalıştırmada kahramanı kontrol edebildiğinde, şu an açık olan hileler yeniden açılır.
+WRITES_ONLY_WHILE_THE_HERO_IS	Yalnızca kahraman kontrol edilirken değer yazar · başarımlar engellenmez
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Görev takipçisi — ekranın sağ ortası
+READING_THE_QUESTS_THEY_APPEAR_A	Görevler okunuyor — oyun yüklendikten birkaç saniye sonra görünür
+MAIN_STORY_AUTO_NOW	Ana hikâye, otomatik — {quest}
+MAIN_STORY_AUTO	Ana hikâye, otomatik
+CLUES	 · ipuçları {got}/{all}
+DONE_FAILED	{done} tamamlandı · {failed} başarısız
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Gereken: keşif veri tabanı yok — tüm bölgelerdeki eşya ve NPC'leri doldurmak için bir kez `hiumod doctor survey` çalıştır
+NEEDED_LEFT	Gereken — {left} / {all} kaldı
+OTHER_REGIONS_TAKE_THE_APC	Diğer bölgeler (ZPT ile git): {regions}
+MISSABLE_GOOD_DEEDS	Kaçırılabilecek İyilikler
+EVERY_GOOD_DEED_WITH_A_DEADLINE	Süreli tüm İyilikler ya tamamlandı ya da süresi geçti
+SOON	Yakın
+LATER	Sonra
+NOT_STARTED	 (başlamadı)
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Süresi geçen İyilik: {passed} — büyük olasılıkla başarısız oldu
+KEYSTONE_ORDER	Kilit Taşı sırası
+BEFORE_THE_NEXT_KEYSTONE	Sonraki Kilit Taşından önce: {deeds}
+THINGS_TO_HAND_OVER	Verilebilecek eşyalar
+NO_ONE_WANTS_AN_ITEM_YOU	Şu an elindeki eşyayı isteyen kimse yok
+THINGS_TO_HAND_OVER_COUNT	Verilebilecek eşyalar ({count})
+PEOPLE_WHO_WANT_AN_ITEM_YOU	Elindeki eşyayı isteyen kişiler — konuşmada "Ticaret Yap" ile ver
+TAKE_THE_APC	{place} — ZPT ile git
+SAVE_BACKUPS	Kayıt yedekleri
+COPIES_THE_SAVE_FILES_EACH_TIME	Oyun her kaydettiğinde kayıt dosyalarını kopyalar (son {count})
+NO_BACKUPS_YET	Henüz yedek yok
+BACK_UP_NOW	Şimdi yedekle
+BACKED_UP	Yedeklendi: {file}
+BACKUP_FAILED	Yedekleme başarısız: {e}
+OPEN_FOLDER	Klasörü aç
+TO_ROLL_BACK_QUIT_THE_GAME	Geri dönmek için oyunu kapat ve bir yedeğin .sav dosyalarını kayıt klasörünün (%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames) üzerine kopyala
+SAVE_FILES	Kayıt dosyaları
+THE_GAMES_SAVE_FOLDER_WAS_NOT	Oyunun kayıt klasörü bulunamadı
+JUST_NOW	az önce
+MIN_AGO	{minutes} dk önce
+H_AGO	{hours} sa önce
+DAYS_AGO	{days} gün önce
+GUIDING	 · yönlendiriyor
+THIS_QUEST_HAS_NO_GOAL_IN	Bu bölgede bu görevin hedefi yok — en yakın diğer görev hedefine yönlendiriyor
+THIS_ENTRY_HAS_NO_GOAL_IN	Bu bölgede bu girdinin hedefi yok — başka bir bölgede devam ediyor
+PAST_A_CLOSED_DOOR_OR_PUZZLE	Kapalı kapı ya da bulmacanın ardında — gidilebilen yere kadar yönlendirir; önce yakındaki not, anahtar veya düzeneğe bak
+PLACE_TO_EXAMINE	İncelenecek yer
+DEADLINE_ACT1	1. perdenin sonuna kadar
+DEADLINE_DIANA_MEDICINE	1. perdenin sonundan önce: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — kamyonla gitmeden ilacı, yoksa ölür
+DEADLINE_JUDITH_BABY	1. perdenin sonundan ({g:Facts_Shared/Universal_Location_LymbicForge}) önce: {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name} adlı kişinin bebeğine biberon, yoksa bebek ölür
+DEADLINE_HALIE_PICTURE	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında, {g:Facts_VillageOfJova/Name_Real} değişmeden önce — yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} ölür
+DEADLINE_VIOLINIST	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} öncesinde — yoksa {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} ölür
+DUE_QUEST03_JOVA	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} sırasında — {g:Facts_VillageOfJova/Name_Real} değişmeden önce
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — ilk kez ayrılmadan önce
+DUE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju} tahliye kamyonu kalkmadan önce
+DEADLINE_TALJU_TRUCK	{g:Facts_Shared/Universal_Location_Talju} tahliye kamyonu kalkmadan önce
+KEYSTONE_ORDER_ADVICE	Önerilen sıra (önce {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}: bazı eşyalar yalnızca {g:Facts_Shared/Universal_Location_Talju} bölgesinde) — her kilit taşında zaman geçer ve iyilikler kapanabilir
+DEADLINE_THIRD_KEYSTONE	Üçüncü kilit taşını yerleştirmeden önce
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+POINTER_UNREADABLE	İşaretçi okunamadı
+THE_GAME_IS_NOT_RUNNING	Oyun çalışmıyor
+THE_HEROS_INVENTORY_WAS_NOT_FOUND	Kahramanın envanteri bulunamadı
+COULD_NOT_WRITE_THE_HEROS_POSITION	Kahramanın konumu yazılamadı
+NO_WORLDSETTINGS_PAUSER	WorldSettings.Pauser yok
+NO_SAVE_STATE_FOUND	Kayıt durumu bulunamadı
+THE_SAVE_STATE_COULD_NOT_BE	Kayıt durumu okunamadı
+ACTORS_NOT_SCANNED_YET	Aktörler henüz taranmadı
+THE_GAME_EXITED_CHEATS_OFF	Oyun kapandı — hileler kapalı
+NO_SUCH_SLOT	Böyle bir yuva yok
+NOTHING_SAVED_IN_THAT_SLOT	Bu yuvada kayıtlı bir şey yok
+ORIGINAL_VALUES_RESTORED	Özgün değerler geri yüklendi
+WRITE_FAILED	Yazma başarısız
+NO_HELL_IS_US_INSTALL_FOUND	Hiçbir Steam kitaplığında Hell Is Us kurulumu bulunamadı — --game-dir ile belirt
+UNEXPECTED_EXECUTABLE_PATH	Beklenmeyen çalıştırılabilir dosya yolu
+THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	Piyonda AbilitySystemComponent yok
+NO_PLAYER_CONTROLLER	Oyuncu denetleyicisi yok
+NO_PAWN_LOADING_OR_A_CINEMATIC	Piyon yok — yükleniyor mu, ara sahne mi?
+THE_CONTROLLED_PAWN_IS_NOT_THE	Kontrol edilen piyon kahraman değil
+NO_ABILITY_SYSTEM	Yetenek sistemi yok
+NO_LEVEL	Seviye yok
+NO_WORLD	Dünya yok
+WORLD_NAME_UNREADABLE	Dünya adı okunamadı
+NO_ROOT_COMPONENT	Kök bileşen yok
+LOCATION_UNREADABLE	Konum okunamadı
+ROTATION_UNREADABLE	Yön okunamadı
+THE_POSE_IS_NOT_A_NUMBER	Poz bir sayı değil
+GENGINE_IS_EMPTY	GEngine boş
+NO_GAMEENGINE_FOUND_IN_THE_GAME	Oyun imajında GameEngine bulunamadı (hâlâ başlıyor mu?)
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	Bilinen hiçbir FField düzeni GameEngine.GameInstance değerini okuyamıyor — motor yapısı değişti
+ATTRIBUTE_SET_ARRAY_UNREADABLE	Öznitelik kümesi dizisi okunamadı
+ATTRIBUTE_SET_COUNT_UNREADABLE	Öznitelik kümesi sayısı okunamadı
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	Hiçbir öznitelik adlandırılamadı — ad havuzu veya sınıf yapısı bu sürümle uyuşmuyor
+FIELD_UNREADABLE	Alan okunamadı
+ATTRIBUTE_UNREADABLE	Öznitelik okunamadı
+REFUSING_A_NON_FINITE_VALUE	Sonlu olmayan değer yazılmaz
+NO_ATTRIBUTE_COULD_BE_READ	Okunabilir öznitelik yok
+MINIMAP_ERROR	Mini harita: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Özgün değerler kaydedilemedi — hileler kapalı: {e}
+SLOT_RANGE	{name}: 1..={max} aralığında olmalı
+SAVED_IN_ANOTHER_REGION	Başka bir bölgede kaydedildi ({world})
+COULD_NOT_RESTORE	Geri yüklenemedi: {what}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Geri yüklenemedi: {what} — sonra `hiumod restore` çalıştır
+CANNOT_BE_SET_ONE_OF	`{id}` ayarlanamaz — seçenekler: {choices}
+CHEAT_SET_RANGE	{id}: 0..={max} aralığında olmalı
+UNKNOWN_CHEAT_ONE_OF	Bilinmeyen hile `{id}` — seçenekler: {choices}
+TAKES_NO_VALUE	{id} değer almaz
+CHEAT_RANGE	{id}: {min}..={max} aralığında olmalı
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} bir kez yazılır — hold yerine `set {id} <değer>` kullan
+NO_IN_THE_INVENTORY_PICK_ONE	Envanterde {class} yok — önce bir tane al
+LINE_IS_NO_ATTRIBUTE_THIS_VERSION	{line}. satır: {set}.{name} bu sürümün bildiği bir öznitelik değil
+NO_HELL_IS_US_INSTALL_AT	{dir} konumunda Hell Is Us kurulumu yok — --game-dir ile belirt
+CANNOT_OPEN_THE_GAME_PROCESS	Oyun işlemi açılamadı: {error}
+PROCESS_SNAPSHOT_FAILED	İşlem listesi alınamadı: {error}
+CANNOT_LIST_THE_GAMES_MODULES	Oyun modülleri listelenemedi: {error}
+NO_PROPERTY	{name} özelliği yok
+THE_PAWN_IS_A_NOT_THE	Piyon kahraman değil, {classes} — önce bir kayıt yükle
+THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	Öznitelik kümesi dizisi hatalı görünüyor (num={num}, data=0x{data})
+ATTRIBUTES_DO_NOT_AGREE_ON_A	Öznitelikler vtable üzerinde uyuşmuyor ({n}/{total}, 0x{vt})
+INSTALL_STEAM_BUILD	{ok} kurulum {dir} — Steam derlemesi {build}
+INSTALL	{ok} kurulum: {e}
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} işlem {pid} — taban 0x{base}, imaj 0x{size} bayt
+NAME_POOL_0X	{ok} ad havuzu +0x{at}
+FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} FField düzeni: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
+PLAYER	{ok} oyuncu: {e}
+HERO	{ok} kahraman: {classes}
+CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} zincir: GEngine {path} → denetleyici +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   kahraman geçidi: açık — yazmaya izin var
+OK_POSE_YAW	ok   poz: ({x:.0}, {y:.0}, {z:.0}) yön {yaw:.1}
+FAIL_POSE	FAIL poz: {e}
+OK_MINIMAP_THINGS_IN_MS	ok   mini harita nesneleri: {n} adet, {ms} ms — {kinds}
+FAIL_MINIMAP_THINGS	FAIL mini harita nesneleri: {e}
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   rehber: {facts} bilgi, {tags} etiket biliyor; devam eden: {open} — {places} yer, {ms} ms (görev {quest}, sır {secret}, ipucu {clue})
+FAIL_GUIDE	FAIL rehber: {e}
+DOCTOR_ATTRIBUTES_FAIL	{ok} öznitelikler: {e}
+ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} öznitelikler: {sets} set, ada göre bulunan {count} öznitelik, vtable +0x{vt}
+ATTRIBUTE_COUNT	{n} öznitelik
+CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} hile tablosu: adı geçen {n} özniteliğin hepsi oyunda var
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} hile tablosu: oyunda yok — {missing}
+PLAYER_WORKS	oyuncu: çalışıyor
+PLAYER_DOES_NOT_WORK	oyuncu: ÇALIŞMIYOR
+WRITTEN_TO	{path} dosyasına yazıldı
+PROPERTIES_IN_CLASSES_AND_STRUCTS	{s} sınıf ve yapıda {p} özellik
+CLASSES_AND_STRUCTS_STARTING_WITH	{prefix} ile başlayan {n} sınıf ve yapı
+MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Eşlemeler: {structs} yapı ve sınıf, {enums} enum
+RUNNING	Çalıştırılıyor: {tool} {args}
+SURVEY_WRITTEN_TO	Keşif verisi yazıldı: {path}
+THE_GAMES_TEXT_WRITTEN_TO	Oyun metni yazıldı: {path}
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} yapı ve sınıf, {enums} enum — {kb} KB, {path} dosyasına yazıldı
+WATCHING_OBJECT_S_FOR_S_CTRL	{n} nesne {secs} sn izleniyor — Ctrl+C durdurur
+OF_PLACES_NOW_HOLD	{all} yerin {kept} tanesi artık {v} değerini tutuyor
+PLACES_HOLD_CHANGE_IT_IN_GAME	{n} yerde {v} değeri var — oyunda değiştir, sonra `doctor scan next <yeni değer>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	Önceki bir hold'un bıraktığı {n} özgün değer — mevcut değerler değil, bunlar korunuyor
+HOLDING_CTRL_C_TO_STOP_AND	Tutuluyor: {cheats} — Ctrl+C durdurur ve geri alır
+IF_THIS_IS_KILLED_INSTEAD_HIUMOD	Bunun yerine sonlandırılırsa `hiumod restore` her şeyi geri alır
+APPLYING	Uygulanıyor
+NOTHING_TO_RESTORE	Geri alınacak bir şey yok
+DIAL_PUZZLE	Kadran bulmacası
+ITEM_PLACEMENT	Eşya yerleştirme
+KEYPAD_CODE	Tuş takımı · kod
+AT_THE_DOORS_DIALS_THE_PUZZLES	    Kapının önündeki kadranlarda 'Yakındaki bulmacalar' kartı her birinin kaç adım çevrileceğini söyler
+TIMELOOP_LEFT	    Zaman Döngüsü {name}: {left}/{all}
+NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	40 m içinde kadran, tuş takımı veya eşya yerleştirme bulmacası yok
+GROUPS_ENEMIES	{place}: {left}/{all} grup · {enemies} düşman
+NEAREST	En yakın
+READS_THE_ANSWER_THE_GAME_HOLDS	Oyunun bildiği cevabı okur — kendin çözmek istiyorsan basma
+PUZZLES_NEARBY	Yakındaki bulmacalar ({n})
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	Mahzen tablosu yok — konsolda bir kez `doctor survey` çalıştır
+VAULTS_OF_FORBIDDEN_KNOWLEDGE	Yasak Bilgi Mahzenleri {done}/{all}
+ENEMY_GROUPS_LEFT	Kalan düşman grupları {left}/{all}
+ENEMY_GROUP_LEFT	Kalan düşman grubu
+DIAL_TURN_STEPS_NOW	Kadran {n}: {k} adım çevir (şimdi {now} → {want})
+DIAL_RIGHT	Kadran {n}: doğru
+SHOW_ANSWER	Cevabı göster
+HIDE	Gizle
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	Spawner tablosu yok — konsolda bir kez `doctor survey` çalıştır
+RESEARCH_PROGRESS	Araştırma {n}/{need}
+OPENED	Açıldı ✓
+VAULT_RESEARCH_HINT	Mahzen bilgilerini açmak için araştırma eşyalarını ZPT'de {g:Facts_Tania/Tania_Real_Name} adlı kişiye ver · araştırma: {n}
+COUNTED_BY_ENEMY_GROUP_SPAWNER_A	Düşman grubu (spawner) başına sayılır · kayıtta geçen grup yenilmiş sayılır
+KNOWN	Biliniyor
+SHOW_CODE	Kodu göster
+CODE_IS	Kod: {code}
+NEEDS	Gerekli: {items}
+DIALS_PLACES	{n} kadran · {places} konum
+DIGIT_CODE	{n} haneli kod
+ITEM_COUNT	{n} eşya
+DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Kadran konumları (soldan, 1'den başlar): {list}
+PUZZLE_LIST_LEFT_HERE	Bulmaca listesi · burada {left} kaldı
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	Bulmaca listesi yok — konsolda bir kez `doctor survey` çalıştır
+SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Anahtarlı kapıları ve eşya yerleştirmeyi de göster
+UNSOLVED_PUZZLE	Çözülmemiş bulmaca
+VAULT_DOOR	Mahzen kapısı
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Yakında bulmaca — cevap panelin Rehber sekmesinde
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Araştırma eşyaları: 'Koleksiyon' altındaki Araştırma satırına bas, en yakına götürür
+ACHIEVEMENTS	Başarımlar {done}/{all}
+STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam başarım önbelleği bulunamadı (Steam/appcache/stats)
+SHOW_UNLOCKED_ONES_TOO	Açılanları da göster
+HIDDEN_ACHIEVEMENT	Gizli başarım
+SHOW	Göster
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ {tested} sürümünde denendi — bir sorun varsa konsolda `doctor` çalıştır
+ADMIRATION	Hayranlık
+AMAZEMENT	Şaşkınlık
+ECSTASY	Coşku
+GRIEF	Keder
+LOATHING	Tiksinti
+RAGE	Öfke
+TERROR	Terör
+VIGILANCE	Uyanıklık
+LOAD_POSITION	Git

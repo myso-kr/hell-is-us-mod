@@ -4,8 +4,8 @@
 
 use std::path::PathBuf;
 
-/// The language the mod's code is written in.
-pub const SOURCE: &str = "ko";
+/// The language until the game's is read: the mod's first.
+pub const DEFAULT: &str = "ko";
 
 /// The cultures the game ships text for (HellIsUs/Content/Localization/HellIsUs/).
 pub const GAME: [&str; 12] = ["de", "en", "es", "fr", "it", "ja", "ko", "pl", "pt-BR", "ru", "tr", "zh-Hans"];

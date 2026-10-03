@@ -1,435 +1,436 @@
-# Korean (as written in the code) <TAB> English. \n \t \\ are escapes; {name} placeholders stay as they are.
-생존	Survival
-전투	Combat
-이동	Movement
-아이템	Items
-체력 유지 (상한을 최대로)	Keep health (cap at maximum)
-스태미나 무한	Infinite stamina
-고스트 (탐험용 — 켜는 동안 공격도 막힘)	Ghost (for exploring — you cannot attack while it is on)
-림빅 에너지 무한	Infinite Lymbic energy
-림빅 소모 없음	No Lymbic cost
-스킬 쿨다운 없음	No skill cooldown
-걷기 속도 (기본 450)	Walk speed (default 450)
-주인공 시간 배속 (기본 1)	Hero time scale (default 1)
-게임 속도 (기본 1)	Game speed (default 1)
-적 속도 (기본 1)	Enemy speed (default 1)
-약한 적 (한 방에 처치)	Frail enemies (one hit kills)
-소모품 줄지 않음	Consumables never run out
-무기 경험치 배수 (기본 1)	Weapon XP multiplier (default 1)
-가진 샤드 수량 (999=최대면 줍기·알림 막힘)	Shards held (999 = max blocks pickups and alerts)
-퀘스트 목표	Quest goal
-비밀	Secret
-단서	Clue
-전달: {a0}	Hand over: {a0}
-대화: {a0}	Talk: {a0}
-아이템: {a0}	Item: {a0}
-새 사실 {a0}개	{a0} new facts
- · 조건 필요 (열쇠·퍼즐 등 — 가기만 해선 안 됨)	 · needs something (a key, a puzzle — going there is not enough)
-1막 끝까지	Until the end of Act 1
-세 번째 키스톤 전	Before the third keystone
-마감 임박 선행: {a0} ({a1})	Good deed closing soon: {a0} ({a1})
-마감 임박 선행 {n}개 — 퀘스트 탭에서 확인	{n} good deeds closing soon — see the Quests tab
-메인 {n}	Main {n}
-선행	Good deed
-미스터리	Mystery
-타임루프	Timeloop
-메인 퀘스트 {a0}	Main quest {a0}
-장소: {a0}	Place: {a0}
-대화: {p}	Talk: {p}
- · 조사 DB (아직 로드 안 됨)	 · survey DB (not loaded yet)
- · 조건 필요	 · needs something
-유물	Relics
-기록물	Records
-연구 자료	Research
-모자	Caps
-드론 모듈	Drone modules
-림빅 스킬	Lymbic skills
-무기	Weapons
-방어구	Defensive gear
-림빅 막대	Lymbic rods
-제작서	Crafting tomes
-잠긴 문	Locked door
-잠긴 상자	Locked chest
-림빅 잠금	Lymbic lock
-퍼즐	Puzzle
-코드·암호	Code
-열쇠 필요	Key needed
-나중에 주울 것	Pick up later
-상인	Merchant
-만날 사람	Someone to meet
-퀘스트 단서	Quest clue
-위험	Danger
-강적	Strong enemy
-저장 지점	Save point
-지름길	Shortcut
-오를 곳	Climb
-막다른 길	Dead end
-물·건널 곳	Water crossing
-둘러볼 곳	Look around
-보물	Treasure
-메모	Note
-거점	Base
-모르는 것	Unknown
-표시	Mark
-핀: {a0}	Pin: {a0}
-미니맵	Minimap
-큰 지도	Big map
-끔	Off
-음영	Shading
-등고선	Contours
-둘 다	Both
-위층 (흐리게)	Floors above (faded)
-아래층·지하 (흐리게)	Floors below (faded)
-깊은 곳	Deep
-낮은 곳	Low
-같은 높이	Same level
-높은 곳	High
-절벽·바위	Cliffs and rocks
-벽	Walls
-적	Enemies
-전리품	Loot
-문·퍼즐	Doors and puzzles
-저장	Save
-기타	Other
-약품	Medicine
-음식	Food
-기타 소모품	Other consumables
-퀘스트·비밀	Quests and secrets
-보급품	Supplies
-적 전리품 상자	Enemy loot box
-문	Door
-드론 번역	Drone translation
-명령을 입력하세요 — `help` 로 목록, ↑/↓ 이전 명령, Esc 로 실행 중지	Type a command — `help` lists them, ↑/↓ for history, Esc stops a run
-hiumod 만으로는 패널이 하나 더 열립니다 — 명령을 붙여 주세요 (help)	hiumod alone opens another panel — add a command (help)
-앞의 명령이 아직 실행 중입니다 (Esc 로 중지)	The last command is still running (Esc stops it)
-실행 파일을 찾지 못함: {e}	Executable not found: {e}
-실행하지 못함: {e}	Could not run: {e}
-(끝남: 코드 {c})	(done: code {c})
-(끝남)	(done)
-(중지함)	(stopped)
-명령 (help)	Command (help)
-지도 핀	Map pin
-패널에서 고른 곳	Picked in the panel
-필요한 것: 이 지역 {h}곳	Needed: {h} here
-필요한 것: 다른 지역 {a}곳 — 장갑차로 이동	Needed: {a} in other regions — take the APC
-필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳	Needed: {h} here · {a} in other regions
-위치 {a0} 저장 ({a1:.0}, {a2:.0}, {a3:.0})	Position {a0} saved ({a1:.0}, {a2:.0}, {a3:.0})
-위치 {a0} 로 이동	Moved to position {a0}
-수집 진행도	Collection
-조사 DB 가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No survey DB — run `doctor survey` once in the console
-월드에 놓인 것만 셉니다 (NPC 보상·상점은 제외) · 이 지역 / 전체	Counts what lies in the world (not NPC rewards or shops) · here / all
-{a0}  {a1}/{a2} · 전체 {a3}/{a4}	{a0}  {a1}/{a2} · all {a3}/{a4}
-선행 · 미스터리 · 타임루프	Good deeds · Mysteries · Timeloops
-완료 {a0} / {a1} · 진행 중 {a2} · 실패 {a3}	Done {a0} / {a1} · in progress {a2} · failed {a3}
-들을 이야기가 남은 NPC ({a0})	NPCs with more to tell ({a0})
-대화에서 아직 모르는 사실·단서를 줄 수 있는 사람 (갈래가 잠긴 대화도 포함)	People whose talk can still give a fact or clue you lack (locked branches included)
-다른 지역: {a0}	Other regions: {a0}
-메모리: 사용 {a0} · 전용 {a1} · 최고 {a2} (1분마다 로그에도 남음)	Memory: in use {a0} · private {a1} · peak {a2} (also logged every minute)
-켜진 치트	Cheats on
-원래 값 → 넣는 값, 그리고 지금 게임에 들어 있는 값	Original → written, and what the game holds now
-켜진 치트가 없습니다	No cheats are on
-적·인벤토리 대상	Enemies and inventory
-매 틱 적용	Applied every tick
-적용 중 {n:.2}	Applied {n:.2}
-게임이 바꿈 {n:.2}	Game changed it {n:.2}
-넣은 값과 다릅니다. 게임이 매 순간 다시 계산하는 값일 수 있습니다.	Differs from what was written. The game may recompute it every moment.
-읽을 수 없음	Unreadable
-테스트 결과 기록	Record test results
-게임에서 해 보고 눌러 주세요. verify.txt에 저장됩니다.	Try it in the game, then press. Saved to verify.txt.
-됨 ✓	Works ✓
-안 됨 ✗	Fails ✗
-확인됨	Verified
-미검증	Unverified
-로그·기록 폴더 열기	Open the log folder
-게임의 현재 값: {now:.2}	The game's value now: {now:.2}
-적용	Apply
-아직 게임에서 확인하지 않은 치트입니다. 동작하는지 알려주세요.	Not yet verified in the game. Please tell whether it works.
-위치 저장 · 이동	Save and load positions
-슬롯 {a0}	Slot {a0}
-다른 지역 ({w})	Another region ({w})
-비어 있음	Empty
-저장한 지역 안에서만 이동합니다	Moves only within the region it was saved in
-켜진 치트 ({a0})	Cheats on ({a0})
-{v:.2} (게임 {n:.2})	{v:.2} (game {n:.2})
-켜짐	On
-나침반 · 방향	Compass and heading
-나침반 (F{a0})	Compass (F{a0})
-화면 위 가운데	Top centre of the screen
-안내	Guide
-자동 안내 — 따라가는 퀘스트의 다음 목표로 계속 안내	Auto guide — keeps guiding to the followed quest's next goal
-실제 이동 경로 (A*) — 지형·물·벽을 돌아가는 길, 나침반이 다음 꺾이는 곳을 가리킴	Walking route (A*) — around terrain, water and walls; the compass points at the next turn
-다음 목표 ▶	Next goal ▶
-이 목표는 끝났거나 지금 갈 수 없음 — 넘기고 다음 목표로 (이번 실행 동안)	This goal is done or out of reach now — skip it for the next one (this run)
-직접 고른 목표 — 끝날 때까지 유지	Picked by hand — kept until it is done
-자동으로	Back to auto
-⚠ 걸어서 닿는 길이 없습니다 — 닫힌 문·퍼즐·열쇠 너머일 수 있음. 닿는 곳까지 안내하고 나머지는 노란 점선	⚠ No walking route — it may be past a closed door, a puzzle or a key. Guiding as far as it goes; the rest is the yellow dashed line
-자동 안내가 꺼져 있습니다 — 위 스위치를 켜거나 '갈 곳' 에서 고르세요	Auto guide is off — turn on the switch above or pick from 'Places'
-이 근처에서 새로 얻을 것이 있는 곳을 찾지 못했습니다	Nothing new to get found nearby
-이 지역엔 따라가는 퀘스트의 목표가 없습니다 — 다른 지역에 {elsewhere}곳 (장갑차로 이동)	The followed quest has no goal in this region — {elsewhere} in other regions (take the APC)
-남은 목표를 모두 건너뛰었습니다	Every remaining goal was skipped
-따라가는 퀘스트의 목표가 이 근처에 없습니다 — '갈 곳' 에서 직접 고를 수 있습니다	The followed quest has no goal nearby — pick one from 'Places'
-건너뛴 목표 {a0}개	{a0} goals skipped
-되돌리기	Undo
-갈 곳 ({a0})	Places ({a0})
-표시 방식	Display
-위쪽	Up is
-북쪽(N)	North (N)
-카메라 방향	Camera
-반경	Radius
-스타일	Style
-윤곽선	Outline
-채움	Filled
-아이콘 크기	Icon size
-인벤토리·메뉴가 열리면 모든 오버레이 숨기기	Hide every overlay while the inventory or a menu is open
-지형	Terrain
-지형 표시	Terrain view
-벽·바닥 윤곽	Wall and floor outlines
-불투명도	Opacity
-표시할 것	Show
-세부 ▲	Details ▲
-세부 ▼	Details ▼
-세부 ▼ ({h}개 숨김)	Details ▼ ({h} hidden)
-지도 핀 · 지나온 길	Map pins and trail
-새 핀 (F{a0})	New pin (F{a0})
-이 지역에 핀이 없습니다 — 잠긴 문·퍼즐 앞에서 F{a0} 를 누르면 꽂힙니다	No pins in this region — press F{a0} at a locked door or puzzle to place one
-이 핀 지우기	Remove this pin
-이 지역	This region
-지나온 길 {trail}점 · 핀 {count}개	Trail {trail} points · {count} pins
-경로 지우기	Clear trail
-핀 모두 지우기	Remove all pins
-주인공을 조작할 수 있을 때 표시됩니다	Shown while the hero can be controlled
-단축키	Keys
-지도 표시 방식 전환	Switch map display
-마커 찍기/지우기	Place or remove a marker
-나침반 표시/숨김	Show or hide the compass
-다음 목표로 안내	Guide to the next goal
-지도	Map
-퀘스트	Quests
-수집	Collect
-세이브	Saves
-디버그	Debug
-지난번에 켜 둔 치트 {a0}개를 다시 켰습니다	Turned {a0} cheats from last time back on
-닫기 — 원래 값으로 되돌리고 종료	Close — restore the original values and quit
-숨기기 (` 키로 다시 열기)	Hide (` opens it again)
-콘솔 ▾	Console ▾
-콘솔 ▸	Console ▸
-CLI 명령 콘솔	CLI console
-게임	Game
-● 연결됨\nv{version} · PID {pid}	● Connected\nv{version} · PID {pid}
-실행하는 중 — 켜지면 자동으로 연결	Launching — connects once it is up
-○ 연결 안 됨 — {e}	○ Not connected — {e}
-시작하는 중…	Starting…
-주인공 게이트	Hero gate
-● 열림 — 조작 중	● Open — in control
-○ 닫힘 — {e}	○ Closed — {e}
-○ 닫힘	○ Closed
-치트	Cheats
-도구	Tools
-모두 원래대로 ({pending})	Restore all ({pending})
-다음에도 켜 둔 치트 유지	Keep these cheats on next time
-다음 실행 때, 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다.	Next run, once the hero can be controlled, the cheats on now are turned back on.
-주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다	Writes only while the hero is controlled · achievements are not blocked
-퀘스트 추적기 — 화면 오른쪽 가운데	Quest tracker — right middle of the screen
-퀘스트를 읽는 중입니다 — 게임을 불러오고 몇 초 뒤에 나옵니다	Reading the quests — they appear a few seconds after the game loads
-메인 스토리 자동 — {a0}	Main story, automatic — {a0}
-메인 스토리 자동	Main story, automatic
- · 단서 {got}/{all}	 · clues {got}/{all}
-완료 {done}개 · 실패 {failed}개	{done} done · {failed} failed
-필요한 것: 조사 DB 없음 — `hiumod doctor survey` 를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다	Needed: no survey DB — run `hiumod doctor survey` once to fill in items and NPCs in every region
-필요한 것 — 남은 {left} / {a0}	Needed — {left} / {a0} left
-다른 지역 (장갑차로 이동): {a0}	Other regions (take the APC): {a0}
-놓치기 쉬운 선행	Missable good deeds
-마감이 있는 선행은 모두 끝났거나 지났습니다	Every good deed with a deadline is done or past
-임박	Soon
-나중	Later
- (시작 전)	 (not started)
-이미 지난 마감 {passed}개 — 그 선행은 실패했을 가능성이 큽니다	{passed} deadlines already past — those good deeds have likely failed
-키스톤 순서	Keystone order
-다음 키스톤 전에: {a0}	Before the next keystone: {a0}
-건네줄 수 있는 것	Things to hand over
-지금 가진 아이템을 원하는 사람이 없습니다	No one wants an item you hold now
-건네줄 수 있는 것 ({a0})	Things to hand over ({a0})
-가진 아이템을 원하는 사람 — 대화의 "거래" 로 건넵니다	People who want an item you hold — hand it over with "Trade" in their talk
-{a0} — 장갑차로 이동	{a0} — take the APC
-세이브 백업	Save backups
-게임이 저장할 때마다 세이브 파일을 복사해 둡니다 (최근 {a0}개)	Copies the save files each time the game saves (the last {a0})
-아직 백업이 없습니다	No backups yet
-지금 백업	Back up now
-백업함: {a0}	Backed up: {a0}
-백업 실패: {e}	Backup failed: {e}
-폴더 열기	Open folder
-되돌리려면 게임을 끈 뒤 백업 폴더의 .sav 파일을 세이브 폴더(%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)에 덮어쓰세요	To roll back, quit the game and copy a backup's .sav files over the save folder (%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)
-세이브 파일	Save files
-게임의 세이브 폴더를 찾지 못했습니다	The game's save folder was not found
-방금	just now
-{a0}분 전	{a0} min ago
-{a0}시간 전	{a0} h ago
-{a0}일 전	{a0} days ago
- · 안내 중	 · guiding
-이 지역엔 이 퀘스트의 목표가 없음 — 가까운 다른 퀘스트 목표로 안내	This quest has no goal in this region — guiding to the nearest other quest goal
-이 지역엔 이 항목의 목표가 없음 — 다른 지역에서 진행	This entry has no goal in this region — it continues elsewhere
-닫힌 문·퍼즐 너머 — 닿는 곳까지 안내, 근처의 쪽지·열쇠·장치를 먼저	Past a closed door or puzzle — guiding as far as it goes; look for a note, key or device nearby first
-살펴볼 곳	Place to examine
-1막 끝 전	Before the end of Act 1
-1막 끝 전, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — 트럭으로 떠나기 전에 약을 — 아니면 죽음	Before the end of Act 1: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — the medicine before she leaves on the truck, or she dies
-1막 끝({g:Facts_Shared/Universal_Location_LymbicForge}) 전에 {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}의 아기에게 젖병을 — 아니면 아기가 죽음	Before the end of Act 1 ({g:Facts_Shared/Universal_Location_LymbicForge}): the bottle for {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}'s baby, or the baby dies
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 {g:Facts_VillageOfJova/Name_Real} 상황이 바뀌기 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} 사망	During {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, before {g:Facts_VillageOfJova/Name_Real} changes — or {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} dies
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} 사망	Before {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — or {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} dies
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 — {g:Facts_VillageOfJova/Name_Real} 변화 전	During {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, before {g:Facts_VillageOfJova/Name_Real} changes
-{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전	{g:Facts_Shared/Universal_Location_LethePropaganda} — before leaving it the first time
-{g:Facts_Shared/Universal_Location_Talju} 대피 트럭 출발 전	Before the {g:Facts_Shared/Universal_Location_Talju} evacuation truck leaves
-{g:Facts_Shared/Universal_Location_Talju} 대피 트럭이 떠나기 전	Before the {g:Facts_Shared/Universal_Location_Talju} evacuation truck leaves
-권장 순서 ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 먼저: 일부 아이템이 {g:Facts_Shared/Universal_Location_Talju}에만 있음) — 키스톤마다 시간이 흘러 선행이 끝날 수 있습니다	Suggested order ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} first: some items are only in {g:Facts_Shared/Universal_Location_Talju}) — time passes with each keystone and good deeds can close
-세 번째 키스톤을 놓기 전	Before placing the third keystone
-{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
-{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
-{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
-포인터를 읽을 수 없음	Pointer unreadable
-게임이 실행 중이 아닙니다	The game is not running
-주인공의 인벤토리를 찾지 못함	The hero's inventory was not found
-주인공 위치를 쓰지 못함	Could not write the hero's position
-WorldSettings.Pauser 없음	No WorldSettings.Pauser
-세이브 상태를 찾지 못함	No save state found
-세이브 상태를 읽지 못함	The save state could not be read
-아직 액터를 훑지 않음	Actors not scanned yet
-게임이 종료됨 — 치트 꺼짐	The game exited — cheats off
-그런 슬롯이 없음	No such slot
-그 슬롯에 저장된 것이 없음	Nothing saved in that slot
-원래 값으로 되돌림	Original values restored
-쓰기 실패	Write failed
-Steam 라이브러리에서 Hell Is Us 설치를 찾지 못함 — --game-dir 로 알려 주세요	No Hell Is Us install found in any Steam library — pass --game-dir
-예상과 다른 실행 파일 경로	Unexpected executable path
-폰에 AbilitySystemComponent 가 없음	The pawn holds no AbilitySystemComponent
-플레이어 컨트롤러 없음	No player controller
-폰 없음 — 로딩 중이거나 컷신?	No pawn — loading, or a cinematic?
-조작 중인 폰이 주인공이 아님	The controlled pawn is not the hero
-어빌리티 시스템 없음	No ability system
-레벨 없음	No level
-월드 없음	No world
-월드 이름을 읽을 수 없음	World name unreadable
-루트 컴포넌트 없음	No root component
-위치를 읽을 수 없음	Location unreadable
-방향을 읽을 수 없음	Rotation unreadable
-위치·방향 값이 숫자가 아님	The pose is not a number
-GEngine 이 비어 있음	GEngine is empty
-게임 이미지에서 GameEngine 을 찾지 못함 (아직 시작 중?)	No GameEngine found in the game image (still starting up?)
-아는 FField 레이아웃으로 GameEngine.GameInstance 를 읽지 못함 — 엔진 구조가 바뀜	No known FField layout reads GameEngine.GameInstance — the engine layout changed
-속성 세트 배열을 읽을 수 없음	Attribute set array unreadable
-속성 세트 개수를 읽을 수 없음	Attribute set count unreadable
-속성 이름을 하나도 읽지 못함 — 이름 풀이나 클래스 구조가 이 빌드와 맞지 않음	No attribute could be named — the name pool or class layout does not fit this build
-필드를 읽을 수 없음	Field unreadable
-속성을 읽을 수 없음	Attribute unreadable
-유한하지 않은 값은 쓰지 않음	Refusing a non-finite value
-읽을 수 있는 속성이 없음	No attribute could be read
-미니맵: {e}	Minimap: {e}
-원래 값을 기록하지 못함 — 치트 꺼짐: {e}	Could not record the original values — cheats off: {e}
-{name}: 1..={max} 사이	{name} takes 1..={max}
-다른 지역에서 저장됨 ({world})	Saved in another region ({world})
-되돌리지 못함: {a0}	Could not restore: {a0}
-되돌리지 못함: {a0} — 나중에 `hiumod restore` 를 실행하세요	Could not restore: {a0} — run `hiumod restore` later
-`{id}` 은(는) 값을 정할 수 없음 — 가능한 것: {a0}	`{id}` cannot be set — one of: {a0}
-{id}: 0..={max} 사이	{id} takes 0..={max}
-모르는 치트 `{id}` — 가능한 것: {a0}	Unknown cheat `{id}` — one of: {a0}
-{id} 에는 값을 줄 수 없음	{id} takes no value
-{id}: {min}..={max} 사이	{id} takes {min}..={max}
-{id} 는 한 번 쓰는 값 — hold 가 아니라 `set {id} <값>` 을 쓰세요	{id} is written once — use `set {id} <value>`, not hold
-인벤토리에 {class} 없음 — 먼저 하나 주우세요	No {class} in the inventory — pick one up first
-{a0}번째 줄: {set}.{name} — 이 버전에 없는 속성	Line {a0}: {set}.{name} is no attribute this version knows
-{a0} 에 Hell Is Us 설치가 없음 — --game-dir 로 알려 주세요	No Hell Is Us install at {a0} — pass --game-dir
-게임 프로세스를 열 수 없음: {a0}	Cannot open the game process: {a0}
-프로세스 목록을 얻지 못함: {a0}	Process snapshot failed: {a0}
-게임 모듈 목록을 얻지 못함: {a0}	Cannot list the game's modules: {a0}
-{name} 속성이 없음	No property {name}
-폰이 주인공이 아니라 {a0} — 먼저 세이브를 불러오세요	The pawn is a {a0}, not the hero — load a save first
-속성 세트 배열이 이상함 (num={num}, data=0x{data})	The attribute set array looks wrong (num={num}, data=0x{data})
-속성들의 vtable 이 일치하지 않음 ({n}/{total}, 0x{vt})	Attributes do not agree on a vtable ({n}/{total} on 0x{vt})
-{ok} 설치 {dir} — Steam 빌드 {build}	{ok} install {dir} — Steam build {build}
-{ok} 설치: {e}	{ok} install: {e}
-{ok} 프로세스 {pid} — 베이스 0x{base}, 이미지 0x{size} 바이트	{ok} process {pid} — base 0x{base}, image 0x{size} bytes
-{ok} 이름 풀 +0x{at}	{ok} name pool +0x{at}
-{ok} FField 레이아웃: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}	{ok} FField layout: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
-{ok} 플레이어: {e}	{ok} player: {e}
-{ok} 주인공: {a0}	{ok} hero: {a0}
-{ok} 체인: GEngine {path} → 컨트롤러 +0x{pawn} 폰 → +0x{asc} ASC → +0x{sets} SpawnedAttributes	{ok} chain: GEngine {path} → controller +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
-ok   주인공 게이트: 열림 — 쓰기 허용	ok   hero gate: open — writes allowed
-ok   위치: ({x:.0}, {y:.0}, {z:.0}) 방향 {yaw:.1}	ok   pose: ({x:.0}, {y:.0}, {z:.0}) yaw {yaw:.1}
-FAIL 위치: {e}	FAIL pose: {e}
-ok   미니맵 대상: {n}개, {ms} ms — {kinds}	ok   minimap things: {n} in {ms} ms — {kinds}
-FAIL 미니맵 대상: {e}	FAIL minimap things: {e}
-ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open} — 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})	ok   guide: knows {facts} facts, {tags} tags; open: {open} — {places} places in {ms} ms (quest {quest}, secret {secret}, clue {clue})
-FAIL 안내: {e}	FAIL guide: {e}
-{ok} 속성: {e}	{ok} attributes: {e}
-{ok} 속성: 세트 {sets}개, 이름으로 찾은 속성 {count}개, vtable +0x{vt}	{ok} attributes: {sets} sets, {count} attributes by name, vtable +0x{vt}
-속성 {n}개	{n} attributes
-{ok} 치트 표: 이름이 나오는 속성 {n}개가 모두 게임에 있음	{ok} cheat table: all {n} attributes it names are in the game
-{ok} 치트 표: 게임에 없음 — {a0}	{ok} cheat table: not in the game — {a0}
-플레이어: 됨	player: works
-플레이어: 안 됨	player: DOES NOT WORK
-{path} 에 씀	Written to {path}
-클래스·구조체 {s}개의 속성 {p}개	{p} properties in {s} classes and structs
-{prefix}(으)로 시작하는 클래스·구조체 {n}개	{n} classes and structs starting with {prefix}
-매핑: 구조체·클래스 {structs}개, 열거형 {enums}개	Mappings: {structs} structs and classes, {enums} enums
-실행: {tool} {args}	Running {tool} {args}
-조사 결과: {path}	Survey written to {path}
-게임 텍스트: {path}	The game's text written to {path}
-구조체·클래스 {structs}개, 열거형 {enums}개 — {kb} KB, {path} 에 씀	{structs} structs and classes, {enums} enums — {kb} KB, written to {path}
-객체 {n}개를 {secs}초 동안 지켜봄 — Ctrl+C 로 멈춤	Watching {n} object(s) for {secs} s — Ctrl+C stops
-{all}곳 중 {kept}곳이 이제 {v}	{kept} of {all} places now hold {v}
-{n}곳이 {v} — 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`	{n} places hold {v} — change it in game, then `doctor scan next <new value>`
-이전 hold 가 남긴 원래 값 {n}개 — 지금 값이 아니라 그것을 유지	{n} original(s) left by an earlier hold — keeping those, not the current values
-유지 중: {a0} — Ctrl+C 로 멈추고 되돌림	Holding {a0} — Ctrl+C to stop and put things back
-강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음	If this is killed instead, `hiumod restore` puts things back
-적용 중	Applying
-되돌릴 것이 없음	Nothing to restore
-다이얼 퍼즐	Dial puzzle
-물건 놓기 퍼즐	Item placement
-키패드·암호	Keypad · code
-    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다	    At the door's dials, the 'Puzzles nearby' card tells how far to turn each
-    타임루프 {name}: {left}/{all}	    Timeloop {name}: {left}/{all}
-40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다	No dial, keypad or item placement puzzle within 40 m
-{place}: {left}/{all} 무리 · 적 {enemies}	{place}: {left}/{all} groups · {enemies} enemies
-가장 가까운 곳	Nearest
-게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요	Reads the answer the game holds — don't press if you want to solve it yourself
-근처 퍼즐 ({n})	Puzzles nearby ({n})
-금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No vault table — run `doctor survey` once in the console
-금단의 지식 금고 {done}/{all}	Vaults of Forbidden Knowledge {done}/{all}
-남은 적 무리 {left}/{all}	Enemy groups left {left}/{all}
-남은 적 무리	Enemy group left
-다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})	Dial {n}: turn {k} steps (now {now} → {want})
-다이얼 {n}: 맞음	Dial {n}: right
-답 보기	Show answer
-숨기기	Hide
-스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No spawner table — run `doctor survey` once in the console
-연구 {n}/{need}	Research {n}/{need}
-열림 ✓	Opened ✓
-장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개	Give research items to {g:Facts_Tania/Tania_Real_Name} in the APC to unlock vault information · research now {n}
-적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다	Counted by enemy group (spawner) · a group the save records counts as beaten
-정보 있음	Known
-코드 보기	Show code
-코드: {code}	Code: {code}
-필요한 것: {items}	Needs: {items}
-다이얼 {n}개 · {places}칸	{n} dials · {places} places
-{n}자리 코드	{n}-digit code
-물건 {n}개	{n} items
-다이얼 위치 (왼쪽부터, 1부터): {list}	Dial positions (from the left, counting from 1): {list}
-퍼즐 목록 · 이 지역 남은 {left}	Puzzle list · {left} left here
-퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요	No puzzle list — run `doctor survey` once in the console
-열쇠·물건 놓기 퍼즐도 보기	Show key doors and item placements too
-안 푼 퍼즐	Unsolved puzzle
-금고 문	Vault door
-근처에 퍼즐 — 답은 패널 안내 탭에	Puzzle nearby — the answer is in the panel's Guide tab
-연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다	Research items: press the Research line under 'Collection' to be guided to the nearest
-업적 {done}/{all}	Achievements {done}/{all}
-Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)	Steam's achievement cache was not found (Steam/appcache/stats)
-달성한 것도 보기	Show unlocked ones too
-숨겨진 업적	Hidden achievement
-보기	Show
-⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요	⚠ Checked on build {tested} — if something is off, run `doctor` in the console
-감탄	Admiration
-놀람	Amazement
-황홀	Ecstasy
-비탄	Grief
-혐오	Loathing
-격노	Rage
-공포	Terror
-경계	Vigilance
+# Key <TAB> English. \n \t \\ are escapes; {name} placeholders stay as they are.
+SURVIVAL	Survival
+COMBAT	Combat
+MOVEMENT	Movement
+ITEMS	Items
+KEEP_HEALTH_CAP_AT_MAXIMUM	Keep health at max
+INFINITE_STAMINA	Infinite stamina
+GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK	Ghost (for exploring — you can't attack while it's on)
+INFINITE_LYMBIC_ENERGY	Infinite Lymbic energy
+NO_LYMBIC_COST	No Lymbic cost
+NO_SKILL_COOLDOWN	No skill cooldown
+WALK_SPEED_DEFAULT_450	Walk speed (default 450)
+HERO_TIME_SCALE_DEFAULT_1	Hero time scale (default 1)
+GAME_SPEED_DEFAULT_1	Game speed (default 1)
+ENEMY_SPEED_DEFAULT_1	Enemy speed (default 1)
+FRAIL_ENEMIES_ONE_HIT_KILLS	Frail enemies (die in one hit)
+CONSUMABLES_NEVER_RUN_OUT	Consumables never run out
+WEAPON_XP_MULTIPLIER_DEFAULT_1	Weapon XP multiplier (default 1)
+SHARDS_HELD_999_MAX_BLOCKS_PICKUPS	Shards held (999 = max, blocks pickups and alerts)
+QUEST_GOAL	Quest goal
+SECRET	Secret
+CLUE	Clue
+HAND_OVER	Hand over: {item}
+TALK_GOAL	Talk: {npc}
+ITEM	Item: {items}
+NEW_FACTS	New facts: {count}
+NEEDS_SOMETHING_A_KEY_A_PUZZLE	 · needs a key or puzzle first
+UNTIL_THE_END_OF_ACT_1	Until the end of Act 1
+BEFORE_THE_THIRD_KEYSTONE	Before the third keystone
+GOOD_DEED_CLOSING_SOON	Good deed closing soon: {deed} ({deadline})
+GOOD_DEEDS_CLOSING_SOON_SEE_THE	Good deeds closing soon: {n} — see the Quests tab
+MAIN	Main {n}
+GOOD_DEED	Good deed
+MYSTERY	Mystery
+TIMELOOP	Timeloop
+MAIN_QUEST	Main quest {number}
+PLACE	Place: {place}
+TALK_NPC	Talk: {p}
+SURVEY_DB_NOT_LOADED_YET	 · survey DB (not loaded yet)
+NEEDS_SOMETHING	 · needs something
+RELICS	Relics
+RECORDS	Records
+RESEARCH	Research
+CAPS	Caps
+DRONE_MODULES	Drone modules
+LYMBIC_SKILLS	Lymbic skills
+WEAPONS	Weapons
+DEFENSIVE_GEAR	Defensive gear
+LYMBIC_RODS	Lymbic rods
+CRAFTING_TOMES	Crafting tomes
+LOCKED_DOOR	Locked door
+LOCKED_CHEST	Locked chest
+LYMBIC_LOCK	Lymbic lock
+PUZZLE	Puzzle
+PIN_CODE	Code
+KEY_NEEDED	Key needed
+PICK_UP_LATER	Pick up later
+MERCHANT	Merchant
+SOMEONE_TO_MEET	Someone to meet
+QUEST_CLUE	Quest clue
+DANGER	Danger
+STRONG_ENEMY	Strong enemy
+SAVE_POINT	Save point
+SHORTCUT	Shortcut
+CLIMB	Climb
+DEAD_END	Dead end
+WATER_CROSSING	Water crossing
+LOOK_AROUND	Look around
+TREASURE	Treasure
+NOTE	Note
+BASE	Base
+UNKNOWN	Unknown
+MARK	Mark
+PIN	Pin: {pin}
+MINIMAP	Minimap
+BIG_MAP	Big map
+OFF	Off
+SHADING	Shading
+CONTOURS	Contours
+BOTH	Both
+FLOORS_ABOVE_FADED	Floors above (faded)
+FLOORS_BELOW_FADED	Floors below (faded)
+DEEP	Deep
+LOW	Low
+SAME_LEVEL	Same level
+HIGH	High
+CLIFFS_AND_ROCKS	Cliffs and rocks
+WALLS	Walls
+ENEMIES	Enemies
+LOOT	Loot
+DOORS_AND_PUZZLES	Doors and puzzles
+SAVE	Save
+OTHER	Other
+MEDICINE	Medicine
+FOOD	Food
+OTHER_CONSUMABLES	Other consumables
+QUESTS_AND_SECRETS	Quests and secrets
+SUPPLIES	Supplies
+ENEMY_LOOT_BOX	Enemy loot box
+DOOR	Door
+DRONE_TRANSLATION	Drone translation
+TYPE_A_COMMAND_HELP_LISTS_THEM	Type a command — `help` lists them, ↑/↓ for history, Esc stops a run
+HIUMOD_ALONE_OPENS_ANOTHER_PANEL_ADD	hiumod alone opens another panel — add a command (see help)
+THE_LAST_COMMAND_IS_STILL_RUNNING	The last command is still running (Esc stops it)
+EXECUTABLE_NOT_FOUND	Executable not found: {e}
+COULD_NOT_RUN	Could not run: {e}
+DONE_CODE	(done: code {c})
+DONE	(done)
+STOPPED	(stopped)
+COMMAND_HELP	Command (help)
+MAP_PIN	Map pin
+PICKED_IN_THE_PANEL	Picked in the panel
+NEEDED_HERE	Needed: {h} here
+NEEDED_IN_OTHER_REGIONS_TAKE_THE	Needed: {a} in other regions — take the APC
+NEEDED_HERE_IN_OTHER_REGIONS	Needed: {h} here · {a} in other regions
+POSITION_SAVED	Position {slot} saved ({x:.0}, {y:.0}, {z:.0})
+MOVED_TO_POSITION	Moved to position {slot}
+COLLECTION	Collection
+NO_SURVEY_DB_RUN_DOCTOR_SURVEY	No survey DB — run `doctor survey` once in the console
+COUNTS_WHAT_LIES_IN_THE_WORLD	Counts items found in the world (not NPC rewards or shops) · here / all
+COLLECT_HERE_AND_ALL	{sort}  {got_here}/{all_here} · all {got}/{all}
+GOOD_DEEDS_MYSTERIES_TIMELOOPS	Good Deeds · Mysteries · Timeloops
+DONE_IN_PROGRESS_FAILED	Done {done} / {all} · in progress {started} · failed {failed}
+NPCS_WITH_MORE_TO_TELL	NPCs With More to Tell ({count})
+PEOPLE_WHOSE_TALK_CAN_STILL_GIVE	People who can still tell you a fact or clue you lack (locked branches included)
+OTHER_REGIONS	Other regions: {regions}
+MEMORY_IN_USE_PRIVATE_PEAK_ALSO	Memory: in use {working} · private {private} · peak {peak} (also logged every minute)
+CHEATS_ON	Cheats on
+ORIGINAL_WRITTEN_AND_WHAT_THE_GAME	Original → written, and what the game holds now
+NO_CHEATS_ARE_ON	No cheats are on
+ENEMIES_AND_INVENTORY	Enemies and inventory
+APPLIED_EVERY_TICK	Applied every tick
+APPLIED	Applied {n:.2}
+GAME_CHANGED_IT	Game changed it {n:.2}
+DIFFERS_FROM_WHAT_WAS_WRITTEN_THE	Differs from what was written. The game may recompute it every moment.
+UNREADABLE	Unreadable
+RECORD_TEST_RESULTS	Record test results
+TRY_IT_IN_THE_GAME_THEN	Try it in the game, then press. Results save to verify.txt.
+WORKS	Works ✓
+FAILS	Fails ✗
+VERIFIED	Verified
+UNVERIFIED	Unverified
+OPEN_THE_LOG_FOLDER	Open the log folder
+THE_GAMES_VALUE_NOW	The game's value now: {now:.2}
+APPLY	Apply
+NOT_YET_VERIFIED_IN_THE_GAME	Not verified in the game yet. Please report whether it works.
+SAVE_AND_LOAD_POSITIONS	Save and Load Positions
+SLOT	Slot {slot}
+ANOTHER_REGION	Another region ({w})
+EMPTY	Empty
+MOVES_ONLY_WITHIN_THE_REGION_IT	Moves only within the region it was saved in
+CHEATS_ON_COUNT	Cheats On ({count})
+VALUE_AND_GAME	{v:.2} (game {n:.2})
+ON	On
+COMPASS_AND_HEADING	Compass and Heading
+COMPASS_F	Compass (F{key})
+TOP_CENTRE_OF_THE_SCREEN	Top center of the screen
+GUIDE	Guide
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Auto guide — keeps guiding to the followed quest's next goal
+WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Walking route (A*) — around terrain, water and walls; the compass points at the next turn
+NEXT_GOAL	Next goal ▶
+THIS_GOAL_IS_DONE_OR_OUT	This goal is done or out of reach — skip to the next one (this session)
+PICKED_BY_HAND_KEPT_UNTIL_IT	Picked by hand — kept until it is done
+BACK_TO_AUTO	Back to auto
+NO_WALKING_ROUTE_IT_MAY_BE	⚠ No walking route — it may lie past a closed door, puzzle or key. Guiding as far as possible; the yellow dashed line shows the rest
+AUTO_GUIDE_IS_OFF_TURN_ON	Auto guide is off — turn on the switch above or pick from 'Places'
+NOTHING_NEW_TO_GET_FOUND_NEARBY	Nothing new to collect nearby
+NO_QUEST_GOAL_IN_REGION	The followed quest has no goal in this region — {elsewhere} in other regions (take the APC)
+EVERY_REMAINING_GOAL_WAS_SKIPPED	Every remaining goal was skipped
+NO_QUEST_GOAL_NEARBY	The followed quest has no goal nearby — pick one from 'Places'
+GOALS_SKIPPED	Goals skipped: {count}
+UNDO	Undo
+PLACES	Places ({count})
+DISPLAY	Display
+UP_IS	Up is
+NORTH_N	North (N)
+CAMERA	Camera
+RADIUS	Radius
+STYLE	Style
+OUTLINE	Outline
+FILLED	Filled
+ICON_SIZE	Icon size
+HIDE_EVERY_OVERLAY_WHILE_THE_INVENTORY	Hide every overlay while the inventory or a menu is open
+TERRAIN	Terrain
+TERRAIN_VIEW	Terrain view
+WALL_AND_FLOOR_OUTLINES	Wall and floor outlines
+OPACITY	Opacity
+SHOW_ON_MAP	Show
+DETAILS_OPEN	Details ▲
+DETAILS_CLOSED	Details ▼
+DETAILS_HIDDEN	Details ▼ ({h} hidden)
+MAP_PINS_AND_TRAIL	Map Pins and Trail
+NEW_PIN_F	New pin (F{key})
+NO_PINS_IN_THIS_REGION_PRESS	No pins in this region — press F{key} at a locked door or puzzle to place one
+REMOVE_THIS_PIN	Remove this pin
+THIS_REGION	This region
+TRAIL_POINTS_PINS	Trail: {trail} points · Pins: {count}
+CLEAR_TRAIL	Clear trail
+REMOVE_ALL_PINS	Remove all pins
+SHOWN_WHILE_THE_HERO_CAN_BE	Shown while you control the hero
+KEYS	Keys
+SWITCH_MAP_DISPLAY	Switch map display
+PLACE_OR_REMOVE_A_MARKER	Place or remove a marker
+SHOW_OR_HIDE_THE_COMPASS	Show or hide the compass
+GUIDE_TO_THE_NEXT_GOAL	Guide to the next goal
+MAP	Map
+QUESTS	Quests
+COLLECT	Collect
+SAVES	Saves
+DEBUG	Debug
+TURNED_CHEATS_FROM_LAST_TIME_BACK	Restored cheats from last session: {count}
+CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND	Close — restore original values and exit
+HIDE_OPENS_IT_AGAIN	Hide (` opens it again)
+CONSOLE_OPEN	Console ▾
+CONSOLE_CLOSED	Console ▸
+CLI_CONSOLE	CLI console
+GAME	Game
+CONNECTED_V_PID	● Connected\nv{version} · PID {pid}
+LAUNCHING_CONNECTS_ONCE_IT_IS_UP	Launching — connects once it is up
+NOT_CONNECTED	○ Not connected — {e}
+STARTING	Starting…
+HERO_GATE	Hero gate
+OPEN_IN_CONTROL	● Open — in control
+GATE_CLOSED_WHY	○ Closed — {e}
+GATE_CLOSED	○ Closed
+CHEATS	Cheats
+TOOLS	Tools
+RESTORE_ALL	Restore all ({pending})
+KEEP_THESE_CHEATS_ON_NEXT_TIME	Keep these cheats on next time
+NEXT_RUN_ONCE_THE_HERO_CAN	Next launch, once you control the hero, the cheats now on are turned back on.
+WRITES_ONLY_WHILE_THE_HERO_IS	Applies only while you control the hero · achievements still unlock
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest tracker — right middle of the screen
+READING_THE_QUESTS_THEY_APPEAR_A	Reading quests — they appear a few seconds after the game loads
+MAIN_STORY_AUTO_NOW	Main story, automatic — {quest}
+MAIN_STORY_AUTO	Main story, automatic
+CLUES	 · clues {got}/{all}
+DONE_FAILED	{done} done · {failed} failed
+NEEDED_NO_SURVEY_DB_RUN_HIUMOD	Needed: no survey DB — run `hiumod doctor survey` once to fill in items and NPCs in every region
+NEEDED_LEFT	Needed: {left}/{all} left
+OTHER_REGIONS_TAKE_THE_APC	Other regions (take the APC): {regions}
+MISSABLE_GOOD_DEEDS	Missable Good Deeds
+EVERY_GOOD_DEED_WITH_A_DEADLINE	Every good deed with a deadline is done or past
+SOON	Soon
+LATER	Later
+NOT_STARTED	 (not started)
+DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS	Deadlines passed: {passed} — those good deeds have likely failed
+KEYSTONE_ORDER	Keystone Order
+BEFORE_THE_NEXT_KEYSTONE	Before the next keystone: {deeds}
+THINGS_TO_HAND_OVER	Things to Hand Over
+NO_ONE_WANTS_AN_ITEM_YOU	Nothing to Hand Over
+THINGS_TO_HAND_OVER_COUNT	Things to Hand Over ({count})
+PEOPLE_WHO_WANT_AN_ITEM_YOU	People who want an item you hold — hand it over via "Trade" in their dialogue
+TAKE_THE_APC	{place} — take the APC
+SAVE_BACKUPS	Save Backups
+COPIES_THE_SAVE_FILES_EACH_TIME	Copies the save files each time the game saves (the last {count})
+NO_BACKUPS_YET	No backups yet
+BACK_UP_NOW	Back up now
+BACKED_UP	Backed up: {file}
+BACKUP_FAILED	Backup failed: {e}
+OPEN_FOLDER	Open folder
+TO_ROLL_BACK_QUIT_THE_GAME	To roll back, quit the game and copy a backup's .sav files over the save folder (%LOCALAPPDATA%\\HellIsUs\\Saved\\SaveGames)
+SAVE_FILES	Save Files
+THE_GAMES_SAVE_FOLDER_WAS_NOT	The game's save folder was not found
+JUST_NOW	just now
+MIN_AGO	{minutes} min ago
+H_AGO	{hours}h ago
+DAYS_AGO	{days}d ago
+GUIDING	 · guiding
+THIS_QUEST_HAS_NO_GOAL_IN	This quest has no goal in this region — guiding to the nearest other quest goal
+THIS_ENTRY_HAS_NO_GOAL_IN	This entry has no goal in this region — it continues elsewhere
+PAST_A_CLOSED_DOOR_OR_PUZZLE	Past a closed door or puzzle — guiding as far as it goes; look for a note, key or device nearby first
+PLACE_TO_EXAMINE	Place to examine
+DEADLINE_ACT1	Before the end of Act 1
+DEADLINE_DIANA_MEDICINE	Before the end of Act 1: {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — bring the medicine before she leaves on the truck, or she dies
+DEADLINE_JUDITH_BABY	Before the end of Act 1 ({g:Facts_Shared/Universal_Location_LymbicForge}): the bottle for {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}'s baby, or the baby dies
+DEADLINE_HALIE_PICTURE	During {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, before {g:Facts_VillageOfJova/Name_Real} changes — or {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} dies
+DEADLINE_VIOLINIST	Before {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — or {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} dies
+DUE_QUEST03_JOVA	During {g:Facts_KeystoneTerror/KeystoneTerror_Real_Name}, before {g:Facts_VillageOfJova/Name_Real} changes
+DUE_MINISTRY_FIRST_LEAVE	{g:Facts_Shared/Universal_Location_LethePropaganda} — before leaving it the first time
+DUE_TALJU_TRUCK	Before the {g:Facts_Shared/Universal_Location_Talju} evacuation truck leaves
+DEADLINE_TALJU_TRUCK	Before the {g:Facts_Shared/Universal_Location_Talju} evacuation truck leaves
+KEYSTONE_ORDER_ADVICE	Suggested order ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} first: some items are only in {g:Facts_Shared/Universal_Location_Talju}) — each keystone advances time, and good deeds can close
+DEADLINE_THIRD_KEYSTONE	Before placing the third keystone
+KEYSTONE_ECSTASY_REGIONS	{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}
+KEYSTONE_RAGE_REGIONS	{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}
+KEYSTONE_TERROR_REGIONS	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}
+POINTER_UNREADABLE	Pointer unreadable
+THE_GAME_IS_NOT_RUNNING	The game is not running
+THE_HEROS_INVENTORY_WAS_NOT_FOUND	The hero's inventory was not found
+COULD_NOT_WRITE_THE_HEROS_POSITION	Could not write the hero's position
+NO_WORLDSETTINGS_PAUSER	No WorldSettings.Pauser
+NO_SAVE_STATE_FOUND	No save state found
+THE_SAVE_STATE_COULD_NOT_BE	The save state could not be read
+ACTORS_NOT_SCANNED_YET	Actors not scanned yet
+THE_GAME_EXITED_CHEATS_OFF	The game exited — cheats off
+NO_SUCH_SLOT	No such slot
+NOTHING_SAVED_IN_THAT_SLOT	Nothing saved in that slot
+ORIGINAL_VALUES_RESTORED	Original values restored
+WRITE_FAILED	Write failed
+NO_HELL_IS_US_INSTALL_FOUND	No Hell Is Us install found in any Steam library — pass --game-dir
+UNEXPECTED_EXECUTABLE_PATH	Unexpected executable path
+THE_PAWN_HOLDS_NO_ABILITYSYSTEMCOMPONENT	The pawn holds no AbilitySystemComponent
+NO_PLAYER_CONTROLLER	No player controller
+NO_PAWN_LOADING_OR_A_CINEMATIC	No pawn — loading, or a cinematic?
+THE_CONTROLLED_PAWN_IS_NOT_THE	The controlled pawn is not the hero
+NO_ABILITY_SYSTEM	No ability system
+NO_LEVEL	No level
+NO_WORLD	No world
+WORLD_NAME_UNREADABLE	World name unreadable
+NO_ROOT_COMPONENT	No root component
+LOCATION_UNREADABLE	Location unreadable
+ROTATION_UNREADABLE	Rotation unreadable
+THE_POSE_IS_NOT_A_NUMBER	The pose is not a number
+GENGINE_IS_EMPTY	GEngine is empty
+NO_GAMEENGINE_FOUND_IN_THE_GAME	No GameEngine found in the game image (still starting up?)
+NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE	No known FField layout reads GameEngine.GameInstance — the engine layout changed
+ATTRIBUTE_SET_ARRAY_UNREADABLE	Attribute set array unreadable
+ATTRIBUTE_SET_COUNT_UNREADABLE	Attribute set count unreadable
+NO_ATTRIBUTE_COULD_BE_NAMED_THE	No attribute could be named — the name pool or class layout does not fit this build
+FIELD_UNREADABLE	Field unreadable
+ATTRIBUTE_UNREADABLE	Attribute unreadable
+REFUSING_A_NON_FINITE_VALUE	Refusing a non-finite value
+NO_ATTRIBUTE_COULD_BE_READ	No attribute could be read
+MINIMAP_ERROR	Minimap: {e}
+COULD_NOT_RECORD_THE_ORIGINAL_VALUES	Could not record the original values — cheats off: {e}
+SLOT_RANGE	{name} takes 1..={max}
+SAVED_IN_ANOTHER_REGION	Saved in another region ({world})
+COULD_NOT_RESTORE	Could not restore: {what}
+COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE	Could not restore: {what} — run `hiumod restore` later
+CANNOT_BE_SET_ONE_OF	`{id}` cannot be set — choose from: {choices}
+CHEAT_SET_RANGE	{id} takes 0..={max}
+UNKNOWN_CHEAT_ONE_OF	Unknown cheat `{id}` — choose from: {choices}
+TAKES_NO_VALUE	{id} takes no value
+CHEAT_RANGE	{id} takes {min}..={max}
+IS_WRITTEN_ONCE_USE_SET_VALUE	{id} is written once — use `set {id} <value>` instead of hold
+NO_IN_THE_INVENTORY_PICK_ONE	No {class} in the inventory — pick one up first
+LINE_IS_NO_ATTRIBUTE_THIS_VERSION	Line {line}: {set}.{name} is not an attribute this version recognizes
+NO_HELL_IS_US_INSTALL_AT	No Hell Is Us install at {dir} — pass --game-dir
+CANNOT_OPEN_THE_GAME_PROCESS	Cannot open the game process: {error}
+PROCESS_SNAPSHOT_FAILED	Process snapshot failed: {error}
+CANNOT_LIST_THE_GAMES_MODULES	Cannot list the game's modules: {error}
+NO_PROPERTY	No property {name}
+THE_PAWN_IS_A_NOT_THE	The pawn is {classes}, not the hero — load a save first
+THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG	The attribute set array looks wrong (num={num}, data=0x{data})
+ATTRIBUTES_DO_NOT_AGREE_ON_A	Attributes do not agree on a vtable ({n}/{total} on 0x{vt})
+INSTALL_STEAM_BUILD	{ok} install {dir} — Steam build {build}
+INSTALL	{ok} install: {e}
+PROCESS_BASE_0X_IMAGE_0X_BYTES	{ok} process {pid} — base 0x{base}, image 0x{size} bytes
+NAME_POOL_0X	{ok} name pool +0x{at}
+FFIELD_LAYOUT_NEXT_0X_NAME_0X	{ok} FField layout: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}
+PLAYER	{ok} player: {e}
+HERO	{ok} hero: {classes}
+CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X	{ok} chain: GEngine {path} → controller +0x{pawn} pawn → +0x{asc} ASC → +0x{sets} SpawnedAttributes
+OK_HERO_GATE_OPEN_WRITES_ALLOWED	ok   hero gate: open — writes allowed
+OK_POSE_YAW	ok   pose: ({x:.0}, {y:.0}, {z:.0}) yaw {yaw:.1}
+FAIL_POSE	FAIL pose: {e}
+OK_MINIMAP_THINGS_IN_MS	ok   minimap things: {n} in {ms} ms — {kinds}
+FAIL_MINIMAP_THINGS	FAIL minimap things: {e}
+OK_GUIDE_KNOWS_FACTS_TAGS_OPEN	ok   guide: knows {facts} facts, {tags} tags; open: {open} — {places} places in {ms} ms (quest {quest}, secret {secret}, clue {clue})
+FAIL_GUIDE	FAIL guide: {e}
+DOCTOR_ATTRIBUTES_FAIL	{ok} attributes: {e}
+ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE	{ok} attributes: {sets} sets, {count} attributes by name, vtable +0x{vt}
+ATTRIBUTE_COUNT	Attributes: {n}
+CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES	{ok} cheat table: all {n} attributes it names are in the game
+CHEAT_TABLE_NOT_IN_THE_GAME	{ok} cheat table: not in the game — {missing}
+PLAYER_WORKS	player: works
+PLAYER_DOES_NOT_WORK	player: DOES NOT WORK
+WRITTEN_TO	Written to {path}
+PROPERTIES_IN_CLASSES_AND_STRUCTS	{p} properties in {s} classes and structs
+CLASSES_AND_STRUCTS_STARTING_WITH	{n} classes and structs starting with {prefix}
+MAPPINGS_STRUCTS_AND_CLASSES_ENUMS	Mappings: {structs} structs and classes, {enums} enums
+RUNNING	Running {tool} {args}
+SURVEY_WRITTEN_TO	Survey written to {path}
+THE_GAMES_TEXT_WRITTEN_TO	The game's text written to {path}
+STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN	{structs} structs and classes, {enums} enums — {kb} KB, written to {path}
+WATCHING_OBJECT_S_FOR_S_CTRL	Watching {n} object(s) for {secs} s — Ctrl+C stops
+OF_PLACES_NOW_HOLD	{kept} of {all} places now hold {v}
+PLACES_HOLD_CHANGE_IT_IN_GAME	{n} places hold {v} — change it in game, then `doctor scan next <new value>`
+ORIGINAL_S_LEFT_BY_AN_EARLIER	Originals left by an earlier hold: {n} — keeping those, not the current values
+HOLDING_CTRL_C_TO_STOP_AND	Holding {cheats} — Ctrl+C to stop and put things back
+IF_THIS_IS_KILLED_INSTEAD_HIUMOD	If this is killed instead, `hiumod restore` puts things back
+APPLYING	Applying
+NOTHING_TO_RESTORE	Nothing to restore
+DIAL_PUZZLE	Dial puzzle
+ITEM_PLACEMENT	Item placement
+KEYPAD_CODE	Keypad · code
+AT_THE_DOORS_DIALS_THE_PUZZLES	    At the door's dials, the 'Puzzles Nearby' card shows how far to turn each
+TIMELOOP_LEFT	    Timeloop {name}: {left}/{all}
+NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT	No dial, keypad or item placement puzzle within 40 m
+GROUPS_ENEMIES	{place}: {left}/{all} groups · {enemies} enemies
+NEAREST	Nearest
+READS_THE_ANSWER_THE_GAME_HOLDS	Reads the answer the game holds — don't press if you want to solve it yourself
+PUZZLES_NEARBY	Puzzles Nearby ({n})
+NO_VAULT_TABLE_RUN_DOCTOR_SURVEY	No vault table — run `doctor survey` once in the console
+VAULTS_OF_FORBIDDEN_KNOWLEDGE	Vaults of Forbidden Knowledge {done}/{all}
+ENEMY_GROUPS_LEFT	Enemy Groups Left {left}/{all}
+ENEMY_GROUP_LEFT	Enemy group left
+DIAL_TURN_STEPS_NOW	Dial {n}: turn by {k} (now {now} → {want})
+DIAL_RIGHT	Dial {n}: right
+SHOW_ANSWER	Show answer
+HIDE	Hide
+NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY	No spawner table — run `doctor survey` once in the console
+RESEARCH_PROGRESS	Research {n}/{need}
+OPENED	Opened ✓
+VAULT_RESEARCH_HINT	Give research items to {g:Facts_Tania/Tania_Real_Name} in the APC to unlock vault info · research now {n}
+COUNTED_BY_ENEMY_GROUP_SPAWNER_A	Counted per enemy group (spawner) · a group recorded in the save counts as beaten
+KNOWN	Known
+SHOW_CODE	Show code
+CODE_IS	Code: {code}
+NEEDS	Needs: {items}
+DIALS_PLACES	Dials: {n} · Places: {places}
+DIGIT_CODE	{n}-digit code
+ITEM_COUNT	Items: {n}
+DIAL_POSITIONS_FROM_THE_LEFT_COUNTING	Dial positions (from the left, counting from 1): {list}
+PUZZLE_LIST_LEFT_HERE	Puzzle List · {left} Left Here
+NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY	No puzzle list — run `doctor survey` once in the console
+SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Show key doors and item placements too
+UNSOLVED_PUZZLE	Unsolved puzzle
+VAULT_DOOR	Vault door
+PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzzle nearby — the answer is in the panel's Guide tab
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Research items: select Research under 'Collection' to be guided to the nearest
+ACHIEVEMENTS	Achievements {done}/{all}
+STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam's achievement cache was not found (Steam/appcache/stats)
+SHOW_UNLOCKED_ONES_TOO	Show unlocked ones too
+HIDDEN_ACHIEVEMENT	Hidden achievement
+SHOW	Show
+CHECKED_ON_BUILD_IF_SOMETHING_IS	⚠ Checked on build {tested} — if something is off, run `doctor` in the console
+ADMIRATION	Admiration
+AMAZEMENT	Amazement
+ECSTASY	Ecstasy
+GRIEF	Grief
+LOATHING	Loathing
+RAGE	Rage
+TERROR	Terror
+VIGILANCE	Vigilance
+LOAD_POSITION	Go

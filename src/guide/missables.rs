@@ -37,11 +37,11 @@ impl Due {
 
     pub fn label(self) -> String {
         match self {
-            Due::Act1End => trf!("1막 끝까지"),
-            Due::Quest03 => trf!("{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 — {g:Facts_VillageOfJova/Name_Real} 변화 전"),
-            Due::Talju => trf!("{g:Facts_Shared/Universal_Location_Talju} 대피 트럭 출발 전"),
-            Due::Ministry => trf!("{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전"),
-            Due::ThirdKeystone => trf!("세 번째 키스톤 전"),
+            Due::Act1End => trf!("UNTIL_THE_END_OF_ACT_1"),
+            Due::Quest03 => trf!("DUE_QUEST03_JOVA"),
+            Due::Talju => trf!("DUE_TALJU_TRUCK"),
+            Due::Ministry => trf!("DUE_MINISTRY_FIRST_LEAVE"),
+            Due::ThirdKeystone => trf!("BEFORE_THE_THIRD_KEYSTONE"),
         }
     }
 }
@@ -148,9 +148,9 @@ pub fn keystone_advice(journal: &[Quest], deadlines: &[Deadline]) -> Option<(Vec
         return None;
     }
     let left: Vec<String> = [
-        ("Quest03", trf!("{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} — {g:Facts_Shared/Universal_Location_Talju} · {g:Facts_Shared/Universal_Location_Marastan} · {g:Facts_Shared/Universal_Location_ArcasSpire}")),
-        ("Quest05", trf!("{g:Facts_KeystoneRage/KeystoneRage_Name} — {g:Facts_Shared/Universal_Location_Jeljin} · {g:Facts_Shared/Universal_Location_LethePropaganda} · {g:Facts_Shared/Universal_Location_AurigaMuseum}")),
-        ("Quest04", trf!("{g:Facts_KeystoneEcstasy/KeystoneEcstasy_Name} — {g:Facts_Shared/Universal_Location_LetheLibrary} · {g:Facts_Shared/Universal_Location_VyssaHills} · {g:Facts_Shared/Universal_Location_PlainsOfMist}")),
+        ("Quest03", trf!("KEYSTONE_TERROR_REGIONS")),
+        ("Quest05", trf!("KEYSTONE_RAGE_REGIONS")),
+        ("Quest04", trf!("KEYSTONE_ECSTASY_REGIONS")),
     ]
     .into_iter()
     .filter(|(k, _)| status(journal, k) != Status::Completed)
@@ -165,8 +165,8 @@ pub fn alert(deadlines: &[Deadline]) -> Option<String> {
     let now: Vec<&Deadline> = deadlines.iter().filter(|d| d.when == When::Now).collect();
     match now.len() {
         0 => None,
-        1 => Some(trf!("마감 임박 선행: {a0} ({a1})", a0 = now[0].title, a1 = now[0].due.label())),
-        n => Some(trf!("마감 임박 선행 {n}개 — 퀘스트 탭에서 확인", n = n)),
+        1 => Some(trf!("GOOD_DEED_CLOSING_SOON", deed = now[0].title, deadline = now[0].due.label())),
+        n => Some(trf!("GOOD_DEEDS_CLOSING_SOON_SEE_THE", n = n)),
     }
 }
 

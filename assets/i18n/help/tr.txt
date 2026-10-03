@@ -41,6 +41,6 @@ KULLANIM
 
 SEÇENEKLER
   --game-dir <dir>              HellIsUs\ içeren kurulum kökü
-                                (varsayılan: Steam kitaplıklarınızda bulunur)
+                                (varsayılan: Steam kitaplıklarında bulunur)
 
-Kahramanı kontrol etmiyorsanız hiçbir şey yazılmaz. Kayıt dosyanızı yedekleyin.
+Kahramanı kontrol etmiyorsan hiçbir şey yazılmaz. Kayıt dosyanı yedekle.

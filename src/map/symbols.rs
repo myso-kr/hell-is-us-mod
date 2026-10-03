@@ -23,14 +23,14 @@ const SOURCES: [&str; 8] = [
 /// A symbol's name in the mod's words.
 pub fn label(n: u8) -> &'static str {
     match n {
-        1 => tr!("감탄"),
-        2 => tr!("놀람"),
-        3 => tr!("황홀"),
-        4 => tr!("비탄"),
-        5 => tr!("혐오"),
-        6 => tr!("격노"),
-        7 => tr!("공포"),
-        8 => tr!("경계"),
+        1 => tr!("ADMIRATION"),
+        2 => tr!("AMAZEMENT"),
+        3 => tr!("ECSTASY"),
+        4 => tr!("GRIEF"),
+        5 => tr!("LOATHING"),
+        6 => tr!("RAGE"),
+        7 => tr!("TERROR"),
+        8 => tr!("VIGILANCE"),
         _ => "?",
     }
 }

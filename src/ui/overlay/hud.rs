@@ -61,11 +61,11 @@ pub fn with_pins(goals: &[Goal], state: &MapState, world: &str) -> Vec<Goal> {
         gate: Gate::Open,
     };
     for m in state.markers.get(world).into_iter().flatten() {
-        goals.push(place(m.id(world), m.title(), tr!("지도 핀"), m.at));
+        goals.push(place(m.id(world), m.title(), tr!("MAP_PIN"), m.at));
     }
     if let Some((w, id, at, label)) = state.adhoc.clone() {
         if crate::survey::Survey::world_of(world) == w && !goals.iter().any(|g| g.id == id) {
-            goals.push(place(id, label, tr!("패널에서 고른 곳"), at));
+            goals.push(place(id, label, tr!("PICKED_IN_THE_PANEL"), at));
         }
     }
     goals
@@ -125,9 +125,9 @@ pub fn needs_line(
             let away = list.iter().filter(|x| !x.done && x.world != w).count();
             match (here, away) {
                 (0, 0) => String::new(),
-                (h, 0) => trf!("필요한 것: 이 지역 {h}곳", h = h),
-                (0, a) => trf!("필요한 것: 다른 지역 {a}곳 — 장갑차로 이동", a = a),
-                (h, a) => trf!("필요한 것: 이 지역 {h}곳 · 다른 지역 {a}곳", h = h, a = a),
+                (h, 0) => trf!("NEEDED_HERE", h = h),
+                (0, a) => trf!("NEEDED_IN_OTHER_REGIONS_TAKE_THE", a = a),
+                (h, a) => trf!("NEEDED_HERE_IN_OTHER_REGIONS", h = h, a = a),
             }
         })
         .unwrap_or_default();

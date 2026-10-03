@@ -39,3 +39,45 @@ pub fn symbol(ui: &mut egui::Ui, n: u8, size: f32, colour: egui::Color32) -> egu
         None => ui.label(n.to_string()),
     }
 }
+
+/// A map sort's icon (assets/icons).
+pub fn sort(ui: &mut egui::Ui, s: crate::actors::Sub, size: f32) -> egui::Response {
+    image(ui, crate::icons::source(s), size)
+}
+
+/// A kind's icon: its first sort's.
+pub fn kind(ui: &mut egui::Ui, k: crate::actors::Kind, size: f32) -> egui::Response {
+    let s = crate::actors::Sub::ALL.into_iter().find(|s| s.kind() == k).unwrap_or(crate::actors::Sub::OtherItem);
+    sort(ui, s, size)
+}
+
+/// A map pin kind's icon (assets/pins).
+pub fn pin(ui: &mut egui::Ui, k: crate::minimap::PinKind, size: f32) -> egui::Response {
+    image(ui, crate::icons::pin_source(k), size)
+}
+
+/// A journal entry's icon: a main quest's flag, a good deed's treasure, a mystery's
+/// question, a timeloop's loop.
+pub fn quest(ui: &mut egui::Ui, k: crate::quests::Kind, size: f32) -> egui::Response {
+    use crate::minimap::PinKind;
+    use crate::quests::Kind;
+    let p = match k {
+        Kind::Main(_) => PinKind::Quest,
+        Kind::GoodDeed => PinKind::Treasure,
+        Kind::Mystery => PinKind::Question,
+        Kind::Timeloop => PinKind::Timeloop,
+    };
+    pin(ui, p, size)
+}
+
+/// A guide goal tier's icon: a quest's flag, a secret's question, a clue's note.
+pub fn tier(ui: &mut egui::Ui, t: crate::goals::Tier, size: f32) -> egui::Response {
+    use crate::goals::Tier;
+    use crate::minimap::PinKind;
+    let k = match t {
+        Tier::Quest => PinKind::Quest,
+        Tier::Secret => PinKind::Question,
+        Tier::Clue => PinKind::Note,
+    };
+    pin(ui, k, size)
+}

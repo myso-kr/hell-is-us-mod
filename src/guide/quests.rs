@@ -76,10 +76,10 @@ impl Kind {
     /// What the panel and the tracker call it.
     pub fn label(self) -> String {
         match self {
-            Kind::Main(n) => trf!("메인 {n}", n = n),
-            Kind::GoodDeed => tr!("선행").into(),
-            Kind::Mystery => tr!("미스터리").into(),
-            Kind::Timeloop => tr!("타임루프").into(),
+            Kind::Main(n) => trf!("MAIN", n = n),
+            Kind::GoodDeed => tr!("GOOD_DEED").into(),
+            Kind::Mystery => tr!("MYSTERY").into(),
+            Kind::Timeloop => tr!("TIMELOOP").into(),
         }
     }
 
@@ -212,7 +212,7 @@ pub struct Quests {
 /// `quests.txt` for Korean (the first one), `quests.<culture>.txt` for the others.
 pub fn cache_path() -> PathBuf {
     match crate::i18n::culture().as_str() {
-        crate::i18n::culture::SOURCE => crate::paths::data_dir().join("quests.txt"),
+        crate::i18n::culture::DEFAULT => crate::paths::data_dir().join("quests.txt"),
         c => crate::paths::data_dir().join(format!("quests.{c}.txt")),
     }
 }
@@ -564,7 +564,7 @@ impl Quests {
             } else {
                 Status::NotStarted
             };
-            let (name, detail) = self.seen.get(&q.key).cloned().unwrap_or_else(|| (trf!("메인 퀘스트 {a0}", a0 = q.number), String::new()));
+            let (name, detail) = self.seen.get(&q.key).cloned().unwrap_or_else(|| (trf!("MAIN_QUEST", number = q.number), String::new()));
             // Per subject: facts known, facts in all, the text of the last known one.
             let mut tracks: BTreeMap<&str, (usize, usize, Option<&String>)> = BTreeMap::new();
             for f in q.facts.iter().filter(|f| !OWN_TRACKS.contains(&f.track.as_str()) && !f.track.starts_with("Desc")) {
@@ -607,7 +607,7 @@ impl Quests {
                 key: hex(guid),
                 kind,
                 name: deed.map_or_else(|| format!("{} {}", kind.label(), &hex(guid)[..4]), |d| d.title.clone()),
-                detail: deed.filter(|d| !d.place.is_empty()).map(|d| trf!("장소: {a0}", a0 = d.place)).unwrap_or_default(),
+                detail: deed.filter(|d| !d.place.is_empty()).map(|d| trf!("PLACE", place = d.place)).unwrap_or_default(),
                 status,
                 progress: None,
                 leads: Vec::new(),

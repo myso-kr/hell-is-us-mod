@@ -10,14 +10,14 @@ impl Panel {
         let fmt = |v: Option<f32>| v.map_or("—".to_string(), |v| format!("{v:.2}"));
         if let (Some((ws, private)), Some(peak)) = (crate::memstat::now(), crate::memstat::peak()) {
             use crate::memstat::mb;
-            ui.label(RichText::new(trf!("메모리: 사용 {a0} · 전용 {a1} · 최고 {a2} (1분마다 로그에도 남음)", a0 = mb(ws), a1 = mb(private), a2 = mb(peak))).color(DIM).small());
+            ui.label(RichText::new(trf!("MEMORY_IN_USE_PRIVATE_PEAK_ALSO", working = mb(ws), private = mb(private), peak = mb(peak))).color(DIM).small());
             ui.add_space(4.0);
         }
-        ui.label(RichText::new(tr!("켜진 치트")).strong());
-        ui.label(RichText::new(tr!("원래 값 → 넣는 값, 그리고 지금 게임에 들어 있는 값")).color(DIM).small());
+        ui.label(RichText::new(tr!("CHEATS_ON")).strong());
+        ui.label(RichText::new(tr!("ORIGINAL_WRITTEN_AND_WHAT_THE_GAME")).color(DIM).small());
         let active = snap.map(|s| s.active.clone()).unwrap_or_default();
         if active.is_empty() {
-            ui.label(RichText::new(tr!("켜진 치트가 없습니다")).color(DIM));
+            ui.label(RichText::new(tr!("NO_CHEATS_ARE_ON")).color(DIM));
         } else if let Some(snap) = snap {
             egui::ScrollArea::horizontal().id_salt("debug-scroll").show(ui, |ui| {
                 egui::Grid::new("debug").num_columns(4).striped(true).spacing([10.0, 4.0]).show(ui, |ui| {
@@ -36,9 +36,9 @@ impl Panel {
                                 | Effect::Ghost
                                 | Effect::Untouchable => {
                                     ui.label(crate::i18n::tr(c.label));
-                                    ui.label(RichText::new(tr!("적·인벤토리 대상")).color(DIM).small());
+                                    ui.label(RichText::new(tr!("ENEMIES_AND_INVENTORY")).color(DIM).small());
                                     ui.label("");
-                                    ui.label(RichText::new(tr!("매 틱 적용")).color(OK));
+                                    ui.label(RichText::new(tr!("APPLIED_EVERY_TICK")).color(OK));
                                     ui.end_row();
                                     continue;
                                 }
@@ -50,14 +50,14 @@ impl Panel {
                             ui.label(format!("{} → {}", fmt(was), fmt(want)));
                             match (want, now) {
                                 (Some(w), Some(n)) if (w - n).abs() <= 0.01 + w.abs() * 0.01 => {
-                                    ui.label(RichText::new(trf!("적용 중 {n:.2}", n = n)).color(OK))
+                                    ui.label(RichText::new(trf!("APPLIED", n = n)).color(OK))
                                 }
                                 (Some(_), Some(n)) => {
-                                    ui.label(RichText::new(trf!("게임이 바꿈 {n:.2}", n = n)).color(BAD)).on_hover_text(
-                                        tr!("넣은 값과 다릅니다. 게임이 매 순간 다시 계산하는 값일 수 있습니다."),
+                                    ui.label(RichText::new(trf!("GAME_CHANGED_IT", n = n)).color(BAD)).on_hover_text(
+                                        tr!("DIFFERS_FROM_WHAT_WAS_WRITTEN_THE"),
                                     )
                                 }
-                                _ => ui.label(RichText::new(tr!("읽을 수 없음")).color(BAD)),
+                                _ => ui.label(RichText::new(tr!("UNREADABLE")).color(BAD)),
                             };
                             ui.end_row();
                         }
@@ -67,8 +67,8 @@ impl Panel {
         }
 
         ui.separator();
-        ui.label(RichText::new(tr!("테스트 결과 기록")).strong());
-        ui.label(RichText::new(tr!("게임에서 해 보고 눌러 주세요. verify.txt에 저장됩니다.")).color(DIM).small());
+        ui.label(RichText::new(tr!("RECORD_TEST_RESULTS")).strong());
+        ui.label(RichText::new(tr!("TRY_IT_IN_THE_GAME_THEN")).color(DIM).small());
         let mut changed = false;
         egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
             egui::ScrollArea::horizontal().id_salt("marks-scroll").show(ui, |ui| {
@@ -77,17 +77,17 @@ impl Panel {
                         ui.label(crate::i18n::tr(c.label));
                         let mark = self.marks.get(c.id).copied();
                         ui.horizontal(|ui| {
-                            if ui.selectable_label(mark == Some(true), tr!("됨 ✓")).clicked() {
+                            if ui.selectable_label(mark == Some(true), tr!("WORKS")).clicked() {
                                 self.marks.insert(c.id.to_string(), true);
                                 changed = true;
                             }
-                            if ui.selectable_label(mark == Some(false), tr!("안 됨 ✗")).clicked() {
+                            if ui.selectable_label(mark == Some(false), tr!("FAILS")).clicked() {
                                 self.marks.insert(c.id.to_string(), false);
                                 changed = true;
                             }
                         });
                         ui.label(
-                            RichText::new(if c.verified { tr!("확인됨") } else { tr!("미검증") })
+                            RichText::new(if c.verified { tr!("VERIFIED") } else { tr!("UNVERIFIED") })
                                 .color(if c.verified { OK } else { WAIT })
                                 .small(),
                         );
@@ -103,7 +103,7 @@ impl Panel {
         }
 
         ui.separator();
-        if ui.button(tr!("로그·기록 폴더 열기")).on_hover_text("hiumod.log, verify.txt, originals.txt").clicked() {
+        if ui.button(tr!("OPEN_THE_LOG_FOLDER")).on_hover_text("hiumod.log, verify.txt, originals.txt").clicked() {
             if let Some(dir) = verify::path().parent() {
                 let _ = std::fs::create_dir_all(dir);
                 let _ = std::process::Command::new("explorer.exe")

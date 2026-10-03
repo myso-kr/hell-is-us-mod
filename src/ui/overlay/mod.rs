@@ -297,7 +297,7 @@ pub fn run(shared: Arc<Shared>) {
                     // A deadline due now comes first; then what it still needs.
                     let mut line = hud::needs_line(followed, &needs, &deadlines, world);
                     if puzzle_near {
-                        let hint = tr!("근처에 퍼즐 — 답은 패널 안내 탭에");
+                        let hint = tr!("PUZZLE_NEARBY_THE_ANSWER_IS_IN");
                         line = if line.is_empty() { hint.to_string() } else { format!("{line}\n{hint}") };
                     }
                     let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone());

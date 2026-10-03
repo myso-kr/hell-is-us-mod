@@ -1,4 +1,4 @@
-hiumod — triches solo et une minicarte pour Hell Is Us (Steam)
+hiumod — cheats solo et une minicarte pour Hell Is Us (Steam)
 
 UTILISATION
   hiumod                        lance le jeu si besoin, puis le panneau — ` (~) l'affiche/le masque ;
@@ -34,9 +34,9 @@ UTILISATION
   hiumod list                   chaque attribut de chaque ensemble, lu en direct
   hiumod get <attribute>...     certains d'entre eux, en Name ou Set.Name
   hiumod pose                   où le héros se tient et regarde, lu en direct jusqu'à Ctrl+C
-  hiumod set <cheat> <value>    une valeur écrite une fois (aucune dans la table pour l'instant)
-  hiumod hold <cheat>...        p. ex. god stamina speed=2 — jusqu'à Ctrl+C ;
-                                chaque triche maintenable figure dans la liste de `hiumod doctor`
+  hiumod set <cheat> <value>    une valeur écrite une fois (aucun dans la table pour l'instant)
+  hiumod hold <cheat>...        ex. : god stamina speed=2 — jusqu'à Ctrl+C ;
+                                chaque cheat maintenable figure dans la liste de `hiumod doctor`
   hiumod restore                remet en place ce qu'un hold interrompu a laissé modifié
 
 OPTIONS

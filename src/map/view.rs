@@ -29,9 +29,9 @@ impl Display {
 
     pub fn label(self) -> &'static str {
         match self {
-            Display::Mini => tr!("미니맵"),
-            Display::Big => tr!("큰 지도"),
-            Display::Off => tr!("끔"),
+            Display::Mini => tr!("MINIMAP"),
+            Display::Big => tr!("BIG_MAP"),
+            Display::Off => tr!("OFF"),
         }
     }
 
@@ -66,10 +66,10 @@ impl ReliefMode {
 
     pub fn label(self) -> &'static str {
         match self {
-            ReliefMode::Off => tr!("끔"),
-            ReliefMode::Shade => tr!("음영"),
-            ReliefMode::Contour => tr!("등고선"),
-            ReliefMode::Both => tr!("둘 다"),
+            ReliefMode::Off => tr!("OFF"),
+            ReliefMode::Shade => tr!("SHADING"),
+            ReliefMode::Contour => tr!("CONTOURS"),
+            ReliefMode::Both => tr!("BOTH"),
         }
     }
 

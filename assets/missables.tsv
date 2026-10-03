@@ -5,14 +5,14 @@
 # tag	deadline	what has to be done before it
 # tag      = the deed's tag stem (Secrets.Facts.<tag>Started)
 # deadline = act1_end | quest03 | talju | ministry | third_keystone
-# what     = the mod's words (Korean), translated by assets/i18n like the code's;
+# what     = an i18n key (assets/i18n), translated like the code's words;
 #            {g:namespace/key} is a name in the game's own text (.spec/I18N.md)
-SabinianBaby	act1_end	1막 끝({g:Facts_Shared/Universal_Location_LymbicForge}) 전에 {g:QuickChats_Names_ST/QuickChat_Secret_JudithKarry_Female_Name}의 아기에게 젖병을 — 아니면 아기가 죽음
-GrievingFather	act1_end	1막 끝 전
-HeartMedication	act1_end	1막 끝 전, {g:QuickChats_Names_ST/Quickchat_Secret_Diana_Female_Name} — 트럭으로 떠나기 전에 약을 — 아니면 죽음
-ClassroomPicture	quest03	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 진행 중 {g:Facts_VillageOfJova/Name_Real} 상황이 바뀌기 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Halie_Female_Name} 사망
-SabinianClassics	quest03	{g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 전 — 아니면 {g:QuickChats_Names_ST/Quickchat_Secret_Violonist01_Male_Name} 사망
-TaljuSurvivors	talju	{g:Facts_Shared/Universal_Location_Talju} 대피 트럭이 떠나기 전
-SavingDisguise	ministry	{g:Facts_Shared/Universal_Location_LethePropaganda} — 처음 떠나기 전
-StrandedONPeacekeeper	third_keystone	세 번째 키스톤을 놓기 전
-SmugglersSafehouse	third_keystone	세 번째 키스톤을 놓기 전
+SabinianBaby	act1_end	DEADLINE_JUDITH_BABY
+GrievingFather	act1_end	DEADLINE_ACT1
+HeartMedication	act1_end	DEADLINE_DIANA_MEDICINE
+ClassroomPicture	quest03	DEADLINE_HALIE_PICTURE
+SabinianClassics	quest03	DEADLINE_VIOLINIST
+TaljuSurvivors	talju	DEADLINE_TALJU_TRUCK
+SavingDisguise	ministry	DUE_MINISTRY_FIRST_LEAVE
+StrandedONPeacekeeper	third_keystone	DEADLINE_THIRD_KEYSTONE
+SmugglersSafehouse	third_keystone	DEADLINE_THIRD_KEYSTONE

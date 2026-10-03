@@ -92,7 +92,7 @@ impl Engine {
     fn refresh(&mut self) -> Result<(), String> {
         let due = self.checked.is_none_or(|t| t.elapsed() >= RECHECK);
         if !due {
-            return if self.attached.is_some() { Ok(()) } else { Err(tr!("게임이 실행 중이 아닙니다").into()) };
+            return if self.attached.is_some() { Ok(()) } else { Err(tr!("THE_GAME_IS_NOT_RUNNING").into()) };
         }
         self.checked = Some(Instant::now());
         let live = Game::find()?.map(|g| g.pid);
@@ -103,7 +103,7 @@ impl Engine {
             self.attached = None;
             if !self.active.is_empty() {
                 self.active.clear();
-                self.notice = Some(tr!("게임이 종료됨 — 치트 꺼짐").into());
+                self.notice = Some(tr!("THE_GAME_EXITED_CHEATS_OFF").into());
             }
             self.extras.forget();
             self.originals.forget()?;
@@ -166,7 +166,7 @@ impl Engine {
                         snap.things = t;
                         snap.footprints = a.footprints();
                     }
-                    Err(e) => snap.notice = Some(trf!("미니맵: {e}", e = e)),
+                    Err(e) => snap.notice = Some(trf!("MINIMAP_ERROR", e = e)),
                 }
                 match a.goals() {
                     Ok((g, _)) => {
@@ -211,7 +211,7 @@ impl Engine {
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }
-                    Err(e) => snap.notice = Some(trf!("미니맵: {e}", e = e)),
+                    Err(e) => snap.notice = Some(trf!("MINIMAP_ERROR", e = e)),
                 }
                 match a.session() {
                     Err(e) => snap.notice = Some(e),
@@ -221,7 +221,7 @@ impl Engine {
                             Ok(errors) => snap.notice = Some(errors.join("; ")),
                             Err(e) => {
                                 self.active.clear();
-                                self.notice = Some(trf!("원래 값을 기록하지 못함 — 치트 꺼짐: {e}", e = e));
+                                self.notice = Some(trf!("COULD_NOT_RECORD_THE_ORIGINAL_VALUES", e = e));
                             }
                         }
                         snap.values = cheats::attributes().into_iter().map(|a| (a, s.current(a).ok())).collect();
@@ -246,7 +246,7 @@ impl Engine {
         a.gate()?;
         if let Some(Kind::SetStock { class, max, .. }) = cheats::find(name).map(|c| c.kind) {
             if !(1.0..=max).contains(&v) {
-                return Err(trf!("{name}: 1..={max} 사이", name = name, max = max));
+                return Err(trf!("SLOT_RANGE", name = name, max = max));
             }
             return self.extras.set_stock(a, class, v as u32).map(drop);
         }
@@ -260,7 +260,7 @@ impl Engine {
         a.gate()?;
         let (p, _) = a.pose()?;
         let world = a.chain()?.world(&a.game, &a.anchors)?;
-        *self.slots.get_mut(i).ok_or(tr!("그런 슬롯이 없음"))? = Some((world, p));
+        *self.slots.get_mut(i).ok_or(tr!("NO_SUCH_SLOT"))? = Some((world, p));
         Ok(p)
     }
 
@@ -269,9 +269,9 @@ impl Engine {
         self.refresh()?;
         let a = self.attached.as_ref().unwrap();
         a.gate()?;
-        let (world, p) = self.slots.get(i).cloned().flatten().ok_or(tr!("그 슬롯에 저장된 것이 없음"))?;
+        let (world, p) = self.slots.get(i).cloned().flatten().ok_or(tr!("NOTHING_SAVED_IN_THAT_SLOT"))?;
         if a.chain()?.world(&a.game, &a.anchors)? != world {
-            return Err(trf!("다른 지역에서 저장됨 ({world})", world = crate::i18n::place(&world)));
+            return Err(trf!("SAVED_IN_ANOTHER_REGION", world = crate::i18n::place(&world)));
         }
         a.teleport([p[0], p[1], p[2] + LIFT])
     }
@@ -295,7 +295,7 @@ impl Engine {
         if failed.is_empty() {
             Ok(())
         } else {
-            Err(trf!("되돌리지 못함: {a0}", a0 = failed.join("; ")))
+            Err(trf!("COULD_NOT_RESTORE", what = failed.join("; ")))
         }
     }
 
@@ -317,7 +317,7 @@ impl Engine {
         if failed.is_empty() {
             Ok(())
         } else {
-            Err(trf!("되돌리지 못함: {a0} — 나중에 `hiumod restore` 를 실행하세요", a0 = failed.join("; ")))
+            Err(trf!("COULD_NOT_RESTORE_RUN_HIUMOD_RESTORE", what = failed.join("; ")))
         }
     }
 }

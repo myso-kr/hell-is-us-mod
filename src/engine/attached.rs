@@ -56,7 +56,7 @@ const SAVES_EVERY: Duration = Duration::from_secs(60);
 const KNOWLEDGE_EVERY: Duration = Duration::from_secs(2);
 
 fn mem_ptr(m: &dyn crate::mem::Memory, at: u64) -> Result<u64, String> {
-    crate::mem::read_u64(m, at).filter(|&p| crate::mem::plausible(p)).ok_or_else(|| tr!("포인터를 읽을 수 없음").into())
+    crate::mem::read_u64(m, at).filter(|&p| crate::mem::plausible(p)).ok_or_else(|| tr!("POINTER_UNREADABLE").into())
 }
 
 /// The GUIDs of the placed things the save keeps a state for, in every region
@@ -89,7 +89,7 @@ pub fn saved_guids(m: &dyn crate::mem::Memory, n: &crate::names::Names, save: u6
 }
 
 pub fn attach() -> Result<Attached, String> {
-    let game = Game::find()?.ok_or(tr!("게임이 실행 중이 아닙니다"))?;
+    let game = Game::find()?.ok_or(tr!("THE_GAME_IS_NOT_RUNNING"))?;
     let version = locate::from_exe(&game.exe).map(|i| i.version).unwrap_or_else(|_| "unknown".into());
     let anchors = anchors::discover(&game, game.base)?;
     Ok(Attached {
@@ -167,7 +167,7 @@ impl Attached {
             .of_class(m, n, "CharlieInventory")
             .into_iter()
             .find(|&o| ok(o))
-            .ok_or(tr!("주인공의 인벤토리를 찾지 못함"))?;
+            .ok_or(tr!("THE_HEROS_INVENTORY_WAS_NOT_FOUND"))?;
         *self.inventory.borrow_mut() = Some(inv);
         Ok(inv)
     }
@@ -212,7 +212,7 @@ impl Attached {
         let bytes: Vec<u8> = p.iter().flat_map(|v| v.to_le_bytes()).collect();
         let c2w = root + crate::obstacles::COMPONENT_TO_WORLD + 0x20;
         if !m.write(root + chain.location, &bytes) || !m.write(c2w, &bytes) {
-            return Err(tr!("주인공 위치를 쓰지 못함").into());
+            return Err(tr!("COULD_NOT_WRITE_THE_HEROS_POSITION").into());
         }
         if let Ok(mc) = n.follow(m, hero, "CharacterMovement") {
             if let Some(v) = n.field(m, mc, "Velocity") {
@@ -236,7 +236,7 @@ impl Attached {
         let world = mem_ptr(m, level + crate::names::OUTER)?;
         let persistent = n.follow(m, world, "PersistentLevel")?;
         let settings = n.follow(m, persistent, "WorldSettings")?;
-        let p = n.field(m, settings, "Pauser").ok_or(tr!("WorldSettings.Pauser 없음"))?;
+        let p = n.field(m, settings, "Pauser").ok_or(tr!("NO_WORLDSETTINGS_PAUSER"))?;
         Ok(crate::mem::read_u64(m, settings + p.offset as u64).is_some_and(|v| v != 0))
     }
 
@@ -263,9 +263,9 @@ impl Attached {
             g.saves_read = Some(Instant::now());
         }
         if g.knowledge.is_none() || g.knowledge_read.is_none_or(|t| t.elapsed() >= KNOWLEDGE_EVERY) {
-            let save = knowledge::current(n, m, &g.saves).ok_or(tr!("세이브 상태를 찾지 못함"))?;
+            let save = knowledge::current(n, m, &g.saves).ok_or(tr!("NO_SAVE_STATE_FOUND"))?;
             g.save = save;
-            g.knowledge = Some(knowledge::read(n, m, save).ok_or(tr!("세이브 상태를 읽지 못함"))?);
+            g.knowledge = Some(knowledge::read(n, m, save).ok_or(tr!("THE_SAVE_STATE_COULD_NOT_BE"))?);
             g.knowledge_read = Some(Instant::now());
             // The same by name, for the survey.
             let g = &mut *g;
@@ -278,7 +278,7 @@ impl Attached {
             g.saved = saved_guids(m, n, save);
             g.fact_keys = g.quests.fact_keys();
         }
-        let actors = self.scanner.borrow().actors_offset().ok_or(tr!("아직 액터를 훑지 않음"))?;
+        let actors = self.scanner.borrow().actors_offset().ok_or(tr!("ACTORS_NOT_SCANNED_YET"))?;
         {
             let g = &mut *g;
             g.goals.refresh(m, n, hero, chain.root, actors, g.quests.flows());

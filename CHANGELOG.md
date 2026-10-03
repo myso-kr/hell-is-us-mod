@@ -289,4 +289,25 @@ been verified in play yet.
 - Vault symbols: the eight emotion symbols drawn as SVGs (assets/symbols), shown in
   the panel — vault codes and vault-door dial answers as symbols, named on hover.
   The panel can show any SVG (ui/svg.rs).
+- Panel layout:
+  - Cards now sit in masonry columns, each in the shortest column by last frame's
+    height.
+  - Two or three columns, by the page's cards and the monitor; the window
+    follows.
+  - SVG icons appear throughout: map sorts, pin kinds, goal tiers, journal
+    entries, needs, collectibles, puzzles, vaults and enemy groups.
+- i18n keys:
+  - The code names English UPPER_SNAKE keys (`tr!("NEXT_GOAL")`), not Korean
+    sentences.
+  - Korean is a table (`ko.tsv`) like the other eleven.
+  - Lookups fall back from the game's language to English, then to the key.
+  - Tests check the key format, and that the English and Korean tables cover
+    every key the code names, with the same placeholders in every table.
+- Localization pass: each of the twelve languages was reworked by a native-speaker
+  persona against each key's UI context and the game's own terms.
+  - Counts read right with any number.
+  - Grammar holds around inserted names.
+  - Help texts were polished too.
+- `PIN_CODE` and `LOAD_POSITION` are split out of keys that two strings shared.
+- A test now checks that no key appears twice in a table.
 

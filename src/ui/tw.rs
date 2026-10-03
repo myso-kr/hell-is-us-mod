@@ -4,22 +4,20 @@
 //! Hand-computed widths kept running past a card's edge — a value box wider than
 //! guessed, a label wrapping to two lines. Here every widget is a node that reports
 //! its own size, and the containers are CSS: `flex`, `flex-wrap`, `gap`, `grow`,
-//! `basis`, `min-w-0`, and `grid` with `repeat(auto-fit, minmax(…, 1fr))` for cards
-//! that sit side by side when there is room and stack when there is not.
+//! `basis`, `min-w-0` — and masonry columns for the cards (`masonry`): each card in
+//! the column that is shortest, by the heights the frame before measured.
 //!
 //! Containers take a `Tui`; the widgets inside are small egui leaves. Text that may
 //! need to wrap goes in a `block`, which can shrink to nothing across and grows
 //! downward instead.
 
 use eframe::egui::{self, Color32, RichText};
-use egui_taffy::taffy::prelude::{auto, fr, length, minmax, percent, repeat};
-use egui_taffy::taffy::{self, AlignItems, Display, FlexDirection, FlexWrap, Size, Style, TrackSizingFunction};
+use egui_taffy::taffy::prelude::{auto, fr, length, percent};
+use egui_taffy::taffy::{self, AlignItems, Display, FlexDirection, FlexWrap, Size, Style};
 use egui_taffy::{Tui, TuiBuilderLogic, TuiContainerResponse};
 
 /// `gap-3`: the space between cards and between a card's rows (px).
 pub const GAP: f32 = 12.0;
-/// A card is at least this wide before the grid stacks the cards (px).
-pub const CARD_MIN: f32 = 320.0;
 /// A card's width when the window is sized to its page (px).
 pub const CARD: f32 = 360.0;
 
@@ -81,17 +79,48 @@ pub fn grow(s: Style) -> Style {
     }
 }
 
-/// `grid grid-cols-[repeat(auto-fit,minmax({min}px,1fr))] gap-3 items-start`: cards
-/// side by side while each can be `min` wide, stacked when not.
-pub fn cards(min: f32) -> Style {
-    let track: TrackSizingFunction = minmax(length(min), fr(1.0));
-    Style {
-        display: Display::Grid,
-        grid_template_columns: vec![repeat("auto-fit", vec![track])],
-        align_items: Some(AlignItems::Start),
-        gap: gap(GAP),
-        ..Default::default()
+/// Masonry: `n` cards in `columns` columns, each card put in the column that is
+/// shortest so far — by the heights the cards had the frame before (kept in egui's
+/// memory under `key`), so the columns come out about even however tall each card
+/// grows. `card(tui, i)` draws card `i`. A card not measured yet counts as `GUESS` tall.
+pub fn masonry(tui: &mut Tui, key: &str, columns: usize, n: usize, mut card: impl FnMut(&mut Tui, usize)) {
+    const GUESS: f32 = 240.0;
+    let columns = columns.clamp(1, n.max(1));
+    let id = |i: usize| egui::Id::new(("masonry", key, i));
+    let heights: Vec<f32> = {
+        let ctx = tui.egui_ctx();
+        (0..n).map(|i| ctx.data(|d| d.get_temp::<f32>(id(i))).unwrap_or(GUESS)).collect()
+    };
+    let lanes = place(&heights, columns);
+    tui.style(Style { align_items: Some(AlignItems::Start), ..full(row(GAP)) }).add(|tui| {
+        for lane in lanes {
+            tui.style(grow(col(GAP))).add(|tui| {
+                for i in lane {
+                    tui.style(col(0.0))
+                        .add_with_background_ui(
+                            |ui, container| {
+                                let h = container.full_container().height();
+                                ui.ctx().data_mut(|d| d.insert_temp(id(i), h));
+                            },
+                            |tui, _| card(tui, i),
+                        );
+                }
+            });
+        }
+    });
+}
+
+/// Which card goes in which column: in order, each to the shortest column so far.
+pub fn place(heights: &[f32], columns: usize) -> Vec<Vec<usize>> {
+    let columns = columns.max(1);
+    let mut lanes = vec![Vec::new(); columns];
+    let mut tall = vec![0.0f32; columns];
+    for (i, h) in heights.iter().enumerate() {
+        let c = (0..columns).min_by(|&a, &b| tall[a].total_cmp(&tall[b])).unwrap();
+        lanes[c].push(i);
+        tall[c] += h + GAP;
     }
+    lanes
 }
 
 /// `grid grid-cols-[{side}px_1fr] gap-{gap}`: a sidebar and the rest.
@@ -141,6 +170,15 @@ pub fn w<T>(tui: &mut Tui, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
 pub fn pick(tui: &mut Tui, on: bool, text: impl Into<RichText>) -> bool {
     let text = text.into();
     block(tui, |ui| ui.add(egui::Button::selectable(on, text).wrap_mode(egui::TextWrapMode::Wrap)).clicked())
+}
+
+/// `pick` with an icon before it (ui/svg.rs draws one).
+pub fn pick_with(tui: &mut Tui, on: bool, icon: impl FnOnce(&mut egui::Ui), text: impl Into<RichText>) -> bool {
+    let text = text.into();
+    tui.style(row(4.0)).add(|tui| {
+        w(tui, icon);
+        pick(tui, on, text)
+    })
 }
 
 /// A small, dim note that wraps to the width it is given.
@@ -270,16 +308,17 @@ mod tests {
     use super::*;
 
     #[test]
-    fn cards_fit_as_many_as_their_minimum_allows() {
-        let s = cards(CARD_MIN);
-        assert_eq!(s.display, Display::Grid);
-        assert_eq!(s.grid_template_columns.len(), 1, "one auto-fit repetition");
-    }
-
-    #[test]
     fn pages_are_as_wide_as_their_cards() {
         assert_eq!(cards_width(1), CARD);
         assert_eq!(cards_width(2), 2.0 * CARD + GAP);
+    }
+
+    #[test]
+    fn masonry_puts_each_card_in_the_shortest_column() {
+        // Tall first card: the next two go beside it, one under the other.
+        assert_eq!(place(&[500.0, 100.0, 100.0, 100.0], 2), vec![vec![0], vec![1, 2, 3]]);
+        assert_eq!(place(&[100.0, 100.0, 100.0], 3), vec![vec![0], vec![1], vec![2]]);
+        assert_eq!(place(&[100.0; 4], 1), vec![vec![0, 1, 2, 3]]);
     }
 
     #[test]

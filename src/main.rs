@@ -52,8 +52,8 @@ fn main() -> ExitCode {
 fn doctor(opt: &Options) -> R {
     let ok = |b: bool| if b { "ok  " } else { "FAIL" };
     match locate::find(opt.game_dir.as_deref()) {
-        Ok(i) => log!("{}", trf!("{ok} 설치 {dir} — Steam 빌드 {build}", ok = ok(true), dir = i.dir.display(), build = i.version)),
-        Err(e) => log!("{}", trf!("{ok} 설치: {e}", ok = ok(false), e = e)),
+        Ok(i) => log!("{}", trf!("INSTALL_STEAM_BUILD", ok = ok(true), dir = i.dir.display(), build = i.version)),
+        Err(e) => log!("{}", trf!("INSTALL", ok = ok(false), e = e)),
     }
 
     let a = match attach() {
@@ -63,15 +63,15 @@ fn doctor(opt: &Options) -> R {
             return Ok(());
         }
     };
-    log!("{}", trf!("{ok} 프로세스 {pid} — 베이스 0x{base}, 이미지 0x{size} 바이트", ok = ok(true), pid = a.game.pid, base = format!("{:X}", a.game.base), size = format!("{:X}", a.game.size)));
+    log!("{}", trf!("PROCESS_BASE_0X_IMAGE_0X_BYTES", ok = ok(true), pid = a.game.pid, base = format!("{:X}", a.game.base), size = format!("{:X}", a.game.size)));
     let an = &a.anchors;
-    log!("{}", trf!("{ok} 이름 풀 +0x{at}", ok = ok(true), at = format!("{:X}", an.names_rva)));
+    log!("{}", trf!("NAME_POOL_0X", ok = ok(true), at = format!("{:X}", an.names_rva)));
     log!("{} GEngine +0x{:X}", ok(true), an.gengine_rva);
     let l = an.names.layout;
     log!(
         "{}",
         trf!(
-            "{ok} FField 레이아웃: next +0x{next}, name +0x{name}, size +0x{size}, offset +0x{offset}",
+            "FFIELD_LAYOUT_NEXT_0X_NAME_0X",
             ok = ok(true),
             next = format!("{:X}", l.next),
             name = format!("{:X}", l.name),
@@ -83,15 +83,15 @@ fn doctor(opt: &Options) -> R {
     let chain = match a.chain() {
         Ok(c) => c,
         Err(e) => {
-            log!("{}", trf!("{ok} 플레이어: {e}", ok = ok(false), e = e));
+            log!("{}", trf!("PLAYER", ok = ok(false), e = e));
             return Ok(());
         }
     };
-    log!("{}", trf!("{ok} 주인공: {a0}", ok = ok(true), a0 = chain.classes.join(" < ")));
+    log!("{}", trf!("HERO", ok = ok(true), classes = chain.classes.join(" < ")));
     log!(
         "{}",
         trf!(
-            "{ok} 체인: GEngine {path} → 컨트롤러 +0x{pawn} 폰 → +0x{asc} ASC → +0x{sets} SpawnedAttributes",
+            "CHAIN_GENGINE_CONTROLLER_0X_PAWN_0X",
             ok = ok(true),
             path = format!("{:X?}", chain.to_controller),
             pawn = format!("{:X}", chain.pawn),
@@ -100,12 +100,12 @@ fn doctor(opt: &Options) -> R {
         )
     );
     match a.gate() {
-        Ok(()) => log!("{}", tr!("ok   주인공 게이트: 열림 — 쓰기 허용")),
+        Ok(()) => log!("{}", tr!("OK_HERO_GATE_OPEN_WRITES_ALLOWED")),
         Err(e) => log!("FAIL {e}"),
     }
     match a.pose() {
-        Ok((p, yaw)) => log!("{}", trf!("ok   위치: ({x:.0}, {y:.0}, {z:.0}) 방향 {yaw:.1}", x = p[0], y = p[1], z = p[2], yaw = yaw)),
-        Err(e) => log!("{}", trf!("FAIL 위치: {e}", e = e)),
+        Ok((p, yaw)) => log!("{}", trf!("OK_POSE_YAW", x = p[0], y = p[1], z = p[2], yaw = yaw)),
+        Err(e) => log!("{}", trf!("FAIL_POSE", e = e)),
     }
 
     let started = std::time::Instant::now();
@@ -114,7 +114,7 @@ fn doctor(opt: &Options) -> R {
             let count = |k: hiumod::actors::Kind| t.iter().filter(|x| x.kind() == k).count();
             let kinds: Vec<String> =
                 hiumod::actors::Kind::ALL.iter().map(|&k| format!("{} {}", k.label(), count(k))).collect();
-            log!("{}", trf!("ok   미니맵 대상: {n}개, {ms} ms — {kinds}", n = t.len(), ms = started.elapsed().as_millis(), kinds = kinds.join(", ")));
+            log!("{}", trf!("OK_MINIMAP_THINGS_IN_MS", n = t.len(), ms = started.elapsed().as_millis(), kinds = kinds.join(", ")));
             let subs: Vec<String> = hiumod::actors::Sub::ALL
                 .iter()
                 .filter_map(|&s| {
@@ -124,7 +124,7 @@ fn doctor(opt: &Options) -> R {
                 .collect();
             println!("        {}", subs.join(", "));
         }
-        Err(e) => log!("{}", trf!("FAIL 미니맵 대상: {e}", e = e)),
+        Err(e) => log!("{}", trf!("FAIL_MINIMAP_THINGS", e = e)),
     }
 
     let started = std::time::Instant::now();
@@ -134,7 +134,7 @@ fn doctor(opt: &Options) -> R {
             log!(
                 "{}",
                 trf!(
-                    "ok   안내: 아는 사실 {facts}개, 태그 {tags}개; 진행 중: {open} — 장소 {places}곳, {ms} ms (퀘스트 {quest}, 비밀 {secret}, 단서 {clue})",
+                    "OK_GUIDE_KNOWS_FACTS_TAGS_OPEN",
                     facts = k.facts.len(),
                     tags = k.tags.len(),
                     open = k.quest_names.join(", "),
@@ -155,13 +155,13 @@ fn doctor(opt: &Options) -> R {
                 println!("        {:>6.0} m  {:<10} {:<44} {}", d, x.tier.label(), x.label, x.detail);
             }
         }
-        Err(e) => log!("{}", trf!("FAIL 안내: {e}", e = e)),
+        Err(e) => log!("{}", trf!("FAIL_GUIDE", e = e)),
     }
 
     let s = match a.session() {
         Ok(s) => s,
         Err(e) => {
-            log!("{}", trf!("{ok} 속성: {e}", ok = ok(false), e = e));
+            log!("{}", trf!("DOCTOR_ATTRIBUTES_FAIL", ok = ok(false), e = e));
             return Ok(());
         }
     };
@@ -169,7 +169,7 @@ fn doctor(opt: &Options) -> R {
     log!(
         "{}",
         trf!(
-            "{ok} 속성: 세트 {sets}개, 이름으로 찾은 속성 {count}개, vtable +0x{vt}",
+            "ATTRIBUTES_SETS_ATTRIBUTES_BY_NAME_VTABLE",
             ok = ok(true),
             sets = s.sets.len(),
             count = count,
@@ -177,22 +177,22 @@ fn doctor(opt: &Options) -> R {
         )
     );
     for set in &s.sets {
-        println!("        {:<36} {}", set.class, trf!("속성 {n}개", n = set.attributes.len()));
+        println!("        {:<36} {}", set.class, trf!("ATTRIBUTE_COUNT", n = set.attributes.len()));
     }
 
     let missing: Vec<String> =
         cheats::attributes().into_iter().filter(|x| !s.has(*x)).map(|x| format!("{}.{}", x.set, x.name)).collect();
     if missing.is_empty() {
-        log!("{}", trf!("{ok} 치트 표: 이름이 나오는 속성 {n}개가 모두 게임에 있음", ok = ok(true), n = cheats::attributes().len()));
+        log!("{}", trf!("CHEAT_TABLE_ALL_ATTRIBUTES_IT_NAMES", ok = ok(true), n = cheats::attributes().len()));
     } else {
-        log!("{}", trf!("{ok} 치트 표: 게임에 없음 — {a0}", ok = ok(false), a0 = missing.join(", ")));
+        log!("{}", trf!("CHEAT_TABLE_NOT_IN_THE_GAME", ok = ok(false), missing = missing.join(", ")));
     }
     let marks = hiumod::verify::load();
     for c in cheats::CHEATS {
-        let state = if c.verified { tr!("확인됨") } else { tr!("미검증") };
+        let state = if c.verified { tr!("VERIFIED") } else { tr!("UNVERIFIED") };
         let tried = match marks.get(c.id) {
-            Some(true) => tr!("플레이어: 됨"),
-            Some(false) => tr!("플레이어: 안 됨"),
+            Some(true) => tr!("PLAYER_WORKS"),
+            Some(false) => tr!("PLAYER_DOES_NOT_WORK"),
             None => "",
         };
         let sets: Vec<String> = c
@@ -238,7 +238,7 @@ fn probe(args: &[String]) -> R {
     let save = |file: &str, text: &str| -> R {
         let path = dir.join(file);
         std::fs::write(&path, text).map_err(|e| format!("{}: {e}", path.display()))?;
-        log!("{}", trf!("{path} 에 씀", path = path.display()));
+        log!("{}", trf!("WRITTEN_TO", path = path.display()));
         Ok(())
     };
     let arg = |i: usize| args.get(i).map(String::as_str);
@@ -264,7 +264,7 @@ fn probe(args: &[String]) -> R {
             for r in &rows {
                 println!("{r}");
             }
-            log!("{}", trf!("클래스·구조체 {s}개의 속성 {p}개", p = rows.len(), s = structs.len()));
+            log!("{}", trf!("PROPERTIES_IN_CLASSES_AND_STRUCTS", p = rows.len(), s = structs.len()));
             save(&format!("find-{text}.txt"), &rows.join("\n"))
         }
         Some("dump") => {
@@ -274,7 +274,7 @@ fn probe(args: &[String]) -> R {
             }
             let structs = probe::structs(n, m, &objects.all(m), &prefixes);
             let text = probe::dump(n, m, &structs);
-            log!("{}", trf!("{prefix}(으)로 시작하는 클래스·구조체 {n}개", n = structs.len(), prefix = prefixes.join(", ")));
+            log!("{}", trf!("CLASSES_AND_STRUCTS_STARTING_WITH", n = structs.len(), prefix = prefixes.join(", ")));
             save("sdk.txt", &text)
         }
         Some(sub @ ("survey" | "locale")) => {
@@ -282,7 +282,7 @@ fn probe(args: &[String]) -> R {
             // then the game's text in every language (.spec/I18N.md); `locale` only that.
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
             std::fs::write(dir.join("HellIsUs.usmap"), &bytes).map_err(|e| e.to_string())?;
-            log!("{}", trf!("매핑: 구조체·클래스 {structs}개, 열거형 {enums}개", structs = structs, enums = enums));
+            log!("{}", trf!("MAPPINGS_STRUCTS_AND_CLASSES_ENUMS", structs = structs, enums = enums));
             let tool = survey_tool().ok_or(
                 "tools/survey is not built: run `dotnet build -c Release` in tools/survey (needs the .NET 8 SDK)",
             )?;
@@ -290,7 +290,7 @@ fn probe(args: &[String]) -> R {
             let run = |extra: &[&str]| -> Result<(), String> {
                 let mut cmd = std::process::Command::new("dotnet");
                 cmd.arg(&tool).arg("--game").arg(&game).args(extra);
-                log!("{}", trf!("실행: {tool} {args}", tool = tool.display(), args = extra.join(" ")));
+                log!("{}", trf!("RUNNING", tool = tool.display(), args = extra.join(" ")));
                 let status = cmd.status().map_err(|e| format!("dotnet: {e}"))?;
                 status.success().then_some(()).ok_or(format!("the survey tool failed ({status})"))
             };
@@ -299,10 +299,10 @@ fn probe(args: &[String]) -> R {
                     Some(w) => run(&["--world", w])?,
                     None => run(&[])?,
                 }
-                log!("{}", trf!("조사 결과: {path}", path = hiumod::paths::data_dir().join("survey").display()));
+                log!("{}", trf!("SURVEY_WRITTEN_TO", path = hiumod::paths::data_dir().join("survey").display()));
             }
             run(&["--locale"])?;
-            log!("{}", trf!("게임 텍스트: {path}", path = hiumod::i18n::names::dir().display()));
+            log!("{}", trf!("THE_GAMES_TEXT_WRITTEN_TO", path = hiumod::i18n::names::dir().display()));
             Ok(())
         }
         Some("saves") => {
@@ -333,7 +333,7 @@ fn probe(args: &[String]) -> R {
             let (bytes, structs, enums) = hiumod::usmap::build(m, n, &objects);
             let path = dir.join("HellIsUs.usmap");
             std::fs::write(&path, &bytes).map_err(|e| format!("{}: {e}", path.display()))?;
-            log!("{}", trf!("구조체·클래스 {structs}개, 열거형 {enums}개 — {kb} KB, {path} 에 씀", structs = structs, enums = enums, kb = bytes.len() / 1024, path = path.display()));
+            log!("{}", trf!("STRUCTS_AND_CLASSES_ENUMS_KB_WRITTEN", structs = structs, enums = enums, kb = bytes.len() / 1024, path = path.display()));
             Ok(())
         }
         Some("watch") => {
@@ -351,7 +351,7 @@ fn probe(args: &[String]) -> R {
                     read(o, len).map(|b| (o, len, b))
                 })
                 .collect();
-            log!("{}", trf!("객체 {n}개를 {secs}초 동안 지켜봄 — Ctrl+C 로 멈춤", n = last.len(), secs = secs));
+            log!("{}", trf!("WATCHING_OBJECT_S_FOR_S_CTRL", n = last.len(), secs = secs));
             process::catch_ctrl_c();
             let start = std::time::Instant::now();
             let mut log_text = String::new();
@@ -391,7 +391,7 @@ fn probe(args: &[String]) -> R {
             for k in &kept {
                 println!("{k}");
             }
-            log!("{}", trf!("{all}곳 중 {kept}곳이 이제 {v}", kept = kept.len(), all = text.lines().count(), v = v));
+            log!("{}", trf!("OF_PLACES_NOW_HOLD", kept = kept.len(), all = text.lines().count(), v = v));
             save("scan.txt", &kept.join("\n"))
         }
         Some("scan") => {
@@ -412,7 +412,7 @@ fn probe(args: &[String]) -> R {
             for r in &rows {
                 println!("{r}");
             }
-            log!("{}", trf!("{n}곳이 {v} — 게임에서 값을 바꾼 뒤 `doctor scan next <새 값>`", n = rows.len(), v = v));
+            log!("{}", trf!("PLACES_HOLD_CHANGE_IT_IN_GAME", n = rows.len(), v = v));
             let _ = mem::read_u32; // (reads above go through Memory)
             save("scan.txt", &rows.join("\n"))
         }
@@ -539,7 +539,7 @@ fn hold(names: &[String]) -> R {
     let toggles = names.iter().map(|n| Active::parse(n)).collect::<Result<Vec<_>, _>>()?;
     let mut engine = Engine::new()?;
     if engine.pending() > 0 {
-        log!("{}", trf!("이전 hold 가 남긴 원래 값 {n}개 — 지금 값이 아니라 그것을 유지", n = engine.pending()));
+        log!("{}", trf!("ORIGINAL_S_LEFT_BY_AN_EARLIER", n = engine.pending()));
     }
     engine.set_active(toggles.clone())?;
     process::catch_ctrl_c();
@@ -547,8 +547,8 @@ fn hold(names: &[String]) -> R {
         .iter()
         .map(|t| format!("{}{}", t.cheat, if t.value != 0.0 { format!("={}", t.value) } else { String::new() }))
         .collect();
-    log!("{}", trf!("유지 중: {a0} — Ctrl+C 로 멈추고 되돌림", a0 = held.join(", ")));
-    log!("{}", tr!("강제로 종료되면 `hiumod restore` 로 되돌릴 수 있음"));
+    log!("{}", trf!("HOLDING_CTRL_C_TO_STOP_AND", cheats = held.join(", ")));
+    log!("{}", tr!("IF_THIS_IS_KILLED_INSTEAD_HIUMOD"));
 
     let mut last = String::new();
     let ended = loop {
@@ -562,7 +562,7 @@ fn hold(names: &[String]) -> R {
         }
         if now != last {
             if now.is_empty() {
-                log!("{}", tr!("적용 중"))
+                log!("{}", tr!("APPLYING"))
             } else {
                 warn!("{now}")
             }
@@ -571,7 +571,7 @@ fn hold(names: &[String]) -> R {
         std::thread::sleep(Duration::from_millis(250));
     };
     match engine.stop() {
-        Ok(()) => log!("{}", tr!("원래 값으로 되돌림")),
+        Ok(()) => log!("{}", tr!("ORIGINAL_VALUES_RESTORED")),
         Err(e) => warn!("{e}"),
     }
     ended
@@ -581,10 +581,10 @@ fn hold(names: &[String]) -> R {
 fn restore() -> R {
     let mut engine = Engine::new()?;
     if engine.pending() == 0 {
-        log!("{}", tr!("되돌릴 것이 없음"));
+        log!("{}", tr!("NOTHING_TO_RESTORE"));
         return Ok(());
     }
     engine.stop()?;
-    log!("{}", tr!("원래 값으로 되돌림"));
+    log!("{}", tr!("ORIGINAL_VALUES_RESTORED"));
     Ok(())
 }

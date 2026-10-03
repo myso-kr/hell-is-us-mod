@@ -27,7 +27,7 @@ pub struct Anchors {
 
 impl Anchors {
     pub fn engine(&self, m: &dyn Memory) -> Result<u64, String> {
-        mem::read_u64(m, self.gengine).filter(|&p| mem::plausible(p)).ok_or_else(|| tr!("GEngine 이 비어 있음").into())
+        mem::read_u64(m, self.gengine).filter(|&p| mem::plausible(p)).ok_or_else(|| tr!("GENGINE_IS_EMPTY").into())
     }
 }
 
@@ -76,7 +76,7 @@ fn find_engine(m: &dyn Memory, base: u64, n: &Names) -> Result<u64, String> {
     objects.dedup();
     match objects[..] {
         [_] => Ok(hits[0].0),
-        [] => Err(tr!("게임 이미지에서 GameEngine 을 찾지 못함 (아직 시작 중?)").into()),
+        [] => Err(tr!("NO_GAMEENGINE_FOUND_IN_THE_GAME").into()),
         _ => Err(format!("{} different engine objects, refusing to guess", objects.len())),
     }
 }
@@ -90,7 +90,7 @@ fn pick_layout(m: &dyn Memory, pool: u64, engine: u64) -> Result<Layout, String>
             let n = Names::with_layout(pool, l);
             n.follow(m, engine, "GameInstance").is_ok_and(|gi| n.is_a(m, gi, "GameInstance"))
         })
-        .ok_or_else(|| tr!("아는 FField 레이아웃으로 GameEngine.GameInstance 를 읽지 못함 — 엔진 구조가 바뀜").into())
+        .ok_or_else(|| tr!("NO_KNOWN_FFIELD_LAYOUT_READS_GAMEENGINE").into())
 }
 
 #[cfg(test)]

@@ -140,17 +140,33 @@ fn runtime_name(cooked: &str) -> String {
 /// The collectibles counted, by their folder under `/Game/Items/`, and what the panel
 /// calls them.
 pub const COLLECT: [(&str, &str); 10] = [
-    ("Relics", "유물"),
-    ("LoreItems", "기록물"),
-    ("Research", "연구 자료"),
-    ("Cosmetic", "모자"),
-    ("Drone", "드론 모듈"),
-    ("WeaponModules", "림빅 스킬"),
-    ("Weapons", "무기"),
-    ("DefensiveGears", "방어구"),
-    ("Lymbic", "림빅 막대"),
-    ("CraftingTomes", "제작서"),
+    ("Relics", "RELICS"),
+    ("LoreItems", "RECORDS"),
+    ("Research", "RESEARCH"),
+    ("Cosmetic", "CAPS"),
+    ("Drone", "DRONE_MODULES"),
+    ("WeaponModules", "LYMBIC_SKILLS"),
+    ("Weapons", "WEAPONS"),
+    ("DefensiveGears", "DEFENSIVE_GEAR"),
+    ("Lymbic", "LYMBIC_RODS"),
+    ("CraftingTomes", "CRAFTING_TOMES"),
 ];
+
+/// The map sort whose icon shows a collectible sort (by its `COLLECT` label).
+pub fn collect_sort(label: &str) -> crate::actors::Sub {
+    use crate::actors::Sub;
+    let folder = COLLECT.iter().find(|(_, l)| *l == label).map_or("", |(f, _)| *f);
+    match folder {
+        "Relics" => Sub::Stash,
+        "LoreItems" | "CraftingTomes" => Sub::Lore,
+        "Research" => Sub::Research,
+        "Cosmetic" | "DefensiveGears" => Sub::Gear,
+        "Drone" => Sub::DroneModule,
+        "WeaponModules" | "Lymbic" => Sub::Skill,
+        "Weapons" => Sub::Weapon,
+        _ => Sub::OtherItem,
+    }
+}
 
 /// An item's collectible sort, if it is one.
 fn category(path: &str) -> Option<&'static str> {
@@ -224,13 +240,13 @@ impl Entry {
     pub fn label(&self) -> String {
         if self.npc {
             let p = crate::goals::npc_label(&self.class);
-            trf!("대화: {p}", p = p)
+            trf!("TALK_NPC", p = p)
         } else {
             // A pickup by what it gives, in the game's words; a place that gives no item
             // (a fact, a tag) has no name the game shows.
             match self.items.first() {
                 Some(i) => crate::goals::item_label(i),
-                None => tr!("살펴볼 곳").to_string(),
+                None => tr!("PLACE_TO_EXAMINE").to_string(),
             }
         }
     }
@@ -354,15 +370,15 @@ impl Survey {
                     Tier::Clue
                 };
                 let mut detail = match (&e.wants, left.items.first(), left.tags.first()) {
-                    (Some(w), _, _) => trf!("전달: {a0}", a0 = crate::goals::item_label(w)),
-                    (_, Some(i), _) => trf!("아이템: {a0}", a0 = crate::goals::item_label(i)),
+                    (Some(w), _, _) => trf!("HAND_OVER", item = crate::goals::item_label(w)),
+                    (_, Some(i), _) => trf!("ITEM", items = crate::goals::item_label(i)),
                     (_, _, Some(t)) => t.clone(),
-                    _ => trf!("새 사실 {a0}개", a0 = left.facts),
+                    _ => trf!("NEW_FACTS", count = left.facts),
                 };
-                detail += tr!(" · 조사 DB (아직 로드 안 됨)");
+                detail += tr!("SURVEY_DB_NOT_LOADED_YET");
                 let gate = crate::goals::gate_of(&e.class);
                 if gate == Gate::Conditional {
-                    detail += tr!(" · 조건 필요");
+                    detail += tr!("NEEDS_SOMETHING");
                 }
                 Some(Goal {
                     tier,

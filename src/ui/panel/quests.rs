@@ -7,17 +7,17 @@ impl Panel {
     pub(super) fn quests_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         use crate::quests::Status;
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
-        card(t, tr!("퀘스트"), |t| {
-            switch(t, &mut state.tracker, tr!("퀘스트 추적기 — 화면 오른쪽 가운데"));
+        card(t, tr!("QUESTS"), |t| {
+            switch(t, &mut state.tracker, tr!("QUEST_TRACKER_RIGHT_MIDDLE_OF_THE"));
             if journal.is_empty() {
-                note(t, tr!("퀘스트를 읽는 중입니다 — 게임을 불러오고 몇 초 뒤에 나옵니다"));
+                note(t, tr!("READING_THE_QUESTS_THEY_APPEAR_A"));
                 return;
             }
             let followed = crate::quests::followed(&journal, state.quest.as_deref()).map(|q| q.key.clone());
             let mut pick: Option<Option<String>> = None;
             let auto = match journal.iter().find(|q| Some(&q.key) == followed.as_ref()) {
-                Some(q) if state.quest.is_none() => trf!("메인 스토리 자동 — {a0}", a0 = q.name),
-                _ => tr!("메인 스토리 자동").to_string(),
+                Some(q) if state.quest.is_none() => trf!("MAIN_STORY_AUTO_NOW", quest = q.name),
+                _ => tr!("MAIN_STORY_AUTO").to_string(),
             };
             if tw::pick(t, state.quest.is_none(), auto) {
                 pick = Some(None);
@@ -26,16 +26,17 @@ impl Panel {
                 let tag = q.kind.label();
                 let mut label = format!("[{tag}] {}", q.name);
                 if let Some((got, all)) = q.progress.filter(|(_, all)| *all > 0) {
-                    label += &trf!(" · 단서 {got}/{all}", got = got, all = all);
+                    label += &trf!("CLUES", got = got, all = all);
                 }
                 let on = state.quest.as_deref() == Some(q.key.as_str());
-                if tw::pick(t, on, label) {
+                let kind = q.kind;
+                if tw::pick_with(t, on, |ui| { crate::ui::svg::quest(ui, kind, 16.0); }, label) {
                     pick = Some(Some(q.key.clone()));
                 }
             }
             let done = journal.iter().filter(|q| q.status == Status::Completed).count();
             let failed = journal.iter().filter(|q| q.status == Status::Failed).count();
-            note(t, trf!("완료 {done}개 · 실패 {failed}개", done = done, failed = failed));
+            note(t, trf!("DONE_FAILED", done = done, failed = failed));
             // What the followed quest needs, from the survey of every world.
             let needs = snap
                 .and_then(|s| s.needs.iter().find(|(k, _)| Some(k) == followed.as_ref()))
@@ -45,10 +46,10 @@ impl Panel {
             let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
             let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
             if needs.is_empty() {
-                note(t, tr!("필요한 것: 조사 DB 없음 — `hiumod doctor survey` 를 한 번 실행하면 모든 지역의 아이템·NPC 위치가 채워집니다"));
+                note(t, tr!("NEEDED_NO_SURVEY_DB_RUN_HIUMOD"));
             } else {
                 let left = needs.iter().filter(|x| !x.done).count();
-                text(t, RichText::new(trf!("필요한 것 — 남은 {left} / {a0}", left = left, a0 = needs.len())).strong());
+                text(t, RichText::new(trf!("NEEDED_LEFT", left = left, all = needs.len())).strong());
                 // This world's, nearest first: press to guide there.
                 let mut mine: Vec<&crate::survey::Need> =
                     needs.iter().filter(|x| !x.done && Some(&x.world) == here_world.as_ref()).collect();
@@ -60,7 +61,10 @@ impl Panel {
                         w if w == x.label => format!("{w} ({})", crate::raster::distance(d(x))),
                         w => format!("{w} — {} ({})", x.label, crate::raster::distance(d(x))),
                     };
-                    if tw::pick(t, state.target == Some(x.id), label) {
+                    // A person to talk to, or a thing to take.
+                    let npc = x.label.starts_with(trf!("TALK_NPC", p = "").as_str());
+                    let sort = if npc { crate::actors::Sub::Npc } else { crate::actors::Sub::Quest };
+                    if tw::pick_with(t, state.target == Some(x.id), |ui| { crate::ui::svg::sort(ui, sort, 16.0); }, label) {
                         guide_to(state, &goals, x);
                     }
                 }
@@ -71,7 +75,7 @@ impl Panel {
                 }
                 if !elsewhere.is_empty() {
                     let list: Vec<String> = elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
-                    note(t, trf!("다른 지역 (장갑차로 이동): {a0}", a0 = list.join(" · ")));
+                    note(t, trf!("OTHER_REGIONS_TAKE_THE_APC", regions = list.join(" · ")));
                 }
             }
             if let Some(p) = pick {
@@ -92,18 +96,18 @@ impl Panel {
         use crate::missables::When;
         let list = snap.map(|s| s.deadlines.clone()).unwrap_or_default();
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
-        card(t, tr!("놓치기 쉬운 선행"), |t| {
+        card(t, tr!("MISSABLE_GOOD_DEEDS"), |t| {
             if list.is_empty() {
-                note(t, tr!("마감이 있는 선행은 모두 끝났거나 지났습니다"));
+                note(t, tr!("EVERY_GOOD_DEED_WITH_A_DEADLINE"));
             }
             for d in list.iter().filter(|d| d.when != When::Passed) {
                 let (mark, colour) = match d.when {
-                    When::Now => (tr!("임박"), BAD),
-                    _ => (tr!("나중"), DIM),
+                    When::Now => (tr!("SOON"), BAD),
+                    _ => (tr!("LATER"), DIM),
                 };
                 t.style(tw::row(8.0)).add(|t| {
                     w(t, |ui| ui.label(RichText::new(mark).color(colour).small().strong()));
-                    let label = format!("{}{}", d.title, if d.started { "" } else { tr!(" (시작 전)") });
+                    let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
                     if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
                         state.quest = Some(d.key.clone());
                         state.target = None;
@@ -116,17 +120,17 @@ impl Panel {
             }
             let passed = list.iter().filter(|d| d.when == When::Passed).count();
             if passed > 0 {
-                note(t, trf!("이미 지난 마감 {passed}개 — 그 선행은 실패했을 가능성이 큽니다", passed = passed));
+                note(t, trf!("DEADLINES_ALREADY_PAST_THOSE_GOOD_DEEDS", passed = passed));
             }
         });
         if let Some((left, before)) = crate::missables::keystone_advice(&journal, &list) {
-            card(t, tr!("키스톤 순서"), |t| {
-                note(t, trf!("권장 순서 ({g:Facts_KeystoneTerror/KeystoneTerror_Real_Name} 먼저: 일부 아이템이 {g:Facts_Shared/Universal_Location_Talju}에만 있음) — 키스톤마다 시간이 흘러 선행이 끝날 수 있습니다"));
+            card(t, tr!("KEYSTONE_ORDER"), |t| {
+                note(t, trf!("KEYSTONE_ORDER_ADVICE"));
                 for (i, l) in left.iter().enumerate() {
                     text(t, format!("{}. {l}", i + 1));
                 }
                 if !before.is_empty() {
-                    text(t, RichText::new(trf!("다음 키스톤 전에: {a0}", a0 = before.join(" · "))).color(BAD));
+                    text(t, RichText::new(trf!("BEFORE_THE_NEXT_KEYSTONE", deeds = before.join(" · "))).color(BAD));
                 }
             });
         }
@@ -136,24 +140,24 @@ impl Panel {
     pub(super) fn handovers_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let list = snap.map(|s| s.handovers.clone()).unwrap_or_default();
         if list.is_empty() {
-            card(t, tr!("건네줄 수 있는 것"), |t| note(t, tr!("지금 가진 아이템을 원하는 사람이 없습니다")));
+            card(t, tr!("THINGS_TO_HAND_OVER"), |t| note(t, tr!("NO_ONE_WANTS_AN_ITEM_YOU")));
             return;
         }
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
-        card(t, &trf!("건네줄 수 있는 것 ({a0})", a0 = list.len()), |t| {
-            note(t, tr!("가진 아이템을 원하는 사람 — 대화의 \"거래\" 로 건넵니다"));
+        card(t, &trf!("THINGS_TO_HAND_OVER_COUNT", count = list.len()), |t| {
+            note(t, tr!("PEOPLE_WHO_WANT_AN_ITEM_YOU"));
             for x in list.iter() {
                 let same = Some(&x.world) == here_world.as_ref();
                 let place = if same {
                     here.map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0))
                 } else {
-                    trf!("{a0} — 장갑차로 이동", a0 = crate::i18n::place(&x.world))
+                    trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world))
                 };
-                let label = format!("{} → {} ({place})", x.what, x.label.trim_start_matches(trf!("대화: {p}", p = "").as_str()));
+                let label = format!("{} → {} ({place})", x.what, x.label.trim_start_matches(trf!("TALK_NPC", p = "").as_str()));
                 if same {
-                    if tw::pick(t, state.target == Some(x.id), label) {
+                    if tw::pick_with(t, state.target == Some(x.id), |ui| { crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0); }, label) {
                         guide_to(state, &goals, x);
                     }
                 } else {

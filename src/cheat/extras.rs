@@ -394,13 +394,13 @@ impl Extras {
         for s in stacks(m, n, inv).into_iter().filter(|s| s.class.contains(class)) {
             let v = v.clamp(1, s.max);
             if !m.write(s.count_at, &v.to_le_bytes()) {
-                return Err(tr!("쓰기 실패").into());
+                return Err(tr!("WRITE_FAILED").into());
             }
             self.stock.remove(&s.item);
             done += 1;
         }
         if done == 0 {
-            return Err(trf!("인벤토리에 {class} 없음 — 먼저 하나 주우세요", class = class));
+            return Err(trf!("NO_IN_THE_INVENTORY_PICK_ONE", class = class));
         }
         Ok(done)
     }

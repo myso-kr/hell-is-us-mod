@@ -40,6 +40,8 @@ pub const WIDTH: f32 = 960.0;
 const FRAME: f32 = 16.0;
 const SCROLLBAR: f32 = 14.0;
 /// The debug page's single card is this wide (px): its tables scroll sideways past it.
+/// The most masonry columns a page gets.
+const MAX_COLUMNS: usize = 3;
 const DEBUG_PAGE: f32 = 620.0;
 /// The sidebar's width, and the gap between it and the page with the divider in its
 /// middle (px).
@@ -107,17 +109,25 @@ fn chosen(c: &Cheat) -> Option<crate::attr::Attr> {
     }
 }
 
-/// A pin kind picker: its colour dot and name, the list of every kind. Whether it changed.
+/// A pin kind picker: its icon (assets/pins) and name, the list of every kind with
+/// theirs. Whether it changed.
 fn pin_picker(ui: &mut egui::Ui, id: &str, kind: &mut crate::minimap::PinKind) -> bool {
     let before = *kind;
-    let dot = |k: crate::minimap::PinKind| {
+    let name = |k: crate::minimap::PinKind| {
         let [r, g, b] = k.rgb();
-        RichText::new(format!("● {}", k.label())).color(Color32::from_rgb(r, g, b))
+        RichText::new(k.label()).color(Color32::from_rgb(r, g, b))
     };
-    egui::ComboBox::from_id_salt(id).width(118.0).selected_text(dot(*kind)).show_ui(ui, |ui| {
-        for k in crate::minimap::PinKind::ALL {
-            ui.selectable_value(kind, k, dot(k));
-        }
+    ui.horizontal(|ui| {
+        ui.spacing_mut().item_spacing.x = 4.0;
+        crate::ui::svg::pin(ui, *kind, 18.0);
+        egui::ComboBox::from_id_salt(id).width(110.0).selected_text(name(*kind)).show_ui(ui, |ui| {
+            for k in crate::minimap::PinKind::ALL {
+                ui.horizontal(|ui| {
+                    crate::ui::svg::pin(ui, k, 16.0);
+                    ui.selectable_value(kind, k, name(k));
+                });
+            }
+        });
     });
     *kind != before
 }
@@ -165,12 +175,12 @@ impl Tool {
 
     fn label(self) -> &'static str {
         match self {
-            Tool::Map => tr!("지도"),
-            Tool::Guide => tr!("안내"),
-            Tool::Quests => tr!("퀘스트"),
-            Tool::Collect => tr!("수집"),
-            Tool::Saves => tr!("세이브"),
-            Tool::Debug => tr!("디버그"),
+            Tool::Map => tr!("MAP"),
+            Tool::Guide => tr!("GUIDE"),
+            Tool::Quests => tr!("QUESTS"),
+            Tool::Collect => tr!("COLLECT"),
+            Tool::Saves => tr!("SAVES"),
+            Tool::Debug => tr!("DEBUG"),
         }
     }
 }
@@ -208,6 +218,8 @@ pub struct Panel {
     achievements: Option<(std::time::Instant, Vec<crate::game::achievements::Achievement>)>,
     /// The achievement card lists the unlocked ones too.
     show_unlocked: bool,
+    /// Masonry columns of the page shown (`fit_columns`).
+    columns: usize,
     /// The save backups, as last listed.
     backups: Vec<(String, std::path::PathBuf)>,
     backups_read: Option<Instant>,
@@ -271,6 +283,7 @@ impl Panel {
             show_placements: false,
             achievements: None,
             show_unlocked: false,
+            columns: 2,
             backups: Vec::new(),
             backups_read: None,
             height: 0.0,
@@ -332,7 +345,7 @@ impl Panel {
             self.value.insert(a.cheat, a.value);
         }
         self.send_active();
-        self.reply = Some((true, trf!("지난번에 켜 둔 치트 {a0}개를 다시 켰습니다", a0 = resume.len()), Instant::now()));
+        self.reply = Some((true, trf!("TURNED_CHEATS_FROM_LAST_TIME_BACK", count = resume.len()), Instant::now()));
     }
 
     /// The engine is the truth about what is on: the gate closing or the game exiting
@@ -362,14 +375,14 @@ impl Panel {
             ui.label(RichText::new("Hell Is Us Mod").strong());
             ui.label(RichText::new("`").color(DIM));
             ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                if ui.button(" × ").on_hover_text(tr!("닫기 — 원래 값으로 되돌리고 종료")).clicked() {
+                if ui.button(" × ").on_hover_text(tr!("CLOSE_RESTORE_THE_ORIGINAL_VALUES_AND")).clicked() {
                     ui.ctx().send_viewport_cmd(egui::ViewportCommand::Close);
                 }
-                if ui.button(" — ").on_hover_text(tr!("숨기기 (` 키로 다시 열기)")).clicked() {
+                if ui.button(" — ").on_hover_text(tr!("HIDE_OPENS_IT_AGAIN")).clicked() {
                     hotkey::hide(&self.shared);
                 }
-                let label = if self.console.open { tr!("콘솔 ▾") } else { tr!("콘솔 ▸") };
-                if ui.selectable_label(self.console.open, label).on_hover_text(tr!("CLI 명령 콘솔")).clicked() {
+                let label = if self.console.open { tr!("CONSOLE_OPEN") } else { tr!("CONSOLE_CLOSED") };
+                if ui.selectable_label(self.console.open, label).on_hover_text(tr!("CLI_CONSOLE")).clicked() {
                     self.console.open = !self.console.open;
                     if self.console.open {
                         self.console.focus();
@@ -390,23 +403,23 @@ impl Panel {
         };
         match snap.map(|s| &s.game) {
             Some(Ok((pid, version))) => {
-                line(ui, tr!("게임"), RichText::new(trf!("● 연결됨\nv{version} · PID {pid}", version = version, pid = pid)).color(OK));
+                line(ui, tr!("GAME"), RichText::new(trf!("CONNECTED_V_PID", version = version, pid = pid)).color(OK));
                 // A build the mod was not checked on: names may have moved.
                 if version != crate::game::TESTED_BUILD {
-                    let warn = trf!("⚠ 확인한 빌드는 {tested} — 이상하면 콘솔에서 `doctor` 를 실행하세요", tested = crate::game::TESTED_BUILD);
+                    let warn = trf!("CHECKED_ON_BUILD_IF_SOMETHING_IS", tested = crate::game::TESTED_BUILD);
                     line(ui, "", RichText::new(warn).color(WAIT).small());
                 }
             }
-            _ if launching => line(ui, tr!("게임"), RichText::new(tr!("실행하는 중 — 켜지면 자동으로 연결")).color(WAIT)),
-            Some(Err(e)) => line(ui, tr!("게임"), RichText::new(trf!("○ 연결 안 됨 — {e}", e = e)).color(DIM)),
-            None => line(ui, tr!("게임"), RichText::new(tr!("시작하는 중…")).color(DIM)),
+            _ if launching => line(ui, tr!("GAME"), RichText::new(tr!("LAUNCHING_CONNECTS_ONCE_IT_IS_UP")).color(WAIT)),
+            Some(Err(e)) => line(ui, tr!("GAME"), RichText::new(trf!("NOT_CONNECTED", e = e)).color(DIM)),
+            None => line(ui, tr!("GAME"), RichText::new(tr!("STARTING")).color(DIM)),
         }
         match snap.map(|s| &s.gate) {
-            Some(Ok(())) => line(ui, tr!("주인공 게이트"), RichText::new(tr!("● 열림 — 조작 중")).color(OK)),
+            Some(Ok(())) => line(ui, tr!("HERO_GATE"), RichText::new(tr!("OPEN_IN_CONTROL")).color(OK)),
             Some(Err(e)) if snap.is_some_and(|s| s.game.is_ok()) => {
-                line(ui, tr!("주인공 게이트"), RichText::new(trf!("○ 닫힘 — {e}", e = e)).color(WAIT))
+                line(ui, tr!("HERO_GATE"), RichText::new(trf!("GATE_CLOSED_WHY", e = e)).color(WAIT))
             }
-            _ => line(ui, tr!("주인공 게이트"), RichText::new(tr!("○ 닫힘")).color(DIM)),
+            _ => line(ui, tr!("HERO_GATE"), RichText::new(tr!("GATE_CLOSED")).color(DIM)),
         }
     }
 
@@ -422,7 +435,7 @@ impl Panel {
                 .min_size(egui::vec2(ui.available_width(), 26.0));
             ui.add(button).clicked()
         };
-        ui.label(RichText::new(tr!("치트")).color(DIM).small());
+        ui.label(RichText::new(tr!("CHEATS")).color(DIM).small());
         for g in Group::ALL {
             let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
             let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
@@ -432,7 +445,7 @@ impl Panel {
             }
         }
         ui.add_space(6.0);
-        ui.label(RichText::new(tr!("도구")).color(DIM).small());
+        ui.label(RichText::new(tr!("TOOLS")).color(DIM).small());
         for tool in Tool::ALL {
             if item(ui, self.tool == Some(tool), tool.label().to_string()) {
                 self.tool = Some(tool);
@@ -446,28 +459,29 @@ impl Panel {
         match self.tab {
             _ if self.tool == Some(Tool::Debug) => block(t, |ui| self.debug_tab(ui, snap)),
             _ if self.tool == Some(Tool::Saves) => {
-                t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| {
-                    t.style(tw::col(tw::GAP)).add(|t| self.backups_card(t));
-                    t.style(tw::col(tw::GAP)).add(|t| self.slots_card(t));
-                });
+                let cols = self.columns;
+                tw::masonry(t, "saves", cols, 2, |t, i| match i {
+                    0 => self.backups_card(t),
+                    _ => self.slots_card(t),
+                })
             }
             _ if self.tool.is_some() => self.map_tab(t, snap),
-            g => t.style(tw::full(tw::cards(tw::CARD_MIN))).add(|t| {
-                t.style(tw::col(tw::GAP)).add(|t| {
-                    card(t, g.label(), |t| self.held(t, g, snap));
-                    if g == Group::Movement {
-                        self.positions(t, snap);
-                    }
-                });
-                t.style(tw::col(tw::GAP)).add(|t| self.summary(t, snap));
-            }),
+            g => {
+                let cols = self.columns;
+                let n = if g == Group::Movement { 3 } else { 2 };
+                tw::masonry(t, "cheats", cols, n, |t, i| match (i, n) {
+                    (0, _) => card(t, g.label(), |t| self.held(t, g, snap)),
+                    (1, 3) => self.positions(t, snap),
+                    _ => self.summary(t, snap),
+                })
+            }
         }
     }
 
     fn footer(&mut self, ui: &mut egui::Ui, snap: Option<&Snapshot>) {
         let pending = snap.map_or(0, |s| s.pending);
         ui.horizontal(|ui| {
-            let restore = ui.add_enabled(pending > 0, egui::Button::new(trf!("모두 원래대로 ({pending})", pending = pending)));
+            let restore = ui.add_enabled(pending > 0, egui::Button::new(trf!("RESTORE_ALL", pending = pending)));
             if restore.clicked() {
                 let _ = self.tx.send(Request::Restore);
                 self.on.clear();
@@ -475,8 +489,8 @@ impl Panel {
                 self.resume = None;
                 self.sent = Some(Instant::now());
             }
-            ui.checkbox(&mut self.keep, tr!("다음에도 켜 둔 치트 유지"))
-                .on_hover_text(tr!("다음 실행 때, 주인공을 조작할 수 있게 되면 지금 켜 둔 치트를 다시 켭니다."));
+            ui.checkbox(&mut self.keep, tr!("KEEP_THESE_CHEATS_ON_NEXT_TIME"))
+                .on_hover_text(tr!("NEXT_RUN_ONCE_THE_HERO_CAN"));
         });
         let attached = snap.is_some_and(|s| s.game.is_ok());
         if let Some(n) = snap.and_then(|s| s.notice.clone()) {
@@ -490,7 +504,7 @@ impl Panel {
         ui.add_space(4.0);
         ui.add(
             egui::Label::new(
-                RichText::new(tr!("주인공을 조작하는 동안만 값을 씁니다 · 업적은 차단되지 않습니다")).color(DIM).small(),
+                RichText::new(tr!("WRITES_ONLY_WHILE_THE_HERO_IS")).color(DIM).small(),
             )
             .wrap(),
         );
@@ -511,8 +525,31 @@ impl Panel {
         if self.tool == Some(Tool::Debug) {
             DEBUG_PAGE
         } else {
-            tw::cards_width(2)
+            tw::cards_width(self.columns as u32)
         }
+    }
+
+    /// How many cards the page shown has.
+    fn page_cards(&self) -> usize {
+        match self.tool {
+            Some(Tool::Collect) => 6,
+            Some(Tool::Guide) => 4,
+            Some(Tool::Quests) | Some(Tool::Map) => 3,
+            Some(Tool::Saves) => 2,
+            Some(Tool::Debug) => 1,
+            None if self.tab == Group::Movement => 3,
+            None => 2,
+        }
+    }
+
+    /// Masonry columns for the page: as many as its cards need, up to three, as many
+    /// as the monitor has room for — the window grows and shrinks with them.
+    fn fit_columns(&mut self, monitor_w: f32) {
+        let room = monitor_w * 0.9 - (FRAME + NAV + DIVIDER + SCROLLBAR);
+        let fits = (((room + tw::GAP) / (tw::CARD + tw::GAP)).floor() as usize).max(1);
+        // Two columns hold up to four cards evenly; more cards want a third.
+        let wanted = if self.page_cards() > 4 { 3 } else { 2 };
+        self.columns = wanted.min(fits).min(MAX_COLUMNS);
     }
 }
 
@@ -588,6 +625,7 @@ impl eframe::App for Panel {
         // As wide as the page's cards side by side, plus the sidebar — never wider than
         // the monitor.
         let monitor_w = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1920.0, |m| m.x);
+        self.fit_columns(monitor_w);
         let width = (FRAME + NAV + DIVIDER + self.page_width() + SCROLLBAR).min(monitor_w * 0.9);
         let used = egui::Frame::central_panel(ui.style())
             .show(ui, |ui| {

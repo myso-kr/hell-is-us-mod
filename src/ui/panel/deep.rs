@@ -3,7 +3,16 @@
 
 use super::*;
 use crate::puzzles::{Answer, Puzzle};
+use crate::actors::Sub;
 use crate::tables::VaultState;
+
+/// A puzzle kind's icon on the map and in the lists.
+fn puzzle_sort(k: crate::puzzles::Kind) -> Sub {
+    match k {
+        crate::puzzles::Kind::Placement => Sub::LymbicLock,
+        _ => Sub::Puzzle,
+    }
+}
 
 /// A stable id for a place the guide is sent to, from a GUID (bit 63: a survey id).
 fn id_of(s: &str) -> u64 {
@@ -20,13 +29,13 @@ fn answer(p: &Puzzle) -> Vec<String> {
             .iter()
             .enumerate()
             .map(|(i, d)| match d.turns() {
-                0 => trf!("다이얼 {n}: 맞음", n = i + 1),
-                k => trf!("다이얼 {n}: {k}칸 돌리기 (지금 {now} → {want})", n = i + 1, k = k, now = d.now + 1, want = d.want + 1),
+                0 => trf!("DIAL_RIGHT", n = i + 1),
+                k => trf!("DIAL_TURN_STEPS_NOW", n = i + 1, k = k, now = d.now + 1, want = d.want + 1),
             })
             .collect(),
-        Answer::Code(code) => vec![trf!("코드: {code}", code = code)],
+        Answer::Code(code) => vec![trf!("CODE_IS", code = code)],
         Answer::Items(items) => {
-            vec![trf!("필요한 것: {items}", items = items.iter().map(|i| crate::goals::item_label(i)).collect::<Vec<_>>().join(" · "))]
+            vec![trf!("NEEDS", items = items.iter().map(|i| crate::goals::item_label(i)).collect::<Vec<_>>().join(" · "))]
         }
     }
 }
@@ -37,19 +46,19 @@ fn shape(a: &Answer) -> String {
         Answer::Dials(d) => {
             let mut places: Vec<String> = d.iter().map(|x| x.places.to_string()).collect();
             places.dedup();
-            trf!("다이얼 {n}개 · {places}칸", n = d.len(), places = places.join("/"))
+            trf!("DIALS_PLACES", n = d.len(), places = places.join("/"))
         }
-        Answer::Code(c) => trf!("{n}자리 코드", n = c.chars().count()),
-        Answer::Items(i) => trf!("물건 {n}개", n = i.len()),
+        Answer::Code(c) => trf!("DIGIT_CODE", n = c.chars().count()),
+        Answer::Items(i) => trf!("ITEM_COUNT", n = i.len()),
     }
 }
 
 /// A listed puzzle's answer: the dials' places in order (from 1), the code, the items.
 fn listed_answer(a: &Answer) -> String {
     match a {
-        Answer::Dials(d) => trf!("다이얼 위치 (왼쪽부터, 1부터): {list}", list = d.iter().map(|x| (x.want + 1).to_string()).collect::<Vec<_>>().join(" · ")),
-        Answer::Code(c) => trf!("코드: {code}", code = c),
-        Answer::Items(i) => trf!("필요한 것: {items}", items = i.iter().map(|x| crate::goals::item_label(x)).collect::<Vec<_>>().join(" · ")),
+        Answer::Dials(d) => trf!("DIAL_POSITIONS_FROM_THE_LEFT_COUNTING", list = d.iter().map(|x| (x.want + 1).to_string()).collect::<Vec<_>>().join(" · ")),
+        Answer::Code(c) => trf!("CODE_IS", code = c),
+        Answer::Items(i) => trf!("NEEDS", items = i.iter().map(|x| crate::goals::item_label(x)).collect::<Vec<_>>().join(" · ")),
     }
 }
 
@@ -82,12 +91,12 @@ impl Panel {
         }
         let list = self.achievements.as_ref().map(|(_, l)| l.clone()).unwrap_or_default();
         let done = list.iter().filter(|a| a.unlocked).count();
-        card(t, &trf!("업적 {done}/{all}", done = done, all = list.len()), |t| {
+        card(t, &trf!("ACHIEVEMENTS", done = done, all = list.len()), |t| {
             if list.is_empty() {
-                note(t, tr!("Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)"));
+                note(t, tr!("STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND"));
                 return;
             }
-            w(t, |ui| ui.checkbox(&mut self.show_unlocked, tr!("달성한 것도 보기")));
+            w(t, |ui| ui.checkbox(&mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO")));
             for a in list.iter().filter(|a| self.show_unlocked || !a.unlocked) {
                 let id = {
                     use std::hash::{Hash, Hasher};
@@ -98,9 +107,9 @@ impl Panel {
                 let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
                 let progress = a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| format!("  {}/{of}", v.min(of))).unwrap_or_default();
                 t.style(tw::row(8.0)).add(|t| {
-                    let head = if secret { tr!("숨겨진 업적").to_string() } else { format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name) };
+                    let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name) };
                     text(t, RichText::new(head).color(if a.unlocked { DIM } else { Color32::from_gray(225) }));
-                    if secret && w(t, |ui| ui.small_button(tr!("보기"))).clicked() {
+                    if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
                         self.revealed.insert(id);
                     }
                 });
@@ -125,12 +134,12 @@ impl Panel {
             .filter(|(p, _)| Some(&p.world) == here_world.as_ref() && shown(p, self.show_placements))
             .collect();
         let left = mine.iter().filter(|(_, solved)| !solved).count();
-        card(t, &trf!("퍼즐 목록 · 이 지역 남은 {left}", left = left), |t| {
+        card(t, &trf!("PUZZLE_LIST_LEFT_HERE", left = left), |t| {
             if list.is_empty() {
-                note(t, tr!("퍼즐 목록이 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요"));
+                note(t, tr!("NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY"));
                 return;
             }
-            w(t, |ui| ui.checkbox(&mut self.show_placements, tr!("열쇠·물건 놓기 퍼즐도 보기")));
+            w(t, |ui| ui.checkbox(&mut self.show_placements, tr!("SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS")));
             let mut rows = mine.clone();
             let far = |p: &crate::survey::Placed| here.map_or(0.0, |h| (p.at[0] - h[0]).hypot(p.at[1] - h[1]));
             rows.sort_by(|a, b| a.1.cmp(&b.1).then(far(&a.0).total_cmp(&far(&b.0))));
@@ -146,15 +155,16 @@ impl Panel {
                     if *solved { " ✓" } else { "" }
                 );
                 t.style(tw::row(8.0)).add(|t| {
+                    w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
                     text(t, RichText::new(head).color(if *solved { DIM } else { Color32::from_gray(225) }).small());
-                    if w(t, |ui| ui.small_button(if open { tr!("숨기기") } else { tr!("답 보기") })).clicked() {
+                    if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
                         if open {
                             self.revealed.remove(&id);
                         } else {
                             self.revealed.insert(id);
                         }
                     }
-                    if !*solved && w(t, |ui| ui.small_button(tr!("안내"))).clicked() {
+                    if !*solved && w(t, |ui| ui.small_button(tr!("GUIDE"))).clicked() {
                         let x = crate::survey::Need {
                             world: p.world.clone(),
                             id,
@@ -180,7 +190,7 @@ impl Panel {
             }
             if !elsewhere.is_empty() {
                 let parts: Vec<String> = elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect();
-                note(t, trf!("다른 지역: {a0}", a0 = parts.join(" · ")));
+                note(t, trf!("OTHER_REGIONS", regions = parts.join(" · ")));
             }
         });
     }
@@ -189,20 +199,21 @@ impl Panel {
     pub(super) fn puzzles_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         let list = snap.map(|s| s.puzzles.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
-        card(t, &trf!("근처 퍼즐 ({n})", n = list.len()), |t| {
+        card(t, &trf!("PUZZLES_NEARBY", n = list.len()), |t| {
             if list.is_empty() {
-                note(t, tr!("40 m 안에 다이얼·키패드·물건 놓기 퍼즐이 없습니다"));
+                note(t, tr!("NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT"));
                 return;
             }
-            note(t, tr!("게임이 가진 정답을 읽습니다 — 직접 풀고 싶으면 누르지 마세요"));
+            note(t, tr!("READS_THE_ANSWER_THE_GAME_HOLDS"));
             for p in list.iter() {
                 let far = here.map_or(String::new(), |h| crate::raster::distance((p.at[0] - h[0]).hypot(p.at[1] - h[1]) / 100.0));
                 let name = crate::goals::pretty(&p.class);
                 let head = format!("{} · {name} ({far}){}", crate::i18n::tr(p.kind.label()), if p.solved { " ✓" } else { "" });
                 let open = self.revealed.contains(&p.id);
                 t.style(tw::row(8.0)).add(|t| {
+                    w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
                     text(t, RichText::new(head).color(if p.solved { DIM } else { Color32::from_gray(225) }));
-                    if w(t, |ui| ui.small_button(if open { tr!("숨기기") } else { tr!("답 보기") })).clicked() {
+                    if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
                         if open {
                             self.revealed.remove(&p.id);
                         } else {
@@ -229,27 +240,28 @@ impl Panel {
         let lore = snap.map_or(0, |s| s.lore_known);
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let opened = list.iter().filter(|v| v.state == VaultState::Opened).count();
-        card(t, &trf!("금단의 지식 금고 {done}/{all}", done = opened, all = list.len()), |t| {
+        card(t, &trf!("VAULTS_OF_FORBIDDEN_KNOWLEDGE", done = opened, all = list.len()), |t| {
             if list.is_empty() {
-                note(t, tr!("금고 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요"));
+                note(t, tr!("NO_VAULT_TABLE_RUN_DOCTOR_SURVEY"));
                 return;
             }
-            note(t, trf!("장갑차의 {g:Facts_Tania/Tania_Real_Name}에게 연구 아이템을 맡기면 금고 정보가 풀립니다 · 지금 연구 {n}개", n = lore));
-            note(t, tr!("연구 아이템은 '수집 진행도' 의 연구 자료 줄을 누르면 가까운 것부터 안내합니다"));
+            note(t, trf!("VAULT_RESEARCH_HINT", n = lore));
+            note(t, tr!("RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE"));
             for v in list.iter() {
                 let name = crate::i18n::game_text(&v.vault.name);
                 let region = crate::i18n::game_text(&v.vault.region);
                 let status = match v.state {
-                    VaultState::Opened => tr!("열림 ✓").to_string(),
-                    VaultState::Known => tr!("정보 있음").to_string(),
-                    VaultState::Locked => trf!("연구 {n}/{need}", n = lore, need = v.vault.entries),
+                    VaultState::Opened => tr!("OPENED").to_string(),
+                    VaultState::Known => tr!("KNOWN").to_string(),
+                    VaultState::Locked => trf!("RESEARCH_PROGRESS", n = lore, need = v.vault.entries),
                 };
                 let id = id_of(&v.vault.guid);
                 let open = self.revealed.contains(&id);
                 t.style(tw::row(8.0)).add(|t| {
+                    w(t, |ui| crate::ui::svg::sort(ui, Sub::Vault, 18.0));
                     let colour = if v.state == VaultState::Opened { DIM } else { Color32::from_gray(225) };
                     text(t, RichText::new(format!("{name} · {region} — {status}")).color(colour));
-                    if v.state != VaultState::Opened && w(t, |ui| ui.small_button(if open { tr!("숨기기") } else { tr!("코드 보기") })).clicked() {
+                    if v.state != VaultState::Opened && w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_CODE") })).clicked() {
                         if open {
                             self.revealed.remove(&id);
                         } else {
@@ -257,7 +269,7 @@ impl Panel {
                         }
                     }
                     if let Some((world, at)) = v.door.clone().filter(|_| v.state != VaultState::Opened) {
-                        if w(t, |ui| ui.small_button(tr!("안내"))).clicked() {
+                        if w(t, |ui| ui.small_button(tr!("GUIDE"))).clicked() {
                             let x = crate::survey::Need { world, id, label: name.clone(), what: String::new(), at, done: false };
                             guide_to(state, &goals, &x);
                         }
@@ -268,7 +280,7 @@ impl Panel {
                         text(t, RichText::new(format!("    {}", crate::i18n::game_text(&v.vault.clue))).color(DIM).small());
                     }
                     symbol_row(t, &v.vault.code);
-                    note(t, tr!("    문 앞 다이얼에서는 '근처 퍼즐' 카드가 몇 칸 돌릴지 알려 줍니다"));
+                    note(t, tr!("AT_THE_DOORS_DIALS_THE_PUZZLES"));
                 }
             }
         });
@@ -282,26 +294,27 @@ impl Panel {
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
         let (left, all) = list.iter().fold((0, 0), |(l, a), h| (l + h.left, a + h.all));
-        card(t, &trf!("남은 적 무리 {left}/{all}", left = left, all = all), |t| {
+        card(t, &trf!("ENEMY_GROUPS_LEFT", left = left, all = all), |t| {
             if list.is_empty() {
-                note(t, tr!("스포너 표가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요"));
+                note(t, tr!("NO_SPAWNER_TABLE_RUN_DOCTOR_SURVEY"));
                 return;
             }
-            note(t, tr!("적 무리(스포너) 단위 · 세이브에 기록된 무리는 처치한 것으로 셉니다"));
+            note(t, tr!("COUNTED_BY_ENEMY_GROUP_SPAWNER_A"));
             for h in list.iter() {
                 let mine = here_world.as_deref() == Some(h.world.as_str());
-                let line = trf!("{place}: {left}/{all} 무리 · 적 {enemies}", place = crate::i18n::place(&h.world), left = h.left, all = h.all, enemies = h.enemies_left);
+                let line = trf!("GROUPS_ENEMIES", place = crate::i18n::place(&h.world), left = h.left, all = h.all, enemies = h.enemies_left);
                 t.style(tw::row(8.0)).add(|t| {
+                    w(t, |ui| crate::ui::svg::sort(ui, Sub::EnemyGroup, 18.0));
                     let colour = if h.left == 0 { DIM } else if mine { Color32::from_gray(235) } else { Color32::from_gray(200) };
                     text(t, RichText::new(line).color(colour));
                     if mine && h.left > 0 {
-                        if let (Some(p), true) = (here, w(t, |ui| ui.small_button(tr!("가장 가까운 곳"))).clicked()) {
+                        if let (Some(p), true) = (here, w(t, |ui| ui.small_button(tr!("NEAREST"))).clicked()) {
                             let near = h.places.iter().min_by(|a, b| (a[0] - p[0]).hypot(a[1] - p[1]).total_cmp(&(b[0] - p[0]).hypot(b[1] - p[1])));
                             if let Some(at) = near {
                                 let x = crate::survey::Need {
                                     world: h.world.clone(),
                                     id: id_of(&format!("hollow{at:?}")),
-                                    label: tr!("남은 적 무리").to_string(),
+                                    label: tr!("ENEMY_GROUP_LEFT").to_string(),
                                     what: String::new(),
                                     at: *at,
                                     done: false,
@@ -312,7 +325,7 @@ impl Panel {
                     }
                 });
                 for (lp, l, a) in h.timeloops.iter().filter(|(_, l, _)| *l > 0) {
-                    note(t, trf!("    타임루프 {name}: {left}/{all}", name = lp.trim_end_matches("_BP").trim_end_matches("_BP2"), left = l, all = a));
+                    note(t, trf!("TIMELOOP_LEFT", name = lp.trim_end_matches("_BP").trim_end_matches("_BP2"), left = l, all = a));
                 }
             }
         });

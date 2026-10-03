@@ -9,10 +9,10 @@
 //!   translations, extracted by `doctor locale` (tools/survey `--locale`) into
 //!   `Mods\locale\<culture>.tsv` and `names.tsv` (names.rs). All twelve languages
 //!   the game ships.
-//! - **The mod's own words** are written in Korean in the code, wrapped in `tr!` or
-//!   `trf!`; `assets/i18n/<culture>.tsv` gives each its translation (text.rs). A
-//!   culture without a table, or a line a table lacks, falls back to English, then
-//!   to the Korean.
+//! - **The mod's own words** are keys in the code — English UPPER_SNAKE, in `tr!` or
+//!   `trf!` (`tr!("NEXT_GOAL")`); `assets/i18n/<culture>.tsv` gives each key its
+//!   text, Korean (`ko.tsv`) like every other language (text.rs). A culture without
+//!   a table, or a key a table lacks, reads in English, then as the key.
 
 pub mod culture;
 pub mod fill;
@@ -30,7 +30,7 @@ pub struct Lang {
 
 fn current() -> &'static RwLock<Arc<Lang>> {
     static LANG: OnceLock<RwLock<Arc<Lang>>> = OnceLock::new();
-    LANG.get_or_init(|| RwLock::new(Arc::new(Lang { culture: culture::SOURCE.into(), text: text::Table::source(), names: names::Names::default() })))
+    LANG.get_or_init(|| RwLock::new(Arc::new(Lang { culture: culture::DEFAULT.into(), text: text::Table::load(culture::DEFAULT), names: names::Names::default() })))
 }
 
 /// The language in use.
@@ -62,7 +62,7 @@ pub fn follow_game() {
     }
     *seen = modified;
     drop(seen);
-    let c = culture::read(&path).unwrap_or_else(|| culture::SOURCE.into());
+    let c = culture::read(&path).unwrap_or_else(|| culture::DEFAULT.into());
     if lang().culture != c || lang().names.is_empty() {
         load(&c);
     }
@@ -76,10 +76,10 @@ fn load(culture: &str) {
     *current().write().unwrap() = Arc::new(l);
 }
 
-/// The mod's own words in the language in use. `s` is the Korean the code is
-/// written in.
-pub fn tr(s: &'static str) -> &'static str {
-    lang().text.get(s).unwrap_or(s)
+/// The mod's own words in the language in use, by key (`NEXT_GOAL`); a key no table
+/// has reads as itself.
+pub fn tr(key: &'static str) -> &'static str {
+    lang().text.get(key).unwrap_or(key)
 }
 
 /// An item's name, by its data asset's name or path (`/Game/Items/…/Key_Item_DA`).
@@ -114,11 +114,11 @@ pub fn game_text(reference: &str) -> String {
     })
 }
 
-/// The mod's words for a text not written in the code (a data table's): translated
+/// The mod's words for a key not written in the code (a data table's): translated
 /// like `tr!`, its `{g:…}` names filled.
-pub fn text(korean: &str) -> String {
+pub fn text(key: &str) -> String {
     let l = lang();
-    fill::fill(l.text.get(korean).unwrap_or(korean), &[])
+    fill::fill(l.text.get(key).unwrap_or(key), &[])
 }
 
 /// A world's name to show: the region's, else the world's own.
@@ -152,7 +152,7 @@ pub fn npc_known(class: &str) -> Option<String> {
     npc(class, &facts)
 }
 
-/// `tr!("한국어")`: the mod's words in the game's language.
+/// `tr!("NEXT_GOAL")`: the mod's words in the game's language, by key.
 #[macro_export]
 macro_rules! tr {
     ($s:literal) => {
@@ -160,7 +160,7 @@ macro_rules! tr {
     };
 }
 
-/// `trf!("이 지역 {n}곳", n = here)`: `format!` for translated text. Each value is
+/// `trf!("NEEDED_HERE", h = here)`: `format!` for a translated text. Each value is
 /// named, so a translation may put them in its own order.
 #[macro_export]
 macro_rules! trf {

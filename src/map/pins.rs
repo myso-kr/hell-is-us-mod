@@ -103,30 +103,30 @@ impl PinKind {
 
     pub fn label(self) -> &'static str {
         match self {
-            PinKind::LockedDoor => tr!("잠긴 문"),
-            PinKind::LockedChest => tr!("잠긴 상자"),
-            PinKind::LymbicLock => tr!("림빅 잠금"),
-            PinKind::Puzzle => tr!("퍼즐"),
-            PinKind::Code => tr!("코드·암호"),
-            PinKind::KeyNeeded => tr!("열쇠 필요"),
-            PinKind::ItemLater => tr!("나중에 주울 것"),
-            PinKind::Merchant => tr!("상인"),
-            PinKind::Npc => tr!("만날 사람"),
-            PinKind::Quest => tr!("퀘스트 단서"),
-            PinKind::Danger => tr!("위험"),
-            PinKind::Boss => tr!("강적"),
-            PinKind::Timeloop => tr!("타임루프"),
-            PinKind::Save => tr!("저장 지점"),
-            PinKind::Shortcut => tr!("지름길"),
-            PinKind::Ladder => tr!("오를 곳"),
-            PinKind::DeadEnd => tr!("막다른 길"),
-            PinKind::Water => tr!("물·건널 곳"),
-            PinKind::View => tr!("둘러볼 곳"),
-            PinKind::Treasure => tr!("보물"),
-            PinKind::Note => tr!("메모"),
-            PinKind::Home => tr!("거점"),
-            PinKind::Question => tr!("모르는 것"),
-            PinKind::Mark => tr!("표시"),
+            PinKind::LockedDoor => tr!("LOCKED_DOOR"),
+            PinKind::LockedChest => tr!("LOCKED_CHEST"),
+            PinKind::LymbicLock => tr!("LYMBIC_LOCK"),
+            PinKind::Puzzle => tr!("PUZZLE"),
+            PinKind::Code => tr!("PIN_CODE"),
+            PinKind::KeyNeeded => tr!("KEY_NEEDED"),
+            PinKind::ItemLater => tr!("PICK_UP_LATER"),
+            PinKind::Merchant => tr!("MERCHANT"),
+            PinKind::Npc => tr!("SOMEONE_TO_MEET"),
+            PinKind::Quest => tr!("QUEST_CLUE"),
+            PinKind::Danger => tr!("DANGER"),
+            PinKind::Boss => tr!("STRONG_ENEMY"),
+            PinKind::Timeloop => tr!("TIMELOOP"),
+            PinKind::Save => tr!("SAVE_POINT"),
+            PinKind::Shortcut => tr!("SHORTCUT"),
+            PinKind::Ladder => tr!("CLIMB"),
+            PinKind::DeadEnd => tr!("DEAD_END"),
+            PinKind::Water => tr!("WATER_CROSSING"),
+            PinKind::View => tr!("LOOK_AROUND"),
+            PinKind::Treasure => tr!("TREASURE"),
+            PinKind::Note => tr!("NOTE"),
+            PinKind::Home => tr!("BASE"),
+            PinKind::Question => tr!("UNKNOWN"),
+            PinKind::Mark => tr!("MARK"),
         }
     }
 
@@ -189,9 +189,9 @@ impl Marker {
     /// What the guide calls it.
     pub fn title(&self) -> String {
         if self.note.trim().is_empty() {
-            trf!("핀: {a0}", a0 = self.kind.label())
+            trf!("PIN", pin = self.kind.label())
         } else {
-            trf!("핀: {a0}", a0 = self.note.trim())
+            trf!("PIN", pin = self.note.trim())
         }
     }
 }

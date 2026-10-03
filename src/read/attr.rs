@@ -62,10 +62,10 @@ impl<'a> Session<'a> {
     /// `arr` is the `SpawnedAttributes` TArray (player.rs).
     pub fn open(m: &'a dyn Memory, module: (u64, u64), names: &Names, arr: u64) -> Result<Session<'a>, String> {
         let (base, size) = module;
-        let data = mem::read_u64(m, arr).ok_or(tr!("속성 세트 배열을 읽을 수 없음"))?;
-        let num = mem::read_u32(m, arr + 8).ok_or(tr!("속성 세트 개수를 읽을 수 없음"))?;
+        let data = mem::read_u64(m, arr).ok_or(tr!("ATTRIBUTE_SET_ARRAY_UNREADABLE"))?;
+        let num = mem::read_u32(m, arr + 8).ok_or(tr!("ATTRIBUTE_SET_COUNT_UNREADABLE"))?;
         if !(1..=64).contains(&num) || !mem::plausible(data) {
-            return Err(trf!("속성 세트 배열이 이상함 (num={num}, data=0x{data})", num = num, data = format!("{data:X}")));
+            return Err(trf!("THE_ATTRIBUTE_SET_ARRAY_LOOKS_WRONG", num = num, data = format!("{data:X}")));
         }
 
         let mut sets = Vec::with_capacity(num as usize);
@@ -86,7 +86,7 @@ impl<'a> Session<'a> {
             sets.push(Set { object, class, attributes });
         }
         if index.is_empty() {
-            return Err(tr!("속성 이름을 하나도 읽지 못함 — 이름 풀이나 클래스 구조가 이 빌드와 맞지 않음").into());
+            return Err(tr!("NO_ATTRIBUTE_COULD_BE_NAMED_THE").into());
         }
 
         let vtable = consensus(m, index.values().copied(), base, size)?;
@@ -153,13 +153,13 @@ impl<'a> Session<'a> {
     /// (BaseValue, CurrentValue). A plain field reads as the same value twice.
     pub fn get(&self, a: Attr) -> Result<(f32, f32), String> {
         if let Some(at) = self.field(a) {
-            let v = mem::read_f32(self.m, at).ok_or(tr!("필드를 읽을 수 없음"))?;
+            let v = mem::read_f32(self.m, at).ok_or(tr!("FIELD_UNREADABLE"))?;
             return Ok((v, v));
         }
         let at = self.checked(a)?;
         let b = mem::read_f32(self.m, at + BASE);
         let c = mem::read_f32(self.m, at + CURRENT);
-        b.zip(c).ok_or_else(|| tr!("속성을 읽을 수 없음").into())
+        b.zip(c).ok_or_else(|| tr!("ATTRIBUTE_UNREADABLE").into())
     }
 
     pub fn current(&self, a: Attr) -> Result<f32, String> {
@@ -174,16 +174,16 @@ impl<'a> Session<'a> {
 
     pub fn put_pair(&self, a: Attr, base: f32, current: f32) -> Result<(), String> {
         if !base.is_finite() || !current.is_finite() {
-            return Err(tr!("유한하지 않은 값은 쓰지 않음").into());
+            return Err(tr!("REFUSING_A_NON_FINITE_VALUE").into());
         }
         if let Some(at) = self.field(a) {
-            return if mem::write_f32(self.m, at, current) { Ok(()) } else { Err(tr!("쓰기 실패").into()) };
+            return if mem::write_f32(self.m, at, current) { Ok(()) } else { Err(tr!("WRITE_FAILED").into()) };
         }
         let at = self.checked(a)?;
         if mem::write_f32(self.m, at + BASE, base) && mem::write_f32(self.m, at + CURRENT, current) {
             Ok(())
         } else {
-            Err(tr!("쓰기 실패").into())
+            Err(tr!("WRITE_FAILED").into())
         }
     }
 
@@ -208,9 +208,9 @@ fn consensus(m: &dyn Memory, at: impl Iterator<Item = u64>, base: u64, size: u64
             *seen.entry(v).or_default() += 1;
         }
     }
-    let (vt, n) = seen.into_iter().max_by_key(|&(_, n)| n).ok_or(tr!("읽을 수 있는 속성이 없음"))?;
+    let (vt, n) = seen.into_iter().max_by_key(|&(_, n)| n).ok_or(tr!("NO_ATTRIBUTE_COULD_BE_READ"))?;
     if n * 5 < total * 4 || !(base..base + size).contains(&vt) {
-        return Err(trf!("속성들의 vtable 이 일치하지 않음 ({n}/{total}, 0x{vt})", n = n, total = total, vt = format!("{vt:X}")));
+        return Err(trf!("ATTRIBUTES_DO_NOT_AGREE_ON_A", n = n, total = total, vt = format!("{vt:X}")));
     }
     Ok(vt)
 }

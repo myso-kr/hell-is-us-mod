@@ -42,9 +42,9 @@ impl Tier {
 
     pub fn label(self) -> &'static str {
         match self {
-            Tier::Quest => tr!("퀘스트 목표"),
-            Tier::Secret => tr!("비밀"),
-            Tier::Clue => tr!("단서"),
+            Tier::Quest => tr!("QUEST_GOAL"),
+            Tier::Secret => tr!("SECRET"),
+            Tier::Clue => tr!("CLUE"),
         }
     }
 
@@ -385,7 +385,7 @@ impl Goals {
                 facts.extend(f);
                 tags.extend(t);
                 if let Some(item) = mem::read_u64(m, e).filter(|&p| mem::plausible(p)).and_then(|p| n.object(m, p)) {
-                    note.get_or_insert(trf!("전달: {a0}", a0 = item_label(&item)));
+                    note.get_or_insert(trf!("HAND_OVER", item = item_label(&item)));
                 }
             }
         }
@@ -402,7 +402,7 @@ impl Goals {
             return None;
         }
         let rc = mem::read_u64(m, actor + root).filter(|&p| mem::plausible(p))?;
-        let label = trf!("대화: {a0}", a0 = npc_label(&n.class(m, actor).unwrap_or_default()));
+        let label = trf!("TALK_GOAL", npc = npc_label(&n.class(m, actor).unwrap_or_default()));
         Some(Payload { facts, tags, used: None, root: rc, label, items: Vec::new(), keys: Vec::new(), note, gate: Gate::Open, npc: true })
     }
 
@@ -521,15 +521,15 @@ impl Goals {
             if !at.iter().all(|v| v.is_finite()) {
                 continue;
             }
-            let mut detail = p.note.clone().or_else(|| items_left.then(|| trf!("아이템: {a0}", a0 = p.items.join(", ")))).unwrap_or_else(|| {
-                new_tags.first().map(|t| tag(t)).unwrap_or_else(|| trf!("새 사실 {a0}개", a0 = new_facts.len()))
+            let mut detail = p.note.clone().or_else(|| items_left.then(|| trf!("ITEM", items = p.items.join(", ")))).unwrap_or_else(|| {
+                new_tags.first().map(|t| tag(t)).unwrap_or_else(|| trf!("NEW_FACTS", count = new_facts.len()))
             });
             let mut quests: Vec<u32> = new_facts.iter().filter_map(|(_, q)| *q).collect();
             quests.sort_unstable();
             quests.dedup();
             let tags = new_tags.iter().map(|t| tag(t)).collect();
             if p.gate == Gate::Conditional {
-                detail += tr!(" · 조건 필요 (열쇠·퍼즐 등 — 가기만 해선 안 됨)");
+                detail += tr!("NEEDS_SOMETHING_A_KEY_A_PUZZLE");
             }
             out.push(Goal { tier, id: actor, label: p.label.clone(), detail, at, quests, tags, keys: p.keys.clone(), gate: p.gate });
         }

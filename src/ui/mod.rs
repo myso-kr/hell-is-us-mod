@@ -136,15 +136,15 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
                 }
             }
             Ok(Request::SavePosition(i)) => match engine.save_position(i) {
-                Ok(p) => reply(true, trf!("위치 {a0} 저장 ({a1:.0}, {a2:.0}, {a3:.0})", a0 = i + 1, a1 = p[0], a2 = p[1], a3 = p[2])),
+                Ok(p) => reply(true, trf!("POSITION_SAVED", slot = i + 1, x = p[0], y = p[1], z = p[2])),
                 Err(e) => reply(false, e),
             },
             Ok(Request::LoadPosition(i)) => match engine.load_position(i) {
-                Ok(()) => reply(true, trf!("위치 {a0} 로 이동", a0 = i + 1)),
+                Ok(()) => reply(true, trf!("MOVED_TO_POSITION", slot = i + 1)),
                 Err(e) => reply(false, e),
             },
             Ok(Request::Restore) => match engine.stop() {
-                Ok(()) => reply(true, tr!("원래 값으로 되돌림").into()),
+                Ok(()) => reply(true, tr!("ORIGINAL_VALUES_RESTORED").into()),
                 Err(e) => reply(false, e),
             },
             Err(RecvTimeoutError::Timeout) => {}

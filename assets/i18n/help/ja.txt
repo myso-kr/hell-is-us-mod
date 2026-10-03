@@ -1,46 +1,46 @@
 hiumod — Hell Is Us (Steam) 用のシングルプレイ向けチートとミニマップ
 
 使い方
-  hiumod                        必要ならゲームを起動してパネルを開く — ` (~) で表示/非表示;
-                                ゲームが終了するとパネルも閉じる
-  hiumod ui                     パネルのみ; ゲームは起動しない
-  hiumod doctor                 すべてを点検; 何も書き込まない
+  hiumod                        必要ならゲームを起動し、パネルを開く — ` (~) で表示/非表示。
+                                ゲームを終了するとパネルも閉じる
+  hiumod ui                     パネルのみ。ゲームは起動しない
+  hiumod doctor                 すべてを点検（何も書き込まない）
   hiumod doctor inspect <target> [depth] [gaps]
-                                動作中のオブジェクトのすべてのリフレクションフィールドを名前と
-                                値で表示; ポインタは `depth` 階層まで追跡 (既定 0);
+                                動作中のオブジェクトの全リフレクションフィールドを名前と値で表示。
+                                ポインタは `depth` 階層まで追跡 (既定 0)、
                                 `gaps` はフィールド間のネイティブバイトも表示
-  hiumod doctor find <text>     名前にテキストを含むすべてのクラス・構造体プロパティ
+  hiumod doctor find <text>     名前にテキストを含むクラス・構造体プロパティをすべて表示
   hiumod doctor dump [prefix]...
-                                名前が接頭辞で始まるクラスと構造体の SDK 風一覧
-                                (既定 Charlie, Story)
-  hiumod doctor usmap           読み込まれたクラス・構造体・列挙型を .usmap
-                                マッピングファイルとして出力、tools/survey 用
-  hiumod doctor survey [world]  マッピングを作り、ゲームのマップ全体に tools/survey を実行:
-                                各ワールドが出すものを Mods\survey に —
-                                ゲームのテキスト 12 言語分も
-  hiumod doctor locale          ゲームのテキストのみを Mods\locale に: アイテム・NPC・
-                                地域の名前をゲームの言語で
-  hiumod doctor saves [s]       メモリ上の全セーブオブジェクトを5秒ごとに: 日付・事実・
-                                完了した善行 — プレイ中にゲームが更新するもの
+                                名前が接頭辞で始まるクラス・構造体の SDK 風一覧
+                                (既定: Charlie, Story)
+  hiumod doctor usmap           読み込み済みのクラス・構造体・列挙型を .usmap
+                                マッピングファイルとして出力 (tools/survey 用)
+  hiumod doctor survey [world]  マッピングを作り、ゲームの全マップに tools/survey を実行:
+                                各ワールドの出力を Mods\survey に保存 —
+                                ゲームのテキスト (12 言語分) も
+  hiumod doctor locale          ゲームのテキストだけを Mods\locale に保存:
+                                アイテム・NPC・エリアの名前を各言語で
+  hiumod doctor saves [s]       メモリ上の全セーブオブジェクトを5秒ごとに表示: 日付・事実・
+                                達成した善行 — プレイ中にゲームが更新するもの
   hiumod doctor watch <target> [seconds]
                                 オブジェクト内で何が変わるかを、名前付きまたはネイティブで随時表示
   hiumod doctor scan <target> <value>
   hiumod doctor scan next <value>
-                                オブジェクト内で値がある場所を探す; ゲーム内で値が変わった後、
-                                それらの場所のうちどれが一緒に変わったかを表示
+                                オブジェクト内で値のある場所を探す。ゲーム内で値が変わった後、
+                                その場所のうち一緒に変わったものを表示
                                 対象: hero, controller, asc, sets, inventory, items,
                                 save, world, enemy[:N], 0xADDRESS, またはクラス名[:N]
                                 — 結果は Mods\doctor にも書き込まれる
-  hiumod list                   全セットの全属性をリアルタイムで読む
-  hiumod get <attribute>...     その一部を Name または Set.Name で
-  hiumod pose                   主人公の位置と向きを Ctrl+C までリアルタイムで読む
-  hiumod set <cheat> <value>    バランス値を一度だけ書き込む (表にはまだなし)
-  hiumod hold <cheat>...        例: god stamina speed=2 — Ctrl+C まで;
-                                保持できるチートはすべて `hiumod doctor` の一覧にある
-  hiumod restore                中断された hold が変更したままにした値を元に戻す
+  hiumod list                   全セットの全属性をリアルタイムで表示
+  hiumod get <attribute>...     指定した属性を Name または Set.Name で表示
+  hiumod pose                   主人公の位置と向きを Ctrl+C までリアルタイムで表示
+  hiumod set <cheat> <value>    値を一度だけ書き込む (表にはまだなし)
+  hiumod hold <cheat>...        例: god stamina speed=2 — Ctrl+C まで保持。
+                                使えるチートは `hiumod doctor` の一覧に載っている
+  hiumod restore                強制終了した hold が残した変更を元に戻す
 
 オプション
   --game-dir <dir>              HellIsUs\ を含むインストールのルート
                                 (既定: Steam ライブラリから検出)
 
-主人公を操作している間だけ書き込みます。セーブをバックアップしてください。
+主人公を操作している間だけ書き込みます。セーブのバックアップを取ってください。

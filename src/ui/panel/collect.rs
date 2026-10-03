@@ -9,16 +9,17 @@ impl Panel {
         let list = snap.map(|s| s.collection.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
-        card(t, tr!("수집 진행도"), |t| {
+        card(t, tr!("COLLECTION"), |t| {
             if list.is_empty() {
-                note(t, tr!("조사 DB 가 없습니다 — 콘솔에서 `doctor survey` 를 한 번 실행하세요"));
+                note(t, tr!("NO_SURVEY_DB_RUN_DOCTOR_SURVEY"));
                 return;
             }
-            note(t, tr!("월드에 놓인 것만 셉니다 (NPC 보상·상점은 제외) · 이 지역 / 전체"));
+            note(t, tr!("COUNTS_WHAT_LIES_IN_THE_WORLD"));
             for c in list.iter() {
                 let open = self.unfolded_collect == Some(c.label);
                 t.style(tw::row(8.0)).add(|t| {
-                    let label = trf!("{a0}  {a1}/{a2} · 전체 {a3}/{a4}", a0 = crate::i18n::tr(c.label), a1 = c.here.0, a2 = c.here.1, a3 = c.all.0, a4 = c.all.1);
+                    w(t, |ui| crate::ui::svg::sort(ui, crate::survey::collect_sort(c.label), 18.0));
+                    let label = trf!("COLLECT_HERE_AND_ALL", sort = crate::i18n::tr(c.label), got_here = c.here.0, all_here = c.here.1, got = c.all.0, all = c.all.1);
                     let done = c.here.0 == c.here.1;
                     if tw::pick(t, open, RichText::new(label).color(if done { DIM } else { Color32::from_gray(225) })) {
                         self.unfolded_collect = if open { None } else { Some(c.label) };
@@ -31,7 +32,8 @@ impl Panel {
                     }
                     for x in left.iter().take(8) {
                         let far = here.map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0));
-                        if tw::pick(t, state.target == Some(x.id), format!("    {} ({far})", x.label)) {
+                        let sort = crate::survey::collect_sort(c.label);
+                        if tw::pick_with(t, state.target == Some(x.id), |ui| { ui.add_space(14.0); crate::ui::svg::sort(ui, sort, 16.0); }, format!("{} ({far})", x.label)) {
                             guide_to(state, &goals, x);
                         }
                     }
@@ -45,11 +47,13 @@ impl Panel {
         use crate::quests::{Kind, Status};
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
         let totals = snap.map_or([0; 3], |s| s.secret_totals);
-        card(t, tr!("선행 · 미스터리 · 타임루프"), |t| {
+        card(t, tr!("GOOD_DEEDS_MYSTERIES_TIMELOOPS"), |t| {
             for (i, (kind, _)) in Kind::SECRETS.iter().enumerate() {
                 let of = |s: Status| journal.iter().filter(|q| q.kind == *kind && q.status == s).count();
-                field(t, kind.label(), |t| {
-                    text(t, trf!("완료 {a0} / {a1} · 진행 중 {a2} · 실패 {a3}", a0 = of(Status::Completed), a1 = totals[i], a2 = of(Status::Started), a3 = of(Status::Failed)))
+                t.style(tw::row(6.0)).add(|t| {
+                    w(t, |ui| crate::ui::svg::quest(ui, *kind, 18.0));
+                    w(t, |ui| ui.label(RichText::new(kind.label()).strong()));
+                    text(t, trf!("DONE_IN_PROGRESS_FAILED", done = of(Status::Completed), all = totals[i], started = of(Status::Started), failed = of(Status::Failed)));
                 });
             }
         });
@@ -61,15 +65,15 @@ impl Panel {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here_world = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32]);
-        card(t, &trf!("들을 이야기가 남은 NPC ({a0})", a0 = list.len()), |t| {
-            note(t, tr!("대화에서 아직 모르는 사실·단서를 줄 수 있는 사람 (갈래가 잠긴 대화도 포함)"));
+        card(t, &trf!("NPCS_WITH_MORE_TO_TELL", count = list.len()), |t| {
+            note(t, tr!("PEOPLE_WHOSE_TALK_CAN_STILL_GIVE"));
             let mut mine: Vec<&crate::survey::Need> = list.iter().filter(|x| Some(&x.world) == here_world.as_ref()).collect();
             if let Some(h) = here {
                 mine.sort_by(|a, b| (a.at[0] - h[0]).hypot(a.at[1] - h[1]).total_cmp(&(b.at[0] - h[0]).hypot(b.at[1] - h[1])));
             }
             for x in mine.iter().take(10) {
                 let far = here.map_or(String::new(), |h| crate::raster::distance((x.at[0] - h[0]).hypot(x.at[1] - h[1]) / 100.0));
-                if tw::pick(t, state.target == Some(x.id), format!("{} ({far})", x.label.trim_start_matches(trf!("대화: {p}", p = "").as_str()))) {
+                if tw::pick_with(t, state.target == Some(x.id), |ui| { crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0); }, format!("{} ({far})", x.label.trim_start_matches(trf!("TALK_NPC", p = "").as_str()))) {
                     guide_to(state, &goals, x);
                 }
             }
@@ -78,7 +82,7 @@ impl Panel {
                 *elsewhere.entry(x.world.as_str()).or_default() += 1;
             }
             if !elsewhere.is_empty() {
-                note(t, trf!("다른 지역: {a0}", a0 = elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect::<Vec<_>>().join(" · ")));
+                note(t, trf!("OTHER_REGIONS", regions = elsewhere.iter().map(|(w, n)| format!("{} {n}", crate::i18n::place(w))).collect::<Vec<_>>().join(" · ")));
             }
         });
     }

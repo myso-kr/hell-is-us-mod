@@ -33,9 +33,9 @@ impl Kind {
 
     pub fn label(self) -> &'static str {
         match self {
-            Kind::Dial => tr!("다이얼 퍼즐"),
-            Kind::Keypad => tr!("키패드·암호"),
-            Kind::Placement => tr!("물건 놓기 퍼즐"),
+            Kind::Dial => tr!("DIAL_PUZZLE"),
+            Kind::Keypad => tr!("KEYPAD_CODE"),
+            Kind::Placement => tr!("ITEM_PLACEMENT"),
         }
     }
 }

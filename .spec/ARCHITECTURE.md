@@ -93,7 +93,7 @@ src/
     raster.rs           draw_map (한 프레임) — canvas·compass 를 다시 내보냄
     relief.rs icons.rs  지형 굽기, assets/{icons,pins}/*.svg 래스터화
   i18n/                 게임 언어 따르기 (.spec/I18N.md): culture.rs (프로필의 TextCulture) · names.rs (게임 고유명사:
-                        Mods\locale) · text.rs (모드 문구 표 assets/i18n) · fill.rs (trf! 실행 시 채움). tr!/trf! 매크로
+                        Mods\locale) · text.rs (모드 문구 표 assets/i18n, 키 → 문구) · fill.rs (trf! 실행 시 채움). tr!("KEY")/trf! 매크로
   infra/                log.rs logfile.rs (hiumod.log) · paths.rs (Mods\ 폴더, 모든 파일 경로의 뿌리) ·
                         settings.rs · verify.rs · backup.rs (세이브 백업) · memstat.rs (자기 메모리)
   game/                 밖에서 본 게임: locate.rs (설치), launch.rs, process.rs (RPM/WPM)

@@ -67,10 +67,10 @@ impl Group {
 
     pub fn label(self) -> &'static str {
         match self {
-            Group::Survival => tr!("생존"),
-            Group::Combat => tr!("전투"),
-            Group::Movement => tr!("이동"),
-            Group::Items => tr!("아이템"),
+            Group::Survival => tr!("SURVIVAL"),
+            Group::Combat => tr!("COMBAT"),
+            Group::Movement => tr!("MOVEMENT"),
+            Group::Items => tr!("ITEMS"),
         }
     }
 }
@@ -156,37 +156,37 @@ const NEAR_ZERO: f32 = 0.05;
 // and did nothing, and was dropped (docs/CHEATS.md, .spec/DECISIONS.md D12).
 pub const CHEATS: &[Cheat] = &[
     // 생존
-    toggle("god", Group::Survival, "체력 유지 (상한을 최대로)", &[Fill(a::ENDURANCE_CAP, a::ENDURANCE_MAX)], true),
-    toggle("stamina", Group::Survival, "스태미나 무한", &[Fill(a::ENDURANCE, a::ENDURANCE_CAP)], true),
+    toggle("god", Group::Survival, "KEEP_HEALTH_CAP_AT_MAXIMUM", &[Fill(a::ENDURANCE_CAP, a::ENDURANCE_MAX)], true),
+    toggle("stamina", Group::Survival, "INFINITE_STAMINA", &[Fill(a::ENDURANCE, a::ENDURANCE_CAP)], true),
     // Experiments (.spec/CHEATS-RESEARCH.md §6): whether the game's own systems heed these.
     // Faction decides both who the enemies notice and whose blows land, so a ghost
     // is ignored and cannot strike — for getting past, not for fighting.
-    toggle("ghost", Group::Survival, "고스트 (탐험용 — 켜는 동안 공격도 막힘)", &[Effect::Ghost], true),
+    toggle("ghost", Group::Survival, "GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK", &[Effect::Ghost], true),
     // 전투
-    toggle("lymbic", Group::Combat, "림빅 에너지 무한", &[Fill(a::LYMBIC, a::LYMBIC_MAX)], false),
+    toggle("lymbic", Group::Combat, "INFINITE_LYMBIC_ENERGY", &[Fill(a::LYMBIC, a::LYMBIC_MAX)], false),
     // Coefficients like these held in memory but did nothing for every one tried in
     // play (docs/CHEATS.md); these two are kept only until someone tries them.
-    toggle("lymbic_cost", Group::Combat, "림빅 소모 없음", &[Fixed(a::LYMBIC_COST, 0.0)], false),
-    toggle("skill_cooldown", Group::Combat, "스킬 쿨다운 없음", &[Fixed(a::SKILL_COOLDOWN, NEAR_ZERO)], false),
+    toggle("lymbic_cost", Group::Combat, "NO_LYMBIC_COST", &[Fixed(a::LYMBIC_COST, 0.0)], false),
+    toggle("skill_cooldown", Group::Combat, "NO_SKILL_COOLDOWN", &[Fixed(a::SKILL_COOLDOWN, NEAR_ZERO)], false),
     // 이동 — plain fields, not attributes: the values the game actually moves by.
-    slider("speed", Group::Movement, "걷기 속도 (기본 450)", &[Chosen(a::WALK_SPEED)], 300.0, 2000.0, 900.0, true),
+    slider("speed", Group::Movement, "WALK_SPEED_DEFAULT_450", &[Chosen(a::WALK_SPEED)], 300.0, 2000.0, 900.0, true),
     // The hero's own time dilation speeds up everything it does — attacks, dodges,
     // movement — and leaves enemies alone.
-    slider("hero_time", Group::Movement, "주인공 시간 배속 (기본 1)", &[Chosen(a::TIME)], 1.0, 3.0, 1.5, true),
+    slider("hero_time", Group::Movement, "HERO_TIME_SCALE_DEFAULT_1", &[Chosen(a::TIME)], 1.0, 3.0, 1.5, true),
     // The world's own clock: everything, hero included, at this speed.
-    slider("game_speed", Group::Movement, "게임 속도 (기본 1)", &[Chosen(a::WORLD_TIME)], 0.2, 3.0, 0.5, true),
+    slider("game_speed", Group::Movement, "GAME_SPEED_DEFAULT_1", &[Chosen(a::WORLD_TIME)], 0.2, 3.0, 0.5, true),
     // Enemies: their own clock and their health (extras.rs).
-    slider("enemy_time", Group::Combat, "적 속도 (기본 1)", &[Effect::EnemyTime], 0.05, 1.0, 0.3, true),
-    toggle("frail", Group::Combat, "약한 적 (한 방에 처치)", &[Effect::EnemyFrail], true),
+    slider("enemy_time", Group::Combat, "ENEMY_SPEED_DEFAULT_1", &[Effect::EnemyTime], 0.05, 1.0, 0.3, true),
+    toggle("frail", Group::Combat, "FRAIL_ENEMIES_ONE_HIT_KILLS", &[Effect::EnemyFrail], true),
     // Items: the stack counts in the inventory (extras.rs).
-    toggle("stock", Group::Items, "소모품 줄지 않음", &[Effect::Stock("Useable")], true),
-    slider("weapon_xp", Group::Items, "무기 경험치 배수 (기본 1)", &[Effect::WeaponXp], 1.0, 10.0, 3.0, true),
+    toggle("stock", Group::Items, "CONSUMABLES_NEVER_RUN_OUT", &[Effect::Stock("Useable")], true),
+    slider("weapon_xp", Group::Items, "WEAPON_XP_MULTIPLIER_DEFAULT_1", &[Effect::WeaponXp], 1.0, 10.0, 3.0, true),
     Cheat {
         id: "shards",
         group: Group::Items,
         // Below the game's own 999: a full stack takes no more, so pickups stop and
         // no "acquired" notice shows (seen in play).
-        label: "가진 샤드 수량 (999=최대면 줍기·알림 막힘)",
+        label: "SHARDS_HELD_999_MAX_BLOCKS_PICKUPS",
         kind: Kind::SetStock { class: "Shard", max: 990.0, default: 900.0 },
         verified: true,
     },
@@ -213,10 +213,10 @@ pub fn ids(pick: impl Fn(&Kind) -> bool) -> String {
 /// Write a balance once.
 pub fn set_value(s: &Session, id: &str, v: f32) -> Result<(), String> {
     let Some(Kind::Set { target, caps, max }) = find(id).map(|c| c.kind) else {
-        return Err(trf!("`{id}` 은(는) 값을 정할 수 없음 — 가능한 것: {a0}", id = id, a0 = ids(|k| matches!(k, Kind::Set { .. }))));
+        return Err(trf!("CANNOT_BE_SET_ONE_OF", id = id, choices = ids(|k| matches!(k, Kind::Set { .. }))));
     };
     if !(0.0..=max).contains(&v) {
-        return Err(trf!("{id}: 0..={max} 사이", id = id, max = max));
+        return Err(trf!("CHEAT_SET_RANGE", id = id, max = max));
     }
     for &cap in caps {
         if s.current(cap)? < v {
@@ -241,20 +241,20 @@ impl Active {
             None => (s, None),
         };
         let held = || ids(|k| !matches!(k, Kind::Set { .. } | Kind::SetStock { .. }));
-        let c = find(id).ok_or_else(|| trf!("모르는 치트 `{id}` — 가능한 것: {a0}", id = id, a0 = held()))?;
+        let c = find(id).ok_or_else(|| trf!("UNKNOWN_CHEAT_ONE_OF", id = id, choices = held()))?;
         match (c.kind, value) {
             (Kind::Toggle(_), None) => Ok(Active { cheat: c.id, value: 0.0 }),
-            (Kind::Toggle(_), Some(_)) => Err(trf!("{id} 에는 값을 줄 수 없음", id = id)),
+            (Kind::Toggle(_), Some(_)) => Err(trf!("TAKES_NO_VALUE", id = id)),
             (Kind::Slider { min, max, default, .. }, v) => {
                 let v = v.unwrap_or(default);
                 if (min..=max).contains(&v) {
                     Ok(Active { cheat: c.id, value: v })
                 } else {
-                    Err(trf!("{id}: {min}..={max} 사이", id = id, min = min, max = max))
+                    Err(trf!("CHEAT_RANGE", id = id, min = min, max = max))
                 }
             }
             (Kind::Set { .. } | Kind::SetStock { .. }, _) => {
-                Err(trf!("{id} 는 한 번 쓰는 값 — hold 가 아니라 `set {id} <값>` 을 쓰세요", id = id))
+                Err(trf!("IS_WRITTEN_ONCE_USE_SET_VALUE", id = id))
             }
         }
     }
