@@ -6,7 +6,9 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
-## Unreleased — 0.2.2
+## 0.3.0 — 2026-10-04
+
+Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
 
 ### Changed
 

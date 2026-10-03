@@ -18,7 +18,7 @@ releases, the topic documents for how it works — not here.
 
 ## 2. Releases
 
-- 0.1.0 (2026-10-03), 0.2.0 and 0.2.1 (2026-10-04) are released: each by renaming the CHANGELOG heading
+- 0.1.0 (2026-10-03), 0.2.0, 0.2.1 and 0.3.0 (2026-10-04) are released: each by renaming the CHANGELOG heading
   `Unreleased — X.Y.Z` to `X.Y.Z`, setting Cargo.toml, then `git tag vX.Y.Z` and pushing the tag.
   `release.yml` checks the tag, Cargo.toml and the changelog agree, builds the zip, checks it holds
   nothing from the game, and publishes it with the verified build and a SHA-256. Versions follow
