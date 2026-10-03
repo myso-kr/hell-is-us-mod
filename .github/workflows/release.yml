@@ -118,24 +118,24 @@ jobs:
           [ -n "$BUILD" ] || { echo "::error::TESTED_BUILD not found in src/game/mod.rs"; exit 1; }
           # Everything under the newest CHANGELOG heading, up to the next one.
           # '## ' and not '### ': the release's own subsections stay in.
-          awk '/^## [^#]/{ if (seen) exit; seen=1; next } seen' CHANGELOG.md > changes.md
+          awk '/^## [^#]/{ if (seen) exit; seen=1; next } seen' CHANGELOG.md | sed '/./,$!d' > changes.md
           {
             echo "## Verified game build"
             echo
             echo "Steam build \`$BUILD\` of *Hell Is Us* (app 1620730). \`hiumod doctor\` checks yours."
             echo
-            echo "> After a game update, run \`hiumod doctor\`: it names anything that moved. Run"
-            echo "> \`doctor survey\` again for the guide's data. If something stays broken, open an"
-            echo "> issue with the doctor output."
+            echo "> After a game update, hiumod reads the guide's data again by itself. If something"
+            echo "> stops working, run \`hiumod doctor\` — it names anything that moved — and open an"
+            echo "> issue with its output."
             echo
             echo "## Installing"
             echo
             echo "1. Unzip \`hiumod-$V.zip\` anywhere. It writes only to \`<game folder>\\Mods\\\`."
             echo "2. Run \`hiumod.exe\`. It starts the game through Steam and attaches once you're in."
-            echo "3. Press **\`** (left of 1) for the panel. The first time you control the hero, it reads"
+            echo "3. Press <kbd>&#96;</kbd> (left of 1) for the panel. The first time you control the hero, it reads"
             echo "   the game's maps and text by itself; if the .NET 8 runtime is missing, it offers to install it."
             echo
-            echo "**F9** map · **F10** compass · **F11** next goal · **F6** pin"
+            echo "<kbd>F9</kbd> map · <kbd>F10</kbd> compass · <kbd>F11</kbd> next goal · <kbd>F6</kbd> pin"
             echo
             echo "## What changed"
             echo
