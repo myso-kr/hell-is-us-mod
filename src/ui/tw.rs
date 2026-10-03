@@ -17,9 +17,9 @@ use egui_taffy::taffy::{self, AlignItems, Display, FlexDirection, FlexWrap, Size
 use egui_taffy::{Tui, TuiBuilderLogic, TuiContainerResponse};
 
 /// `gap-3`: the space between cards and between a card's rows (px).
-pub const GAP: f32 = 12.0;
+pub const GAP: f32 = super::theme::BLOCK;
 /// A card's width when the window is sized to its page (px).
-pub const CARD: f32 = 360.0;
+pub const CARD: f32 = 372.0;
 
 /// `w-full`: a root as wide as the room it is given. A root left `auto` is laid out
 /// as CSS does — fit to its content — and its cards fold to one narrow column.
@@ -33,7 +33,7 @@ pub fn cards_width(cards: u32) -> f32 {
 }
 /// A form row's label: a third of the row, between these (px).
 const LABEL_MIN: f32 = 72.0;
-const LABEL_MAX: f32 = 150.0;
+const LABEL_MAX: f32 = 200.0;
 /// The slider's track never gets narrower than this (px).
 const TRACK_MIN: f32 = 48.0;
 
@@ -41,12 +41,18 @@ fn gap(px: f32) -> Size<taffy::LengthPercentage> {
     Size { width: length(px), height: length(px) }
 }
 
-/// `flex flex-col gap-{px} items-stretch`
+/// `grid grid-cols-[minmax(0,1fr)] gap-{px}`: a column of rows, each as wide as the
+/// column and as tall as its content.
+///
+/// A grid, not `flex-col`: a flex column hands its spare height to every child that
+/// grows — and `block`s grow, so they fill what is left of a row — which showed as
+/// uneven gaps between a card's rows. Grid rows are sized by their content alone.
 pub fn col(px: f32) -> Style {
     Style {
-        display: Display::Flex,
-        flex_direction: FlexDirection::Column,
-        align_items: Some(AlignItems::Stretch),
+        display: Display::Grid,
+        grid_template_columns: vec![taffy::style_helpers::minmax(length(0.0), fr(1.0))],
+        align_items: Some(AlignItems::Start),
+        justify_items: Some(AlignItems::Stretch),
         gap: gap(px),
         ..Default::default()
     }
@@ -137,8 +143,9 @@ pub fn sidebar(side: f32, px: f32) -> Style {
 /// A leaf that fills its row across and can shrink to nothing: what it holds is laid
 /// out in the width it is given, and its height follows (wrapped text, lists).
 pub fn block<T>(tui: &mut Tui, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
-    // `grow min-w-0`: stretched in a column; in a row it takes what is left, so a width
-    // it was measured narrower at in the frame before cannot hold it there.
+    // `grow min-w-0`: in a row it takes what is left, so a width it was measured
+    // narrower at in the frame before cannot hold it there; in a column (a grid, see
+    // `col`) it is stretched across and grow means nothing.
     tui.style(Style {
         min_size: Size { width: length(0.0), height: auto() },
         flex_grow: 1.0,
@@ -166,6 +173,12 @@ pub fn w<T>(tui: &mut Tui, f: impl FnOnce(&mut egui::Ui) -> T) -> T {
     tui.style(Style { flex_shrink: 0.0, ..Default::default() }).wrap_mode(egui::TextWrapMode::Extend).ui(f)
 }
 
+/// One entry of a list that runs over several lines — its head and the notes under
+/// it held close (`gap-0.5`), so the card's own gap falls between entries, not inside one.
+pub fn item<T>(tui: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
+    tui.style(col(2.0)).add(body)
+}
+
 /// One choice of a list: a selectable row that wraps to the width it is given.
 pub fn pick(tui: &mut Tui, on: bool, text: impl Into<RichText>) -> bool {
     let text = text.into();
@@ -175,7 +188,7 @@ pub fn pick(tui: &mut Tui, on: bool, text: impl Into<RichText>) -> bool {
 /// `pick` with an icon before it (ui/svg.rs draws one).
 pub fn pick_with(tui: &mut Tui, on: bool, icon: impl FnOnce(&mut egui::Ui), text: impl Into<RichText>) -> bool {
     let text = text.into();
-    tui.style(row(4.0)).add(|tui| {
+    tui.style(row(super::theme::TIGHT)).add(|tui| {
         w(tui, icon);
         pick(tui, on, text)
     })
@@ -197,19 +210,19 @@ pub fn text(tui: &mut Tui, text: impl Into<RichText>) {
     });
 }
 
-/// A titled card: `flex flex-col gap-1.5 p-2.5 border rounded`.
+/// A titled card: `flex flex-col gap-2 p-4 border rounded`, the accent bar beside its title.
 pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> T {
     // A raised panel with rounded corners and an accent bar down its left edge.
     fn background(ui: &mut egui::Ui, container: &egui_taffy::TaffyContainerUi) {
         let rect = container.full_container();
         let p = ui.painter();
         p.rect(rect, super::theme::R_CARD, super::theme::CARD, egui::Stroke::new(1.0, super::theme::EDGE), egui::StrokeKind::Inside);
-        let bar = egui::Rect::from_min_size(rect.min + egui::vec2(1.0, 10.0), egui::vec2(3.0, 16.0));
+        let bar = egui::Rect::from_min_size(rect.min + egui::vec2(1.0, super::theme::PAD - 1.0), egui::vec2(3.0, 18.0));
         p.rect_filled(bar, 1.5, ACCENT);
     }
     tui.style(Style {
-        padding: taffy::Rect { left: length(12.0), right: length(10.0), top: length(8.0), bottom: length(10.0) },
-        ..col(5.0)
+        padding: length(super::theme::PAD),
+        ..col(super::theme::INLINE)
     })
     .add_with_background_ui(background, |tui, _| {
         w(tui, |ui| ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE)));
@@ -221,13 +234,13 @@ pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> 
 /// The cards' accent bar: the theme's accent.
 pub const ACCENT: Color32 = super::theme::ACCENT;
 
-/// A form row: the label in a third of the row (72–150 px, wrapping), then the
+/// A form row: the label in 42 % of the row (72–200 px, wrapping), then the
 /// controls in what is left, wrapping onto a second line rather than overflowing.
 pub fn field<T>(tui: &mut Tui, label: impl Into<RichText>, body: impl FnOnce(&mut Tui) -> T) -> T {
     let label = label.into();
-    tui.style(Style { align_items: Some(AlignItems::Center), ..row(10.0) }).add(|tui| {
+    tui.style(Style { align_items: Some(AlignItems::Center), ..row(super::theme::BLOCK) }).add(|tui| {
         tui.style(Style {
-            flex_basis: percent(1.0 / 3.0),
+            flex_basis: percent(0.42),
             flex_shrink: 0.0,
             min_size: Size { width: length(LABEL_MIN), height: auto() },
             max_size: Size { width: length(LABEL_MAX), height: auto() },
@@ -244,14 +257,14 @@ pub fn field<T>(tui: &mut Tui, label: impl Into<RichText>, body: impl FnOnce(&mu
                 infinite: egui::Vec2b::FALSE,
             }
         });
-        tui.style(grow(wrap(6.0))).add(body)
+        tui.style(grow(wrap(super::theme::INLINE))).add(body)
     })
 }
 
 /// A switch with its description beside it, the description wrapping.
 pub fn switch(tui: &mut Tui, on: &mut bool, label: impl Into<RichText>) -> egui::Response {
     let label = label.into();
-    tui.style(Style { align_items: Some(AlignItems::Start), ..row(8.0) }).add(|tui| {
+    tui.style(Style { align_items: Some(AlignItems::Start), ..row(super::theme::INLINE) }).add(|tui| {
         let r = w(tui, |ui| super::panel::toggle(ui, on));
         text(tui, label);
         r
@@ -260,7 +273,7 @@ pub fn switch(tui: &mut Tui, on: &mut bool, label: impl Into<RichText>) -> egui:
 
 /// Choices that wrap onto the next line.
 pub fn choices<T>(tui: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
-    tui.style(wrap(6.0)).add(body)
+    tui.style(wrap(super::theme::INLINE)).add(body)
 }
 
 /// A slider whose track takes what is left of the row, and whose value box is its own
@@ -272,7 +285,7 @@ pub fn slider<N: egui::emath::Numeric>(
     step: f64,
     suffix: &str,
 ) -> egui::Response {
-    tui.style(grow(row(6.0))).add(|tui| {
+    tui.style(grow(row(super::theme::INLINE))).add(|tui| {
         let track = tui.style(grow(Style::default())).ui_manual(|ui, _| {
             ui.spacing_mut().slider_width = ui.available_width().max(TRACK_MIN);
             let mut s = egui::Slider::new(value, range.clone()).show_value(false);

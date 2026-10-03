@@ -32,6 +32,15 @@ pub const OK: Color32 = Color32::from_rgb(0x8F, 0xD1, 0x7A);
 pub const WAIT: Color32 = Color32::from_rgb(0xE8, 0xC0, 0x6A);
 pub const BAD: Color32 = Color32::from_rgb(0xF0, 0x82, 0x78);
 
+/// Spacing, on a 4 px scale — every gap in the panel is one of these:
+/// `TIGHT` an icon and its text, `INLINE` controls in a row and rows in a card,
+/// `BLOCK` cards from each other and a group from the next, `PAD` inside a card and
+/// round the window.
+pub const TIGHT: f32 = 4.0;
+pub const INLINE: f32 = 8.0;
+pub const BLOCK: f32 = 12.0;
+pub const PAD: f32 = 16.0;
+
 /// Corners: a card, a control, a chip.
 pub const R_CARD: u8 = 8;
 pub const R_CONTROL: u8 = 5;
@@ -40,9 +49,10 @@ pub const R_CHIP: u8 = 11;
 /// egui's visuals from the palette, and the spacing and text sizes.
 pub fn install(ctx: &egui::Context) {
     ctx.all_styles_mut(|s| {
-        s.spacing.item_spacing = egui::vec2(7.0, 5.0);
-        s.spacing.button_padding = egui::vec2(8.0, 3.0);
-        s.spacing.interact_size.y = 22.0;
+        s.spacing.item_spacing = egui::vec2(INLINE, 6.0);
+        s.spacing.button_padding = egui::vec2(10.0, 4.0);
+        s.spacing.interact_size.y = 24.0;
+        s.spacing.window_margin = egui::Margin::same(BLOCK as i8);
         s.spacing.slider_width = 170.0;
         s.spacing.combo_width = 68.0;
         for (style, size) in [

@@ -8,7 +8,7 @@
 | `tools/site/strings/<lang>.json` | 12개 언어 문구 (빠진 키는 영어로). 언어별 원어민 페르소나 에이전트가 게임 공식 용어로 작성 |
 | `tools/site/site.css` | 패널과 같은 팔레트 (`src/ui/theme.rs`) |
 | `tools/site/site.js` | three.js 히어로 + 스포일러 데모·등장 애니메이션 |
-| `tools/site/config.json` | 사이트·저장소 주소 — **GitHub 계정이 정해지면 YOUR-GITHUB-NAME 교체** |
+| `tools/site/config.json` | 사이트·저장소 주소 — 형제 저장소처럼 `myso-kr/hell-is-us-mod` → https://myso-kr.github.io/hell-is-us-mod/ |
 | `tools/site/og.png` | 공유 미리보기 (1200×630, 히어로 스크린샷) |
 
 ## 디자인
@@ -28,7 +28,7 @@
 - 게임 이미지·에셋 미사용 (상표·저작권). 아이콘·문양은 모드용으로 그린 SVG.
 
 ## 배포
-1. `tools/site/config.json` 주소 교체 → `python tools/site/build.py` → 커밋.
+1. `python tools/site/build.py` → 커밋.
 2. GitHub 저장소 Settings → Pages → Deploy from branch → `main` / `/docs`.
    비공개 저장소는 Pages 에 유료 플랜(Pro 이상) 필요.
 3. 확인: 로컬 `python -m http.server -d docs`, Edge headless 로 1440·390 폭 스크린샷.

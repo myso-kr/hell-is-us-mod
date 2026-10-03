@@ -251,8 +251,9 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
             options,
             Box::new(move |cc| {
                 panel::install_fonts(&cc.egui_ctx);
+                // The theme sets both of egui's styles; set_visuals after it would put the
+                // stock dark grey back.
                 theme::install(&cc.egui_ctx);
-                cc.egui_ctx.set_visuals(eframe::egui::Visuals::dark());
                 let (s, c) = (shared.clone(), cc.egui_ctx.clone());
                 threads.push(std::thread::spawn(move || worker(s, rx, c)));
                 let (s, c) = (shared.clone(), cc.egui_ctx.clone());

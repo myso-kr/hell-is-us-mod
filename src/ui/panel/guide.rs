@@ -1,5 +1,6 @@
 //! The guide page: the compass, the guide's target and why, every place with something new.
 
+use super::super::theme::INLINE;
 use super::*;
 
 impl Panel {
@@ -48,7 +49,7 @@ impl Panel {
             });
             match state.target.and_then(|id| goals.iter().find(|g| g.id == id)) {
                 Some(g) => {
-                    t.style(tw::row(8.0)).add(|t| {
+                    t.style(tw::row(INLINE)).add(|t| {
                         w(t, |ui| crate::ui::svg::tier(ui, g.tier, 18.0));
                         text(t, RichText::new(&g.label).strong());
                         w(t, |ui| ui.label(RichText::new(crate::raster::distance(dist(g))).color(DIM)));
@@ -63,7 +64,7 @@ impl Panel {
                         }
                     });
                     if state.chosen {
-                        t.style(tw::row(8.0)).add(|t| {
+                        t.style(tw::row(INLINE)).add(|t| {
                             text(t, RichText::new(tr!("PICKED_BY_HAND_KEPT_UNTIL_IT")).color(DIM).small());
                             if w(t, |ui| ui.small_button(tr!("BACK_TO_AUTO"))).clicked() {
                                 state.chosen = false;
@@ -100,7 +101,7 @@ impl Panel {
                 }
             }
             if !state.skipped.is_empty() {
-                t.style(tw::row(8.0)).add(|t| {
+                t.style(tw::row(INLINE)).add(|t| {
                     text(t, RichText::new(trf!("GOALS_SKIPPED", count = state.skipped.len())).color(DIM).small());
                     if w(t, |ui| ui.small_button(tr!("UNDO"))).clicked() {
                         state.skipped.clear();
@@ -124,7 +125,9 @@ impl Panel {
         list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
         card(t, &trf!("PLACES", count = list.len()), |t| {
             block(t, |ui| {
-                egui::ScrollArea::vertical().max_height(220.0).show(ui, |ui| {
+                // min_scrolled_height too: the block is laid out at last frame's height, and
+                // a scroll area alone never asks for more than it was given.
+                egui::ScrollArea::vertical().max_height(220.0).min_scrolled_height(220.0).show(ui, |ui| {
                     for g in list {
                         let chosen = state.target == Some(g.id);
                         ui.horizontal(|ui| {

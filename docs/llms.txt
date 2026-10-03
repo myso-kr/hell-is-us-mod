@@ -2,9 +2,9 @@
 
 > hiumod is a free, open-source companion for Hell Is Us on PC: a live minimap, a quest tracker and story guide, vault and puzzle solutions, and collectible checklists, in the game's 12 languages. Spoilers stay hidden until you ask.
 
-- Site: https://YOUR-GITHUB-NAME.github.io/hell-is-us-mod/ (12 languages: English, 한국어, 日本語, 简体中文, Deutsch, Français, Español, Italiano, Polski, Português (Brasil), Русский, Türkçe)
-- Source: https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod
-- Download: https://github.com/YOUR-GITHUB-NAME/hell-is-us-mod/releases/latest
+- Site: https://myso-kr.github.io/hell-is-us-mod/ (12 languages: English, 한국어, 日本語, 简体中文, Deutsch, Français, Español, Italiano, Polski, Português (Brasil), Русский, Türkçe)
+- Source: https://github.com/myso-kr/hell-is-us-mod
+- Download: https://github.com/myso-kr/hell-is-us-mod/releases/latest
 - Game: Hell Is Us (Rogue Factor / Nacon, 2025), Steam app 1620730
 - Unofficial fan-made tool; not affiliated with Rogue Factor or Nacon.
 

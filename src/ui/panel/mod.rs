@@ -34,7 +34,7 @@ use super::theme::{BAD, DIM, OK, WAIT};
 pub const WIDTH: f32 = 960.0;
 /// What a page's width is wrapped in: the window frame's margins and the page's
 /// scrollbar (px).
-const FRAME: f32 = 16.0;
+const FRAME: f32 = 2.0 * super::theme::BLOCK;
 const SCROLLBAR: f32 = 14.0;
 /// The debug page's single card is this wide (px): its tables scroll sideways past it.
 /// The most masonry columns a page gets.
@@ -42,14 +42,14 @@ const MAX_COLUMNS: usize = 3;
 const DEBUG_PAGE: f32 = 620.0;
 /// The sidebar's width, and the gap between it and the page with the divider in its
 /// middle (px).
-const NAV: f32 = 172.0;
-const DIVIDER: f32 = 14.0;
+const NAV: f32 = 176.0;
+const DIVIDER: f32 = 2.0 * super::theme::PAD;
 /// The window is never taller than this share of the monitor; the page scrolls
 /// inside it instead.
 const MAX_SHARE: f32 = 0.85;
 /// Room under the page for its footer, and for the title bar and margins (px).
-const FOOTER: f32 = 92.0;
-const CHROME: f32 = 56.0;
+const FOOTER: f32 = 108.0;
+const CHROME: f32 = 72.0;
 
 /// egui's own fonts have no Hangul, and neither they nor Malgun Gothic have arrows
 /// and shapes like ▾ ▸ ↑ ↓. Malgun Gothic and Segoe UI Symbol ship with Windows, so
@@ -339,7 +339,7 @@ impl Panel {
     }
 
     fn title_bar(&mut self, ui: &mut egui::Ui) {
-        let (rect, bar) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 26.0), egui::Sense::click_and_drag());
+        let (rect, bar) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 30.0), egui::Sense::click_and_drag());
         if bar.drag_started_by(egui::PointerButton::Primary) {
             ui.ctx().send_viewport_cmd(egui::ViewportCommand::StartDrag);
         }
@@ -366,7 +366,9 @@ impl Panel {
                 }
             });
         });
+        ui.add_space(super::theme::TIGHT);
         ui.separator();
+        ui.add_space(super::theme::TIGHT);
     }
 
     /// The game and the hero gate, stacked for the sidebar.
@@ -375,7 +377,7 @@ impl Panel {
         let line = |ui: &mut egui::Ui, title: &str, text: RichText| {
             ui.label(RichText::new(title).color(DIM).small());
             ui.add(egui::Label::new(text).wrap());
-            ui.add_space(4.0);
+            ui.add_space(super::theme::INLINE);
         };
         match snap.map(|s| &s.game) {
             Some(Ok((pid, version))) => {
@@ -408,10 +410,15 @@ impl Panel {
                 .fill(if on { super::theme::ACCENT_DEEP } else { Color32::TRANSPARENT })
                 .stroke(if on { egui::Stroke::new(1.0, super::theme::ACCENT) } else { egui::Stroke::NONE })
                 .corner_radius(super::theme::R_CONTROL)
-                .min_size(egui::vec2(ui.available_width(), 26.0));
+                .min_size(egui::vec2(ui.available_width(), 28.0));
             ui.add(button).clicked()
         };
-        ui.label(RichText::new(tr!("CHEATS")).color(DIM).small());
+        let heading = |ui: &mut egui::Ui, text: &str| {
+            ui.label(RichText::new(text).color(DIM).small());
+            ui.add_space(super::theme::TIGHT / 2.0);
+        };
+        ui.spacing_mut().item_spacing.y = 2.0;
+        heading(ui, tr!("CHEATS"));
         for g in Group::ALL {
             let on = CHEATS.iter().filter(|c| c.group == g && self.on.get(c.id).copied().unwrap_or(false)).count();
             let text = if on > 0 { format!("{}  ({on})", g.label()) } else { g.label().to_string() };
@@ -420,8 +427,8 @@ impl Panel {
                 self.tool = None;
             }
         }
-        ui.add_space(6.0);
-        ui.label(RichText::new(tr!("TOOLS")).color(DIM).small());
+        ui.add_space(super::theme::BLOCK);
+        heading(ui, tr!("TOOLS"));
         for tool in Tool::ALL {
             if item(ui, self.tool == Some(tool), tool.label().to_string()) {
                 self.tool = Some(tool);
@@ -477,7 +484,7 @@ impl Panel {
                 ui.add(egui::Label::new(RichText::new(text).color(if *ok { OK } else { BAD }).small()).wrap());
             }
         }
-        ui.add_space(4.0);
+        ui.add_space(super::theme::TIGHT);
         ui.add(
             egui::Label::new(
                 RichText::new(tr!("WRITES_ONLY_WHILE_THE_HERO_IS")).color(DIM).small(),
@@ -603,7 +610,7 @@ impl eframe::App for Panel {
         let monitor_w = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1920.0, |m| m.x);
         self.fit_columns(monitor_w);
         let width = (FRAME + NAV + DIVIDER + self.page_width() + SCROLLBAR).min(monitor_w * 0.9);
-        let used = egui::Frame::central_panel(ui.style())
+        let used = egui::Frame::central_panel(ui.style()).inner_margin(super::theme::BLOCK)
             .show(ui, |ui| {
                 ui.set_width(width - FRAME);
                 ui.set_max_width(width - FRAME);
@@ -617,7 +624,9 @@ impl eframe::App for Panel {
                 tui(ui, ui.id().with("shell")).reserve_available_width().style(shell).show(|t| {
                     block(t, |ui| {
                         self.status(ui, snap.as_ref());
+                        ui.add_space(super::theme::TIGHT);
                         ui.separator();
+                        ui.add_space(super::theme::INLINE);
                         self.nav(ui);
                     });
                     block(t, |ui| {
@@ -633,7 +642,9 @@ impl eframe::App for Panel {
                                         .show(|t| self.page(t, snap.as_ref()));
                                 });
                             });
+                        ui.add_space(super::theme::INLINE);
                         ui.separator();
+                        ui.add_space(super::theme::TIGHT);
                         self.footer(ui, snap.as_ref());
                     });
                 });

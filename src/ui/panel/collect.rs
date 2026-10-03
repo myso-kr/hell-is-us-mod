@@ -1,5 +1,6 @@
 //! The collect page: collectibles taken here and everywhere, secrets done, NPCs with more to tell.
 
+use super::super::theme::INLINE;
 use super::*;
 
 impl Panel {
@@ -17,7 +18,7 @@ impl Panel {
             note(t, tr!("COUNTS_WHAT_LIES_IN_THE_WORLD"));
             for c in list.iter() {
                 let open = self.unfolded_collect == Some(c.label);
-                t.style(tw::row(8.0)).add(|t| {
+                t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, crate::survey::collect_sort(c.label), 18.0));
                     let label = trf!("COLLECT_HERE_AND_ALL", sort = crate::i18n::tr(c.label), got_here = c.here.0, all_here = c.here.1, got = c.all.0, all = c.all.1);
                     let done = c.here.0 == c.here.1;
@@ -50,7 +51,7 @@ impl Panel {
         card(t, tr!("GOOD_DEEDS_MYSTERIES_TIMELOOPS"), |t| {
             for (i, (kind, _)) in Kind::SECRETS.iter().enumerate() {
                 let of = |s: Status| journal.iter().filter(|q| q.kind == *kind && q.status == s).count();
-                t.style(tw::row(6.0)).add(|t| {
+                t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::quest(ui, *kind, 18.0));
                     w(t, |ui| ui.label(RichText::new(kind.label()).strong()));
                     text(t, trf!("DONE_IN_PROGRESS_FAILED", done = of(Status::Completed), all = totals[i], started = of(Status::Started), failed = of(Status::Failed)));

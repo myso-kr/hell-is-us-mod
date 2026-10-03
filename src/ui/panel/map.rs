@@ -1,5 +1,6 @@
 //! The map page: the minimap and big map settings, the relief, what the map shows, the pins, the keys.
 
+use super::super::theme::INLINE;
 use super::*;
 
 impl Panel {
@@ -120,7 +121,7 @@ impl Panel {
                 let total = near.iter().filter(|x| x.kind() == k).count();
                 let subs = Sub::ALL.iter().filter(|x| x.kind() == k).count();
                 let mut on = state.layers & k.bit() != 0;
-                t.style(tw::row(8.0)).add(|t| {
+                t.style(tw::row(INLINE)).add(|t| {
                     if w(t, |ui| toggle(ui, &mut on)).changed() {
                         state.layers ^= k.bit();
                     }
@@ -132,7 +133,7 @@ impl Panel {
                             if on { colour } else { colour.gamma_multiply(0.3) },
                         );
                     });
-                    t.style(tw::grow(tw::row(6.0))).add(|t| {
+                    t.style(tw::grow(tw::row(INLINE))).add(|t| {
                         w(t, |ui| crate::ui::svg::kind(ui, k, 18.0));
                         w(t, |ui| {
                             ui.label(RichText::new(k.label()).strong().color(if on { Color32::WHITE } else { DIM }))
@@ -206,7 +207,7 @@ impl Panel {
                     let far = here.map_or(String::new(), |h| crate::raster::distance((m.at[0] - h[0]).hypot(m.at[1] - h[1]) / 100.0));
                     let mut note_text = m.note.clone();
                     let mut kind = m.kind;
-                    t.style(tw::row(6.0)).add(|t| {
+                    t.style(tw::row(INLINE)).add(|t| {
                         w(t, |ui| pin_picker(ui, &format!("pin-{i}"), &mut kind));
                         block(t, |ui| ui.add(egui::TextEdit::singleline(&mut note_text).hint_text(tr!("NOTE")).desired_width(f32::INFINITY)));
                         w(t, |ui| ui.label(RichText::new(far).color(DIM).small()));

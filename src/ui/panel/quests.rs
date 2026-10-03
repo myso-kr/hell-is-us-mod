@@ -1,5 +1,6 @@
 //! The quest page: the journal and what the followed quest needs, missable deadlines, hand-overs.
 
+use super::super::theme::INLINE;
 use super::*;
 
 impl Panel {
@@ -105,18 +106,20 @@ impl Panel {
                     When::Now => (tr!("SOON"), BAD),
                     _ => (tr!("LATER"), DIM),
                 };
-                t.style(tw::row(8.0)).add(|t| {
-                    w(t, |ui| ui.label(RichText::new(mark).color(colour).small().strong()));
-                    let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
-                    if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
-                        state.quest = Some(d.key.clone());
-                        state.target = None;
-                        state.chosen = false;
-                        state.guide_auto = true;
-                        state.route = true;
-                    }
+                tw::item(t, |t| {
+                    t.style(tw::row(INLINE)).add(|t| {
+                        w(t, |ui| ui.label(RichText::new(mark).color(colour).small().strong()));
+                        let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
+                        if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
+                            state.quest = Some(d.key.clone());
+                            state.target = None;
+                            state.chosen = false;
+                            state.guide_auto = true;
+                            state.route = true;
+                        }
+                    });
+                    note(t, format!("{} — {}", d.due.label(), d.what));
                 });
-                note(t, format!("{} — {}", d.due.label(), d.what));
             }
             let passed = list.iter().filter(|d| d.when == When::Passed).count();
             if passed > 0 {

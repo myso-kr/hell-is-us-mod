@@ -1,6 +1,7 @@
 //! Phase 3 (.spec/GUIDE.md §27): the puzzles near the hero with their answers kept
 //! hidden until asked for (F6), the vault notebook (F7), the enemies left (F8).
 
+use super::super::theme::INLINE;
 use super::*;
 use crate::puzzles::{Answer, Puzzle};
 use crate::actors::Sub;
@@ -106,16 +107,18 @@ impl Panel {
                 };
                 let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
                 let progress = a.progress.filter(|(_, of)| *of > 1).map(|(v, of)| format!("  {}/{of}", v.min(of))).unwrap_or_default();
-                t.style(tw::row(8.0)).add(|t| {
-                    let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name) };
-                    text(t, RichText::new(head).color(if a.unlocked { DIM } else { super::super::theme::TEXT }));
-                    if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
-                        self.revealed.insert(id);
+                tw::item(t, |t| {
+                    t.style(tw::row(INLINE)).add(|t| {
+                        let head = if secret { tr!("HIDDEN_ACHIEVEMENT").to_string() } else { format!("{}{}{progress}", if a.unlocked { "✓ " } else { "" }, a.name) };
+                        text(t, RichText::new(head).color(if a.unlocked { DIM } else { super::super::theme::TEXT }));
+                        if secret && w(t, |ui| ui.small_button(tr!("SHOW"))).clicked() {
+                            self.revealed.insert(id);
+                        }
+                    });
+                    if !secret {
+                        text(t, RichText::new(format!("    {}", a.desc)).color(DIM).small());
                     }
                 });
-                if !secret {
-                    text(t, RichText::new(format!("    {}", a.desc)).color(DIM).small());
-                }
             }
         });
     }
@@ -154,7 +157,7 @@ impl Panel {
                     crate::goals::pretty(&p.class),
                     if *solved { " ✓" } else { "" }
                 );
-                t.style(tw::row(8.0)).add(|t| {
+                t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
                     text(t, RichText::new(head).color(if *solved { DIM } else { super::super::theme::TEXT }).small());
                     if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
@@ -210,7 +213,7 @@ impl Panel {
                 let name = crate::goals::pretty(&p.class);
                 let head = format!("{} · {name} ({far}){}", crate::i18n::tr(p.kind.label()), if p.solved { " ✓" } else { "" });
                 let open = self.revealed.contains(&p.id);
-                t.style(tw::row(8.0)).add(|t| {
+                t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0));
                     text(t, RichText::new(head).color(if p.solved { DIM } else { super::super::theme::TEXT }));
                     if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { tr!("SHOW_ANSWER") })).clicked() {
@@ -257,7 +260,7 @@ impl Panel {
                 };
                 let id = id_of(&v.vault.guid);
                 let open = self.revealed.contains(&id);
-                t.style(tw::row(8.0)).add(|t| {
+                t.style(tw::row(INLINE)).add(|t| {
                     w(t, |ui| crate::ui::svg::sort(ui, Sub::Vault, 18.0));
                     let colour = if v.state == VaultState::Opened { DIM } else { super::super::theme::TEXT };
                     text(t, RichText::new(format!("{name} · {region} — {status}")).color(colour));
@@ -303,30 +306,32 @@ impl Panel {
             for h in list.iter() {
                 let mine = here_world.as_deref() == Some(h.world.as_str());
                 let line = trf!("GROUPS_ENEMIES", place = crate::i18n::place(&h.world), left = h.left, all = h.all, enemies = h.enemies_left);
-                t.style(tw::row(8.0)).add(|t| {
-                    w(t, |ui| crate::ui::svg::sort(ui, Sub::EnemyGroup, 18.0));
-                    let colour = if h.left == 0 { DIM } else if mine { super::super::theme::TITLE } else { super::super::theme::TEXT };
-                    text(t, RichText::new(line).color(colour));
-                    if mine && h.left > 0 {
-                        if let (Some(p), true) = (here, w(t, |ui| ui.small_button(tr!("NEAREST"))).clicked()) {
-                            let near = h.places.iter().min_by(|a, b| (a[0] - p[0]).hypot(a[1] - p[1]).total_cmp(&(b[0] - p[0]).hypot(b[1] - p[1])));
-                            if let Some(at) = near {
-                                let x = crate::survey::Need {
-                                    world: h.world.clone(),
-                                    id: id_of(&format!("hollow{at:?}")),
-                                    label: tr!("ENEMY_GROUP_LEFT").to_string(),
-                                    what: String::new(),
-                                    at: *at,
-                                    done: false,
-                                };
-                                guide_to(state, &goals, &x);
+                tw::item(t, |t| {
+                    t.style(tw::row(INLINE)).add(|t| {
+                        w(t, |ui| crate::ui::svg::sort(ui, Sub::EnemyGroup, 18.0));
+                        let colour = if h.left == 0 { DIM } else if mine { super::super::theme::TITLE } else { super::super::theme::TEXT };
+                        text(t, RichText::new(line).color(colour));
+                        if mine && h.left > 0 {
+                            if let (Some(p), true) = (here, w(t, |ui| ui.small_button(tr!("NEAREST"))).clicked()) {
+                                let near = h.places.iter().min_by(|a, b| (a[0] - p[0]).hypot(a[1] - p[1]).total_cmp(&(b[0] - p[0]).hypot(b[1] - p[1])));
+                                if let Some(at) = near {
+                                    let x = crate::survey::Need {
+                                        world: h.world.clone(),
+                                        id: id_of(&format!("hollow{at:?}")),
+                                        label: tr!("ENEMY_GROUP_LEFT").to_string(),
+                                        what: String::new(),
+                                        at: *at,
+                                        done: false,
+                                    };
+                                    guide_to(state, &goals, &x);
+                                }
                             }
                         }
+                    });
+                    for (lp, l, a) in h.timeloops.iter().filter(|(_, l, _)| *l > 0) {
+                        note(t, trf!("TIMELOOP_LEFT", name = lp.trim_end_matches("_BP").trim_end_matches("_BP2"), left = l, all = a));
                     }
                 });
-                for (lp, l, a) in h.timeloops.iter().filter(|(_, l, _)| *l > 0) {
-                    note(t, trf!("TIMELOOP_LEFT", name = lp.trim_end_matches("_BP").trim_end_matches("_BP2"), left = l, all = a));
-                }
             }
         });
     }
