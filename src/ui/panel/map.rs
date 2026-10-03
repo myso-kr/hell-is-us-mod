@@ -107,21 +107,24 @@ impl Panel {
         match self.tool {
             Some(Tool::Now) => self.now_tab(t, guard, snap),
             Some(Tool::Help) => self.help_tab(t, guard),
-            Some(Tool::Guide) => tw::masonry(t, "guide", cols, 2, |t, i| match i {
+            // Where to go: the guide, the places, and the pins the player drops to go back to.
+            Some(Tool::Guide) => tw::masonry(t, "guide", cols, 3, |t, i| match i {
                 0 => self.guide_column(t, guard, snap),
-                _ => self.goals_card(t, guard, snap),
+                1 => self.goals_card(t, guard, snap),
+                _ => self.marks_column(t, guard, snap),
             }),
-            Some(Tool::Clues) => tw::masonry(t, "clues", cols, 2, |t, i| match i {
+            // What is known: the quests' clues, a clue looked up, and who still has more to tell.
+            Some(Tool::Clues) => tw::masonry(t, "clues", cols, 3, |t, i| match i {
                 0 => self.quest_clues_card(t, guard, snap),
-                _ => self.find_clue_card(t, snap),
+                1 => self.find_clue_card(t, snap),
+                _ => self.stories_card(t, guard, snap),
             }),
             Some(Tool::Puzzles) => {
                 super::deep::puzzles_hero(t, snap);
-                tw::masonry(t, "puzzles", cols, 4, |t, i| match i {
+                tw::masonry(t, "puzzles", cols, 3, |t, i| match i {
                     0 => self.puzzles_card(t, guard, snap),
                     1 => self.locks_card(t, guard, snap),
-                    2 => self.vaults_card(t, guard, snap),
-                    _ => self.catalogue_card(t, guard, snap),
+                    _ => self.vaults_card(t, guard, snap),
                 })
             }
             Some(Tool::Collect) => {
@@ -129,8 +132,8 @@ impl Panel {
                 tw::masonry(t, "collect", cols, 4, |t, i| match i {
                     0 => self.collection_card(t, guard, snap),
                     1 => self.hollows_card(t, guard, snap),
-                    2 => self.stories_card(t, guard, snap),
-                    _ => self.achievements_card(t, snap),
+                    2 => self.budget_card(t, snap),
+                    _ => self.achievements_card(t),
                 })
             }
             Some(Tool::Quests) => tw::masonry(t, "quests", cols, 4, |t, i| match i {
@@ -139,10 +142,10 @@ impl Panel {
                 2 => self.handovers_card(t, guard, snap),
                 _ => self.secrets_card(t, snap),
             }),
-            _ => tw::masonry(t, "map", cols, 4, |t, i| match i {
+            // How the maps look: nothing else.
+            _ => tw::masonry(t, "map", cols, 3, |t, i| match i {
                 0 => self.legend_card(t, guard),
                 1 => self.map_column(t, guard),
-                2 => self.marks_column(t, guard, snap),
                 _ => self.keys_card(t, guard),
             }),
         }

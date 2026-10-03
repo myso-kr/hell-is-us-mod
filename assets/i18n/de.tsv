@@ -512,12 +512,12 @@ HELP_A_UPDATE	Die Spieldaten werden von selbst neu gelesen. Wirkt etwas falsch, 
 HELP_Q_REPORT	Ein Problem melden
 HELP_A_REPORT	Die Seite „{debug}“ öffnet den Log-Ordner. Hänge hiumod.log und verify.txt an.
 ABOUT_NOW	wo du aufgehört hast, was hier übrig ist
-ABOUT_MAP	Minikarte, große Karte, Markierungen
-ABOUT_GUIDE	Kompass, wohin als Nächstes
+ABOUT_MAP	Minikarte, große Karte, Darstellung
+ABOUT_GUIDE	Kompass, nächstes Ziel, Pins
 ABOUT_QUESTS	Quests, verpassbare Taten, Übergaben
-ABOUT_CLUES	was du weißt, durchsuchbar
+ABOUT_CLUES	was du weißt, durchsuchbar; wer mehr erzählen kann
 ABOUT_PUZZLES	Lösungen, lymbische Schlösser, Grüfte
-ABOUT_COLLECT	Sammelobjekte, Gegnergruppen, Erfolge
+ABOUT_COLLECT	Sammelobjekte, Gegnergruppen, Splitterbudget, Erfolge
 ABOUT_SAVES	Spielstand-Sicherungen
 ABOUT_DEBUG	Logs, Cheat-Prüfung
 OPENS_NOW	Jetzt zu öffnen
@@ -594,3 +594,11 @@ DOWNLOADING_UPDATE	Wird geladen…
 RESTART_TO_UPDATE	Neu starten für v{version}
 RESTART_TO_UPDATE_HINT	Setzt die Spielwerte zurück, ersetzt die Dateien und startet die neue Version.
 SPLASH_TAGLINE	Ein Begleiter für Hell Is Us auf dem PC
+PUZZLES_HERE	Rätsel hier · {left} offen
+NEARBY	In der Nähe
+REST_OF_THIS_REGION	Der Rest der Region
+NO_UPGRADE_ACHIEVEMENTS_LEFT	Keine Aufwertungs-Erfolge mehr zu planen.
+SHARDS_HELD	Splitter im Besitz
+NAV_PLAY	Spielen
+NAV_WAY	Wegfindung
+NAV_SYSTEM	System

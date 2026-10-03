@@ -512,12 +512,12 @@ HELP_A_UPDATE	게임 데이터를 알아서 다시 읽습니다. 이상하면 �
 HELP_Q_REPORT	문제 알리기
 HELP_A_REPORT	'{debug}' 탭에서 로그 폴더를 열 수 있습니다. hiumod.log와 verify.txt를 첨부해 주세요.
 ABOUT_NOW	이어서 할 일, 이 지역에 남은 것
-ABOUT_MAP	미니맵, 큰 지도, 핀
-ABOUT_GUIDE	나침반, 다음 갈 곳
+ABOUT_MAP	미니맵, 큰 지도, 보이는 방식
+ABOUT_GUIDE	나침반, 다음 갈 곳, 핀
 ABOUT_QUESTS	퀘스트, 놓치기 쉬운 선행, 건네주기
-ABOUT_CLUES	아는 단서 찾기
+ABOUT_CLUES	아는 단서 찾기, 이야기가 남은 NPC
 ABOUT_PUZZLES	퍼즐 답, 림빅 잠금, 금고
-ABOUT_COLLECT	수집품, 적 무리, 업적
+ABOUT_COLLECT	수집품, 적 무리, 파편 예산, 업적
 ABOUT_SAVES	세이브 백업
 ABOUT_DEBUG	로그, 치트 점검
 OPENS_NOW	지금 열 수 있음
@@ -594,3 +594,11 @@ DOWNLOADING_UPDATE	받는 중…
 RESTART_TO_UPDATE	재시작해서 v{version} 적용
 RESTART_TO_UPDATE_HINT	게임 값을 원래대로 돌리고 파일을 바꾼 뒤 새 버전을 실행합니다.
 SPLASH_TAGLINE	PC용 Hell Is Us 동반 도구
+PUZZLES_HERE	이 지역 퍼즐 · 남은 {left}
+NEARBY	근처
+REST_OF_THIS_REGION	이 지역의 나머지
+NO_UPGRADE_ACHIEVEMENTS_LEFT	계획할 강화 업적이 남아 있지 않습니다.
+SHARDS_HELD	가진 파편
+NAV_PLAY	플레이
+NAV_WAY	길찾기
+NAV_SYSTEM	시스템

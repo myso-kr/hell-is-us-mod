@@ -77,26 +77,19 @@ impl Panel {
     /// The Collect page's hero: the four counts that make a full game, as rings —
     /// collectibles taken, enemy groups beaten, achievements, and secrets done.
     pub(super) fn collect_hero(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
-        use crate::quests::Status;
         let list = snap.map(|s| s.collection.clone()).unwrap_or_default();
         let (got, all) = list.iter().fold((0, 0), |(g, a), c| (g + c.all.0, a + c.all.1));
         let hollows = snap.map(|s| s.hollows.clone()).unwrap_or_default();
         let (left, groups) = hollows.iter().fold((0, 0), |(l, a), h| (l + h.left, a + h.all));
         let achievements = self.achievements_list();
         let unlocked = achievements.iter().filter(|a| a.unlocked).count();
-        let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
-        let secrets = snap.map_or(0, |s| s.secret_totals.iter().sum());
-        let done = journal
-            .iter()
-            .filter(|q| crate::quests::Kind::SECRETS.iter().any(|(k, _)| *k == q.kind) && q.status == Status::Completed)
-            .count();
+        // Good deeds, mysteries and timeloops are the Quests page's: not counted twice.
         tw::hero(t, |t| {
-            t.style(tw::grow(tw::grid(4, super::super::theme::PAD))).add(|t| {
+            t.style(tw::grow(tw::grid(3, super::super::theme::PAD))).add(|t| {
                 for (label, d, a) in [
                     (tr!("COLLECTION"), got, all),
                     (tr!("STAT_ENEMY_GROUPS"), groups - left, groups),
                     (tr!("ACHIEVEMENTS_RING"), unlocked, achievements.len()),
-                    (tr!("SECRETS_RING"), done, secrets),
                 ] {
                     w(t, |ui| ui.vertical_centered(|ui| tw::ring(ui, 96.0, d, a, label)));
                 }

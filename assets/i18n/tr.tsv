@@ -512,12 +512,12 @@ HELP_A_UPDATE	Oyun verisi kendiliğinden yeniden okunur. Bir tuhaflık varsa kon
 HELP_Q_REPORT	Sorun bildirmek
 HELP_A_REPORT	“{debug}” sekmesi günlük klasörünü açar. hiumod.log ve verify.txt dosyalarını ekleyin.
 ABOUT_NOW	kaldığınız yer, burada kalanlar
-ABOUT_MAP	mini harita, büyük harita, işaretler
-ABOUT_GUIDE	pusula, sonra nereye
+ABOUT_MAP	mini harita, büyük harita, görünüm
+ABOUT_GUIDE	pusula, sonraki hedef, işaretler
 ABOUT_QUESTS	görevler, kaçırılabilecek iyilikler, teslimler
-ABOUT_CLUES	bildikleriniz, aranabilir
+ABOUT_CLUES	bildiklerin, aranabilir; anlatacağı olanlar
 ABOUT_PUZZLES	cevaplar, limbik kilitler, mahzenler
-ABOUT_COLLECT	koleksiyon parçaları, düşman grupları, başarımlar
+ABOUT_COLLECT	koleksiyon, düşman grupları, parça bütçesi, başarımlar
 ABOUT_SAVES	kayıt yedekleri
 ABOUT_DEBUG	günlükler, hile denetimi
 OPENS_NOW	Şimdi açılır
@@ -594,3 +594,11 @@ DOWNLOADING_UPDATE	İndiriliyor…
 RESTART_TO_UPDATE	v{version} için yeniden başlat
 RESTART_TO_UPDATE_HINT	Oyun değerlerini geri alır, dosyaları değiştirir ve yeni sürümü başlatır.
 SPLASH_TAGLINE	PC için Hell Is Us yardımcısı
+PUZZLES_HERE	Buradaki bulmacalar · {left} kaldı
+NEARBY	Yakında
+REST_OF_THIS_REGION	Bölgenin geri kalanı
+NO_UPGRADE_ACHIEVEMENTS_LEFT	Planlanacak geliştirme başarımı kalmadı.
+SHARDS_HELD	Elindeki parçalar
+NAV_PLAY	Oyun
+NAV_WAY	Yol bulma
+NAV_SYSTEM	Sistem

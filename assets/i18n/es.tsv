@@ -512,12 +512,12 @@ HELP_A_UPDATE	Los datos del juego se vuelven a leer solos. Si algo parece raro, 
 HELP_Q_REPORT	Informar de un problema
 HELP_A_REPORT	La pestaña «{debug}» abre la carpeta de registros. Adjunta hiumod.log y verify.txt.
 ABOUT_NOW	dónde lo dejaste, qué queda aquí
-ABOUT_MAP	minimapa, mapa grande, marcadores
-ABOUT_GUIDE	brújula, adónde ir después
+ABOUT_MAP	minimapa, mapa grande, aspecto
+ABOUT_GUIDE	brújula, próximo destino, marcas
 ABOUT_QUESTS	misiones, buenas acciones que se pierden, entregas
-ABOUT_CLUES	lo que sabes, con búsqueda
+ABOUT_CLUES	lo que sabes, con búsqueda; quién tiene más que contar
 ABOUT_PUZZLES	respuestas, cerraduras límbicas, cámaras
-ABOUT_COLLECT	coleccionables, grupos de enemigos, logros
+ABOUT_COLLECT	coleccionables, grupos de enemigos, presupuesto de fragmentos, logros
 ABOUT_SAVES	copias de partidas
 ABOUT_DEBUG	registros, comprobación de trucos
 OPENS_NOW	Se abre ya
@@ -594,3 +594,11 @@ DOWNLOADING_UPDATE	Descargando…
 RESTART_TO_UPDATE	Reiniciar para aplicar v{version}
 RESTART_TO_UPDATE_HINT	Restaura los valores del juego, reemplaza los archivos e inicia la nueva versión.
 SPLASH_TAGLINE	Un acompañante para Hell Is Us en PC
+PUZZLES_HERE	Puzles aquí · quedan {left}
+NEARBY	Cerca
+REST_OF_THIS_REGION	El resto de la región
+NO_UPGRADE_ACHIEVEMENTS_LEFT	No quedan logros de mejora por planificar.
+SHARDS_HELD	Fragmentos en posesión
+NAV_PLAY	Juego
+NAV_WAY	Orientación
+NAV_SYSTEM	Sistema

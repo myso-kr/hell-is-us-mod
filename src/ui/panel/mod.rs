@@ -169,6 +169,13 @@ impl Tool {
     /// Above the groups in the sidebar, in none.
     const TOP: [Tool; 2] = [Tool::Now, Tool::Help];
 
+    /// The sidebar's groups: their names (i18n keys) and pages.
+    const GROUPS: [(&'static str, &'static [Tool]); 3] = [
+        ("NAV_PLAY", &[Tool::Quests, Tool::Clues, Tool::Puzzles, Tool::Collect]),
+        ("NAV_WAY", &[Tool::Guide, Tool::Map]),
+        ("NAV_SYSTEM", &[Tool::Saves, Tool::Debug]),
+    ];
+
     /// Its name in settings.txt.
     fn id(self) -> &'static str {
         match self {
@@ -278,7 +285,8 @@ pub struct Panel {
     previous_dismissed: bool,
     /// The sidebar's two groups, each folded under its heading line: the tools start
     /// open, the cheats folded.
-    tools_open: bool,
+    /// The sidebar's groups (play, way-finding, system), each folded or not.
+    groups_open: [bool; 3],
     cheats_open: bool,
     session_saved: Option<Instant>,
     /// What the player turned on — not what is on right now. The game exiting or the
@@ -369,7 +377,7 @@ impl Panel {
             width: 0.0,
             previous,
             previous_dismissed: false,
-            tools_open: true,
+            groups_open: [true; 3],
             cheats_open: !back && !Tool::ALL.iter().any(|t| Some(t.id()) == tab),
             session_saved: None,
         }
@@ -625,12 +633,16 @@ impl Panel {
                 self.tool = Some(tool);
             }
         }
-        ui.add_space(super::theme::BLOCK);
-        heading(ui, &mut self.tools_open, tr!("TOOLS").to_string());
-        if self.tools_open {
-            for tool in Tool::ALL.into_iter().filter(|t| !Tool::TOP.contains(t)) {
-                if item(ui, self.tool == Some(tool), tool.label().to_string()) {
-                    self.tool = Some(tool);
+        // In the order they are used: playing (what to do, what is known, how to open
+        // it, how far along), finding the way, then the system's own pages.
+        for (i, (name, tools)) in Tool::GROUPS.iter().enumerate() {
+            ui.add_space(super::theme::BLOCK);
+            heading(ui, &mut self.groups_open[i], crate::i18n::tr(name).to_string());
+            if self.groups_open[i] {
+                for &tool in *tools {
+                    if item(ui, self.tool == Some(tool), tool.label().to_string()) {
+                        self.tool = Some(tool);
+                    }
                 }
             }
         }
@@ -871,9 +883,8 @@ impl Panel {
     fn page_cards(&self) -> usize {
         match self.tool {
             Some(Tool::Now) => self.now_cards(),
-            Some(Tool::Collect) | Some(Tool::Quests) | Some(Tool::Puzzles) => 4,
-            Some(Tool::Map) => 4,
-            Some(Tool::Guide) | Some(Tool::Clues) => 2,
+            Some(Tool::Collect) | Some(Tool::Quests) => 4,
+            Some(Tool::Map) | Some(Tool::Puzzles) | Some(Tool::Guide) | Some(Tool::Clues) => 3,
             Some(Tool::Help) => 4,
             Some(Tool::Saves) => 2,
             Some(Tool::Debug) => 1,

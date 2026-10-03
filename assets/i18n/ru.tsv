@@ -512,12 +512,12 @@ HELP_A_UPDATE	Данные игры перечитываются сами. Ес�
 HELP_Q_REPORT	Сообщить о проблеме
 HELP_A_REPORT	Вкладка «{debug}» открывает папку журналов. Приложите hiumod.log и verify.txt.
 ABOUT_NOW	где вы остановились, что здесь осталось
-ABOUT_MAP	мини-карта, большая карта, метки
-ABOUT_GUIDE	компас, куда идти дальше
+ABOUT_MAP	миникарта, большая карта, вид
+ABOUT_GUIDE	компас, куда дальше, метки
 ABOUT_QUESTS	задания, упускаемые добрые дела, передачи
-ABOUT_CLUES	что вы знаете, с поиском
+ABOUT_CLUES	что вы знаете, с поиском; кому есть что рассказать
 ABOUT_PUZZLES	ответы, лимбические замки, залы
-ABOUT_COLLECT	коллекционные предметы, группы врагов, достижения
+ABOUT_COLLECT	коллекция, группы врагов, бюджет осколков, достижения
 ABOUT_SAVES	резервные копии сохранений
 ABOUT_DEBUG	журналы, проверка читов
 OPENS_NOW	Открывается
@@ -594,3 +594,11 @@ DOWNLOADING_UPDATE	Загрузка…
 RESTART_TO_UPDATE	Перезапустить с v{version}
 RESTART_TO_UPDATE_HINT	Возвращает значения игры, заменяет файлы и запускает новую версию.
 SPLASH_TAGLINE	Помощник для Hell Is Us на ПК
+PUZZLES_HERE	Головоломки здесь · осталось {left}
+NEARBY	Рядом
+REST_OF_THIS_REGION	Остальное в регионе
+NO_UPGRADE_ACHIEVEMENTS_LEFT	Не осталось достижений за улучшения.
+SHARDS_HELD	Имеющиеся осколки
+NAV_PLAY	Игра
+NAV_WAY	Навигация
+NAV_SYSTEM	Система

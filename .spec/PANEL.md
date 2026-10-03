@@ -13,16 +13,23 @@ Decisions and history for the eframe/egui panel's layout, styling and console. T
   `src/ui/panel/mod.rs`); beyond that the body scrolls.
 - **Look:** palette, corner radii and egui visuals live in one place, `src/ui/theme.rs` (§3). Spacing uses
   four values on a 4 px scale (§4). The website (`docs/`) uses the same palette.
-- **Sidebar:** game status, hero gate, game data status; **Now** on its own at the top (no group);
-  then the tool tabs, then the cheat groups — each
-  group folds under its heading (▾/▸). Tools start open; cheats start folded unless the panel opens on
-  a cheat page. The cheats heading counts the cheats on. The console is described in §6.
-- **Tool tabs** (2026-10-03, at most four cards a page): **Now** (previously, before you go on, this
-  region, other regions — FEATURES.md §6) · **Map** (map, pins, keys) · **Guide** (compass and guide,
-  places) · **Quests** (journal, missable deeds, hand-overs, secrets) · **Clues** (the followed quest's
-  Datapad entries, a search over what is known) · **Puzzles** (nearby, Lymbic locks,
-  vaults, the full list) · **Collect** (collection, enemy groups, NPC stories, achievements) · **Saves** ·
-  **Debug**. The "now" page is where the panel opens after a break of 30 minutes or more.
+- **Sidebar:** game status, hero gate, game data status; **Now** and **Help** on their own at the top
+  (no group); then the pages in three groups in the order they are used (2026-10-04): **Play**
+  (Quests, Clues, Puzzles, Collect), **Finding the way** (Guide, Map), **System** (Saves, Debug); then
+  the cheat groups. Each group folds under its heading (▾/▸). The page groups start open; cheats start
+  folded unless the panel opens on a cheat page. The cheats heading counts the cheats on. The console
+  is described in §6.
+- **Pages, one question each** (2026-10-04): **Now** (previously, before you go on, this region, other
+  regions — FEATURES.md §6) · **Quests**, what am I doing (journal, missable deeds, hand-overs, good
+  deeds · mysteries · timeloops) · **Clues**, what do I know (the followed quest's Datapad entries, a
+  search over what is known, NPCs with more to tell) · **Puzzles**, how do I open it (this region's
+  puzzles in one card, those within 40 m first with the answer read live and then the rest from the
+  survey, the two lists matched by kind within 3 m; Lymbic locks; vaults) · **Collect**, how far
+  along am I (collection, enemy groups, the shard budget, achievements) · **Guide**, where do I go
+  (compass and guide, places, pins and trail) · **Map**, how does it look (legend, minimap, terrain,
+  big map, layer opacity, keys) · **Saves** · **Debug**. No number shows on two pages: the good deeds,
+  mysteries and timeloops ring left the Collect page for the Quests page's. The "now" page is where
+  the panel opens after a break of 30 minutes or more.
 - **How to check:** click through every tab and capture the window (RUNBOOK.md, "Checking the panel").
 
 ## 2. Card layout: masonry and SVG icons (2026-10-03)

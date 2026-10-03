@@ -83,6 +83,27 @@ fn symbol_row(t: &mut Tui, code: &[u8]) {
     });
 }
 
+/// This region's puzzles in the survey, with whether each is solved, but for those
+/// `near` already lists (the same kind within 3 m: the two lists name puzzles apart).
+fn catalogue_here(
+    snap: Option<&Snapshot>,
+    placements: bool,
+    near: &[(crate::puzzles::Kind, [f32; 3])],
+) -> Vec<(crate::survey::Placed, bool)> {
+    let here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+    let listed = |p: &crate::survey::Placed| {
+        near.iter().any(|(k, at)| *k == p.kind && (at[0] - p.at[0]).hypot(at[1] - p.at[1]) < 300.0)
+    };
+    snap.map(|s| s.catalogue.clone())
+        .unwrap_or_default()
+        .iter()
+        .filter(|(p, _)| Some(&p.world) == here.as_ref())
+        .filter(|(p, _)| placements || p.kind != crate::puzzles::Kind::Placement)
+        .filter(|(p, _)| !listed(p))
+        .cloned()
+        .collect()
+}
+
 /// The symbols a vault door's dials want (from 1), when the puzzle is a vault's.
 fn vault_dials(class: &str, a: &Answer) -> Option<Vec<u8>> {
     match a {
@@ -92,10 +113,21 @@ fn vault_dials(class: &str, a: &Answer) -> Option<Vec<u8>> {
 }
 
 impl Panel {
-    /// Steam's achievements in the game's language: how many, the shard budget of the
-    /// upgrade ones, then each achievement left: its name with progress on the right and
+    /// The shard budget for the upgrade achievements (`budget_block`), a card of its own:
+    /// it plans which upgrades to make and when to close the timeloops, and buried above
+    /// forty achievements it went unseen.
+    pub(super) fn budget_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+        let list = self.achievements_list();
+        card(t, tr!("SHARD_BUDGET"), |t| {
+            if !self.budget_block(t, &list, snap) {
+                note(t, tr!("NO_UPGRADE_ACHIEVEMENTS_LEFT"));
+            }
+        });
+    }
+
+    /// Steam's achievements in the game's language: how many, then each achievement left: its name with progress on the right and
     /// its condition under it; a hidden one's only once unlocked or asked for.
-    pub(super) fn achievements_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+    pub(super) fn achievements_card(&mut self, t: &mut Tui) {
         let list = self.achievements_list();
         let done = list.iter().filter(|a| a.unlocked).count();
         card(t, &trf!("ACHIEVEMENTS", done = done, all = list.len()), |t| {
@@ -103,8 +135,6 @@ impl Panel {
                 note(t, tr!("STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND"));
                 return;
             }
-            self.budget_block(t, &list, snap);
-            block(t, |ui| ui.separator());
             // The order as the places list has it, on its own line; the switch under it.
             // Side by side in a card's width they did not fit, and were squeezed.
             tw::order(t, &mut self.achievements_grouped, tr!("STEAM_ORDER"), tr!("BY_KIND"));
@@ -171,9 +201,15 @@ impl Panel {
     /// upgrades it still takes and a chip saying whether the shards held cover it. The
     /// why (timeloops, shard sizes, the cost in full) is in hover text. A hidden
     /// achievement's plan waits until it is shown, as its text does.
-    fn budget_block(&mut self, t: &mut Tui, list: &[crate::game::achievements::Achievement], snap: Option<&Snapshot>) {
+    /// Whether there was anything to plan.
+    fn budget_block(
+        &mut self,
+        t: &mut Tui,
+        list: &[crate::game::achievements::Achievement],
+        snap: Option<&Snapshot>,
+    ) -> bool {
         use super::super::theme::TEXT;
-        let Some(budget) = snap.map(|s| s.budget.clone()).filter(|b| !b.plans.is_empty()) else { return };
+        let Some(budget) = snap.map(|s| s.budget.clone()).filter(|b| !b.plans.is_empty()) else { return false };
         let plans: Vec<_> = budget
             .plans
             .iter()
@@ -181,7 +217,7 @@ impl Panel {
             .filter(|(_, a)| !a.unlocked && (!a.hidden || self.revealed.contains(&id_of(&a.api))))
             .collect();
         if plans.is_empty() {
-            return;
+            return false;
         }
         const FEELINGS: [&str; 5] = ["Neutral", "Ecstasy", "Grief", "Rage", "Terror"];
         let feeling = |f: &str| match f {
@@ -212,7 +248,7 @@ impl Panel {
         let all = snap.map_or(0, |s| s.secret_totals[2]);
         t.style(tw::row(INLINE)).add(|t| {
             block(t, |ui| {
-                ui.label(RichText::new(tr!("SHARD_BUDGET")).strong()).on_hover_text(tr!("SHARD_SIZES_HOVER"))
+                ui.label(RichText::new(tr!("SHARDS_HELD")).small().color(DIM)).on_hover_text(tr!("SHARD_SIZES_HOVER"))
             });
             if all > 0 {
                 let open = all.saturating_sub(closed);
@@ -281,16 +317,20 @@ impl Panel {
                 }
             });
         }
+        true
     }
 
     /// Every puzzle of the worlds (the survey): this region's left first — dials and
     /// codes, and on request the keys and item placements — with the answer behind a
     /// button and a guide to it; the other regions as counts.
-    pub(super) fn catalogue_card(
+    /// The rest of this region's puzzles from the survey (not those `near` lists, by kind
+    /// and place), unsolved first then nearest, and the other regions' counts.
+    fn catalogue_rows(
         &mut self,
         t: &mut Tui,
         state: &mut crate::minimap::MapState,
         snap: Option<&Snapshot>,
+        near: &[(crate::puzzles::Kind, [f32; 3])],
     ) {
         let list = snap.map(|s| s.catalogue.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
@@ -298,12 +338,8 @@ impl Panel {
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         let shown =
             |p: &crate::survey::Placed, placements: bool| placements || p.kind != crate::puzzles::Kind::Placement;
-        let mine: Vec<&(crate::survey::Placed, bool)> = list
-            .iter()
-            .filter(|(p, _)| Some(&p.world) == here_world.as_ref() && shown(p, self.show_placements))
-            .collect();
-        let left = mine.iter().filter(|(_, solved)| !solved).count();
-        card(t, &trf!("PUZZLE_LIST_LEFT_HERE", left = left), |t| {
+        let mine = catalogue_here(snap, self.show_placements, near);
+        {
             if list.is_empty() {
                 note(t, tr!("NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY"));
                 return;
@@ -357,11 +393,12 @@ impl Panel {
             }
             let counts = elsewhere.iter().map(|(w, n)| (crate::i18n::place(w), *n)).collect();
             tw::regions(t, tr!("OTHER_REGIONS_CARD"), counts);
-        });
+        }
     }
 
-    /// The puzzles within 40 m: kind, name, how far; press one to be guided to it, the
-    /// answer behind its button.
+    /// This region's puzzles in one card: those within 40 m first (the answer the game
+    /// holds, read live), then the rest of the region from the survey. Press one to be
+    /// guided to it; the answer is behind its button.
     pub(super) fn puzzles_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let list = snap.map(|s| s.puzzles.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
@@ -370,12 +407,16 @@ impl Panel {
             .map(|w| crate::survey::Survey::world_of(&w).to_string())
             .unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
-        card(t, &trf!("PUZZLES_NEARBY", n = list.len()), |t| {
+        let near: Vec<(crate::puzzles::Kind, [f32; 3])> = list.iter().map(|p| (p.kind, p.at)).collect();
+        let left = list.iter().filter(|p| !p.solved).count()
+            + catalogue_here(snap, self.show_placements, &near).iter().filter(|(_, solved)| !solved).count();
+        card(t, &trf!("PUZZLES_HERE", left = left), |t| {
+            block(t, |ui| tw::group_heading(ui, tr!("NEARBY"), list.len()));
             if list.is_empty() {
                 note(t, tr!("NO_DIAL_KEYPAD_OR_ITEM_PLACEMENT"));
-                return;
+            } else {
+                note(t, tr!("READS_THE_ANSWER_THE_GAME_HOLDS"));
             }
-            note(t, tr!("READS_THE_ANSWER_THE_GAME_HOLDS"));
             for p in list.iter() {
                 let far = here.map_or(String::new(), |h| crate::raster::span(h, p.at));
                 let head = format!(
@@ -410,6 +451,9 @@ impl Panel {
                     }
                 }
             }
+            let rest = catalogue_here(snap, self.show_placements, &near).len();
+            block(t, |ui| tw::group_heading(ui, tr!("REST_OF_THIS_REGION"), rest));
+            self.catalogue_rows(t, state, snap, &near);
         });
     }
 

@@ -512,12 +512,12 @@ HELP_A_UPDATE	The game data is read again on its own. If something looks wrong, 
 HELP_Q_REPORT	Reporting a problem
 HELP_A_REPORT	The {debug} page opens the log folder. Attach hiumod.log and verify.txt.
 ABOUT_NOW	where you left off, what is left here
-ABOUT_MAP	minimap, big map, pins
-ABOUT_GUIDE	compass, where to go next
+ABOUT_MAP	minimap, big map, how they look
+ABOUT_GUIDE	compass, where to go next, pins
 ABOUT_QUESTS	journal, missable deeds, hand-overs
-ABOUT_CLUES	what you know, searchable
+ABOUT_CLUES	what you know, searchable; who has more to tell
 ABOUT_PUZZLES	answers, Lymbic locks, vaults
-ABOUT_COLLECT	collectibles, enemy groups, achievements
+ABOUT_COLLECT	collectibles, enemy groups, shard budget, achievements
 ABOUT_SAVES	save backups
 ABOUT_DEBUG	logs, cheat checks
 OPENS_NOW	Opens now
@@ -594,3 +594,11 @@ DOWNLOADING_UPDATE	Downloading…
 RESTART_TO_UPDATE	Restart to apply v{version}
 RESTART_TO_UPDATE_HINT	Puts the game’s values back, replaces the files and starts the new version.
 SPLASH_TAGLINE	A companion for Hell Is Us on PC
+PUZZLES_HERE	Puzzles here · {left} left
+NEARBY	Nearby
+REST_OF_THIS_REGION	The rest of this region
+NO_UPGRADE_ACHIEVEMENTS_LEFT	No upgrade achievements left to plan for.
+SHARDS_HELD	Shards held
+NAV_PLAY	Play
+NAV_WAY	Finding the way
+NAV_SYSTEM	System
