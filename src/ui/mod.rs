@@ -71,6 +71,9 @@ pub struct Shared {
     /// panel: the console is open (toggled on). Whether it shows is the hotkey thread's
     /// call (hotkey.rs `watch`): egui runs no frames while nothing happens in its windows.
     pub console_open: AtomicBool,
+    /// hotkey: the panel is off the screen, not hidden, so its frames run for the console
+    /// open without it (`hotkey::park`).
+    pub parked: AtomicBool,
     /// panel: the consent's bits (`settings::Consent`), 0 until chosen — what the overlay
     /// may draw.
     pub consent: std::sync::atomic::AtomicU8,

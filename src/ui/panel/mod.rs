@@ -50,8 +50,11 @@ const DEBUG_PAGE: f32 = 620.0;
 const NAV: f32 = 176.0;
 const DIVIDER: f32 = 2.0 * super::theme::PAD;
 /// The window is never taller than this share of the monitor; the page scrolls
-/// inside it instead.
-const MAX_SHARE: f32 = 0.85;
+/// inside it instead. Most players are on 1920×1080 (48 %) or 2560×1440 (27 %, Steam's
+/// survey, September 2026): at 85 % the panel hid most of the game.
+const MAX_SHARE: f32 = 0.72;
+/// Nor wider than this share: on 1080p two columns of cards, on 1440p and wider three.
+const MAX_WIDTH_SHARE: f32 = 0.55;
 /// Room under the page for its footer, and for the title bar and margins (px).
 const FOOTER: f32 = 108.0;
 const CHROME: f32 = 72.0;
@@ -958,7 +961,7 @@ impl Panel {
     /// Masonry columns for the page: as many as its cards need, up to three, as many
     /// as the monitor has room for — the window grows and shrinks with them.
     fn fit_columns(&mut self, monitor_w: f32) {
-        let room = monitor_w * 0.9 - (FRAME + NAV + DIVIDER + SCROLLBAR);
+        let room = monitor_w * MAX_WIDTH_SHARE - (FRAME + NAV + DIVIDER + SCROLLBAR);
         let fits = (((room + tw::GAP) / (tw::CARD + tw::GAP)).floor() as usize).max(1);
         // Two columns hold up to four cards evenly; more cards want a third.
         let wanted = if self.page_cards() > 4 { 3 } else { 2 };
@@ -1062,6 +1065,7 @@ impl eframe::App for Panel {
             let s = ui.spacing().scroll;
             (s.bar_width + s.bar_inner_margin + s.bar_outer_margin).min(super::theme::BLOCK)
         };
+        // The columns already fit MAX_WIDTH_SHARE; a page wider by itself (debug) up to 90 %.
         let width = (FRAME + NAV + DIVIDER + self.page_width()).min(monitor_w * 0.9);
         let margin = egui::Margin {
             left: super::theme::BLOCK as i8,
@@ -1074,7 +1078,8 @@ impl eframe::App for Panel {
             .inner_margin(margin)
             .show(ui, |ui| {
                 // The backdrop first, under everything: it shows between the cards.
-                if motion {
+                // Not while parked off the screen for the console alone (hotkey.rs `park`).
+                if motion && self.shared.visible.load(Ordering::SeqCst) {
                     let t = ui.input(|i| i.time) as f32;
                     backdrop::draw(ui.painter(), ui.clip_rect(), t);
                     ui.ctx().request_repaint_after(Duration::from_secs_f32(1.0 / backdrop::FPS));

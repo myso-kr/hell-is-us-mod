@@ -81,15 +81,43 @@ pub(super) fn console_allowed(shared: &Shared) -> bool {
     console_shows(foreground, shared.game_pid.load(Ordering::SeqCst), std::process::id())
 }
 
+/// Put the panel off the screen, shown: the console (an egui viewport of its window) is
+/// drawn only while the panel's frames run, and eframe runs none for a hidden window.
+/// So the console can stay open with the panel out of sight.
+fn park(shared: &Shared) {
+    let hwnd = shared.hwnd.load(Ordering::SeqCst) as HWND;
+    if hwnd.is_null() {
+        return;
+    }
+    unsafe {
+        SetWindowPos(
+            hwnd,
+            std::ptr::null_mut(),
+            -30000,
+            -30000,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_SHOWWINDOW,
+        )
+    };
+    shared.parked.store(true, Ordering::SeqCst);
+}
+
 pub fn hide(shared: &Shared) {
     let hwnd = shared.hwnd.load(Ordering::SeqCst) as HWND;
     if hwnd.is_null() {
         return;
     }
-    unsafe { ShowWindow(hwnd, SW_HIDE) };
-    let console = console_window();
-    if !console.is_null() {
-        unsafe { ShowWindow(console, SW_HIDE) };
+    // The console open: the panel goes off the screen instead, and the console stays.
+    if shared.console_open.load(Ordering::SeqCst) {
+        park(shared);
+    } else {
+        unsafe { ShowWindow(hwnd, SW_HIDE) };
+        shared.parked.store(false, Ordering::SeqCst);
+        let console = console_window();
+        if !console.is_null() {
+            unsafe { ShowWindow(console, SW_HIDE) };
+        }
     }
     shared.visible.store(false, Ordering::SeqCst);
     // Hand the keyboard back, so the next keypress (and click) goes to the game. Taken
@@ -175,6 +203,7 @@ pub(super) fn show(shared: &Shared, ctx: &egui::Context) {
     }
     take_focus(hwnd);
     shared.visible.store(true, Ordering::SeqCst);
+    shared.parked.store(false, Ordering::SeqCst);
     ctx.request_repaint();
 }
 
@@ -210,7 +239,9 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
         let allowed = console_allowed(&shared);
         let console = console_window();
         if !console.is_null() {
-            let want = visible && shared.console_open.load(Ordering::SeqCst) && allowed;
+            // With the panel, or with it parked off the screen for the console alone.
+            let drawn = visible || shared.parked.load(Ordering::SeqCst);
+            let want = drawn && shared.console_open.load(Ordering::SeqCst) && allowed;
             if want != (unsafe { IsWindowVisible(console) } != 0) {
                 unsafe { ShowWindow(console, if want { SW_SHOWNOACTIVATE } else { SW_HIDE }) };
                 if want {
@@ -259,11 +290,17 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
                 let shift = unsafe { GetAsyncKeyState(VK_SHIFT as i32) } as u16 & 0x8000 != 0;
                 if shift {
                     // Shift+`: the console, a tool for checking things rather than for
-                    // play. It is drawn by the panel, so a hidden panel is shown for it.
+                    // play, on its own: a hidden panel stays out of sight (parked, so its
+                    // frames draw the console), and goes back to hidden when it closes.
                     let open = !shared.console_open.load(Ordering::SeqCst);
                     shared.console_open.store(open, Ordering::SeqCst);
-                    if open && !visible {
-                        show(&shared, &ctx);
+                    if !visible {
+                        if open {
+                            park(&shared);
+                        } else if shared.parked.load(Ordering::SeqCst) {
+                            unsafe { ShowWindow(hwnd, SW_HIDE) };
+                            shared.parked.store(false, Ordering::SeqCst);
+                        }
                     }
                     ctx.request_repaint();
                 } else if visible {

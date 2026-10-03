@@ -148,6 +148,11 @@ reported the frame before. Starting from 0, the page's scroll area stayed 0 tall
 nothing (it worked only while the footer sat in the same leaf and gave it height). The page's room
 is given outright (`allocate_ui_with_layout` at `page_height`); it still shrinks to its content.
 
+**The panel's size** (2026-10-04): most players are on 1920×1080 (48 %) or 2560×1440 (27 %) —
+Steam's hardware survey, September 2026. The window is at most 55 % of the monitor's width (as many
+columns of cards as fit: two on 1080p, three on 1440p and wider) and 72 % of its height (was 90 % and
+85 %, which on 1080p hid most of the game); the page scrolls inside.
+
 **The Now page** (2026-10-04, `panel/now.rs`), after the pains players name most (JOURNEY.md §1):
 the hero (the live map, the region, the KPI tiles), then a grid of the page's columns (`tw::span`,
 cards in a row stretched to one height, their rows kept at the top): **the story followed** (two
@@ -244,6 +249,11 @@ is ready for input whenever the panel is open.
   key with Shift. It toggles `Shared::console_open` in the hotkey thread, shows a hidden panel (the
   console is drawn by it) and puts the cursor in the input; the header keeps the key as a hint. The
   console shows while it is open and the game or this program has the keyboard.
+- **The console without the panel** (2026-10-04): the console is an egui viewport of the panel's
+  window, drawn only while its frames run, and eframe runs none for a hidden window. So with the
+  console open the panel is not hidden but parked off the screen (`hotkey::park`, `Shared::parked`):
+  Shift+` opens the console alone, the panel staying out of sight, and ` (or —) hides the panel while
+  the console stays. Closed, the panel goes back to hidden. The backdrop does not move while parked.
 - **Function keys left free** (2026-10-04): the game's defaults use F1 (show the HUD) and F7 (photo
   mode), Steam's F12 takes a screenshot (Game8's and Magic Game World's control lists); the key
   pickers do not offer them (`minimap::TAKEN_KEYS`), and a saved setting on one goes back to the
