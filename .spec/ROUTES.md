@@ -170,7 +170,7 @@ injecting into UE to run physics queries — were compared, and the **external a
 
 ## 6. The game navmesh found (2026-10-03)
 
-- The tiles are not reached through a `RecastNavMesh` actor (§2) but through World Partition **`NavigationDataChunkActor`**s (18 in
+- The tiles are not reached through a `RecastNavMesh` actor (§2) but through World Partition **`NavigationDataChunkActor` actors** (18 in
   this region) → `NavDataChunks` (+0x2A8) → `RecastNavMeshDataChunk` ("RecastNavMesh_…-Default")
   +0x30 = TArray<FRecastTileData>. **Element size 0x48**: +0x14 TileDataSize, +0x18
   TSharedPtr<FRawData>{obj, ctrl} with obj+0 = raw tile bytes; +0x28/+0x30 the compressed tile cache

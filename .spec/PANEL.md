@@ -88,12 +88,12 @@ All colors and egui visuals are defined in `src/ui/theme.rs`:
   - The Guide tab's "Places" list was cut off: a ScrollArea inside a block is stuck at the previous
     frame's height. Fixed with `min_scrolled_height`.
 
-## 5. Panel key ` (~) and CLI console (2026-10-03)
+## 5. Panel key `` ` `` (~) and CLI console (2026-10-03)
 
-Requested by the user: move the panel hotkey to ` (~) and add a console overlay for CLI commands that
+Requested by the user: move the panel hotkey to `` ` `` (~) and add a console overlay for CLI commands that
 is ready for input whenever the panel is open.
 
-- **Hotkey:** `VK_OEM_3` (` ~), polled, and only honored while the game or the panel has focus. F8 is
+- **Hotkey:** `VK_OEM_3` (`` ` `` ~), polled, and only honored while the game or the panel has focus. F8 is
   now selectable as the minimap key.
 - **Console** (`src/ui/console.rs`):
   - A typed command runs **the same executable with those arguments**, without a window
@@ -102,14 +102,14 @@ is ready for input whenever the panel is open.
   - Built-in commands: `help` (CLI usage) and `clear`. A leading `hiumod` is stripped; a bare `hiumod`
     (which would start a second panel) is refused.
   - Up/Down recall earlier commands, Esc stops the running command, and closing the panel stops it too.
-  - When the panel opens, the cursor is in the console input. A typed ` is removed (it is the panel key).
+  - When the panel opens, the cursor is in the console input. A typed `` ` `` is removed (it is the panel key).
 - **Placement:** the first version was a 220 px strip under the panel, collapsible from its title line
   ("Console ▾"). The same day, at the user's request ("a translucent UI at the very top, like
   Half-Life"), it became a **translucent window dropping down from the top of the game window**:
   - an egui immediate viewport titled "Hell Is Us Mod — console": undecorated, transparent, always on
     top, no taskbar entry;
   - game window width × 38 % of its height (minimum 180 px), background (8, 10, 14, α 200);
-  - drawn only while the panel is visible. eframe does not render frames while hidden, so when ` hides or
+  - drawn only while the panel is visible. eframe does not render frames while hidden, so when `` ` `` hides or
     shows the panel, `src/ui/hotkey.rs` finds the console window by its title and hides or shows it too;
   - when open, it takes keyboard focus.
 

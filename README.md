@@ -43,7 +43,7 @@ Read about it in your language:
    and unzip it anywhere. It only ever writes to `<game folder>\Mods\`.
 2. **Run `hiumod.exe`.** It starts the game through Steam if needed, attaches once you
    are in, and closes when the game does. Play windowed or borderless.
-3. **Press <kbd>`</kbd>** (left of <kbd>1</kbd>) for the panel. The first time you
+3. **Press <kbd>&#96;</kbd>** (left of <kbd>1</kbd>) for the panel. The first time you
    control the hero, it reads the game's maps and text by itself (about two minutes).
    That needs the [.NET 8 runtime](https://dotnet.microsoft.com/download/dotnet/8.0);
    if it's missing, the panel offers to install it — through winget, or without
@@ -74,7 +74,7 @@ Every overlay hides while a game menu is open.
 
 | Key | |
 |---|---|
-| <kbd>`</kbd> | show or hide the panel |
+| <kbd>&#96;</kbd> | show or hide the panel |
 | <kbd>F9</kbd> | minimap → big map → off |
 | <kbd>F10</kbd> | compass |
 | <kbd>F11</kbd> | guide to the next goal |
