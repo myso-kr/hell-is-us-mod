@@ -260,6 +260,9 @@ pub fn run(shared: Arc<Shared>) {
                 let relief = baking.relief(&state, p, &obstacles);
                 let goals = hud::with_pins(&goals, &state, world);
                 let mut cv = Canvas::new(side, side);
+                // As the overlay draws it: dots only on the big map.
+                let dots = state.dots;
+                state.dots = dots && big;
                 draw_map(
                     &mut cv,
                     &state,
@@ -272,6 +275,7 @@ pub fn run(shared: Arc<Shared>) {
                     &Default::default(),
                     relief.as_deref(),
                 );
+                state.dots = dots;
                 if big && state.big_alpha < 100 {
                     // Premultiplied: every channel scales with the opacity.
                     let a = state.big_alpha as u32;
@@ -376,6 +380,8 @@ pub fn run(shared: Arc<Shared>) {
                             north_deg: state.north_yaw,
                             outline: state.mini_outline,
                         };
+                        // Dots are the big map's: the minimap is small, in a corner.
+                        let dots = std::mem::replace(&mut state.dots, false);
                         draw_map(
                             &mut map_cv,
                             &state,
@@ -388,6 +394,7 @@ pub fn run(shared: Arc<Shared>) {
                             &path,
                             relief.as_deref(),
                         );
+                        state.dots = dots;
                         map_window.present(&map_cv, r.right - MAP_PX - MARGIN, r.top + MARGIN + 24);
                     } else {
                         map_window.hide();
@@ -420,8 +427,10 @@ pub fn run(shared: Arc<Shared>) {
                         tracked = Some(now);
                     }
                     if tracker_used > 0 {
-                        // At the right, centred on the screen's middle.
-                        let y = r.top + (r.bottom - r.top - tracker_used) / 2;
+                        // At the top right, under the minimap when it shows: the game opens
+                        // its pop-ups at the right middle, where the tracker used to be.
+                        let top = r.top + MARGIN + 24;
+                        let y = if state.display == Display::Mini { top + MAP_PX + 12 } else { top };
                         w.present(&tracker_cv, r.right - tracker::W - MARGIN, y);
                     } else {
                         w.hide();

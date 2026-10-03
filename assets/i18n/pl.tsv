@@ -226,7 +226,7 @@ RESTORE_ALL	Przywróć wszystko ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Zachowaj te cheaty na następny raz
 NEXT_RUN_ONCE_THE_HERO_CAN	Przy następnym uruchomieniu, gdy będzie można sterować bohaterem, obecnie włączone cheaty włączą się ponownie.
 WRITES_ONLY_WHILE_THE_HERO_IS	Wartości zapisywane tylko podczas sterowania bohaterem · osiągnięcia nie są blokowane
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Śledzenie zadań: prawa strona, środek ekranu
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Śledzenie zadań (prawy górny róg, pod minimapą)
 READING_THE_QUESTS_THEY_APPEAR_A	Wczytywanie zadań. Pojawią się kilka sekund po załadowaniu gry
 MAIN_STORY_AUTO_NOW	Główna fabuła, auto: {quest}
 MAIN_STORY_AUTO	Główna fabuła, auto
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Rysuj kropkami
 DRAW_AS_DOTS_HOVER	Teren z rozstawionych kropek, by gra prześwitywała. Ikony, trasa i znaczniki pozostają pełne.
 CONSOLE	Konsola
 CONSOLE_RUNNING	Działa
+LAYER_OPACITY	Krycie warstw
+PRESET_SOLID	Wyraźne
+PRESET_BALANCED	Zrównoważone
+PRESET_SUBTLE	Subtelne
+PRESET_ICONS_ONLY	Tylko ikony
+PRESET_CUSTOM	Własne
+OPACITY_GROUND	Tło
+OPACITY_LINES	Linie
+OPACITY_ICONS	Ikony
+BY_DISTANCE	Wg odległości
+BY_KIND	Wg rodzaju
+STEAM_ORDER	Domyślnie
+ACH_STORY	Fabuła
+ACH_SECRETS	Dobre uczynki i tajemnice
+ACH_COMBAT	Walka
+ACH_GEAR	Ekwipunek
+ACH_COLLECTING	Badania i znajdźki
+LEGEND_CONTOUR	Poziomice
+LEGEND_SHORE	Brzeg
+LEGEND_WATER	Woda
+LEGEND_TRAIL	Przebyta droga
+LEGEND_ROUTE	Trasa
+LEGEND_BLOCKED	Odcinek zablokowany
+TRAY_SHOW_PANEL	Pokaż panel
+TRAY_HIDE_PANEL	Ukryj panel
+TRAY_QUIT	Zakończ

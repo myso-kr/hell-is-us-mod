@@ -119,6 +119,11 @@ pub fn band(f: &Footprint, feet: f32) -> Option<Band> {
     })
 }
 
+/// A colour at a layer's opacity (percent).
+fn faded(c: Rgba, pct: u8) -> Rgba {
+    Rgba(c.0, c.1, c.2, (c.3 as u32 * pct as u32 / 100) as u8)
+}
+
 /// Deadly water's shore, as an outline.
 const SHORE: Rgba = Rgba(90, 170, 255, 230);
 /// Contour spacing (cm): thin lines, and every so many a strong one.
@@ -127,7 +132,8 @@ const CONTOUR_MAJOR: f32 = 1000.0;
 
 /// The landscape under the map's disc of radius `r` (pixels): its baked colours
 /// (shaded, tinted, water) and/or contour lines.
-fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: f32, outline: bool) {
+fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: f32, outline: bool, opacity: [u8; 3]) {
+    let [ground, lines, _] = opacity;
     let (w, h) = (cv.w, cv.h);
     let (cx, cy) = (w as f32 / 2.0, h as f32 / 2.0);
     // The map is a rotation and a scale of the world, so a pixel's place among the
@@ -140,15 +146,18 @@ fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: 
     let (n, last) = (rel.n, (rel.n - 1) as f32);
     let rim = r * r;
     // Rows are independent: each worker takes a band of them. First every pixel's
-    // ground height (bilinear, for contours) and nearest texel (colour)…
+    // ground height and wetness (bilinear, for contours and the shore) and nearest
+    // texel (colour)…
     let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
     let band = h.div_ceil(workers);
     let mut z = vec![f32::NAN; w * h];
+    let mut wet = vec![f32::NAN; w * h];
     let mut near = vec![u32::MAX; w * h];
     std::thread::scope(|scope| {
-        for (k, (zs, ns)) in z.chunks_mut(band * w).zip(near.chunks_mut(band * w)).enumerate() {
+        let chunks = z.chunks_mut(band * w).zip(wet.chunks_mut(band * w)).zip(near.chunks_mut(band * w));
+        for (k, ((zs, ws), ns)) in chunks.enumerate() {
             scope.spawn(move || {
-                for (row, (zr, nr)) in zs.chunks_mut(w).zip(ns.chunks_mut(w)).enumerate() {
+                for (row, ((zr, wr), nr)) in zs.chunks_mut(w).zip(ws.chunks_mut(w)).zip(ns.chunks_mut(w)).enumerate() {
                     let py = k * band + row;
                     let dy = py as f32 + 0.5 - cy;
                     if dy * dy > rim {
@@ -165,6 +174,23 @@ fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: 
                             let i = iy * n + ix;
                             let (a, b, c, d) = (rel.z[i], rel.z[i + 1], rel.z[i + n], rel.z[i + n + 1]);
                             zr[px] = (a + (b - a) * fx) * (1.0 - fy) + (c + (d - c) * fx) * fy;
+                            if outline {
+                                // Wet or not per texel, blurred over a texel (the mean of
+                                // four samples half a texel apart) so the shore's line
+                                // rounds the texels' corners instead of tracing them.
+                                let mut sum = 0.0;
+                                for (ox, oy) in [(-0.5, -0.5), (0.5, -0.5), (-0.5, 0.5), (0.5, 0.5)] {
+                                    let (sx, sy) =
+                                        ((tx + ox).clamp(0.0, last - 0.001), (ty + oy).clamp(0.0, last - 0.001));
+                                    let (jx, jy) = (sx as usize, sy as usize);
+                                    let (gx, gy) = (sx - jx as f32, sy - jy as f32);
+                                    let j = jy * n + jx;
+                                    let f = |j: usize| rel.wet[j] as u8 as f32;
+                                    let (a, b, c, d) = (f(j), f(j + 1), f(j + n), f(j + n + 1));
+                                    sum += (a + (b - a) * gx) * (1.0 - gy) + (c + (d - c) * gx) * gy;
+                                }
+                                wr[px] = sum / 4.0;
+                            }
                             nr[px] = ((ty + 0.5) as usize * n + (tx + 0.5) as usize) as u32;
                         }
                         tx += ex[0];
@@ -174,69 +200,107 @@ fn draw_relief(cv: &mut Canvas, mode: ReliefMode, view: &View, rel: &Relief, r: 
             });
         }
     });
-    // …then colour and contours, again a band of rows each.
-    let (z, near) = (&z, &near);
+    // …then colour and contours, again a band of rows each. A line is drawn where a
+    // field crosses a level: its coverage falls off with the pixel's distance from the
+    // crossing, the field's distance to the level over its slope per pixel, so lines
+    // come out smooth whatever their direction.
+    let (z, wet, near) = (&z, &wet, &near);
     std::thread::scope(|scope| {
         for (k, out) in cv.px.chunks_mut(band * w).enumerate() {
             scope.spawn(move || {
                 for (row, out) in out.chunks_mut(w).enumerate() {
                     let py = k * band + row;
+                    let dy = py as f32 + 0.5 - cy;
                     for (px, o) in out.iter_mut().enumerate() {
                         let i = py * w + px;
                         if near[i] == u32::MAX {
                             continue;
                         }
+                        // Lines fade out over the disc's last pixel rather than stop.
+                        let dx = px as f32 + 0.5 - cx;
+                        let d2 = dx * dx + dy * dy;
+                        let inside =
+                            if d2 < (r - 0.5) * (r - 0.5) { 1.0 } else { (r + 0.5 - d2.sqrt()).clamp(0.0, 1.0) };
                         let t = near[i] as usize;
                         if outline {
-                            // The shore: a wet pixel next to a dry one.
-                            let shore = rel.wet[t]
-                                && [(px + 1, py), (px.wrapping_sub(1), py), (px, py + 1), (px, py.wrapping_sub(1))]
-                                    .iter()
-                                    .any(|&(nx, ny)| {
-                                        nx < w
-                                            && ny < h
-                                            && near[ny * w + nx] != u32::MAX
-                                            && !rel.wet[near[ny * w + nx] as usize]
-                                    });
-                            if shore {
-                                *o = over(*o, SHORE, SHORE.3 as u32);
+                            // The shore: where the wetness crosses one half.
+                            let v = wet[i];
+                            let cover = match v.is_nan() {
+                                true => 0.0,
+                                false => line_cover(v, slope2(wet, w, h, px, py), 0.5, 1.0, SHORE_HALF) * inside,
+                            };
+                            if cover > 0.0 {
+                                let c = faded(SHORE, lines);
+                                *o = over(*o, c, (c.3 as f32 * cover + 0.5) as u32);
                             }
                         } else if rel.wet[t] || mode.shade() {
-                            let c = rel.colour[t];
+                            let c = faded(rel.colour[t], ground);
                             if c.3 > 0 {
                                 *o = over(*o, c, c.3 as u32);
                             }
                         }
-                        let here = z[i];
-                        if !mode.contour() || here.is_nan() {
+                        if !mode.contour() || z[i].is_nan() {
                             continue;
                         }
-                        let step = |v: f32, s: f32| (v / s).floor();
-                        let mut edge = (false, false);
-                        for (nx, ny) in [(px + 1, py), (px, py + 1)] {
-                            if nx >= w || ny >= h {
-                                continue;
-                            }
-                            let there = z[ny * w + nx];
-                            if there.is_nan() {
-                                continue;
-                            }
-                            edge.0 |= step(here, CONTOUR) != step(there, CONTOUR);
-                            edge.1 |= step(here, CONTOUR_MAJOR) != step(there, CONTOUR_MAJOR);
-                        }
+                        let g = slope2(z, w, h, px, py);
+                        let major_cover = line_cover(z[i], g, 0.0, CONTOUR_MAJOR, MAJOR_HALF) * inside;
+                        let minor_cover = line_cover(z[i], g, 0.0, CONTOUR, MINOR_HALF) * inside;
                         let (major, minor) = if outline { (190, 90) } else { (150, 70) };
-                        if edge.1 {
-                            *o = over(*o, Rgba(236, 222, 180, major), major as u32);
-                        } else if edge.0 && !outline {
-                            *o = over(*o, Rgba(210, 205, 185, minor), minor as u32);
-                        } else if edge.0 {
-                            *o = over(*o, Rgba(200, 196, 180, minor), minor as u32);
+                        let (major, minor) = (major * lines as u32 / 100, minor * lines as u32 / 100);
+                        // The thin line under the strong one, where they meet, does not show.
+                        let minor_cover = minor_cover * (1.0 - major_cover);
+                        let thin =
+                            if outline { Rgba(200, 196, 180, minor as u8) } else { Rgba(210, 205, 185, minor as u8) };
+                        let a = (minor as f32 * minor_cover + 0.5) as u32;
+                        if a > 0 {
+                            *o = over(*o, thin, a);
+                        }
+                        let a = (major as f32 * major_cover + 0.5) as u32;
+                        if a > 0 {
+                            *o = over(*o, Rgba(236, 222, 180, major as u8), a);
                         }
                     }
                 }
             });
         }
     });
+}
+
+/// Half the width (px) of the thin contour lines, the strong ones and the shore.
+const MINOR_HALF: f32 = 0.85;
+const MAJOR_HALF: f32 = 1.0;
+const SHORE_HALF: f32 = 1.0;
+
+/// How steep the field `f` (one value per pixel, NaN where unknown) is at the pixel
+/// (`x`, `y`), squared: its change per pixel, from the neighbouring pixels.
+#[inline]
+fn slope2(f: &[f32], w: usize, h: usize, x: usize, y: usize) -> f32 {
+    let i = y * w + x;
+    let here = f[i];
+    let get = |ok: bool, j: usize| if ok { f[j] } else { f32::NAN };
+    let diff = |a: f32, b: f32| match (a.is_nan(), b.is_nan()) {
+        (false, false) => (b - a) / 2.0,
+        (true, false) => b - here,
+        (false, true) => here - a,
+        (true, true) => 0.0,
+    };
+    let gx = diff(get(x > 0, i.wrapping_sub(1)), get(x + 1 < w, i + 1));
+    let gy = diff(get(y > 0, i.wrapping_sub(w)), get(y + 1 < h, i + w));
+    gx * gx + gy * gy
+}
+
+/// How much of a pixel whose field is `v`, changing by √`slope2` a pixel, a line
+/// along the levels `base + k·spacing` covers: 1 on the line, falling to 0 at `half`
+/// pixels from it.
+#[inline]
+fn line_cover(v: f32, slope2: f32, base: f32, spacing: f32, half: f32) -> f32 {
+    let t = (v - base) / spacing;
+    let off = (t - t.round()).abs() * spacing;
+    // Most pixels are far from any line: no root for them.
+    if off * off >= slope2 * half * half {
+        return 0.0;
+    }
+    1.0 - off / (slope2.sqrt() * half)
 }
 
 /// The ground as dots: every other pixel on every other row is kept, the rest cleared,
@@ -261,6 +325,12 @@ fn dots(cv: &mut Canvas) {
         *px = (a << 24) | c(16) | c(8) | c(0);
     }
 }
+
+/// Samples per pixel each way for the terrain bands, whose edges are antialiased by
+/// averaging them.
+const SS: usize = 3;
+// The bands' sample rows are read three at a time.
+const _: () = assert!(SS == 3);
 
 /// A convex polygon's pixels (centres inside), set to at least `k` — no antialiasing.
 fn fill_convex(class: &mut [u8], w: usize, h: usize, p: &[(f32, f32)], k: u8) {
@@ -295,7 +365,7 @@ fn fill_convex(class: &mut [u8], w: usize, h: usize, p: &[(f32, f32)], k: u8) {
 
 thread_local! {
     /// The map's empty disc at the last size drawn, per thread.
-    static BASE: std::cell::RefCell<Option<Canvas>> = const { std::cell::RefCell::new(None) };
+    static BASE: std::cell::RefCell<Option<(u8, Canvas)>> = const { std::cell::RefCell::new(None) };
 }
 
 /// One frame of the minimap: a disc of radius `r` px centred in the canvas.
@@ -316,6 +386,7 @@ pub fn draw_map(
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
     let r = cx.min(cy) - 14.0;
     let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
+    let [ground, lines, marks] = state.opacity;
     // The empty disc is the same every frame at a size: drawn once, then copied. As
     // outlines, there is no disc: the background stays clear.
     if view.outline {
@@ -323,27 +394,28 @@ pub fn draw_map(
     } else {
         BASE.with(|base| {
             let mut base = base.borrow_mut();
-            if base.as_ref().is_none_or(|b: &Canvas| (b.w, b.h) != (cv.w, cv.h)) {
+            if base.as_ref().is_none_or(|(g, b): &(u8, Canvas)| (b.w, b.h, *g) != (cv.w, cv.h, ground)) {
                 let mut b = Canvas::new(cv.w, cv.h);
-                b.disc(cx, cy, r, BACKGROUND);
-                *base = Some(b);
+                b.disc(cx, cy, r, faded(BACKGROUND, ground));
+                *base = Some((ground, b));
             }
-            cv.px.copy_from_slice(&base.as_ref().unwrap().px);
+            cv.px.copy_from_slice(&base.as_ref().unwrap().1.px);
         });
     }
     if let Some(rel) = relief.filter(|_| state.relief != ReliefMode::Off) {
-        draw_relief(cv, state.relief, view, rel, r, view.outline);
+        draw_relief(cv, state.relief, view, rel, r, view.outline, state.opacity);
     }
 
     if state.terrain {
         // Feet are about 90 cm below the capsule's centre.
         let feet = view.center[2] - 90.0;
         let reach = r / view.scale.max(f32::EPSILON);
-        // One class per pixel (0 = none, else 1 + the band's place in `Band::ALL`; the
-        // later band wins where they overlap), filled without antialiasing, then
-        // coloured once with an edge where a band ends. Overlaps do not pile up.
+        // One class per sample (0 = none, else 1 + the band's place in `Band::ALL`; the
+        // later band wins where they overlap), SS × SS samples a pixel, then coloured
+        // once with an edge where a band ends. Overlaps do not pile up.
         let (w, h) = (cv.w, cv.h);
-        let mut class = vec![0u8; w * h];
+        let (sw, sh) = (w * SS, h * SS);
+        let mut class = vec![0u8; sw * sh];
         for f in footprints {
             let c = f.center();
             let d = ((c[0] - view.center[0]).powi(2) + (c[1] - view.center[1]).powi(2)).sqrt();
@@ -357,14 +429,13 @@ pub fn draw_map(
                 .iter()
                 .map(|c| {
                     let (x, y) = view.project([c[0], c[1], 0.0]);
-                    (cx + x, cy + y)
+                    ((cx + x) * SS as f32, (cy + y) * SS as f32)
                 })
                 .collect();
-            fill_convex(&mut class, w, h, &pts, k);
+            fill_convex(&mut class, sw, sh, &pts, k);
         }
-        let rim = (r - 1.0) * (r - 1.0);
-        let colours: Vec<(Rgba, Rgba)> = Band::ALL.iter().map(|b| b.colours()).collect();
-        let (class, colours, outline) = (&class, &colours, view.outline);
+        let rim = r - 1.0;
+        let outline = view.outline;
         // As outlines only walls and raised floors are drawn: the cliff and rock boxes
         // are bigger than what they hold (the contours show the real ground), and the
         // lower bands' blue would read as water.
@@ -372,65 +443,129 @@ pub fn draw_map(
             .iter()
             .map(|b| !outline || matches!(b, Band::Wall | Band::Raised | Band::Above | Band::Below))
             .collect();
-        let kept = &kept;
-        let class_at = move |i: usize| {
-            let k = class[i];
-            if k > 0 && kept[k as usize - 1] {
-                k
-            } else {
-                0
+        // Each class's (fill, edge) at the layers' opacity; as outlines, no fill and a
+        // stronger edge. Index 0 is the dark rim just outside each shape, as outlines,
+        // which keeps its line readable over any background.
+        let none = Rgba(0, 0, 0, 0);
+        let mut paint = vec![(none, faded(Rgba(0, 0, 0, if outline { 120 } else { 0 }), lines))];
+        paint.extend(Band::ALL.iter().map(|b| {
+            let (fill, edge) = b.colours();
+            match outline {
+                true => (none, faded(Rgba(edge.0, edge.1, edge.2, 235), lines)),
+                false => (faded(fill, ground), faded(edge, lines)),
             }
-        };
+        }));
+        // A band left out is drawn as nothing, still over what it covers.
+        let mut map = [0u8; 9];
+        for (k, m) in map.iter_mut().enumerate().skip(1) {
+            *m = if kept[k - 1] { k as u8 } else { 0 };
+        }
         let workers = std::thread::available_parallelism().map_or(4, |n| n.get()).clamp(1, 8);
         let rows = h.div_ceil(workers);
+        // Each pixel's band where all its samples are of one, else MIXED: where a
+        // pixel and the four beside it are all of one band, it is a plain fill (or
+        // nothing), with no need to look at the samples one by one.
+        const MIXED: u8 = u8::MAX;
+        let mut span = vec![0u8; w * h];
+        std::thread::scope(|scope| {
+            for (k, out) in span.chunks_mut(rows * w).enumerate() {
+                let (class, map) = (&class, &map);
+                scope.spawn(move || {
+                    for (row, out) in out.chunks_mut(w).enumerate() {
+                        let y = k * rows + row;
+                        let sub = |j: usize| class[(y * SS + j) * sw..(y * SS + j + 1) * sw].chunks_exact(SS);
+                        for (o, ((a, b), c)) in out.iter_mut().zip(sub(0).zip(sub(1)).zip(sub(2))) {
+                            let k = a[0];
+                            *o = match a.iter().chain(b).chain(c).all(|&v| v == k) {
+                                true => map[k as usize],
+                                false => MIXED,
+                            };
+                        }
+                    }
+                });
+            }
+        });
+        let (class, paint, map, span) = (&class, &paint, &map, &span);
+        let class_at = move |i: usize| map[class[i] as usize];
         std::thread::scope(|scope| {
             for (k, out) in cv.px.chunks_mut(rows * w).enumerate() {
                 scope.spawn(move || {
                     for (row, out) in out.chunks_mut(w).enumerate() {
                         let y = k * rows + row;
                         let dy = y as f32 + 0.5 - cy;
-                        if y == 0 || y + 1 >= h || dy * dy > rim {
+                        if y == 0 || y + 1 >= h || dy.abs() > rim + 0.5 {
                             continue;
                         }
-                        let half = (rim - dy * dy).sqrt();
+                        let half = ((rim + 0.5).powi(2) - dy * dy).max(0.0).sqrt();
                         let (x0, x1) =
                             (((cx - half).floor() as usize).max(1), ((cx + half).ceil() as usize).min(w - 1));
-                        #[allow(clippy::needless_range_loop)]
-                        #[allow(clippy::needless_range_loop)]
+                        // The bands fade out over the disc's last pixel.
+                        let fade = |x: usize| {
+                            let dx = x as f32 + 0.5 - cx;
+                            let d2 = dx * dx + dy * dy;
+                            match d2 < (rim - 0.5) * (rim - 0.5) {
+                                true => 1.0,
+                                false => (rim + 0.5 - d2.sqrt()).clamp(0.0, 1.0),
+                            }
+                        };
                         for x in x0..x1 {
-                            let k = class_at(y * w + x);
-                            if k == 0 {
-                                // As outlines, a dark rim just outside each shape keeps its
-                                // line readable over any background.
-                                let beside = [
-                                    class_at(y * w + x - 1),
-                                    class_at(y * w + x + 1),
-                                    class_at((y - 1) * w + x),
-                                    class_at((y + 1) * w + x),
-                                ];
-                                if outline && beside.iter().any(|&n| n > 0) {
-                                    out[x] = over(out[x], Rgba(0, 0, 0, 120), 120);
+                            let p = y * w + x;
+                            let k = span[p];
+                            if k != MIXED {
+                                let near = [span[p - 1], span[p + 1], span[p - w], span[p + w]];
+                                if k == 0 && (!outline || near.iter().all(|&n| n == 0)) {
+                                    continue;
                                 }
+                                if k > 0 && near.iter().all(|&n| n != MIXED && n >= k) {
+                                    let c = paint[k as usize].0;
+                                    let a = (c.3 as f32 * fade(x) + 0.5) as u32;
+                                    if a > 0 {
+                                        out[x] = over(out[x], c, a);
+                                    }
+                                    continue;
+                                }
+                            }
+                            // Each sample is a pixel's worth of the plain test — a band's
+                            // edge where a sample one pixel away is of a lower band — at
+                            // its own offset: their mean is the edge, antialiased.
+                            let (mut sa, mut sr, mut sg, mut sb) = (0u32, 0u32, 0u32, 0u32);
+                            for sy in y * SS..(y + 1) * SS {
+                                let at = sy * sw;
+                                let cells = &class[at + x * SS..at + (x + 1) * SS];
+                                for (j, &raw) in cells.iter().enumerate() {
+                                    let i = at + x * SS + j;
+                                    let k = map[raw as usize];
+                                    let beside = [
+                                        class_at(i - SS),
+                                        class_at(i + SS),
+                                        class_at(i - SS * sw),
+                                        class_at(i + SS * sw),
+                                    ];
+                                    let c = if k == 0 {
+                                        if !outline || beside.iter().all(|&n| n == 0) {
+                                            continue;
+                                        }
+                                        paint[0].1
+                                    } else if beside.iter().any(|&n| n < k) {
+                                        paint[k as usize].1
+                                    } else {
+                                        paint[k as usize].0
+                                    };
+                                    let a = c.3 as u32;
+                                    sa += a;
+                                    sr += c.0 as u32 * a;
+                                    sg += c.1 as u32 * a;
+                                    sb += c.2 as u32 * a;
+                                }
+                            }
+                            if sa == 0 {
                                 continue;
                             }
-                            let (fill, edge) = colours[k as usize - 1];
-                            let edged = [
-                                class_at(y * w + x - 1),
-                                class_at(y * w + x + 1),
-                                class_at((y - 1) * w + x),
-                                class_at((y + 1) * w + x),
-                            ]
-                            .iter()
-                            .any(|&n| n < k);
-                            if outline {
-                                if edged {
-                                    let c = Rgba(edge.0, edge.1, edge.2, 235);
-                                    out[x] = over(out[x], c, 235);
-                                }
-                                continue;
+                            let a = (sa as f32 * fade(x) / (SS * SS) as f32 + 0.5) as u32;
+                            if a > 0 {
+                                let c = Rgba((sr / sa) as u8, (sg / sa) as u8, (sb / sa) as u8, 255);
+                                out[x] = over(out[x], c, a);
                             }
-                            let c = if edged { edge } else { fill };
-                            out[x] = over(out[x], c, c.3 as u32);
                         }
                     }
                 });
@@ -449,7 +584,7 @@ pub fn draw_map(
         for (i, pair) in trail.windows(2).enumerate() {
             let age = 1.0 - (i as f32 + 1.0) / (n - 1.0);
             let fresh = (1.0 - age).powf(1.6);
-            let colour = Rgba(TRAIL.0, TRAIL.1, TRAIL.2, (TRAIL.3 as f32 * (0.08 + 0.92 * fresh)) as u8);
+            let colour = faded(Rgba(TRAIL.0, TRAIL.1, TRAIL.2, (TRAIL.3 as f32 * (0.08 + 0.92 * fresh)) as u8), lines);
             let width = 1.2 + 1.0 * fresh;
             if let [Some(a), Some(b)] = pair {
                 let (pa, pb) = (view.project(*a), view.project(*b));
@@ -475,16 +610,17 @@ pub fn draw_map(
             let p = view.project(m.at);
             let d = (p.0 * p.0 + p.1 * p.1).sqrt();
             let [pr, pg, pb] = m.kind.rgb();
-            let colour = Rgba(pr, pg, pb, 255);
+            let colour = faded(Rgba(pr, pg, pb, 255), marks);
             if d <= r - 5.0 {
                 match icons {
                     // Its kind's icon, the pin's point on the spot.
                     Some(icons) => {
                         let i = icons.pin(m.kind);
-                        cv.blit(cx + p.0, cy + p.1 - i.size as f32 * 0.42, i.size, &i.px);
+                        let a = 255 * marks as u32 / 100;
+                        cv.blit_alpha(cx + p.0, cy + p.1 - i.size as f32 * 0.42, i.size, &i.px, a);
                     }
                     None => {
-                        cv.disc(cx + p.0, cy + p.1, 6.5, OUTLINE);
+                        cv.disc(cx + p.0, cy + p.1, 6.5, faded(OUTLINE, marks));
                         cv.disc(cx + p.0, cy + p.1, 5.0, colour);
                     }
                 }
@@ -510,7 +646,7 @@ pub fn draw_map(
         }
         // Another floor: faint, with an arrow up or down.
         let dz = (at[2] - view.center[2]) / 100.0;
-        let alpha = floor_alpha(dz);
+        let alpha = floor_alpha(dz) * marks as u32 / 100;
         match icons {
             Some(icons) => {
                 let i = icons.get(t.sub);
@@ -578,13 +714,13 @@ pub fn draw_map(
                     while t < len {
                         let e = (t + 5.0).min(len);
                         let (p0, p1) = ((cx + a.0 + ux * t, cy + a.1 + uy * t), (cx + a.0 + ux * e, cy + a.1 + uy * e));
-                        cv.line(p0, p1, 4.5, Rgba(0, 0, 0, 160));
-                        cv.line(p0, p1, 2.5, Rgba(255, 220, 60, 235));
+                        cv.line(p0, p1, 4.5, faded(Rgba(0, 0, 0, 160), lines));
+                        cv.line(p0, p1, 2.5, faded(Rgba(255, 220, 60, 235), lines));
                         t += 9.0;
                     }
                 } else {
-                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 4.5, Rgba(0, 0, 0, 160));
-                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 2.5, Rgba(cr, cg, cb, 235));
+                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 4.5, faded(Rgba(0, 0, 0, 160), lines));
+                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 2.5, faded(Rgba(cr, cg, cb, 235), lines));
                 }
             }
         } else if target {
@@ -594,7 +730,12 @@ pub fn draw_map(
             let mut t = 10.0;
             while t < reach {
                 let e = (t + 6.0).min(reach);
-                cv.line((cx + ux * t, cy + uy * t), (cx + ux * e, cy + uy * e), 2.0, Rgba(cr, cg, cb, 200));
+                cv.line(
+                    (cx + ux * t, cy + uy * t),
+                    (cx + ux * e, cy + uy * e),
+                    2.0,
+                    faded(Rgba(cr, cg, cb, 200), lines),
+                );
                 t += 10.0;
             }
         }
@@ -603,7 +744,7 @@ pub fn draw_map(
             let (x, y) = (cx + p.0, cy + p.1);
             // Another floor: faint (the target less so), with an arrow up or down.
             let dz = (g.at[2] - view.center[2]) / 100.0;
-            let a = if target { floor_alpha(dz).max(190) } else { floor_alpha(dz) };
+            let a = if target { floor_alpha(dz).max(190) } else { floor_alpha(dz) } * marks as u32 / 100;
             let fade = |c: Rgba| Rgba(c.0, c.1, c.2, (c.3 as u32 * a / 255) as u8);
             cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], fade(OUTLINE));
             cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], fade(colour));
@@ -613,23 +754,57 @@ pub fn draw_map(
             let tip = (cx + ux * (r - 1.0), cy + uy * (r - 1.0));
             let base = (cx + ux * (r - 13.0), cy + uy * (r - 13.0));
             let (nx, ny) = (-uy * 6.0, ux * 6.0);
-            cv.triangle([tip, (base.0 + nx, base.1 + ny), (base.0 - nx, base.1 - ny)], colour);
+            cv.triangle([tip, (base.0 + nx, base.1 + ny), (base.0 - nx, base.1 - ny)], faded(colour, marks));
         }
     }
 
     if !view.outline {
-        cv.ring(cx, cy, r, 2.0, EDGE);
+        cv.ring(cx, cy, r, 2.0, faded(EDGE, ground.max(lines)));
     }
     let (nx, ny) = view.north();
-    cv.disc(cx + nx * r, cy + ny * r, 9.0, BACKGROUND);
-    cv.letter_n(cx + nx * r, cy + ny * r, 11.0, NORTH);
+    cv.disc(cx + nx * r, cy + ny * r, 9.0, faded(BACKGROUND, marks));
+    cv.letter_n(cx + nx * r, cy + ny * r, 11.0, faded(NORTH, marks));
 
     let (hx, hy) = view.heading();
     let (px, py) = (-hy, hx);
     let tip = (cx + hx * 11.0, cy + hy * 11.0);
     let left = (cx - hx * 7.0 + px * 7.0, cy - hy * 7.0 + py * 7.0);
     let right = (cx - hx * 7.0 - px * 7.0, cy - hy * 7.0 - py * 7.0);
-    cv.triangle([tip, left, right], HERO);
+    cv.triangle([tip, left, right], faded(HERO, marks));
+}
+
+/// How a legend entry is drawn: a short line, a dashed one, or a filled square.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Swatch {
+    Line,
+    Dashed,
+    Fill,
+}
+
+/// What the map draws with the settings as they are, for the Map page's legend: each
+/// line or area's swatch, colour (the same constants it is drawn with) and name.
+pub fn legend(state: &MapState, outline: bool) -> Vec<(Swatch, Rgba, &'static str)> {
+    let mut out = Vec::new();
+    if state.terrain {
+        for b in Band::ALL {
+            let kept = !outline || matches!(b, Band::Wall | Band::Raised | Band::Above | Band::Below);
+            if kept {
+                out.push((Swatch::Line, b.colours().1, b.label()));
+            }
+        }
+    }
+    if state.relief.contour() {
+        out.push((Swatch::Line, Rgba(236, 222, 180, 230), tr!("LEGEND_CONTOUR")));
+    }
+    if outline {
+        out.push((Swatch::Line, SHORE, tr!("LEGEND_SHORE")));
+    } else if state.relief != ReliefMode::Off {
+        out.push((Swatch::Fill, Rgba(40, 95, 175, 230), tr!("LEGEND_WATER")));
+    }
+    out.push((Swatch::Line, TRAIL, tr!("LEGEND_TRAIL")));
+    out.push((Swatch::Line, Rgba(245, 120, 200, 235), tr!("LEGEND_ROUTE")));
+    out.push((Swatch::Dashed, Rgba(255, 220, 60, 235), tr!("LEGEND_BLOCKED")));
+    out
 }
 
 #[cfg(test)]

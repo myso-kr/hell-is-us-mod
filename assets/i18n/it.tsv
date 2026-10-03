@@ -226,7 +226,7 @@ RESTORE_ALL	Ripristina tutto ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Mantieni questi trucchi la prossima volta
 NEXT_RUN_ONCE_THE_HERO_CAN	La prossima volta, quando potrai controllare l'eroe, i trucchi attivi ora verranno riattivati.
 WRITES_ONLY_WHILE_THE_HERO_IS	Scrive valori solo mentre controlli l'eroe · non blocca gli obiettivi Steam
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Tracker indagini (al centro a destra dello schermo)
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Tracker indagini (in alto a destra, sotto la minimappa)
 READING_THE_QUESTS_THEY_APPEAR_A	Lettura delle indagini in corso. Compaiono qualche secondo dopo il caricamento del gioco
 MAIN_STORY_AUTO_NOW	Storia principale automatica: {quest}
 MAIN_STORY_AUTO	Storia principale automatica
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Disegna a punti
 DRAW_AS_DOTS_HOVER	Il terreno a punti distanziati, così il gioco si vede attraverso. Icone, percorso e segnaposti restano pieni.
 CONSOLE	Console
 CONSOLE_RUNNING	In esecuzione
+LAYER_OPACITY	Opacità dei livelli
+PRESET_SOLID	Netto
+PRESET_BALANCED	Bilanciato
+PRESET_SUBTLE	Discreto
+PRESET_ICONS_ONLY	Solo icone
+PRESET_CUSTOM	Personalizzato
+OPACITY_GROUND	Sfondo
+OPACITY_LINES	Linee
+OPACITY_ICONS	Icone
+BY_DISTANCE	Per distanza
+BY_KIND	Per tipo
+STEAM_ORDER	Ordine predefinito
+ACH_STORY	Storia
+ACH_SECRETS	Buone azioni e misteri
+ACH_COMBAT	Combattimento
+ACH_GEAR	Equipaggiamento
+ACH_COLLECTING	Ricerca e collezione
+LEGEND_CONTOUR	Curve di livello
+LEGEND_SHORE	Riva
+LEGEND_WATER	Acqua
+LEGEND_TRAIL	Percorso fatto
+LEGEND_ROUTE	Percorso
+LEGEND_BLOCKED	Tratto bloccato
+TRAY_SHOW_PANEL	Mostra pannello
+TRAY_HIDE_PANEL	Nascondi pannello
+TRAY_QUIT	Esci

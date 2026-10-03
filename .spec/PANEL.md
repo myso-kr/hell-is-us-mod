@@ -107,6 +107,16 @@ painter. Heroes: Now (live map, region, KPI tiles), Collect (collectibles, enemy
 secrets as rings), Puzzles (this region's puzzles, Lymbic locks, vaults as rings). Every meter and ring
 shows progress (done of all), so the enemy groups card reads "beaten", not "left".
 
+Long lists can be **grouped** (2026-10-04, `tw::order` and `tw::group_heading`): the places by tier,
+the achievements by kind (from their Steam API names: story, deeds and mysteries, combat, gear,
+research and collections). The Map page's preview has a **legend** (`raster::legend`): the lines and
+areas drawn with the settings as they are, in the colours they are drawn with.
+
+The panel runs **once** (a named mutex; a second start shows the running one and exits) and has a
+**tray icon** (`src/ui/tray.rs`: click shows or hides, right-click menu, Quit closes as × does). It is
+kept inside its monitor's work area (`hotkey.rs` `keep_on_screen`). The console and its header toggle
+show only over a game menu (the game or the console in front, the cursor showing or the game paused).
+
 The Map page's **preview** (2026-10-03): while that page shows (`Shared::preview_wanted`), the
 overlay draws the map with the settings as they are, four times a second: the minimap's radius,
 heading and style, or the big map's radius, style and opacity when that is the display.

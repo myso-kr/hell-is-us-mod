@@ -31,6 +31,9 @@ windows-sys = { version = "0.59", features = [
     "Win32_System_Threading",
     "Win32_System_ProcessStatus",
     "Win32_System_Registry",
+    # tray.rs: the notification-area icon, and the one-panel mutex.
+    "Win32_UI_Shell",
+    "Win32_Security",
 ] }
 
 [profile.release]

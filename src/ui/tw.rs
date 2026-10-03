@@ -115,7 +115,9 @@ pub fn masonry(tui: &mut Tui, key: &str, columns: usize, n: usize, mut card: imp
         for lane in lanes {
             tui.style(grow(col(GAP))).add(|tui| {
                 for i in lane {
-                    tui.style(col(0.0)).add_with_background_ui(
+                    // GAP inside too: a card that draws several cards (a page's column)
+                    // keeps the same space between them as between the slots.
+                    tui.style(col(GAP)).add_with_background_ui(
                         |ui, container| {
                             let h = container.full_container().height();
                             ui.ctx().data_mut(|d| d.insert_temp(id(i), h));
@@ -623,6 +625,34 @@ pub fn regions(tui: &mut Tui, label: &str, mut counts: Vec<(String, usize)>) {
             chip(tui, format!("{place} {n}"), Tone::Quiet);
         }
     });
+}
+
+/// A long list's order, as a small segmented switch: `first` (by distance, as given)
+/// or `grouped` (by kind, with headings). Returns whether it changed.
+pub fn order(tui: &mut Tui, grouped: &mut bool, first: &str, by_kind: &str) -> bool {
+    let (first, by_kind) = (first.to_string(), by_kind.to_string());
+    tui.style(row(super::theme::TIGHT)).add(|tui| {
+        let mut changed = false;
+        for (on, label) in [(false, first), (true, by_kind)] {
+            let text = RichText::new(label).small();
+            if w(tui, |ui| ui.selectable_label(*grouped == on, text)).clicked() && *grouped != on {
+                *grouped = on;
+                changed = true;
+            }
+        }
+        changed
+    })
+}
+
+/// A group's heading inside a list: its name and count, small and dim, over a hairline.
+pub fn group_heading(ui: &mut egui::Ui, name: &str, count: usize) {
+    ui.add_space(4.0);
+    ui.horizontal(|ui| {
+        ui.label(RichText::new(name).small().strong().color(super::theme::DIM));
+        ui.label(RichText::new(count.to_string()).small().monospace().color(super::theme::DIM));
+    });
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 3.0), egui::Sense::hover());
+    ui.painter().hline(rect.x_range(), rect.center().y, egui::Stroke::new(1.0, super::theme::EDGE));
 }
 
 #[cfg(test)]

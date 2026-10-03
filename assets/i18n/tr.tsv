@@ -226,7 +226,7 @@ RESTORE_ALL	Hepsini geri yükle ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Bu hileleri bir sonraki sefer de açık tut
 NEXT_RUN_ONCE_THE_HERO_CAN	Bir sonraki çalıştırmada kahramanı kontrol edebildiğinde, şu an açık olan hileler yeniden açılır.
 WRITES_ONLY_WHILE_THE_HERO_IS	Yalnızca kahraman kontrol edilirken değer yazar · başarımlar engellenmez
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Görev takipçisi: ekranın sağ ortası
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Görev takipçisi (sağ üst, mini haritanın altında)
 READING_THE_QUESTS_THEY_APPEAR_A	Görevler okunuyor. Oyun yüklendikten birkaç saniye sonra görünür
 MAIN_STORY_AUTO_NOW	Ana hikâye, otomatik: {quest}
 MAIN_STORY_AUTO	Ana hikâye, otomatik
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Noktalarla çiz
 DRAW_AS_DOTS_HOVER	Zemini aralıklı noktalarla çizer, oyun arkadan görünür. Simgeler, rota ve işaretler dolu kalır.
 CONSOLE	Konsol
 CONSOLE_RUNNING	Çalışıyor
+LAYER_OPACITY	Katman opaklığı
+PRESET_SOLID	Net
+PRESET_BALANCED	Dengeli
+PRESET_SUBTLE	Hafif
+PRESET_ICONS_ONLY	Yalnızca simgeler
+PRESET_CUSTOM	Özel
+OPACITY_GROUND	Arka plan
+OPACITY_LINES	Çizgiler
+OPACITY_ICONS	Simgeler
+BY_DISTANCE	Uzaklığa göre
+BY_KIND	Türe göre
+STEAM_ORDER	Varsayılan sıra
+ACH_STORY	Hikâye
+ACH_SECRETS	İyilikler ve gizemler
+ACH_COMBAT	Savaş
+ACH_GEAR	Ekipman
+ACH_COLLECTING	Araştırma ve koleksiyon
+LEGEND_CONTOUR	Eş yükselti çizgileri
+LEGEND_SHORE	Kıyı
+LEGEND_WATER	Su
+LEGEND_TRAIL	Yürünen yol
+LEGEND_ROUTE	Rota
+LEGEND_BLOCKED	Engelden geçen kısım
+TRAY_SHOW_PANEL	Paneli göster
+TRAY_HIDE_PANEL	Paneli gizle
+TRAY_QUIT	Çık

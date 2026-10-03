@@ -226,7 +226,7 @@ RESTORE_ALL	Alle zurücksetzen ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Aktive Cheats beim nächsten Mal beibehalten
 NEXT_RUN_ONCE_THE_HERO_CAN	Beim nächsten Start werden die jetzt aktiven Cheats wieder eingeschaltet, sobald der Held steuerbar ist.
 WRITES_ONLY_WHILE_THE_HERO_IS	Werte werden nur geschrieben, solange der Held gesteuert wird · Erfolge werden nicht blockiert
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest-Tracker – rechts in der Bildschirmmitte
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest-Tracker (oben rechts, unter der Minikarte)
 READING_THE_QUESTS_THEY_APPEAR_A	Quests werden gelesen – sie erscheinen wenige Sekunden nach dem Laden des Spiels
 MAIN_STORY_AUTO_NOW	Hauptgeschichte automatisch – {quest}
 MAIN_STORY_AUTO	Hauptgeschichte automatisch
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Als Punkte zeichnen
 DRAW_AS_DOTS_HOVER	Der Boden als Punkte mit Lücken, damit das Spiel durchscheint. Symbole, Route und Markierungen bleiben voll.
 CONSOLE	Konsole
 CONSOLE_RUNNING	Läuft
+LAYER_OPACITY	Ebenen-Deckkraft
+PRESET_SOLID	Kräftig
+PRESET_BALANCED	Ausgewogen
+PRESET_SUBTLE	Dezent
+PRESET_ICONS_ONLY	Nur Symbole
+PRESET_CUSTOM	Eigene
+OPACITY_GROUND	Hintergrund
+OPACITY_LINES	Linien
+OPACITY_ICONS	Symbole
+BY_DISTANCE	Nach Entfernung
+BY_KIND	Nach Art
+STEAM_ORDER	Standard
+ACH_STORY	Geschichte
+ACH_SECRETS	Gute Taten und Mysterien
+ACH_COMBAT	Kampf
+ACH_GEAR	Ausrüstung
+ACH_COLLECTING	Forschung und Sammeln
+LEGEND_CONTOUR	Höhenlinien
+LEGEND_SHORE	Ufer
+LEGEND_WATER	Wasser
+LEGEND_TRAIL	Gegangener Weg
+LEGEND_ROUTE	Route
+LEGEND_BLOCKED	Route durch ein Hindernis
+TRAY_SHOW_PANEL	Panel zeigen
+TRAY_HIDE_PANEL	Panel ausblenden
+TRAY_QUIT	Beenden

@@ -154,7 +154,8 @@ quests.
 - Automatic guidance: the nearest goal that advances the followed quest (the goal's new fact has
   that quest as `AssociatedQuestData`, or its new tag starts with the good deed's prefix); if none,
   the nearest quest goal.
-- Tracker (overlay, `src/ui/tracker.rs`): right middle of the game window, 340 × up to 560. The
+- Tracker (overlay, `src/ui/tracker.rs`): top right of the game window, under the minimap when it shows
+  (moved 2026-10-04: the game opens its pop-ups at the right middle), 340 × up to 560. The
   followed quest is expanded (name, kind, lead count, description in 4 lines, 3 leads); up to 5
   other quests in progress get one line each.
 - Text is drawn with GDI (Malgun Gothic, greyscale anti-aliasing) into a DIB and blended using

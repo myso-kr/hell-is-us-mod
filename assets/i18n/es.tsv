@@ -226,7 +226,7 @@ RESTORE_ALL	Restaurar todo ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Mantener estos trucos la próxima vez
 NEXT_RUN_ONCE_THE_HERO_CAN	La próxima vez, al poder controlar al héroe, se reactivan los trucos activos ahora.
 WRITES_ONLY_WHILE_THE_HERO_IS	Solo escribe valores mientras controlas al héroe · no bloquea logros
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Rastreador de misiones (centro derecha de la pantalla)
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Rastreador de misiones (arriba a la derecha, bajo el minimapa)
 READING_THE_QUESTS_THEY_APPEAR_A	Leyendo las misiones. Aparecen unos segundos después de cargar el juego
 MAIN_STORY_AUTO_NOW	Historia principal automática: {quest}
 MAIN_STORY_AUTO	Historia principal automática
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Dibujar con puntos
 DRAW_AS_DOTS_HOVER	El terreno con puntos separados para que se vea el juego detrás. Los iconos, la ruta y los marcadores siguen sólidos.
 CONSOLE	Consola
 CONSOLE_RUNNING	En curso
+LAYER_OPACITY	Opacidad de capas
+PRESET_SOLID	Nítido
+PRESET_BALANCED	Equilibrado
+PRESET_SUBTLE	Sutil
+PRESET_ICONS_ONLY	Solo iconos
+PRESET_CUSTOM	Personalizado
+OPACITY_GROUND	Fondo
+OPACITY_LINES	Líneas
+OPACITY_ICONS	Iconos
+BY_DISTANCE	Por distancia
+BY_KIND	Por tipo
+STEAM_ORDER	Orden por defecto
+ACH_STORY	Historia
+ACH_SECRETS	Buenas acciones y misterios
+ACH_COMBAT	Combate
+ACH_GEAR	Equipo
+ACH_COLLECTING	Investigación y colección
+LEGEND_CONTOUR	Curvas de nivel
+LEGEND_SHORE	Orilla
+LEGEND_WATER	Agua
+LEGEND_TRAIL	Camino recorrido
+LEGEND_ROUTE	Ruta
+LEGEND_BLOCKED	Tramo bloqueado
+TRAY_SHOW_PANEL	Mostrar panel
+TRAY_HIDE_PANEL	Ocultar panel
+TRAY_QUIT	Salir

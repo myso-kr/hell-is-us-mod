@@ -91,6 +91,9 @@ pub struct Console {
     recall: Option<usize>,
     running: Option<(Child, Receiver<(Line, String)>)>,
     focus: bool,
+    /// The command line's height as last drawn (0 before it is): the log is given the
+    /// rest of the window.
+    field_height: f32,
 }
 
 impl Default for Console {
@@ -103,6 +106,7 @@ impl Default for Console {
             recall: None,
             running: None,
             focus: false,
+            field_height: 0.0,
         };
         c.push(Line::Note, tr!("TYPE_A_COMMAND_HELP_LISTS_THEM").into());
         c
@@ -259,9 +263,13 @@ impl Console {
         self.header(ui);
         let font = egui::TextStyle::Monospace.resolve(ui.style());
         let row = ui.text_style_height(&egui::TextStyle::Monospace);
-        let field = row + 2.0 * (FIELD_Y as f32 + 1.0);
+        // The field as drawn last frame; before that, a row (a horizontal row is never
+        // under `interact_size.y`) inside its padding and hairline. Counting only the
+        // font's row took a few pixels too few, and cut the field's bottom off.
+        let estimate = row.max(ui.spacing().interact_size.y) + 2.0 * (FIELD_Y as f32 + 1.0);
+        let field = if self.field_height > 0.0 { self.field_height } else { estimate };
         let gap = ui.spacing().item_spacing.y;
-        let height = (ui.available_height() - field - gap - 2.0 * LOG_Y as f32).max(60.0);
+        let height = (ui.available_height() - field - gap - 2.0 * LOG_Y as f32).max(0.0);
         egui::Frame::new()
             .fill(SURFACE.gamma_multiply(0.9))
             .corner_radius(R_CARD)
@@ -285,12 +293,19 @@ impl Console {
         // the accent edge while it has the keyboard), the prompt glyph and a dim hint.
         let id = ui.id().with("console-field");
         let focused = ui.ctx().memory(|m| m.has_focus(id));
-        egui::Frame::new()
+        let drawn = egui::Frame::new()
             .fill(CONTROL)
             .stroke(egui::Stroke::new(1.0, if focused { ACCENT.gamma_multiply(0.6) } else { EDGE }))
             .corner_radius(R_CONTROL)
             .inner_margin(egui::Margin::symmetric(FIELD_X, FIELD_Y))
-            .show(ui, |ui| self.command_line(ui, id, &font));
+            .show(ui, |ui| self.command_line(ui, id, &font))
+            .response
+            .rect
+            .height();
+        if (drawn - self.field_height).abs() > 0.5 {
+            self.field_height = drawn;
+            ui.ctx().request_repaint();
+        }
     }
 
     /// The header: the title, a pill while a command runs, and the keys as keycaps on

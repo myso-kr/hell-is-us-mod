@@ -222,7 +222,15 @@ with gaps between them, as Diablo's and Path of Exile's maps do.
   texel the water spreads to neighbours whose ground lies below that surface and stops where the land
   rises above it (the shore, or a cliff out of the water) or is not loaded. Route finding is unchanged:
   water blocks at any height (`pathfind.rs` tests `o.water` first).
-- **Dots** (`raster.rs` `dots`, setting `dots`, on by default; Map page "Draw as dots"): after the
+- **Dots** (`raster.rs` `dots`, setting `dots`, on by default; the big map's option on the Map page
+  "Draw as dots", 2026-10-04: the big map only, as it covers the middle of the screen; the minimap is
+  small and stays solid): after the
   ground layers (disc, relief, terrain bands) every other pixel on every other row is kept and the rest
   cleared, so three quarters of the ground is gap; kept dots are drawn 1.7× stronger so the ground
   still reads. The trail, route, icons, pins and the hero mark are drawn after it and stay solid.
+- **Layer opacity** (2026-10-04, setting `opacity` = ground, lines, icons in percent; Map page "Layer
+  opacity"): the ground (disc, relief and terrain fills), the lines (contours, shore, terrain edges,
+  trail, route) and the icons (things, pins, goals, north, the hero) are faded separately at the point
+  each is drawn (`raster.rs` `faded`); the big map's own opacity multiplies them. Presets: Solid
+  100/100/100, Balanced 60/90/100, Subtle 30/65/90, Icons only 0/35/100; anything else shows as
+  Custom.

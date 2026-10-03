@@ -226,7 +226,7 @@ RESTORE_ALL	Tout restaurer ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Garder ces cheats actifs la prochaine fois
 NEXT_RUN_ONCE_THE_HERO_CAN	Au prochain lancement, les cheats actifs actuellement seront réactivés dès que le héros sera contrôlable.
 WRITES_ONLY_WHILE_THE_HERO_IS	Écrit les valeurs uniquement quand le héros est contrôlé · les succès ne sont pas bloqués
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Suivi de quêtes (au milieu à droite de l'écran)
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Suivi de quêtes (en haut à droite, sous la mini-carte)
 READING_THE_QUESTS_THEY_APPEAR_A	Lecture des quêtes. Elles apparaissent quelques secondes après le chargement du jeu
 MAIN_STORY_AUTO_NOW	Histoire principale auto : {quest}
 MAIN_STORY_AUTO	Histoire principale auto
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Dessiner en points
 DRAW_AS_DOTS_HOVER	Le terrain en points espacés, pour laisser voir le jeu. Icônes, itinéraire et repères restent pleins.
 CONSOLE	Console
 CONSOLE_RUNNING	En cours
+LAYER_OPACITY	Opacité des calques
+PRESET_SOLID	Net
+PRESET_BALANCED	Équilibré
+PRESET_SUBTLE	Discret
+PRESET_ICONS_ONLY	Icônes seules
+PRESET_CUSTOM	Personnalisé
+OPACITY_GROUND	Fond
+OPACITY_LINES	Lignes
+OPACITY_ICONS	Icônes
+BY_DISTANCE	Par distance
+BY_KIND	Par type
+STEAM_ORDER	Ordre par défaut
+ACH_STORY	Histoire
+ACH_SECRETS	Bonnes actions et mystères
+ACH_COMBAT	Combat
+ACH_GEAR	Équipement
+ACH_COLLECTING	Recherche et collection
+LEGEND_CONTOUR	Courbes de niveau
+LEGEND_SHORE	Rive
+LEGEND_WATER	Eau
+LEGEND_TRAIL	Chemin parcouru
+LEGEND_ROUTE	Itinéraire
+LEGEND_BLOCKED	Passage bloqué
+TRAY_SHOW_PANEL	Afficher le panneau
+TRAY_HIDE_PANEL	Masquer le panneau
+TRAY_QUIT	Quitter

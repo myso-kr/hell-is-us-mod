@@ -63,6 +63,35 @@ impl Panel {
                     tw::chip(t, format!("{}%", state.big_alpha), tw::Tone::Quiet);
                 }
             });
+            // What each line and colour is, as drawn now.
+            let entries = crate::raster::legend(state, outline);
+            t.style(tw::grid(2, INLINE)).add(|t| {
+                for (swatch, c, name) in entries {
+                    w(t, |ui| {
+                        ui.horizontal(|ui| {
+                            let (r, _) = ui.allocate_exact_size(egui::vec2(18.0, 10.0), egui::Sense::hover());
+                            let colour = Color32::from_rgba_unmultiplied(c.0, c.1, c.2, c.3.max(160));
+                            let p = ui.painter();
+                            let y = r.center().y;
+                            match swatch {
+                                crate::raster::Swatch::Line => {
+                                    p.line_segment([egui::pos2(r.left(), y), egui::pos2(r.right(), y)], (2.0, colour));
+                                }
+                                crate::raster::Swatch::Dashed => {
+                                    for k in 0..3 {
+                                        let x = r.left() + k as f32 * 7.0;
+                                        p.line_segment([egui::pos2(x, y), egui::pos2(x + 4.0, y)], (2.0, colour));
+                                    }
+                                }
+                                crate::raster::Swatch::Fill => {
+                                    p.rect_filled(r.shrink(1.0), 2.0, colour);
+                                }
+                            }
+                            ui.label(RichText::new(name).small().color(DIM));
+                        });
+                    });
+                }
+            });
         });
     }
 
@@ -139,10 +168,6 @@ impl Panel {
                 w(t, |ui| ui.selectable_value(&mut state.mini_outline, true, tr!("OUTLINE")));
                 w(t, |ui| ui.selectable_value(&mut state.mini_outline, false, tr!("FILLED")));
             });
-            // The ground as dots (both maps): the game shows through the gaps.
-            field(t, tr!("DRAW_AS_DOTS"), |t| {
-                w(t, |ui| toggle(ui, &mut state.dots)).on_hover_text(tr!("DRAW_AS_DOTS_HOVER"));
-            });
             field(t, tr!("ICON_SIZE"), |t| tw::slider(t, &mut state.icon_px, crate::minimap::ICON_PX, 1.0, " px"));
             // A short label; the full sentence is the hover text.
             field(t, tr!("HIDE_IN_MENUS"), |t| {
@@ -192,6 +217,34 @@ impl Panel {
                 w(t, |ui| ui.selectable_value(&mut state.big_outline, false, tr!("FILLED")));
             });
             field(t, tr!("OPACITY"), |t| tw::slider(t, &mut state.big_alpha, 20..=100, 1.0, " %"));
+            // The big map's ground as dots: it covers the middle of the screen, so the
+            // game shows through the gaps.
+            field(t, tr!("DRAW_AS_DOTS"), |t| {
+                w(t, |ui| toggle(ui, &mut state.dots)).on_hover_text(tr!("DRAW_AS_DOTS_HOVER"));
+            });
+        });
+
+        // Each layer's opacity, for both maps, and presets that set the three at once.
+        card(t, tr!("LAYER_OPACITY"), |t| {
+            let presets: [(&str, [u8; 3]); 4] = [
+                (tr!("PRESET_SOLID"), [100, 100, 100]),
+                (tr!("PRESET_BALANCED"), [60, 90, 100]),
+                (tr!("PRESET_SUBTLE"), [30, 65, 90]),
+                (tr!("PRESET_ICONS_ONLY"), [0, 35, 100]),
+            ];
+            tw::choices(t, |t| {
+                for (name, values) in presets {
+                    if w(t, |ui| ui.selectable_label(state.opacity == values, name)).clicked() {
+                        state.opacity = values;
+                    }
+                }
+                if !presets.iter().any(|(_, v)| *v == state.opacity) {
+                    tw::chip(t, tr!("PRESET_CUSTOM"), tw::Tone::Accent);
+                }
+            });
+            for (label, i) in [(tr!("OPACITY_GROUND"), 0), (tr!("OPACITY_LINES"), 1), (tr!("OPACITY_ICONS"), 2)] {
+                field(t, label, |t| tw::slider(t, &mut state.opacity[i], 0..=100, 5.0, " %"));
+            }
         });
     }
 

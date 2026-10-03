@@ -23,8 +23,20 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   progress bar each; Clues and Help with KPI tiles and numbered steps; cheats, saves and the debug
   checks as aligned rows with status chips; achievements with progress bars; Map settings as form
   rows. Long explanations moved into hover text.
+- The panel runs once: starting it again brings the running one to the front. It has a tray icon
+  (click to show or hide, right-click to quit, which restores the originals as × does).
+- The panel stays inside the screen when moved, restored or grown; the console's command line is no
+  longer cut off; the console, and its button in the panel's header, show only over a game menu.
+- The map preview has a legend of its lines and colours, as drawn with the settings now.
+- Long lists can be grouped: places by kind, achievements by kind (story, deeds and mysteries,
+  combat, gear, research and collections).
+- The map's lines, outlines and terrain edges are antialiased.
+- The map's background, lines and icons each have their own opacity, with presets (Solid,
+  Balanced, Subtle, Icons only).
+- The quest tracker sits at the top right under the minimap, clear of the game's pop-ups.
+- Cards keep one gap everywhere, also between cards stacked in one column.
 - The map's water now reaches its real shore instead of stopping at the game's water boxes, and
-  the ground is drawn as dots with gaps between them so the game shows through (Map page, on by
+  the big map's ground is drawn as dots with gaps between them so the game shows through (on by
   default); icons, the route and pins stay solid.
 - The Map page opens on a live preview of the map as its settings draw it: the minimap, or the
   big map with its opacity when that is the display.

@@ -105,8 +105,26 @@ impl Panel {
             }
             self.budget_block(t, &list, snap);
             block(t, |ui| ui.separator());
-            tw::switch(t, &mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO"));
-            for a in list.iter().filter(|a| self.show_unlocked || !a.unlocked) {
+            t.style(tw::row(INLINE)).add(|t| {
+                tw::switch(t, &mut self.show_unlocked, tr!("SHOW_UNLOCKED_ONES_TOO"));
+                tw::order(t, &mut self.achievements_grouped, tr!("STEAM_ORDER"), tr!("BY_KIND"));
+            });
+            let mut shown: Vec<_> = list.iter().filter(|a| self.show_unlocked || !a.unlocked).collect();
+            if self.achievements_grouped {
+                // Stable: within a kind, Steam's own order.
+                shown.sort_by_key(|a| achievement_kind(&a.api));
+            }
+            let mut kind = None;
+            for a in shown {
+                if self.achievements_grouped && kind != Some(achievement_kind(&a.api)) {
+                    let k = achievement_kind(&a.api);
+                    let count = list
+                        .iter()
+                        .filter(|x| (self.show_unlocked || !x.unlocked) && achievement_kind(&x.api) == k)
+                        .count();
+                    w(t, |ui| tw::group_heading(ui, ACHIEVEMENT_KINDS[k](), count));
+                    kind = Some(k);
+                }
                 let id = id_of(&a.api);
                 let secret = a.hidden && !a.unlocked && !self.revealed.contains(&id);
                 let progress =
@@ -690,6 +708,27 @@ fn spaced(name: &str) -> String {
         last = c;
     }
     out
+}
+
+/// The achievements' kinds, in the order they are listed when grouped: the story, good
+/// deeds and mysteries, combat, gear, research and collections.
+const ACHIEVEMENT_KINDS: [fn() -> &'static str; 5] =
+    [|| tr!("ACH_STORY"), || tr!("ACH_SECRETS"), || tr!("ACH_COMBAT"), || tr!("ACH_GEAR"), || tr!("ACH_COLLECTING")];
+
+/// An achievement's kind, by its Steam API name.
+fn achievement_kind(api: &str) -> usize {
+    let starts = |p: &[&str]| p.iter().any(|x| api.starts_with(x));
+    if starts(&["GoodDeeds", "Mystery"]) {
+        1
+    } else if starts(&["Haze", "HollowWalkers", "KillAll"]) {
+        2
+    } else if starts(&["WeaponMaxUpgrade", "DefensiveGear", "LoadoutMaxGrade"]) {
+        3
+    } else if starts(&["Research", "VOFK", "DroneSkills", "LymbicSkills", "Relics", "BaseballCaps", "ItemPlacements"]) {
+        4
+    } else {
+        0
+    }
 }
 
 #[cfg(test)]

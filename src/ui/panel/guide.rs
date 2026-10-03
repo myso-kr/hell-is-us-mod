@@ -139,17 +139,34 @@ impl Panel {
         let mut list: Vec<&crate::goals::Goal> =
             goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
         list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
+        let grouped = &mut self.places_grouped;
         card(t, &trf!("PLACES", count = list.len()), |t| {
+            tw::order(t, grouped, tr!("BY_DISTANCE"), tr!("BY_KIND"));
+            // By kind: one heading per tier, each nearest first; else all nearest first.
+            let groups: Vec<(Option<crate::goals::Tier>, Vec<&crate::goals::Goal>)> = if *grouped {
+                crate::goals::Tier::ALL
+                    .iter()
+                    .map(|t| (Some(*t), list.iter().copied().filter(|g| g.tier == *t).collect::<Vec<_>>()))
+                    .filter(|(_, l)| !l.is_empty())
+                    .collect()
+            } else {
+                vec![(None, list)]
+            };
             block(t, |ui| {
                 // min_scrolled_height too: the block is laid out at last frame's height, and
                 // a scroll area alone never asks for more than it was given.
                 tw::scroll(ui, "places", 220.0, 220.0, super::super::theme::CARD, |ui| {
                     ui.spacing_mut().item_spacing.y = 2.0;
-                    for g in list {
-                        let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
-                        if place_row(ui, g, &far, state.target == Some(g.id)).clicked() {
-                            state.target = Some(g.id);
-                            state.chosen = true;
+                    for (tier, list) in groups {
+                        if let Some(tier) = tier {
+                            tw::group_heading(ui, tier.label(), list.len());
+                        }
+                        for g in list {
+                            let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
+                            if place_row(ui, g, &far, state.target == Some(g.id)).clicked() {
+                                state.target = Some(g.id);
+                                state.chosen = true;
+                            }
                         }
                     }
                 });

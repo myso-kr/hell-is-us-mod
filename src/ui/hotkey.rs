@@ -14,12 +14,14 @@ use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::Duration;
 use windows_sys::Win32::Foundation::{BOOL, HWND, LPARAM, RECT};
+use windows_sys::Win32::Graphics::Gdi::{GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST};
 use windows_sys::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_OEM_3};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_LBUTTON, VK_OEM_3, VK_RBUTTON};
 use windows_sys::Win32::UI::WindowsAndMessaging::{
-    BringWindowToTop, EnumWindows, FindWindowW, GetForegroundWindow, GetWindowRect, GetWindowThreadProcessId,
-    IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE,
-    SWP_NOSIZE, SWP_SHOWWINDOW, SW_HIDE, SW_SHOWNOACTIVATE,
+    BringWindowToTop, EnumWindows, FindWindowW, GetCursorInfo, GetForegroundWindow, GetWindowRect,
+    GetWindowThreadProcessId, IsWindowVisible, SetForegroundWindow, SetWindowPos, ShowWindow, CURSORINFO,
+    CURSOR_SHOWING, HWND_TOPMOST, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_SHOWWINDOW, SW_HIDE,
+    SW_SHOWNOACTIVATE,
 };
 
 pub(super) fn pid_of(hwnd: HWND) -> u32 {
@@ -68,6 +70,36 @@ pub(super) fn console_under(panel: HWND) {
     }
 }
 
+/// Whether the console may show: the game or the console itself has the keyboard, and
+/// a game menu is open — the cursor shows, or the game is paused. Otherwise it stays
+/// open but out of sight, and its toggle in the panel's header with it.
+fn console_shows(foreground_pid: u32, game_pid: u32, console_is_foreground: bool, cursor: bool, paused: bool) -> bool {
+    let ours = console_is_foreground || (game_pid != 0 && foreground_pid == game_pid);
+    ours && (cursor || paused)
+}
+
+pub(super) fn console_allowed(shared: &Shared) -> bool {
+    let foreground = unsafe { GetForegroundWindow() };
+    let console = console_window();
+    let mut ci: CURSORINFO = unsafe { std::mem::zeroed() };
+    ci.cbSize = std::mem::size_of::<CURSORINFO>() as u32;
+    let cursor = unsafe { GetCursorInfo(&mut ci) } != 0 && ci.flags & CURSOR_SHOWING != 0;
+    let paused = shared.menu.lock().unwrap().1;
+    console_shows(
+        pid_of(foreground),
+        shared.game_pid.load(Ordering::SeqCst),
+        !foreground.is_null() && foreground == console,
+        cursor,
+        paused,
+    )
+}
+
+/// Whether the panel's own window is in front (it took the keyboard from a click).
+pub(super) fn panel_in_front(shared: &Shared) -> bool {
+    let panel = shared.hwnd.load(Ordering::SeqCst) as HWND;
+    !panel.is_null() && unsafe { GetForegroundWindow() } == panel
+}
+
 pub fn hide(shared: &Shared) {
     let hwnd = shared.hwnd.load(Ordering::SeqCst) as HWND;
     if hwnd.is_null() {
@@ -92,6 +124,38 @@ fn over_game(pid: u32) -> Option<(i32, i32)> {
     (r.right - r.left >= 640).then_some((r.left + 24, r.top + 48))
 }
 
+/// Where a window at `win` goes to lie wholly inside `work` (both screen rects): moved
+/// back in by as little as it takes, or to the work area's top-left where it is larger.
+fn clamp_into(win: RECT, work: RECT) -> (i32, i32) {
+    let (w, h) = (win.right - win.left, win.bottom - win.top);
+    let x = win.left.min(work.right - w).max(work.left);
+    let y = win.top.min(work.bottom - h).max(work.top);
+    (x, y)
+}
+
+/// Keep the whole panel on the monitor it is on, clear of the taskbar: after it is put
+/// back where it was, dragged, or grown with its page.
+fn keep_on_screen(hwnd: HWND) {
+    unsafe {
+        let mut r: RECT = std::mem::zeroed();
+        let mut mi: MONITORINFO = std::mem::zeroed();
+        mi.cbSize = std::mem::size_of::<MONITORINFO>() as u32;
+        let monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        if GetWindowRect(hwnd, &mut r) == 0 || GetMonitorInfoW(monitor, &mut mi) == 0 {
+            return;
+        }
+        let (x, y) = clamp_into(r, mi.rcWork);
+        if (x, y) != (r.left, r.top) {
+            SetWindowPos(hwnd, std::ptr::null_mut(), x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+    }
+}
+
+/// A mouse button is held: the player may be dragging the panel, and is let finish.
+fn mouse_down() -> bool {
+    [VK_LBUTTON, VK_RBUTTON].iter().any(|&k| unsafe { GetAsyncKeyState(k as i32) } as u16 & 0x8000 != 0)
+}
+
 /// Take focus from the game. Windows refuses `SetForegroundWindow` to a process that
 /// did not receive the last input — and the game did, the panel's key included. Sharing the
 /// game's input state for the length of the call lifts that; without it the panel
@@ -109,7 +173,7 @@ fn take_focus(hwnd: HWND) {
     }
 }
 
-fn show(shared: &Shared, ctx: &egui::Context) {
+pub(super) fn show(shared: &Shared, ctx: &egui::Context) {
     let hwnd = shared.hwnd.load(Ordering::SeqCst) as HWND;
     if hwnd.is_null() {
         return;
@@ -117,6 +181,7 @@ fn show(shared: &Shared, ctx: &egui::Context) {
     let saved = *shared.pos.lock().unwrap();
     let (x, y) = saved.or_else(|| over_game(shared.game_pid.load(Ordering::SeqCst))).unwrap_or((40, 40));
     unsafe { SetWindowPos(hwnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_SHOWWINDOW) };
+    keep_on_screen(hwnd);
     let console = console_window();
     if !console.is_null() {
         unsafe { ShowWindow(console, SW_SHOWNOACTIVATE) };
@@ -151,12 +216,18 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
                     placed = PLAYER;
                 }
             }
-            if game != 0 && game != placed && placed != PLAYER {
+            let over = game != 0 && game != placed && placed != PLAYER;
+            if over {
                 if let Some((x, y)) = over_game(game) {
                     unsafe { SetWindowPos(hwnd, HWND_TOPMOST, x, y, 0, 0, SWP_NOSIZE | SWP_NOACTIVATE) };
                     placed = game;
                 }
-            } else if tick % ON_TOP_EVERY == 0 {
+            }
+            // Whole on its monitor: once placed, once a drag lets go, once it changes size.
+            if !mouse_down() {
+                keep_on_screen(hwnd);
+            }
+            if !over && tick % ON_TOP_EVERY == 0 {
                 unsafe { SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE) };
                 console_under(hwnd);
                 // Once placed, wherever the panel is now is where the player wants it.
@@ -179,5 +250,49 @@ pub fn watch(shared: Arc<Shared>, ctx: egui::Context) {
             }
         }
         was_down = down;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn rect(left: i32, top: i32, right: i32, bottom: i32) -> RECT {
+        RECT { left, top, right, bottom }
+    }
+
+    #[test]
+    fn the_panel_is_kept_inside_the_work_area() {
+        let work = rect(0, 0, 1920, 1040);
+        // Inside: left where it is.
+        assert_eq!(clamp_into(rect(100, 100, 600, 700), work), (100, 100));
+        // Off the right and the bottom: back in by as little as it takes.
+        assert_eq!(clamp_into(rect(1700, 900, 2200, 1500), work), (1420, 440));
+        // Off the left and the top.
+        assert_eq!(clamp_into(rect(-50, -30, 450, 570), work), (0, 0));
+        // Larger than the work area: its top-left.
+        assert_eq!(clamp_into(rect(300, 200, 2300, 1300), work), (0, 0));
+    }
+
+    #[test]
+    fn the_console_shows_over_a_game_menu_while_the_game_or_it_has_the_keyboard() {
+        // The game in front: only while a menu is open (its cursor, or paused).
+        assert!(console_shows(7, 7, false, true, false));
+        assert!(console_shows(7, 7, false, false, true));
+        assert!(!console_shows(7, 7, false, false, false));
+        // The console in front.
+        assert!(console_shows(42, 7, true, true, false));
+        assert!(!console_shows(42, 7, true, false, false));
+        // Anything else in front — the panel, another program — or no game.
+        assert!(!console_shows(42, 7, false, true, true));
+        assert!(!console_shows(0, 0, false, true, true));
+    }
+
+    #[test]
+    fn a_second_monitor_has_its_own_work_area() {
+        // Left of the primary, the taskbar on its top edge.
+        let work = rect(-1280, 40, 0, 1024);
+        assert_eq!(clamp_into(rect(-200, 0, 300, 600), work), (-500, 40));
+        assert_eq!(clamp_into(rect(-1400, 900, -900, 1500), work), (-1280, 424));
     }
 }

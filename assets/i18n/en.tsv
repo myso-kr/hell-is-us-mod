@@ -226,7 +226,7 @@ RESTORE_ALL	Restore all ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Keep these cheats on next time
 NEXT_RUN_ONCE_THE_HERO_CAN	Next launch, once you control the hero, the cheats now on are turned back on.
 WRITES_ONLY_WHILE_THE_HERO_IS	Applies only while you control the hero · achievements still unlock
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest tracker (right middle of the screen)
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Quest tracker (top right, under the minimap)
 READING_THE_QUESTS_THEY_APPEAR_A	Reading quests. They appear a few seconds after the game loads
 MAIN_STORY_AUTO_NOW	Main story, automatic: {quest}
 MAIN_STORY_AUTO	Main story, automatic
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Draw as dots
 DRAW_AS_DOTS_HOVER	The ground as dots with gaps between them, so the game shows through. Icons, the route and pins stay solid.
 CONSOLE	Console
 CONSOLE_RUNNING	Running
+LAYER_OPACITY	Layer Opacity
+PRESET_SOLID	Solid
+PRESET_BALANCED	Balanced
+PRESET_SUBTLE	Subtle
+PRESET_ICONS_ONLY	Icons only
+PRESET_CUSTOM	Custom
+OPACITY_GROUND	Background
+OPACITY_LINES	Lines
+OPACITY_ICONS	Icons
+BY_DISTANCE	By distance
+BY_KIND	By kind
+STEAM_ORDER	Steam order
+ACH_STORY	Story
+ACH_SECRETS	Good deeds and mysteries
+ACH_COMBAT	Combat
+ACH_GEAR	Gear
+ACH_COLLECTING	Research and collections
+LEGEND_CONTOUR	Contours
+LEGEND_SHORE	Shore
+LEGEND_WATER	Water
+LEGEND_TRAIL	Trail walked
+LEGEND_ROUTE	Route
+LEGEND_BLOCKED	Route through an obstacle
+TRAY_SHOW_PANEL	Show panel
+TRAY_HIDE_PANEL	Hide panel
+TRAY_QUIT	Quit

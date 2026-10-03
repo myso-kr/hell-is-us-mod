@@ -76,9 +76,14 @@ pub struct MapState {
     /// The big map and the minimap drawn as outlines on a clear background.
     pub big_outline: bool,
     pub mini_outline: bool,
-    /// The ground drawn as dots with gaps between them, so the game shows through
-    /// (as Diablo's and Path of Exile's maps): the icons, route and pins stay solid.
+    /// The big map's ground drawn as dots with gaps between them, so the game shows
+    /// through (as Diablo's and Path of Exile's maps): icons, route and pins stay solid.
+    /// The minimap, small and in a corner, stays solid.
     pub dots: bool,
+    /// How opaque the map's layers are (percent): the ground (disc, relief, terrain
+    /// fills), the lines (contours, shore, edges, trail, route) and the icons (things,
+    /// pins, goals, the hero). Both maps; the big map's own opacity multiplies them.
+    pub opacity: [u8; 3],
     /// The big map's radius (m).
     pub big_radius_m: f32,
     /// Hide every overlay while a game menu is open (the game shows its cursor, or is
@@ -129,6 +134,7 @@ impl Default for MapState {
             big_outline: true,
             mini_outline: false,
             dots: true,
+            opacity: [100, 100, 100],
             hide_in_menus: true,
             route: true,
             trails: BTreeMap::new(),
@@ -191,7 +197,7 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\ndots {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\ntracker {}\n",
+            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\ndots {}\nopacity {} {} {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\ntracker {}\n",
             self.display.key(),
             self.cycle,
             self.heading_up,
@@ -212,6 +218,9 @@ impl MapState {
             self.big_outline,
             self.mini_outline,
             self.dots,
+            self.opacity[0],
+            self.opacity[1],
+            self.opacity[2],
             self.hide_in_menus,
             self.route,
             self.north_yaw,
@@ -291,6 +300,11 @@ impl MapState {
                 ["big_outline", v] => s.big_outline = v == "true",
                 ["mini_outline", v] => s.mini_outline = v == "true",
                 ["dots", v] => s.dots = v == "true",
+                ["opacity", g, l, i] => {
+                    if let (Ok(g), Ok(l), Ok(i)) = (g.parse::<u8>(), l.parse::<u8>(), i.parse::<u8>()) {
+                        s.opacity = [g.min(100), l.min(100), i.min(100)];
+                    }
+                }
                 ["big_alpha", v] => {
                     if let Some(a) = v.parse::<u8>().ok().filter(|a| (20..=100).contains(a)) {
                         s.big_alpha = a;
@@ -549,6 +563,7 @@ mod tests {
             big_outline: false,
             mini_outline: true,
             dots: false,
+            opacity: [40, 80, 100],
             north_yaw: 90.0,
             hide_in_menus: false,
             route: false,

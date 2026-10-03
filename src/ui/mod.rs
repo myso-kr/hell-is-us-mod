@@ -7,7 +7,10 @@
 //! hotkey   watches ` (~) while the game or the panel has focus; shows and hides the window
 //! minimap  the map window: F9 shows/hides it, F6 drops a marker (both changeable); reads snapshots only
 //! ui       eframe. Draws the last snapshot and sends requests — never touches the game
+//! tray     the notification-area icon: click to show/hide, right-click for a menu
 //! ```
+//!
+//! One panel at a time: started again, it shows the running panel and exits (tray.rs).
 //!
 //! It is also the launcher: started while the game is not running, it starts the
 //! game, attaches once the game is up, and closes itself when the game exits.
@@ -24,6 +27,7 @@ mod pen;
 mod svg;
 mod theme;
 mod tracker;
+mod tray;
 mod tw;
 
 use crate::cheats::Active;
@@ -76,6 +80,8 @@ pub struct Shared {
     pub preview: Mutex<Option<(usize, Vec<u32>, u64)>>,
     /// hotkey: where the panel is — the player's place for it, kept across runs.
     pub pos: Mutex<Option<(i32, i32)>>,
+    /// tray: its hidden window, once it exists; 0 after it is gone.
+    pub tray: AtomicIsize,
     pub quit: AtomicBool,
 }
 
@@ -226,6 +232,10 @@ pub fn alert(text: &str) {
 
 /// `launch`: start the game if it is not already running.
 pub fn run(launch: bool) -> Result<(), String> {
+    // Another panel is running: it has been asked to show itself; this one goes quietly.
+    if !tray::claim() {
+        return Ok(());
+    }
     let windowed = drop_own_console();
     crate::i18n::follow_game();
     let result = panel_and_launch(launch);
@@ -276,12 +286,15 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
                 threads.push(std::thread::spawn(move || overlay::run(s)));
                 let s = shared.clone();
                 threads.push(std::thread::spawn(move || backups(s)));
+                let (s, c) = (shared.clone(), cc.egui_ctx.clone());
+                threads.push(std::thread::spawn(move || tray::run(s, c)));
                 Ok(Box::new(panel::Panel::new(shared, tx)))
             }),
         )
     };
 
     shared.quit.store(true, Ordering::SeqCst);
+    tray::stop(&shared);
     let _ = tx.send(Request::Quit);
     for t in threads {
         let _ = t.join();

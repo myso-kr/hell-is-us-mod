@@ -226,7 +226,7 @@ RESTORE_ALL	Restaurar tudo ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Manter estes cheats ativos na próxima vez
 NEXT_RUN_ONCE_THE_HERO_CAN	Na próxima execução, quando o herói puder ser controlado, os cheats ativos agora serão religados.
 WRITES_ONLY_WHILE_THE_HERO_IS	Só escreve valores enquanto o herói é controlado · conquistas não são bloqueadas
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Rastreador de missões (meio da direita da tela)
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Rastreador de missões (canto superior direito, sob o minimapa)
 READING_THE_QUESTS_THEY_APPEAR_A	Lendo as missões. Elas aparecem alguns segundos após o jogo carregar
 MAIN_STORY_AUTO_NOW	História principal, automático: {quest}
 MAIN_STORY_AUTO	História principal, automático
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Desenhar com pontos
 DRAW_AS_DOTS_HOVER	O terreno em pontos espaçados para o jogo aparecer por trás. Ícones, rota e marcadores continuam sólidos.
 CONSOLE	Console
 CONSOLE_RUNNING	Executando
+LAYER_OPACITY	Opacidade das camadas
+PRESET_SOLID	Nítido
+PRESET_BALANCED	Equilibrado
+PRESET_SUBTLE	Sutil
+PRESET_ICONS_ONLY	Só ícones
+PRESET_CUSTOM	Personalizado
+OPACITY_GROUND	Fundo
+OPACITY_LINES	Linhas
+OPACITY_ICONS	Ícones
+BY_DISTANCE	Por distância
+BY_KIND	Por tipo
+STEAM_ORDER	Ordem padrão
+ACH_STORY	História
+ACH_SECRETS	Boas ações e mistérios
+ACH_COMBAT	Combate
+ACH_GEAR	Equipamento
+ACH_COLLECTING	Pesquisa e coleção
+LEGEND_CONTOUR	Curvas de nível
+LEGEND_SHORE	Margem
+LEGEND_WATER	Água
+LEGEND_TRAIL	Caminho percorrido
+LEGEND_ROUTE	Rota
+LEGEND_BLOCKED	Trecho bloqueado
+TRAY_SHOW_PANEL	Mostrar painel
+TRAY_HIDE_PANEL	Ocultar painel
+TRAY_QUIT	Sair

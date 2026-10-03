@@ -226,7 +226,7 @@ RESTORE_ALL	Всё вернуть ({pending})
 KEEP_THESE_CHEATS_ON_NEXT_TIME	Сохранять включённые читы на следующий раз
 NEXT_RUN_ONCE_THE_HERO_CAN	При следующем запуске, когда героем можно будет управлять, включённые сейчас читы включатся снова.
 WRITES_ONLY_WHILE_THE_HERO_IS	Значения записываются, только пока героем можно управлять · достижения не блокируются
-QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Трекер заданий: справа по центру экрана
+QUEST_TRACKER_RIGHT_MIDDLE_OF_THE	Трекер заданий (справа сверху, под мини-картой)
 READING_THE_QUESTS_THEY_APPEAR_A	Задания читаются. Появятся через несколько секунд после загрузки игры
 MAIN_STORY_AUTO_NOW	Основной сюжет (авто): {quest}
 MAIN_STORY_AUTO	Основной сюжет (авто)
@@ -555,3 +555,29 @@ DRAW_AS_DOTS	Рисовать точками
 DRAW_AS_DOTS_HOVER	Местность точками с промежутками, чтобы игра просвечивала. Значки, маршрут и метки остаются сплошными.
 CONSOLE	Консоль
 CONSOLE_RUNNING	Выполняется
+LAYER_OPACITY	Непрозрачность слоёв
+PRESET_SOLID	Чётко
+PRESET_BALANCED	Сбалансированно
+PRESET_SUBTLE	Мягко
+PRESET_ICONS_ONLY	Только значки
+PRESET_CUSTOM	Свой
+OPACITY_GROUND	Фон
+OPACITY_LINES	Линии
+OPACITY_ICONS	Значки
+BY_DISTANCE	По расстоянию
+BY_KIND	По видам
+STEAM_ORDER	По умолчанию
+ACH_STORY	Сюжет
+ACH_SECRETS	Добрые дела и тайны
+ACH_COMBAT	Бой
+ACH_GEAR	Снаряжение
+ACH_COLLECTING	Исследования и коллекции
+LEGEND_CONTOUR	Горизонтали
+LEGEND_SHORE	Берег
+LEGEND_WATER	Вода
+LEGEND_TRAIL	Пройденный путь
+LEGEND_ROUTE	Маршрут
+LEGEND_BLOCKED	Участок через препятствие
+TRAY_SHOW_PANEL	Показать панель
+TRAY_HIDE_PANEL	Скрыть панель
+TRAY_QUIT	Выход
