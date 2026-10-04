@@ -280,15 +280,6 @@ pub fn pick(tui: &mut Tui, on: bool, text: impl Into<RichText>) -> bool {
     block(tui, |ui| ui.add(egui::Button::selectable(on, text).wrap_mode(egui::TextWrapMode::Wrap)).clicked())
 }
 
-/// `pick` with an icon before it (ui/svg.rs draws one).
-pub fn pick_with(tui: &mut Tui, on: bool, icon: impl FnOnce(&mut egui::Ui), text: impl Into<RichText>) -> bool {
-    let text = text.into();
-    tui.style(row(super::theme::TIGHT)).add(|tui| {
-        w(tui, icon);
-        pick(tui, on, text)
-    })
-}
-
 /// One line of a list, the panel's single pattern for "go there": an icon, the line, and
 /// at most one button at its end (`end`, e.g. a reveal). `Some(on)` makes the line
 /// pressable, marked while `on`; `None` draws it the same size and place, not pressable.
@@ -311,6 +302,44 @@ pub fn line(
         });
         end(tui);
         pressed && on.is_some()
+    })
+}
+
+/// One line of a list that can be followed (guide/track.rs): an icon, the line itself
+/// (pressing it does nothing: following is the button's, on every page), its own buttons
+/// (`end`), and the Follow toggle at the end. `followed`: `None`, no toggle (done, or
+/// elsewhere); `Some(None)`, "Follow"; `Some(Some(colour))`, "Following" in the track's
+/// colour. Returns whether the toggle was pressed.
+pub fn track_line(
+    tui: &mut Tui,
+    followed: Option<Option<[u8; 3]>>,
+    icon: impl FnOnce(&mut egui::Ui),
+    text: impl Into<RichText>,
+    end: impl FnOnce(&mut Tui),
+) -> bool {
+    let text = text.into();
+    tui.style(row(super::theme::TIGHT)).add(|tui| {
+        w(tui, icon);
+        tui.style(grow(row(super::theme::TIGHT))).add(|tui| {
+            block(tui, |ui| {
+                ui.add(egui::Label::new(text).wrap());
+            });
+        });
+        end(tui);
+        followed.is_some_and(|c| follow_toggle(tui, c))
+    })
+}
+
+/// The Follow toggle: "Follow", or "● Following" in the track's colour. Whether pressed.
+pub fn follow_toggle(tui: &mut Tui, colour: Option<[u8; 3]>) -> bool {
+    w(tui, |ui| {
+        let label = match colour {
+            Some([r, g, b]) => {
+                RichText::new(format!("● {}", tr!("QUEST_FOLLOWING"))).color(egui::Color32::from_rgb(r, g, b))
+            }
+            None => RichText::new(tr!("QUEST_FOLLOW")),
+        };
+        ui.selectable_label(colour.is_some(), label).on_hover_text(tr!("TRACK_TOGGLE_HINT")).clicked()
     })
 }
 

@@ -143,16 +143,56 @@ impl MapState {
         self.tracks.iter().find(|t| t.quest.as_deref() == Some(key))
     }
 
-    /// Follow `t`; already followed (the same goal, the same place, the same quest), bring
-    /// it into focus; already in focus, let it go. The oldest goes past `MAX`.
-    pub fn follow(&mut self, t: Track) {
-        let same = |x: &Track| match (&x.quest, &t.quest) {
+    /// The track that is `t` already: the same goal, the same place, the same quest.
+    fn same_as(&self, t: &Track) -> Option<u64> {
+        let same = |x: &&Track| match (&x.quest, &t.quest) {
             (Some(a), Some(b)) => a == b,
             (None, None) => x.id == t.id || x.world == t.world && flat(x.at, t.at) < SAME_PLACE,
             _ => false,
         };
-        if let Some(i) = self.tracks.iter().position(same) {
-            let id = self.tracks[i].id;
+        self.tracks.iter().find(same).map(|x| x.id)
+    }
+
+    /// The Follow button: follow `t` (in focus), or, followed already, let it go.
+    pub fn toggle(&mut self, t: Track) {
+        match self.same_as(&t) {
+            Some(id) => self.unfollow(id),
+            None => self.follow(t),
+        }
+    }
+
+    /// Follow `t` and bring it into focus, whether followed already or not; a place
+    /// followed already moves to where `t` is (a puzzle's set, then its right groove).
+    pub fn ensure(&mut self, t: Track) {
+        match self.same_as(&t) {
+            Some(id) => {
+                if let Some(x) = self.tracks.iter_mut().find(|x| x.id == id && x.place) {
+                    x.at = t.at;
+                    x.label = t.label;
+                    self.dirty = true;
+                }
+                self.focus = Some(id);
+            }
+            None => self.follow(t),
+        }
+    }
+
+    /// The colour of the track following `goal` (or the place `goal`), if one does: what a
+    /// Follow button shows.
+    pub fn track_colour(&self, goal: u64) -> Option<[u8; 3]> {
+        self.tracks.iter().find(|t| t.id == goal || self.goal_of(t) == Some(goal)).map(Track::rgb)
+    }
+
+    /// The quest in focus, by its key: the panel's needs, clues and the quest tracker are
+    /// about it; `None`, the main story.
+    pub fn focused_quest(&self) -> Option<&str> {
+        self.focus_track().and_then(|t| t.quest.as_deref())
+    }
+
+    /// Follow `t`; already followed (the same goal, the same place, the same quest), bring
+    /// it into focus; already in focus, let it go. The oldest goes past `MAX`.
+    pub fn follow(&mut self, t: Track) {
+        if let Some(id) = self.same_as(&t) {
             if self.focus == Some(id) {
                 self.unfollow(id);
             } else {
@@ -204,6 +244,13 @@ impl MapState {
     pub fn resolve_quests(&mut self, goals: &[Goal], journal: &[Quest], here: Point, blocked: &HashSet<u64>) {
         use crate::quests::Status;
         let mut done = Vec::new();
+        // A quest's name as the journal has it now (one read back from an older file has
+        // its key only).
+        for t in self.tracks.iter_mut().filter(|t| t.quest.is_some()) {
+            if let Some(q) = journal.iter().find(|q| Some(&q.key) == t.quest.as_ref()).filter(|q| q.name != t.label) {
+                t.label = q.name.clone();
+            }
+        }
         for t in self.tracks.iter().filter(|t| t.quest.is_some()) {
             let Some(q) = journal.iter().find(|q| Some(&q.key) == t.quest.as_ref()) else { continue };
             if matches!(q.status, Status::Completed | Status::Failed) {

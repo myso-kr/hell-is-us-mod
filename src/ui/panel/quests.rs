@@ -27,7 +27,8 @@ fn clip(s: &str, n: usize) -> String {
 }
 
 impl Panel {
-    /// The quest journal: which quest the guide and the tracker follow.
+    /// The quest journal: each quest with its Follow toggle (guide/track.rs), and the needs
+    /// of the one pressed (else the one in focus, else the main story).
     pub(super) fn quests_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         use crate::quests::Status;
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
@@ -37,17 +38,17 @@ impl Panel {
                 note(t, tr!("READING_THE_QUESTS_THEY_APPEAR_A"));
                 return;
             }
-            let followed = crate::quests::followed(&journal, state.quest.as_deref()).map(|q| q.key.clone());
-            let mut pick: Option<Option<String>> = None;
+            // The quest whose needs show below: the one pressed, else the one in focus, else
+            // the main story. Pressing a quest only shows it; following is the button's.
+            let followed = self
+                .shown_quest
+                .clone()
+                .filter(|k| journal.iter().any(|q| &q.key == k && q.active()))
+                .or_else(|| crate::quests::followed(&journal, state.focused_quest()).map(|q| q.key.clone()));
+            let mut pick: Option<String> = None;
             // A quest to follow besides, or to let go (guide/track.rs).
             let mut toggle: Option<(String, String)> = None;
-            let auto = match journal.iter().find(|q| Some(&q.key) == followed.as_ref()) {
-                Some(q) if state.quest.is_none() => trf!("MAIN_STORY_AUTO_NOW", quest = q.name),
-                _ => tr!("MAIN_STORY_AUTO").to_string(),
-            };
-            if tw::line(t, Some(state.quest.is_none()), |ui| ui.add_space(16.0), auto, |_| {}) {
-                pick = Some(None);
-            }
+            note(t, tr!("QUESTS_FOLLOW_NOTE"));
             for q in journal.iter().filter(|q| q.active()) {
                 // The followed quest is marked, whether chosen or followed automatically.
                 let on = Some(&q.key) == followed.as_ref();
@@ -66,20 +67,12 @@ impl Panel {
                         w(t, |ui| tw::meter(ui, Some(40.0), got, all));
                         w(t, |ui| ui.label(count(got, all)).on_hover_text(hover));
                     }
-                    let label = match track {
-                        Some([r, g, b]) => RichText::new(format!("● {}", tr!("QUEST_FOLLOWING")))
-                            .color(egui::Color32::from_rgb(r, g, b)),
-                        None => RichText::new(tr!("QUEST_FOLLOW")),
-                    };
-                    if w(t, |ui| ui.selectable_label(track.is_some(), label))
-                        .on_hover_text(tr!("QUEST_FOLLOW_HINT"))
-                        .clicked()
-                    {
+                    if tw::follow_toggle(t, track) {
                         toggle = Some((q.key.clone(), q.name.clone()));
                     }
                 };
                 if tw::line(t, Some(on), icon, q.name.as_str(), end) {
-                    pick = Some(Some(q.key.clone()));
+                    pick = Some(q.key.clone());
                 }
             }
             let done = journal.iter().filter(|q| q.status == Status::Completed).count();
@@ -137,7 +130,7 @@ impl Panel {
                     let icon = |ui: &mut egui::Ui| {
                         crate::ui::svg::sort(ui, sort, 16.0);
                     };
-                    if tw::line(t, Some(state.is_followed(x.id)), icon, label, |t| distance(t, span)) {
+                    if tw::track_line(t, Some(state.track_colour(x.id)), icon, label, |t| distance(t, span)) {
                         guide_to(state, &goals, x);
                     }
                 }
@@ -163,13 +156,7 @@ impl Panel {
                 }
             }
             if let Some(p) = pick {
-                state.quest = p;
-                // Guide anew, to the newly followed quest.
-                state.auto = None;
-                state.held = false;
-                state.guide_auto = true;
-                state.route = true;
-                state.dirty = true;
+                self.shown_quest = Some(p);
             }
         });
     }
@@ -195,9 +182,9 @@ impl Panel {
                     _ => (tr!("LATER"), tw::Tone::Quiet),
                 };
                 tw::item(t, |t| {
-                    // The title line: when, the deed (press to follow it once it is started),
-                    // and a chip while it is not.
-                    let on = d.started.then_some(state.quest.as_deref() == Some(d.key.as_str()));
+                    // The title line: when, the deed, a chip while it is not started, and the
+                    // Follow toggle once it is.
+                    let on = d.started.then(|| state.quest_track(&d.key).map(|x| x.rgb()));
                     let icon = |ui: &mut egui::Ui| {
                         tw::pill(ui, mark, colour);
                     };
@@ -209,12 +196,8 @@ impl Panel {
                             tw::chip(t, not, tw::Tone::Quiet);
                         }
                     };
-                    if tw::line(t, on, icon, d.title.as_str(), end) {
-                        state.quest = Some(d.key.clone());
-                        state.auto = None;
-                        state.held = false;
-                        state.guide_auto = true;
-                        state.route = true;
+                    if tw::track_line(t, on, icon, d.title.as_str(), end) {
+                        state.toggle(crate::guide::track::Track::quest(&d.key, &d.title));
                     }
                     // One dim detail line: the deadline, what to do cut short, all of it on hover.
                     let detail = format!("{}: {}", d.due.label(), d.what);
@@ -270,7 +253,7 @@ impl Panel {
                 };
                 // In this world: press to guide there, the distance at the end. Elsewhere: not
                 // pressable, the way there as a chip.
-                let on = same.then_some(state.is_followed(x.id));
+                let on = same.then_some(state.track_colour(x.id));
                 let end = |t: &mut Tui| {
                     if same {
                         distance(t, here.map_or(String::new(), |h| crate::raster::span(h, x.at)));
@@ -278,7 +261,7 @@ impl Panel {
                         tw::chip(t, trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world)), tw::Tone::Quiet);
                     }
                 };
-                if tw::line(t, on, icon, label, end) {
+                if tw::track_line(t, on, icon, label, end) {
                     guide_to(state, &goals, x);
                 }
             }

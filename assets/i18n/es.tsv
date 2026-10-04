@@ -153,7 +153,7 @@ ON	Activo
 COMPASS_F	Brújula (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Arriba y al centro de la pantalla
 GUIDE	Guía
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guía automática: sigue guiando al siguiente objetivo de la misión seguida
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guía automática: sigue guiando al siguiente objetivo de la historia principal
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Ruta a pie (A*): rodea terreno, agua y paredes; la brújula señala el próximo giro
 NEXT_GOAL	Siguiente objetivo ▶
 THIS_GOAL_IS_DONE_OR_OUT	Este objetivo está hecho o fuera de alcance. Sáltalo al siguiente (durante esta sesión)
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Mostrar también puertas con llave y colocaci
 UNSOLVED_PUZZLE	Puzle sin resolver
 VAULT_DOOR	Puerta de cámara
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzle cerca: la respuesta está en la pestaña Puzles del panel
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objetos de investigación: pulsa la línea Investigación en «Colección» para ir al más cercano
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objetos de investigación: pulsa Seguir en los objetos de investigación de 'Colección'
 ACHIEVEMENTS	Logros {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	No se encontró la caché de logros de Steam (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Mostrar también los desbloqueados
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	No queda nada en otras regiones que el mod conozca.
 MINUTES_AGO	hace {count} min
 HOURS_AGO	hace {count} h
 LYMBIC_LOCKS	Cerraduras límbicas
-THE_RODS_EACH_LOCK_TAKES	Las varas que pide cada cerradura; primero las que tus varas ya abren. Pulsa una cerradura o una vara que falte para que te guíe hasta allí.
+THE_RODS_EACH_LOCK_TAKES	Las varas que pide cada cerradura. Primero las que tus varas ya abren. Sigue una cerradura o una vara que falta para ir allí.
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (en {place})
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	Los trucos están plegados al final de la barra lateral. 
 HELP_START	Primeros pasos
 HELP_STEP_GAME	Inicia el juego y carga una partida. El panel la encuentra solo.
 HELP_STEP_STATUS	Cuando «{gate}» se pone en verde, el mod está leyendo el juego.
-HELP_STEP_QUEST	En la pestaña «{quests}», elige una misión. La brújula y el minimapa te guían al siguiente objetivo.
+HELP_STEP_QUEST	En la página {quests}, pulsa Seguir en una misión (varias si quieres). La brújula y el minimapa te guían a cada siguiente objetivo, cada uno con su color.
 HELP_STEP_ANSWERS	Las respuestas quedan ocultas hasta que las pides. Mirar no te destripa nada.
 HELP_KEY_PANEL	Abrir u ocultar este panel
 HELP_KEYS_CHANGE_ON_MAP	Las teclas se cambian en la pestaña «{map}».
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	Seguir también esta misión: su siguiente objetivo tiene su p
 QUEST_NOT_HERE	nada aquí
 ALSO_FOLLOWED	También seguidas
 QUEST_TAG	Misión
+TRACK_TOGGLE_HINT	Seguir: su propio color, ruta y anillo en los mapas, la brújula y el juego; la página Guía los reúne. Otra vez para dejarlo.
+GUIDE_AUTO_CARD	Guía automática
+TRACK_IN_FOCUS	enfocado
+QUESTS_FOLLOW_NOTE	Pulsa una misión para ver lo que necesita; Seguir para que te guíe, varias a la vez.

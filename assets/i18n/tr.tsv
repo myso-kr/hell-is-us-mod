@@ -153,7 +153,7 @@ ON	Açık
 COMPASS_F	Pusula (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Ekranın üst ortası
 GUIDE	Rehber
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Otomatik rehber: takip edilen görevin sıradaki hedefine yönlendirir
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Otomatik rehber: ana hikâyenin sıradaki hedefine yol göstermeye devam eder
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Gerçek yürüme rotası (A*): arazi, su ve duvarların çevresinden; pusula sıradaki dönüşü gösterir
 NEXT_GOAL	Sıradaki hedef ▶
 THIS_GOAL_IS_DONE_OR_OUT	Bu hedef bitti ya da şu an ulaşılamıyor. Atlayıp sıradakine geç (bu oturumda)
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Anahtarlı kapıları ve eşya yerleştirmeyi
 UNSOLVED_PUZZLE	Çözülmemiş bulmaca
 VAULT_DOOR	Mahzen kapısı
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	Yakında bulmaca: cevap panelin Bulmacalar sekmesinde
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Araştırma eşyaları: 'Koleksiyon' altındaki Araştırma satırına bas, en yakına götürür
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Araştırma eşyaları: 'Koleksiyon'daki araştırma eşyalarında Takip et'e basın
 ACHIEVEMENTS	Başarımlar {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam başarım önbelleği bulunamadı (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Açılanları da göster
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	Diğer bölgelerde modun bildiği kalan bir şey yok.
 MINUTES_AGO	{count} dk önce
 HOURS_AGO	{count} sa önce
 LYMBIC_LOCKS	Limbik kilitler
-THE_RODS_EACH_LOCK_TAKES	Her kilidin istediği çubuklar. Çubuklarınızın zaten açtığı kilitler önce gelir. Oraya yönlendirilmek için bir kilide ya da eksik bir çubuğa basın.
+THE_RODS_EACH_LOCK_TAKES	Her kilidin istediği çubuklar. Elindeki çubukların açtığı kilitler önce gelir. Oraya gitmek için kilidi ya da eksik çubuğu takip et.
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (yer: {place})
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	Hileler kenar çubuğunun en altında katlı durur. Orada
 HELP_START	İlk adımlar
 HELP_STEP_GAME	Oyunu başlatıp bir kayıt yükleyin. Panel onu kendisi bulur.
 HELP_STEP_STATUS	“{gate}” yeşile döndüğünde mod oyunu okuyor demektir.
-HELP_STEP_QUEST	“{quests}” sekmesinde bir görev seçin. Pusula ve mini harita sizi sonraki hedefe götürür.
+HELP_STEP_QUEST	{quests} sayfasında bir görevde Takip et'e basın (isterseniz birkaç tane). Pusula ve mini harita her birinin sıradaki hedefine kendi rengiyle yol gösterir.
 HELP_STEP_ANSWERS	Cevaplar siz istemedikçe gizli kalır. Etrafa bakmak hiçbir şeyi ele vermez.
 HELP_KEY_PANEL	Bu paneli aç veya gizle
 HELP_KEYS_CHANGE_ON_MAP	Tuşları “{map}” sekmesinden değiştirebilirsiniz.
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	Bu görevi de takip et: sıradaki hedefi kendi rengi, rotası 
 QUEST_NOT_HERE	burada yok
 ALSO_FOLLOWED	Ayrıca takipte
 QUEST_TAG	Görev
+TRACK_TOGGLE_HINT	Takip et: haritada, pusulada ve oyunda kendi rengi, rotası ve halkası; Rehber sayfası hepsini toplar. Bırakmak için tekrar.
+GUIDE_AUTO_CARD	Otomatik rehber
+TRACK_IN_FOCUS	odakta
+QUESTS_FOLLOW_NOTE	Neye ihtiyaç duyduğunu görmek için göreve bas; rehberlik için Takip et, birden çok aynı anda.

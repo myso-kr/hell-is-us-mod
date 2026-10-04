@@ -153,7 +153,7 @@ ON	On
 COMPASS_F	Compass (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Top center of the screen
 GUIDE	Guide
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Auto guide: keeps guiding to the followed quest's next goal
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Auto guide: keeps guiding to the main story's next goal
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Walking route (A*): around terrain, water and walls; the compass points at the next turn
 NEXT_GOAL	Next goal ▶
 THIS_GOAL_IS_DONE_OR_OUT	This goal is done or out of reach. Skip to the next one (this session)
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Show key doors and item placements too
 UNSOLVED_PUZZLE	Unsolved puzzle
 VAULT_DOOR	Vault door
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	Puzzle nearby. The answer is in the panel's Puzzles tab
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Research items: select Research under 'Collection' to be guided to the nearest
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Research items: Follow the research items under 'Collection' to be guided to them
 ACHIEVEMENTS	Achievements {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam's achievement cache was not found (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Show unlocked ones too
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	Nothing left in other regions that the mod knows of.
 MINUTES_AGO	{count} min ago
 HOURS_AGO	{count} h ago
 LYMBIC_LOCKS	Lymbic Locks
-THE_RODS_EACH_LOCK_TAKES	The rods each lock takes. Locks your rods already open come first. Press a lock or a missing rod to be guided there.
+THE_RODS_EACH_LOCK_TAKES	The rods each lock takes. Locks your rods already open come first. Follow a lock or a missing rod to be guided there.
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (in {place})
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	The cheats are at the bottom of the sidebar, folded. Open
 HELP_START	First Steps
 HELP_STEP_GAME	Start the game and load a save. The panel finds it on its own.
 HELP_STEP_STATUS	When "{gate}" turns green, the mod is reading the game.
-HELP_STEP_QUEST	On the {quests} page, pick a quest. The compass and minimap guide you to its next goal.
+HELP_STEP_QUEST	On the {quests} page, press Follow on a quest (several at once if you like). The compass and minimap guide you to each next goal, each in its own colour.
 HELP_STEP_ANSWERS	Answers stay hidden until you press for them, so nothing is spoiled by looking.
 HELP_KEY_PANEL	Open or hide this panel
 HELP_KEYS_CHANGE_ON_MAP	Change the keys on the {map} page.
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	Follow this quest as well: its next goal gets its own colour, 
 QUEST_NOT_HERE	nothing of it here
 ALSO_FOLLOWED	Also followed
 QUEST_TAG	Quest
+TRACK_TOGGLE_HINT	Follow it: its own colour, route and ring on the maps, the compass and in the game; the Guide page keeps them all. Again to let it go.
+GUIDE_AUTO_CARD	Auto guide
+TRACK_IN_FOCUS	in focus
+QUESTS_FOLLOW_NOTE	Press a quest to see what it needs; Follow to be guided to it, several at once.

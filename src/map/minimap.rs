@@ -58,8 +58,8 @@ pub struct MapState {
     pub guide_auto: bool,
     /// Which tiers of goal are shown, one bit per `goals::Tier`.
     pub goal_tiers: u8,
-    /// The quest the guide follows, by its journal key — `None` follows the main
-    /// story (quests.rs `followed`).
+    /// The quest once picked for the guide, as an older `minimap.txt` has it: read back as
+    /// a quest followed (track.rs), and no longer written.
     pub quest: Option<String>,
     /// The quest tracker at the right of the screen.
     pub tracker: bool,
@@ -212,7 +212,7 @@ impl MapState {
     /// The text `minimap.txt` holds.
     pub fn render(&self) -> String {
         let mut out = format!(
-            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\ngoal_tiers {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\ndots {}\nopacity {} {} {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\ntracker {}\n",
+            "display {}\ncycle_modes {}\nheading_up {}\nradius {}\ntoggle_key {}\nmarker_key {}\nlayers {}\nlayers_version {LAYERS_VERSION}\nicon_px {}\nterrain {}\nrelief {}\ncompass {}\ncompass_key {}\ncycle_key {}\nguide_auto {}\nbig_radius {}\nbig_alpha {}\nbig_outline {}\nmini_outline {}\ndots {}\nopacity {} {} {}\nhide_in_menus {}\nroute {}\nnorth_yaw {}\ntracker {}\n",
             self.display.key(),
             self.cycle,
             self.heading_up,
@@ -227,7 +227,6 @@ impl MapState {
             self.compass_key,
             self.cycle_key,
             self.guide_auto,
-            self.goal_tiers,
             self.big_radius_m,
             self.big_alpha,
             self.big_outline,
@@ -241,9 +240,6 @@ impl MapState {
             self.north_yaw,
             self.tracker
         );
-        if let Some(q) = &self.quest {
-            out += &format!("quest {q}\n");
-        }
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
         }
@@ -340,11 +336,8 @@ impl MapState {
                 ["track_focus", i] => {
                     s.focus = i.parse::<usize>().ok().and_then(|i| s.tracks.get(i)).map(|t| t.id);
                 }
-                ["goal_tiers", v] => {
-                    if let Ok(b) = v.parse::<u8>() {
-                        s.goal_tiers = b & 0b111;
-                    }
-                }
+                // Every tier is always shown now (the Guide page's tier filter is gone).
+                ["goal_tiers", _] => {}
                 ["compass_key", v] => {
                     if let Some(k) = v.parse().ok().filter(|k| usable_key(*k)) {
                         s.compass_key = k;
@@ -408,6 +401,13 @@ impl MapState {
         let keys = s.keys();
         if (0..keys.len()).any(|i| keys[i + 1..].contains(&keys[i])) || keys == OLD_DEFAULT_KEYS {
             [s.toggle_key, s.marker_key, s.compass_key, s.cycle_key] = DEFAULT_KEYS;
+        }
+        // The quest once picked for the auto guide (before quests were followed, track.rs)
+        // is followed now, in focus: the auto guide keeps to the main story.
+        if let Some(key) = s.quest.take() {
+            if s.quest_track(&key).is_none() {
+                s.follow(crate::guide::track::Track::quest(&key, &key));
+            }
         }
         s
     }
@@ -613,7 +613,6 @@ mod tests {
             compass_key: 10,
             cycle_key: 11,
             guide_auto: false,
-            goal_tiers: 0b101,
             display: Display::Big,
             cycle: 0b011,
             big_radius_m: 300.0,
@@ -626,7 +625,6 @@ mod tests {
             north_yaw: 90.0,
             hide_in_menus: false,
             route: false,
-            quest: Some("Quest03".into()),
             tracker: false,
             hidden: [Sub::Lore, Sub::Door].into_iter().collect(),
             ..MapState::default()
@@ -638,6 +636,12 @@ mod tests {
         s.observe("Map_A", [90_000.0, 0.0, 0.0]);
         s.dirty = false;
         assert_eq!(MapState::parse(&s.render()), s);
+        // The quest once picked for the auto guide, from an older file: followed, in focus,
+        // and saved so (no "quest" line any more); the tier filter is gone, every tier on.
+        let picked = MapState::parse("quest Quest03\ngoal_tiers 5\n");
+        assert!(picked.quest.is_none() && picked.dirty);
+        assert_eq!(picked.focused_quest(), Some("Quest03"));
+        assert_eq!(picked.goal_tiers, 0b111);
         let old = MapState::parse("layers 31\n");
         assert_eq!(old.layers, ALL_LAYERS, "a file from before save points turns them on");
         let off = MapState::parse("layers 31\nlayers_version 2\n");

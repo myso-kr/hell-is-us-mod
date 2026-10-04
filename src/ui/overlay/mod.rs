@@ -418,18 +418,11 @@ pub fn run(shared: Arc<Shared>) {
                     }
                 }
                 let goals = pinned.get(&goals, &state, world);
-                let chosen = state.quest.clone();
+
                 // What can only be reached through something, by any route.
                 let blocked: std::collections::HashSet<u64> =
                     routes.values().flat_map(|r| r.blocked.iter().copied()).collect();
-                settle_target(
-                    &mut state,
-                    &goals,
-                    p,
-                    crate::quests::followed(&journal, chosen.as_deref()),
-                    &journal,
-                    &blocked,
-                );
+                settle_target(&mut state, &goals, p, crate::quests::followed(&journal, None), &journal, &blocked);
                 // Each quest followed to its own next goal (track.rs).
                 state.resolve_quests(&goals, &journal, p, &blocked);
                 // The cycle key: the focus through what is followed; with one or none, the
@@ -592,7 +585,7 @@ pub fn run(shared: Arc<Shared>) {
                     compass_window.hide();
                 }
                 if let (Some(w), Some(pen), true) = (tracker_window.as_mut(), pen.as_mut(), state.tracker) {
-                    let followed = crate::quests::followed(&journal, state.quest.as_deref());
+                    let followed = crate::quests::followed(&journal, state.focused_quest());
                     // Whether any place that moves the followed quest along is loaded.
                     let near = followed.is_none_or(|q| goals.iter().any(|g| g.serves(q)));
                     // The goal being guided to can only be reached through something.

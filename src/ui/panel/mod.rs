@@ -127,14 +127,25 @@ fn pin_picker(ui: &mut egui::Ui, id: &str, kind: &mut crate::minimap::PinKind) -
     *kind != before
 }
 
-/// Follow a place the survey names (guide/track.rs): the goal there if there is one, else
-/// the place itself (the overlay adds it as a goal). Followed already: into focus; in
-/// focus: let go.
+/// The Follow button on a place the survey names (guide/track.rs): follow it, or, followed
+/// already, let it go.
 fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], x: &crate::survey::Need) {
+    state.toggle(need_track(goals, x));
+}
+
+/// Follow a place and bring it into focus, followed already or not (a choice puzzle's
+/// answer, asked for).
+fn follow_need(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], x: &crate::survey::Need) {
+    state.ensure(need_track(goals, x));
+}
+
+/// A place the survey names, as a track: the goal there if there is one, else the place
+/// itself (the overlay adds it as a goal).
+fn need_track(goals: &[crate::goals::Goal], x: &crate::survey::Need) -> crate::guide::track::Track {
     let label = format!("{} {}", x.what, x.label).trim().to_string();
     let goal = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0);
     let world = crate::survey::Survey::world_of(&x.world).to_string();
-    let track = match goal {
+    match goal {
         Some(g) => crate::guide::track::Track {
             id: g.id,
             world,
@@ -153,13 +164,12 @@ fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], 
             colour: 0,
             ..Default::default()
         },
-    };
-    state.follow(track);
+    }
 }
 
-/// Follow a goal of the goal list (guide/track.rs), as `guide_to`.
+/// The Follow button on a goal (guide/track.rs), as `guide_to`.
 fn follow_goal(state: &mut crate::minimap::MapState, g: &crate::goals::Goal, world: &str) {
-    state.follow(crate::guide::track::Track {
+    state.toggle(crate::guide::track::Track {
         id: g.id,
         world: crate::survey::Survey::world_of(world).to_string(),
         at: g.at,
@@ -300,6 +310,8 @@ pub struct Panel {
     clue_open: Option<String>,
     /// Puzzle answers and vault codes asked for, by id (not kept between runs).
     revealed: std::collections::HashSet<u64>,
+    /// The quest whose needs the Quests page shows (pressed there; else the one in focus).
+    shown_quest: Option<String>,
     /// How far each choice puzzle's set has been told (slots.rs): 1 its clue, 2 its answer.
     slot_hints: std::collections::HashMap<u64, u8>,
     /// The puzzle list shows key doors and item placements too.
@@ -415,6 +427,7 @@ impl Panel {
             clue_query: String::new(),
             clue_open: None,
             revealed: Default::default(),
+            shown_quest: None,
             slot_hints: Default::default(),
             show_placements: false,
             achievements: None,

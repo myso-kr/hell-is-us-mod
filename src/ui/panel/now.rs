@@ -130,7 +130,7 @@ impl Panel {
                     text(t, RichText::new(line).small().color(super::super::theme::WAIT));
                 }
             }
-            let Some(q) = crate::quests::followed(&journal, state.quest.as_deref()).cloned() else {
+            let Some(q) = crate::quests::followed(&journal, state.focused_quest()).cloned() else {
                 note(t, tr!("NO_QUEST_WAS_FOLLOWED"));
                 return;
             };
@@ -211,7 +211,7 @@ impl Panel {
                 let talk = trf!("TALK_GOAL", npc = "");
                 let who = n.label.strip_prefix(talk.as_str()).unwrap_or(&n.label);
                 let line = trf!("HAND_OVER_LINE", what = n.what, who = who, far = far(n.at));
-                if tw::pick(t, state.is_followed(n.id), line) {
+                if tw::track_line(t, Some(state.track_colour(n.id)), |_| {}, line, |_| {}) {
                     guide_to(state, &goals, n);
                 }
             }
@@ -220,7 +220,13 @@ impl Panel {
             opens.sort_by(|a, b| dist(a.at).total_cmp(&dist(b.at)));
             for l in opens.iter().take(2) {
                 any = true;
-                if tw::pick(t, state.is_followed(l.id), trf!("LOCK_OPENS_NOW_LINE", far = far(l.at))) {
+                if tw::track_line(
+                    t,
+                    Some(state.track_colour(l.id)),
+                    |_| {},
+                    trf!("LOCK_OPENS_NOW_LINE", far = far(l.at)),
+                    |_| {},
+                ) {
                     let x = crate::survey::Need {
                         world: l.world.clone(),
                         id: l.id,
@@ -236,7 +242,13 @@ impl Panel {
             near.sort_by(|a, b| a.tier.cmp(&b.tier).then(dist(a.at).total_cmp(&dist(b.at))));
             for g in near.iter().take(3) {
                 any = true;
-                if tw::pick(t, state.is_followed(g.id), format!("{} ({})", g.label, far(g.at))) {
+                if tw::track_line(
+                    t,
+                    Some(state.track_colour(g.id)),
+                    |_| {},
+                    format!("{} ({})", g.label, far(g.at)),
+                    |_| {},
+                ) {
                     follow_goal(state, g, &world);
                 }
             }
@@ -295,12 +307,9 @@ impl Panel {
                     t.style(tw::row(INLINE)).add(|t| {
                         tw::chip(t, tr!("SOON"), tw::Tone::Bad);
                         let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
-                        if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
-                            state.quest = Some(d.key.clone());
-                            state.auto = None;
-                            state.held = false;
-                            state.guide_auto = true;
-                            state.route = true;
+                        let on = d.started.then(|| state.quest_track(&d.key).map(|x| x.rgb()));
+                        if tw::track_line(t, on, |_| {}, label, |_| {}) {
+                            state.toggle(crate::guide::track::Track::quest(&d.key, &d.title));
                         }
                     });
                     note(t, format!("{}: {}", d.due.label(), d.what));

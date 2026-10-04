@@ -153,7 +153,7 @@ ON	Attivo
 COMPASS_F	Bussola (F{key})
 TOP_CENTRE_OF_THE_SCREEN	In alto al centro dello schermo
 GUIDE	Guida
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guida automatica: punta al prossimo obiettivo dell'indagine seguita
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guida automatica: continua a guidare al prossimo obiettivo della storia principale
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Percorso a piedi (A*): aggira terreno, acqua e pareti; la bussola indica la prossima svolta
 NEXT_GOAL	Prossimo obiettivo ▶
 THIS_GOAL_IS_DONE_OR_OUT	Obiettivo completato o ora irraggiungibile. Saltalo e passa al prossimo (solo in questa sessione)
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Mostra anche porte con chiave e oggetti da po
 UNSOLVED_PUZZLE	Enigma non risolto
 VAULT_DOOR	Porta della camera
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	Enigma vicino: la risposta è nella scheda Enigmi del pannello
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Oggetti di ricerca: premi la riga Ricerca in «Raccolta» per essere guidato al più vicino
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Oggetti di ricerca: premi Segui sugli oggetti di ricerca in 'Collezione'
 ACHIEVEMENTS	Obiettivi Steam {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Cache degli obiettivi Steam non trovata (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Mostra anche quelli sbloccati
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	Nelle altre regioni non resta nulla che la mod conosca.
 MINUTES_AGO	{count} min fa
 HOURS_AGO	{count} h fa
 LYMBIC_LOCKS	Blocchi limbici
-THE_RODS_EACH_LOCK_TAKES	Le barre che ogni blocco richiede; prima quelli che le tue barre aprono già. Premi un blocco o una barra mancante per esservi guidato.
+THE_RODS_EACH_LOCK_TAKES	Le verghe che ogni serratura richiede. Prima quelle che le tue verghe aprono già. Segui una serratura o una verga mancante per andarci.
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (a {place})
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	I trucchi sono ripiegati in fondo alla barra laterale. Ap
 HELP_START	Primi passi
 HELP_STEP_GAME	Avvia il gioco e carica un salvataggio. Il pannello lo trova da solo.
 HELP_STEP_STATUS	Quando «{gate}» diventa verde, la mod sta leggendo il gioco.
-HELP_STEP_QUEST	Nella scheda «{quests}» scegli un’indagine. Bussola e minimappa ti guidano all’obiettivo successivo.
+HELP_STEP_QUEST	Nella pagina {quests}, premi Segui su una missione (anche più di una). Bussola e minimappa guidano a ogni obiettivo successivo, ciascuno col suo colore.
 HELP_STEP_ANSWERS	Le risposte restano nascoste finché non le chiedi. Guardarsi intorno non rovina nulla.
 HELP_KEY_PANEL	Apri o nascondi questo pannello
 HELP_KEYS_CHANGE_ON_MAP	I tasti si cambiano nella scheda «{map}».
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	Segui anche questa missione: il prossimo obiettivo ha colore, 
 QUEST_NOT_HERE	niente qui
 ALSO_FOLLOWED	Seguite anche
 QUEST_TAG	Missione
+TRACK_TOGGLE_HINT	Segui: colore, percorso e anello propri su mappe, bussola e gioco; la pagina Guida li raccoglie. Di nuovo per lasciare.
+GUIDE_AUTO_CARD	Guida automatica
+TRACK_IN_FOCUS	a fuoco
+QUESTS_FOLLOW_NOTE	Premi una missione per vedere cosa serve; Segui per esserne guidato, anche più insieme.

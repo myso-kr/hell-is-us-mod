@@ -109,9 +109,10 @@ impl Panel {
             Some(Tool::Help) => self.help_tab(t, guard),
             Some(Tool::Settings) => self.settings_tab(t),
             // Where to go: the guide, the places, and the pins the player drops to go back to.
-            Some(Tool::Guide) => tw::masonry(t, "guide", cols, 3, |t, i| match i {
-                0 => self.guide_column(t, guard, snap),
-                1 => self.goals_card(t, guard, snap),
+            Some(Tool::Guide) => tw::masonry(t, "guide", cols, 4, |t, i| match i {
+                0 => self.auto_card(t, guard, snap),
+                1 => self.tracks_card(t, guard, snap),
+                2 => self.goals_card(t, guard, snap),
                 _ => self.marks_column(t, guard, snap),
             }),
             // What is known: the quests' clues, a clue looked up, and who still has more to tell.

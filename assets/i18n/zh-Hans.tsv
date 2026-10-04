@@ -153,7 +153,7 @@ ON	开启
 COMPASS_F	指南针（F{key}）
 TOP_CENTRE_OF_THE_SCREEN	屏幕上方居中
 GUIDE	引导
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	自动引导：持续引导至所追踪任务的下一个目标
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	自动向导：持续引导至主线的下一个目标
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	步行路线（A*）：绕开地形、水域和墙壁，指南针指向下一个转弯处
 NEXT_GOAL	下一个目标 ▶
 THIS_GOAL_IS_DONE_OR_OUT	此目标已完成或暂时无法到达，跳到下一个（仅限本次）
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	同时显示钥匙门和放置物品谜题
 UNSOLVED_PUZZLE	未解谜题
 VAULT_DOOR	宝库门
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	附近有谜题，答案在面板的“谜题”页
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	研究道具：点击“收集进度”中的“研究”一行，即可引导至最近的一个
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	研究物品：在「收集」的研究物品处点击追踪即可导航
 ACHIEVEMENTS	成就 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	未找到 Steam 成就缓存（Steam/appcache/stats）
 SHOW_UNLOCKED_ONES_TOO	同时显示已解锁的
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	模组已知的其他地区剩余内容：无。
 MINUTES_AGO	{count} 分钟前
 HOURS_AGO	{count} 小时前
 LYMBIC_LOCKS	林比克锁
-THE_RODS_EACH_LOCK_TAKES	每把锁需要的棒：用已持有的棒就能打开的锁排在前面。点击锁或缺少的棒，即可引导前往。
+THE_RODS_EACH_LOCK_TAKES	每把锁所需的棒。已有的棒能打开的锁排在前面。对锁或缺少的棒点击追踪即可导航。
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod}：在{place}
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	作弊项折叠在侧栏最下方，在那里展开。
 HELP_START	入门
 HELP_STEP_GAME	启动游戏并读取存档，面板会自动找到它。
 HELP_STEP_STATUS	“{gate}”变绿时，模组正在读取游戏。
-HELP_STEP_QUEST	在“{quests}”页选择一个任务，指南针和小地图会引导你前往下一个目标。
+HELP_STEP_QUEST	在「{quests}」页面点击任务的追踪（可同时多个）。指南针和小地图会以各自的颜色引导到下一个目标。
 HELP_STEP_ANSWERS	答案在你点开之前一直隐藏，随便看看不会被剧透。
 HELP_KEY_PANEL	打开或隐藏此面板
 HELP_KEYS_CHANGE_ON_MAP	可在“{map}”页更改按键。
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	同时追踪此任务：其下一个目标有自己的颜色�
 QUEST_NOT_HERE	此区域无
 ALSO_FOLLOWED	同时追踪
 QUEST_TAG	任务
+TRACK_TOGGLE_HINT	追踪：在地图、指南针和游戏中各有颜色、路线和光圈；向导页面统一管理。再按一次取消。
+GUIDE_AUTO_CARD	自动向导
+TRACK_IN_FOCUS	聚焦中
+QUESTS_FOLLOW_NOTE	点击任务查看所需；点击追踪即可导航，可同时追踪多个。

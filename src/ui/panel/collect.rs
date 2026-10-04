@@ -51,14 +51,15 @@ impl Panel {
                     for x in left.iter().take(8) {
                         let far = here.map_or(String::new(), |h| crate::raster::span(h, x.at));
                         let sort = crate::survey::collect_sort(c.label);
-                        if tw::pick_with(
+                        if tw::track_line(
                             t,
-                            state.is_followed(x.id),
+                            Some(state.track_colour(x.id)),
                             |ui| {
                                 ui.add_space(14.0);
                                 crate::ui::svg::sort(ui, sort, 16.0);
                             },
                             format!("{} ({far})", x.label),
+                            |_| {},
                         ) {
                             guide_to(state, &goals, x);
                         }
@@ -143,13 +144,14 @@ impl Panel {
             }
             for x in mine.iter().take(10) {
                 let far = here.map_or(String::new(), |h| crate::raster::span(h, x.at));
-                if tw::pick_with(
+                if tw::track_line(
                     t,
-                    state.is_followed(x.id),
+                    Some(state.track_colour(x.id)),
                     |ui| {
                         crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0);
                     },
                     format!("{} ({far})", x.label.trim_start_matches(trf!("TALK_NPC", p = "").as_str())),
+                    |_| {},
                 ) {
                     guide_to(state, &goals, x);
                 }

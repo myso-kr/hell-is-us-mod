@@ -153,7 +153,7 @@ ON	Activé
 COMPASS_F	Boussole (F{key})
 TOP_CENTRE_OF_THE_SCREEN	En haut au centre de l'écran
 GUIDE	Guidage
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guidage auto : mène toujours à l'objectif suivant de la quête suivie
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Guidage automatique : continue de guider vers le prochain objectif de l'histoire principale
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Itinéraire à pied (A*) : contourne relief, eau et murs ; la boussole indique le prochain virage
 NEXT_GOAL	Objectif suivant ▶
 THIS_GOAL_IS_DONE_OR_OUT	Cet objectif est terminé ou inaccessible pour l'instant. L'ignorer pour passer au suivant (pour cette session)
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Afficher aussi les portes à clé et les dép
 UNSOLVED_PUZZLE	Énigme non résolue
 VAULT_DOOR	Porte de chambre
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	Énigme à proximité : réponse dans l’onglet Énigmes du panneau
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objets de recherche : appuyez sur la ligne Recherches dans « Collection » pour être guidé au plus proche
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Objets de recherche : appuyez sur Suivre pour les objets de recherche dans « Collection »
 ACHIEVEMENTS	Succès {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Cache des succès Steam introuvable (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Afficher aussi ceux débloqués
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	Plus rien dans les autres régions que le mod connaisse.
 MINUTES_AGO	il y a {count} min
 HOURS_AGO	il y a {count} h
 LYMBIC_LOCKS	Verrous lymbiques
-THE_RODS_EACH_LOCK_TAKES	Les barres que demande chaque verrou. Ceux que vos barres ouvrent déjà viennent en premier. Cliquez sur un verrou ou une barre manquante pour y être guidé.
+THE_RODS_EACH_LOCK_TAKES	Les bâtons que demande chaque serrure. D'abord celles que vos bâtons ouvrent déjà. Suivez une serrure ou un bâton manquant pour y être guidé.
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (à {place})
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	Les triches sont repliées en bas de la barre latérale. 
 HELP_START	Premiers pas
 HELP_STEP_GAME	Lancez le jeu et chargez une sauvegarde. Le panneau la trouve tout seul.
 HELP_STEP_STATUS	Quand « {gate} » passe au vert, le mod lit le jeu.
-HELP_STEP_QUEST	Dans l’onglet « {quests} », choisissez une quête. La boussole et la mini-carte vous guident vers l’objectif suivant.
+HELP_STEP_QUEST	Sur la page {quests}, appuyez sur Suivre sur une quête (plusieurs si vous voulez). La boussole et la minicarte guident vers chaque objectif suivant, chacun de sa couleur.
 HELP_STEP_ANSWERS	Les réponses restent cachées tant que vous ne les demandez pas. Regarder ne divulgue rien.
 HELP_KEY_PANEL	Ouvrir ou masquer ce panneau
 HELP_KEYS_CHANGE_ON_MAP	Les touches se changent dans l’onglet « {map} ».
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	Suivre aussi cette quête : son prochain objectif a sa couleur
 QUEST_NOT_HERE	rien ici
 ALSO_FOLLOWED	Suivies aussi
 QUEST_TAG	Quête
+TRACK_TOGGLE_HINT	Suivre : sa couleur, sa route et son anneau sur les cartes, la boussole et en jeu ; la page Guide les réunit. Encore pour lâcher.
+GUIDE_AUTO_CARD	Guidage automatique
+TRACK_IN_FOCUS	ciblé
+QUESTS_FOLLOW_NOTE	Appuyez sur une quête pour voir ce qu'il lui faut ; Suivre pour y être guidé, plusieurs à la fois.

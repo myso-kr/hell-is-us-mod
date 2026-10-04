@@ -376,8 +376,8 @@ impl Panel {
                     crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0);
                 };
                 let head = RichText::new(head).color(if *solved { DIM } else { super::super::theme::TEXT }).small();
-                let on = (!*solved).then(|| state.is_followed(id));
-                if tw::line(t, on, icon, head, |t| reveal(t, &mut self.revealed, id, tr!("SHOW_ANSWER"))) {
+                let on = (!*solved).then(|| state.track_colour(id));
+                if tw::track_line(t, on, icon, head, |t| reveal(t, &mut self.revealed, id, tr!("SHOW_ANSWER"))) {
                     let x = crate::survey::Need {
                         world: p.world.clone(),
                         id,
@@ -443,8 +443,8 @@ impl Panel {
                     crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0);
                 };
                 let head = RichText::new(head).color(if p.solved { DIM } else { super::super::theme::TEXT });
-                let on = (!p.solved).then(|| state.is_followed(p.id));
-                if tw::line(t, on, icon, head, |t| reveal(t, &mut self.revealed, p.id, tr!("SHOW_ANSWER"))) {
+                let on = (!p.solved).then(|| state.track_colour(p.id));
+                if tw::track_line(t, on, icon, head, |t| reveal(t, &mut self.revealed, p.id, tr!("SHOW_ANSWER"))) {
                     let x = crate::survey::Need {
                         world: world.clone(),
                         id: p.id,
@@ -543,13 +543,13 @@ impl Panel {
                         _ => super::super::theme::TEXT,
                     };
                     let id = s.id | 1 << 63;
-                    let on = (st != State::Done).then(|| state.is_followed(id));
+                    let on = (st != State::Done).then(|| state.track_colour(id));
                     let icon = |ui: &mut egui::Ui| {
                         crate::ui::svg::sort(ui, Sub::Puzzle, 18.0);
                     };
                     let hints = &mut self.slot_hints;
                     let mut answered = false;
-                    let pressed = tw::line(t, on, icon, RichText::new(head).color(colour), |t| {
+                    let pressed = tw::track_line(t, on, icon, RichText::new(head).color(colour), |t| {
                         if told == 0 && file.is_some() && w(t, |ui| ui.small_button(tr!("SLOT_CLUE"))).clicked() {
                             hints.insert(s.id, 1);
                         }
@@ -589,8 +589,9 @@ impl Panel {
                         };
                         text(t, RichText::new(format!("    {line}")).color(OK));
                     }
-                    // Asking for the answer guides to it at once: the ring in the game's view
-                    // marks the guide's target, and a second press on the line was missed.
+                    // The Follow toggle follows the set (or, once told, its right groove), or
+                    // lets it go; asking for the answer follows the groove at once: the ring in
+                    // the game's view marks it.
                     if pressed || answered && right.is_some() {
                         // To the set; once its answer is told, to the right slot itself.
                         let at = right.filter(|_| told >= 2).map_or(s.at(), |r| r.groove);
@@ -602,7 +603,11 @@ impl Panel {
                             at,
                             done: false,
                         };
-                        guide_to(state, &goals, &x);
+                        if answered {
+                            follow_need(state, &goals, &x);
+                        } else {
+                            guide_to(state, &goals, &x);
+                        }
                     }
                 }
             }
@@ -642,7 +647,7 @@ impl Panel {
                 let shut = v.state != VaultState::Opened;
                 let colour = if shut { super::super::theme::TEXT } else { DIM };
                 let door = v.door.clone().filter(|_| shut);
-                let on = door.as_ref().map(|_| state.is_followed(id));
+                let on = door.as_ref().map(|_| state.track_colour(id));
                 let revealed = &mut self.revealed;
                 let end = |t: &mut Tui| {
                     tw::chip(t, status, tone);
@@ -650,7 +655,7 @@ impl Panel {
                         reveal(t, revealed, id, tr!("SHOW_CODE"));
                     }
                 };
-                if tw::line(t, on, icon, RichText::new(format!("{name} · {region}")).color(colour), end) {
+                if tw::track_line(t, on, icon, RichText::new(format!("{name} · {region}")).color(colour), end) {
                     if let Some((world, at)) = door {
                         let x = crate::survey::Need {
                             world,
@@ -720,10 +725,10 @@ impl Panel {
                         })
                     });
                     let id = near.map(|at| id_of(&format!("hollow{at:?}")));
-                    let on = id.map(|id| state.is_followed(id));
+                    let on = id.map(|id| state.track_colour(id));
                     let beaten = h.all - h.left;
                     let end = |t: &mut Tui| w(t, |ui| tw::meter(ui, Some(56.0), beaten, h.all));
-                    if tw::line(t, on, icon, RichText::new(line).color(colour), end) {
+                    if tw::track_line(t, on, icon, RichText::new(line).color(colour), end) {
                         if let (Some(at), Some(id)) = (near, id) {
                             let x = crate::survey::Need {
                                 world: h.world.clone(),
@@ -786,7 +791,7 @@ impl Panel {
                             tw::chip(t, tr!("OPENS_NOW"), tw::Tone::Ok);
                         }
                     };
-                    if tw::line(t, Some(state.is_followed(l.id)), icon, head, end) {
+                    if tw::track_line(t, Some(state.track_colour(l.id)), icon, head, end) {
                         let x = crate::survey::Need {
                             world: l.world.clone(),
                             id: l.id,
@@ -818,8 +823,8 @@ impl Panel {
                             ui.allocate_exact_size(egui::vec2(18.0, 1.0), egui::Sense::hover());
                         };
                         let colour = if source.is_some() { super::super::theme::TEXT } else { DIM };
-                        let on = source.map(|s| state.is_followed(s.id));
-                        if tw::line(t, on, indent, RichText::new(line).color(colour).small(), |_| {}) {
+                        let on = source.map(|s| state.track_colour(s.id));
+                        if tw::track_line(t, on, indent, RichText::new(line).color(colour).small(), |_| {}) {
                             if let Some(s) = source {
                                 guide_to(state, &goals, s);
                             }

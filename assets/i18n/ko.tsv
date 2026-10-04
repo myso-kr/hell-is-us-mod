@@ -153,7 +153,7 @@ ON	켜짐
 COMPASS_F	나침반 (F{key})
 TOP_CENTRE_OF_THE_SCREEN	화면 상단 중앙
 GUIDE	안내
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	자동 안내: 추적 중인 퀘스트의 다음 목표로 계속 안내합니다
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	자동 안내: 메인 스토리의 다음 목표로 계속 안내합니다
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	이동 경로 (A*): 지형·물·벽을 우회하며, 나침반이 다음 꺾이는 곳을 가리킵니다
 NEXT_GOAL	다음 목표 ▶
 THIS_GOAL_IS_DONE_OR_OUT	끝났거나 갈 수 없는 목표: 건너뛰고 다음 목표로 (이번 실행 동안만)
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	열쇠·물건 놓기 퍼즐도 보기
 UNSOLVED_PUZZLE	안 푼 퍼즐
 VAULT_DOOR	금고 문
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	근처에 퍼즐이 있습니다. 답은 패널의 퍼즐 탭에 있습니다
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	연구 아이템은 '수집 진행도'의 연구 아이템 줄을 누르면 가까운 것부터 안내합니다
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	연구 아이템: '수집 진행도'의 연구 아이템에서 [추적]을 누르면 안내합니다
 ACHIEVEMENTS	업적 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam 업적 캐시를 찾지 못했습니다 (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	달성한 업적도 보기
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	다른 지역에서 모드가 아는 남은 것이 없습
 MINUTES_AGO	{count}분 전
 HOURS_AGO	{count}시간 전
 LYMBIC_LOCKS	림빅 잠금
-THE_RODS_EACH_LOCK_TAKES	잠금마다 필요한 막대입니다. 가진 막대로 이미 열 수 있는 잠금이 먼저 나옵니다. 잠금이나 빠진 막대 줄을 누르면 그곳으로 안내합니다.
+THE_RODS_EACH_LOCK_TAKES	잠금마다 필요한 막대입니다. 가진 막대로 이미 열 수 있는 잠금이 먼저 나옵니다. 잠금이나 빠진 막대에서 [추적]을 누르면 그곳으로 안내합니다.
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (위치: {place})
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	치트는 사이드바 맨 아래에 접혀 있습니다.
 HELP_START	처음 쓰는 법
 HELP_STEP_GAME	게임을 켜고 세이브를 불러오세요. 패널이 알아서 찾습니다.
 HELP_STEP_STATUS	'{gate}'가 초록색이 되면 모드가 게임을 읽고 있는 것입니다.
-HELP_STEP_QUEST	'{quests}' 탭에서 퀘스트를 고르세요. 나침반과 미니맵이 다음 목표로 안내합니다.
+HELP_STEP_QUEST	'{quests}' 탭에서 퀘스트의 [추적]을 누르세요(여러 개를 함께 추적할 수 있습니다). 나침반과 미니맵이 저마다의 색으로 다음 목표를 안내합니다.
 HELP_STEP_ANSWERS	답은 누르기 전까지 숨겨져 있습니다. 둘러보기만 해서는 스포일러가 되지 않습니다.
 HELP_KEY_PANEL	이 패널 열기·숨기기
 HELP_KEYS_CHANGE_ON_MAP	단축키는 '{map}' 탭에서 바꿀 수 있습니다.
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	이 퀘스트도 함께 추적합니다. 다음 목표가 저�
 QUEST_NOT_HERE	이 지역엔 없음
 ALSO_FOLLOWED	함께 추적 중
 QUEST_TAG	퀘스트
+TRACK_TOGGLE_HINT	추적합니다. 지도·나침반·게임 화면에 저마다의 색·경로·고리로 표시되고, 안내 탭에서 모아 관리합니다. 다시 누르면 해제합니다.
+GUIDE_AUTO_CARD	자동 안내
+TRACK_IN_FOCUS	집중
+QUESTS_FOLLOW_NOTE	퀘스트를 누르면 필요한 것을 보여 주고, [추적]을 누르면 안내합니다. 여러 개를 함께 추적할 수 있습니다.

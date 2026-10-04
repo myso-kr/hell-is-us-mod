@@ -81,7 +81,7 @@ impl Panel {
     pub(super) fn quest_clues_card(&mut self, t: &mut Tui, state: &crate::minimap::MapState, snap: Option<&Snapshot>) {
         let clues = snap.map(|s| s.clues.clone()).unwrap_or_default();
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
-        let followed = crate::quests::followed(&journal, state.quest.as_deref()).cloned();
+        let followed = crate::quests::followed(&journal, state.focused_quest()).cloned();
         let title = match &followed {
             Some(q) => trf!("CLUES_FOR_QUEST", quest = q.name),
             None => tr!("CLUES_FOR_THE_FOLLOWED_QUEST").to_string(),

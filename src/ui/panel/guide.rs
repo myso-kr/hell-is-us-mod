@@ -1,41 +1,32 @@
-//! The guide page: what is in focus and why, everything followed (the auto guide's pick
-//! and the places chosen, guide/track.rs), the tiers the guide may pick from, its switches
-//! (compass included), and every place with something new.
+//! The guide page: the auto guide (its pick and why, its switches) and what is followed by
+//! hand (guide/track.rs) as two cards, every place with something new, and the pins.
 
-use super::super::theme::{
-    ACCENT, ACCENT_DEEP, BLOCK, CONTROL, CONTROL_HOVER, GROUND, INLINE, R_CONTROL, TEXT, TIGHT, TITLE,
-};
+use super::super::theme::{ACCENT, ACCENT_DEEP, BLOCK, CONTROL, CONTROL_HOVER, INLINE, R_CONTROL, TEXT, TIGHT, TITLE};
 use super::*;
 use egui_taffy::taffy::{prelude::length, Style};
 
 impl Panel {
-    pub(super) fn guide_column(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+    /// The auto guide: what it points at and why, in large type (the story's next goal, by
+    /// the main story), its skip and back-to-auto, and the guide's switches.
+    pub(super) fn auto_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
-
         // Why nothing is being guided to, when nothing is.
         let journal = snap.map(|s| s.journal.clone()).unwrap_or_default();
-        let followed = crate::quests::followed(&journal, state.quest.as_deref()).cloned();
+        let story = crate::quests::followed(&journal, None).cloned();
         let elsewhere: usize = snap
-            .and_then(|s| followed.as_ref().and_then(|q| s.needs.iter().find(|(k, _)| *k == q.key)))
+            .and_then(|s| story.as_ref().and_then(|q| s.needs.iter().find(|(k, _)| *k == q.key)))
             .map(|(_, list)| {
                 let here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
                 list.iter().filter(|x| !x.done && Some(&x.world) != here.as_ref()).count()
             })
             .unwrap_or(0);
-        let uncertain: std::collections::HashSet<u64> =
-            if state.route { self.shared.route_uncertain.lock().unwrap().clone() } else { Default::default() };
-        let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
-        // The goals, and the places followed that are no goal (a groove, a lock).
-        let mut all: Vec<crate::goals::Goal> = goals.iter().cloned().collect();
-        all.extend(state.place_goals(&goals, &world));
-        let focus = state.focused();
-        let target = focus.and_then(|id| all.iter().find(|g| g.id == id)).cloned();
-        let by_hand = focus.is_some_and(|f| state.tracks.iter().any(|x| x.id == f));
+        let uncertain =
+            state.route && state.auto.is_some_and(|a| self.shared.route_uncertain.lock().unwrap().contains(&a));
+        let target = state.auto.and_then(|id| goals.iter().find(|g| g.id == id)).cloned();
+        let focus = state.in_focus(None);
 
-        card(t, tr!("GUIDE"), |t| {
-            // What is in focus first, in large type: what the compass points at, how far,
-            // and why.
+        card(t, tr!("GUIDE_AUTO_CARD"), |t| {
             well(t, |t| match &target {
                 Some(g) => {
                     t.style(tw::row(BLOCK)).add(|t| {
@@ -46,15 +37,19 @@ impl Panel {
                                 ui.add(egui::Label::new(name).wrap()).on_hover_text(&g.detail);
                             });
                             t.style(tw::wrap(TIGHT)).add(|t| {
-                                let (mode, tone, why) = if by_hand {
-                                    (tr!("GUIDE_BY_HAND"), tw::Tone::Accent, tr!("TRACK_FOCUS_HINT"))
-                                } else if state.held {
+                                let (mode, tone, why) = if state.held {
                                     (tr!("GUIDE_BY_HAND"), tw::Tone::Accent, tr!("PICKED_BY_HAND_KEPT_UNTIL_IT"))
                                 } else {
                                     (tr!("GUIDE_AUTO"), tw::Tone::Quiet, tr!("AUTO_GUIDE_KEEPS_GUIDING_TO_THE"))
                                 };
                                 w(t, |ui| tw::pill(ui, mode, tone).on_hover_text(why));
-                                if uncertain.contains(&g.id) {
+                                if focus {
+                                    w(t, |ui| {
+                                        tw::pill(ui, tr!("TRACK_IN_FOCUS"), tw::Tone::Ok)
+                                            .on_hover_text(tr!("TRACK_FOCUS_HINT"))
+                                    });
+                                }
+                                if uncertain {
                                     w(t, |ui| {
                                         tw::pill(ui, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait)
                                             .on_hover_text(tr!("NO_WALKING_ROUTE_IT_MAY_BE"))
@@ -95,63 +90,66 @@ impl Panel {
                 }
             });
 
-            // Everything followed: the auto guide's pick, then the places chosen, each in
-            // its colour, with its distance; one in focus.
-            let followed = state.auto.is_some() as usize + state.tracks.len();
-            block(t, |ui| {
-                tw::group_heading(
-                    ui,
-                    &trf!("TRACKING", n = state.tracks.len(), max = crate::guide::track::MAX),
-                    followed,
-                )
-            });
-            if state.tracks.is_empty() {
-                note(t, trf!("TRACK_HINT", max = crate::guide::track::MAX));
-            }
-            // The auto guide's line: its pick, skip it, or back to auto.
-            if let Some(g) = state.auto.and_then(|id| all.iter().find(|g| g.id == id)).cloned() {
-                let focus = state.in_focus(None);
-                let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
-                t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| {
-                        crate::ui::svg::tier(ui, g.tier, 14.0);
-                    });
-                    let name = format!("{} · {}", tr!("GUIDE_AUTO"), g.label);
-                    let colour = if focus { TITLE } else { TEXT };
-                    t.style(tw::grow(tw::row(TIGHT))).add(|t| {
-                        block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).truncate()));
-                    });
-                    if uncertain.contains(&g.id) {
-                        tw::chip(t, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait);
-                    }
-                    block(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
+            // Its actions: focus it, skip it, back to auto; what was skipped with its undo.
+            t.style(tw::wrap(INLINE)).add(|t| {
+                if let Some(g) = &target {
                     if !focus
-                        && w(t, |ui| ui.small_button(tr!("TRACK_FOCUS")))
-                            .on_hover_text(tr!("TRACK_FOCUS_HINT"))
-                            .clicked()
+                        && w(t, |ui| ui.button(tr!("TRACK_FOCUS"))).on_hover_text(tr!("TRACK_FOCUS_HINT")).clicked()
                     {
                         state.focus = None;
                     }
-                    if w(t, |ui| ui.small_button(tr!("NEXT_GOAL")))
-                        .on_hover_text(tr!("THIS_GOAL_IS_DONE_OR_OUT"))
-                        .clicked()
-                    {
+                    if w(t, |ui| ui.button(tr!("NEXT_GOAL"))).on_hover_text(tr!("THIS_GOAL_IS_DONE_OR_OUT")).clicked() {
                         state.skipped.insert(g.id);
                         state.auto = None;
                         state.held = false;
+                        state.guide_auto = true;
                     }
                     if state.held
-                        && w(t, |ui| ui.small_button(tr!("BACK_TO_AUTO")))
+                        && w(t, |ui| ui.button(tr!("BACK_TO_AUTO")))
                             .on_hover_text(tr!("PICKED_BY_HAND_KEPT_UNTIL_IT"))
                             .clicked()
                     {
                         state.held = false;
                         state.auto = None;
                     }
-                });
+                }
+                if !state.skipped.is_empty() {
+                    tw::chip(t, trf!("GOALS_SKIPPED", count = state.skipped.len()), tw::Tone::Quiet);
+                    if w(t, |ui| ui.button(tr!("UNDO"))).clicked() {
+                        state.skipped.clear();
+                        state.auto = None;
+                    }
+                }
+            });
+
+            // The switches, short; what each does is in its hover.
+            t.style(tw::wrap(BLOCK)).add(|t| {
+                flag(t, &mut state.guide_auto, tr!("GUIDE_AUTO"), tr!("AUTO_GUIDE_KEEPS_GUIDING_TO_THE"));
+                flag(t, &mut state.route, tr!("GUIDE_ROUTE"), tr!("WALKING_ROUTE_A_AROUND_TERRAIN_WATER"));
+                let compass = trf!("COMPASS_F", key = state.compass_key);
+                flag(t, &mut state.compass, &compass, tr!("TOP_CENTRE_OF_THE_SCREEN"));
+            });
+        });
+    }
+
+    /// The places and quests followed by hand (guide/track.rs), each in its colour: a quest
+    /// as the goal it is at now (or none of it in this region), its distance, a no-route
+    /// chip, Focus and Let go; Let go of all.
+    pub(super) fn tracks_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
+        let uncertain: std::collections::HashSet<u64> =
+            if state.route { self.shared.route_uncertain.lock().unwrap().clone() } else { Default::default() };
+        // The goals, and the places followed that are no goal (a groove, a lock).
+        let mut all: Vec<crate::goals::Goal> = goals.iter().cloned().collect();
+        all.extend(state.place_goals(&goals, &world));
+        let title = trf!("TRACKING", n = state.tracks.len(), max = crate::guide::track::MAX);
+        card(t, &title, |t| {
+            if state.tracks.is_empty() {
+                note(t, trf!("TRACK_HINT", max = crate::guide::track::MAX));
+                return;
             }
-            // Each track in its colour: a place, or a quest with the goal it is at now (or
-            // none of it in this region).
             let tracks = state.tracks.clone();
             for tr in &tracks {
                 let goal = state.goal_of(tr).and_then(|id| all.iter().find(|g| g.id == id));
@@ -175,8 +173,11 @@ impl Panel {
                         if tr.quest.is_some() {
                             w(t, |ui| ui.label(RichText::new(tr!("QUEST_TAG")).small().color(DIM)));
                         }
-                        block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).truncate()));
+                        block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).wrap()));
                     });
+                    if focus {
+                        tw::chip(t, tr!("TRACK_IN_FOCUS"), tw::Tone::Ok);
+                    }
                     if goal.is_some_and(|g| uncertain.contains(&g.id)) {
                         tw::chip(t, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait);
                     }
@@ -193,32 +194,9 @@ impl Panel {
                     }
                 });
             }
-
-            // Letting go of all, and what was skipped with its undo.
-            if !state.tracks.is_empty() || !state.skipped.is_empty() {
-                t.style(tw::wrap(INLINE)).add(|t| {
-                    if !state.tracks.is_empty() && w(t, |ui| ui.button(tr!("TRACK_DROP_ALL"))).clicked() {
-                        state.unfollow_all();
-                    }
-                    if !state.skipped.is_empty() {
-                        tw::chip(t, trf!("GOALS_SKIPPED", count = state.skipped.len()), tw::Tone::Quiet);
-                        if w(t, |ui| ui.button(tr!("UNDO"))).clicked() {
-                            state.skipped.clear();
-                            state.auto = None;
-                        }
-                    }
-                });
+            if w(t, |ui| ui.button(tr!("TRACK_DROP_ALL"))).clicked() {
+                state.unfollow_all();
             }
-
-            segments(t, &goals, &mut state.goal_tiers);
-
-            // The switches, short; what each does is in its hover.
-            t.style(tw::wrap(BLOCK)).add(|t| {
-                flag(t, &mut state.guide_auto, tr!("GUIDE_AUTO"), tr!("AUTO_GUIDE_KEEPS_GUIDING_TO_THE"));
-                flag(t, &mut state.route, tr!("GUIDE_ROUTE"), tr!("WALKING_ROUTE_A_AROUND_TERRAIN_WATER"));
-                let compass = trf!("COMPASS_F", key = state.compass_key);
-                flag(t, &mut state.compass, &compass, tr!("TOP_CENTRE_OF_THE_SCREEN"));
-            });
         });
     }
 
@@ -230,8 +208,7 @@ impl Panel {
         let dist = |g: &crate::goals::Goal| {
             here.map_or(f32::MAX, |h| ((g.at[0] - h[0]).powi(2) + (g.at[1] - h[1]).powi(2)).sqrt() / 100.0)
         };
-        let mut list: Vec<&crate::goals::Goal> =
-            goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
+        let mut list: Vec<&crate::goals::Goal> = goals.iter().collect();
         list.sort_by(|a, b| dist(a).total_cmp(&dist(b)));
         let grouped = &mut self.places_grouped;
         card(t, &trf!("PLACES", count = list.len()), |t| {
@@ -285,44 +262,6 @@ fn well<T>(t: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
             |t, _| body(t),
         )
         .main
-}
-
-/// The tier filter as one segmented control: each tier with its count, lit in the
-/// tier's own colour while the guide and the list may pick from it.
-fn segments(t: &mut Tui, goals: &[crate::goals::Goal], tiers: &mut u8) {
-    w(t, |ui| {
-        egui::Frame::new().fill(GROUND).corner_radius(R_CONTROL).inner_margin(egui::Margin::same(2)).show(ui, |ui| {
-            ui.horizontal(|ui| {
-                ui.spacing_mut().item_spacing.x = 2.0;
-                ui.spacing_mut().button_padding = egui::vec2(10.0, 2.0);
-                let font = egui::TextStyle::Small.resolve(ui.style());
-                for tier in crate::goals::Tier::ALL {
-                    let [r, g, b] = tier.rgb();
-                    let colour = Color32::from_rgb(r, g, b);
-                    let n = goals.iter().filter(|x| x.tier == tier).count();
-                    let on = *tiers & (1 << tier as u8) != 0;
-                    let mut label = egui::text::LayoutJob::default();
-                    label.append(
-                        tier.label(),
-                        0.0,
-                        egui::TextFormat::simple(font.clone(), if on { colour } else { DIM }),
-                    );
-                    label.append(
-                        &n.to_string(),
-                        6.0,
-                        egui::TextFormat::simple(egui::FontId::monospace(font.size), DIM),
-                    );
-                    let button = egui::Button::new(label)
-                        .fill(if on { colour.gamma_multiply(0.16) } else { Color32::TRANSPARENT })
-                        .stroke(egui::Stroke::NONE)
-                        .corner_radius(R_CONTROL - 1);
-                    if ui.add(button).clicked() {
-                        *tiers ^= 1 << tier as u8;
-                    }
-                }
-            });
-        });
-    });
 }
 
 /// A switch with a short label (pressable too); the long explanation is its hover.

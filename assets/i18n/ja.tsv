@@ -153,7 +153,7 @@ ON	オン
 COMPASS_F	コンパス (F{key})
 TOP_CENTRE_OF_THE_SCREEN	画面上部中央
 GUIDE	ガイド
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	自動ガイド：追跡中のクエストの次の目標へ案内し続ける
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	自動案内：メインストーリーの次の目標へ案内し続けます
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	実際の移動経路 (A*)：地形・水・壁を迂回する道。コンパスは次の曲がり角を指す
 NEXT_GOAL	次の目標 ▶
 THIS_GOAL_IS_DONE_OR_OUT	この目標は終了済み、または今は行けない。飛ばして次の目標へ（今回の起動中のみ）
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	鍵の扉・アイテム設置パズルも表
 UNSOLVED_PUZZLE	未解決のパズル
 VAULT_DOOR	金庫の扉
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	近くにパズルがあります。答えはパネルのパズルタブにあります
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	調査アイテム: 「収集状況」の調査の行を押すと、近い順に案内します
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	研究アイテム：「収集」の研究アイテムで［追跡］を押すと案内します
 ACHIEVEMENTS	実績 {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Steam の実績キャッシュが見つかりません (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	解除済みも表示
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	ほかの地域でMODが把握している残りはあり
 MINUTES_AGO	{count}分前
 HOURS_AGO	{count}時間前
 LYMBIC_LOCKS	リムビックロック
-THE_RODS_EACH_LOCK_TAKES	ロックごとに必要なロッドです。手持ちのロッドで開けられるロックが先に並びます。ロックや足りないロッドの行を押すと、そこへ案内します。
+THE_RODS_EACH_LOCK_TAKES	錠ごとに必要なロッドです。持っているロッドで開けられる錠が先に並びます。錠や足りないロッドで［追跡］を押すとそこへ案内します。
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod}：{place}
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	チートはサイドバーの一番下にたたまれて
 HELP_START	はじめに
 HELP_STEP_GAME	ゲームを起動してセーブデータをロードしてください。パネルが自動で見つけます。
 HELP_STEP_STATUS	「{gate}」が緑になれば、MODがゲームを読み取っています。
-HELP_STEP_QUEST	「{quests}」タブでクエストを選ぶと、コンパスとミニマップが次の目標へ案内します。
+HELP_STEP_QUEST	「{quests}」ページでクエストの［追跡］を押してください（複数可）。コンパスとミニマップが、それぞれの色で次の目標へ案内します。
 HELP_STEP_ANSWERS	答えは押すまで隠れたままです。見て回るだけではネタバレになりません。
 HELP_KEY_PANEL	このパネルの表示・非表示
 HELP_KEYS_CHANGE_ON_MAP	キーは「{map}」タブで変更できます。
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	このクエストも一緒に追跡します。次の目標�
 QUEST_NOT_HERE	この地域にはなし
 ALSO_FOLLOWED	一緒に追跡中
 QUEST_TAG	クエスト
+TRACK_TOGGLE_HINT	追跡します。地図・コンパス・ゲーム画面にそれぞれの色・経路・リングで表示され、ガイドページでまとめて管理します。もう一度押すと解除します。
+GUIDE_AUTO_CARD	自動案内
+TRACK_IN_FOCUS	注目中
+QUESTS_FOLLOW_NOTE	クエストを押すと必要なものを表示し、［追跡］で案内します。複数を同時に追跡できます。

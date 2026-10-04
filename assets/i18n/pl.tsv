@@ -153,7 +153,7 @@ ON	Wł.
 COMPASS_F	Kompas (F{key})
 TOP_CENTRE_OF_THE_SCREEN	Góra ekranu, środek
 GUIDE	Prowadzenie
-AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Auto-prowadzenie: stale prowadzi do kolejnego celu śledzonego zadania
+AUTO_GUIDE_KEEPS_GUIDING_TO_THE	Prowadzenie automatyczne: prowadzi do następnego celu głównej historii
 WALKING_ROUTE_A_AROUND_TERRAIN_WATER	Faktyczna trasa (A*) z obejściem terenu, wody i ścian; kompas wskazuje następny zakręt
 NEXT_GOAL	Następny cel ▶
 THIS_GOAL_IS_DONE_OR_OUT	Ten cel jest ukończony lub teraz nieosiągalny. Pomiń go (do końca sesji)
@@ -409,7 +409,7 @@ SHOW_KEY_DOORS_AND_ITEM_PLACEMENTS	Pokaż też drzwi na klucz i umieszczanie prz
 UNSOLVED_PUZZLE	Nierozwiązana zagadka
 VAULT_DOOR	Drzwi skarbca
 PUZZLE_NEARBY_THE_ANSWER_IS_IN	Zagadka w pobliżu. Odpowiedź w zakładce Łamigłówki panelu
-RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Przedmioty badawcze: kliknij wiersz Badania w „Kolekcji”, aby iść do najbliższego
+RESEARCH_ITEMS_PRESS_THE_RESEARCH_LINE	Przedmioty badawcze: naciśnij Śledź przy przedmiotach badawczych w „Kolekcji”
 ACHIEVEMENTS	Osiągnięcia: {done}/{all}
 STEAMS_ACHIEVEMENT_CACHE_WAS_NOT_FOUND	Nie znaleziono pamięci podręcznej osiągnięć Steam (Steam/appcache/stats)
 SHOW_UNLOCKED_ONES_TOO	Pokaż też odblokowane
@@ -457,7 +457,7 @@ NOTHING_LEFT_ELSEWHERE	W innych regionach nie zostało nic, o czym mod wie.
 MINUTES_AGO	{count} min temu
 HOURS_AGO	{count} godz. temu
 LYMBIC_LOCKS	Zamki limbiczne
-THE_RODS_EACH_LOCK_TAKES	Pręty, których wymaga każdy zamek. Najpierw te, które twoje pręty już otwierają. Kliknij zamek lub brakujący pręt, by cię tam poprowadzić.
+THE_RODS_EACH_LOCK_TAKES	Pręty, których wymaga każdy zamek. Najpierw te, które twoje pręty już otwierają. Śledź zamek lub brakujący pręt, by tam dotrzeć.
 ROD_HELD	✓ {rod}
 ROD_MISSING	✗ {rod}
 ROD_MISSING_AT	✗ {rod} (miejsce: {place})
@@ -496,7 +496,7 @@ HELP_CHEATS_ARE_FOLDED	Kody są zwinięte na dole paska bocznego. Rozwiń je tam
 HELP_START	Pierwsze kroki
 HELP_STEP_GAME	Uruchom grę i wczytaj zapis. Panel znajdzie go sam.
 HELP_STEP_STATUS	Gdy „{gate}” zmieni kolor na zielony, mod czyta grę.
-HELP_STEP_QUEST	W zakładce „{quests}” wybierz zadanie. Kompas i minimapa poprowadzą cię do kolejnego celu.
+HELP_STEP_QUEST	Na stronie {quests} naciśnij Śledź przy zadaniu (można kilka). Kompas i minimapa prowadzą do każdego następnego celu, każdy we własnym kolorze.
 HELP_STEP_ANSWERS	Odpowiedzi pozostają ukryte, dopóki o nie nie poprosisz. Samo rozglądanie się niczego nie zdradza.
 HELP_KEY_PANEL	Otwórz lub ukryj ten panel
 HELP_KEYS_CHANGE_ON_MAP	Klawisze zmienisz w zakładce „{map}”.
@@ -685,3 +685,7 @@ QUEST_FOLLOW_HINT	Śledź też to zadanie: jego następny cel ma własny kolor, 
 QUEST_NOT_HERE	nic tutaj
 ALSO_FOLLOWED	Śledzone również
 QUEST_TAG	Zadanie
+TRACK_TOGGLE_HINT	Śledź: własny kolor, trasa i pierścień na mapach, kompasie i w grze; strona Przewodnik zbiera wszystkie. Ponownie, by puścić.
+GUIDE_AUTO_CARD	Prowadzenie automatyczne
+TRACK_IN_FOCUS	w skupieniu
+QUESTS_FOLLOW_NOTE	Naciśnij zadanie, by zobaczyć, czego wymaga; Śledź, by cię prowadziło, kilka naraz.
