@@ -13,6 +13,10 @@ that are not loaded around the hero. One run of `tools/survey` (C# .NET 8 + CUE4
 - `Mods\locale\` — the game's text for every culture, plus `names.tsv` and `facts.tsv` (see
   `I18N.md §2`).
 
+A choice puzzle's slot (`…_1SlotPlacementPuzzleCheck_…`, 2026-10-05) also has `expects`: the item
+it counts as right, from its class default's `Item`, or "" for a decoy that keeps the base's
+`ItemPlacementValidation_DummyItem`. Its `items` is only what it accepts (FEATURES.md §7).
+
 Live puzzle answers near the hero are read from memory, not from the survey (`src/read/puzzles.rs`,
 `FEATURES.md §3`, F6). Since §8 the survey runs on its own; nobody needs to type a command.
 

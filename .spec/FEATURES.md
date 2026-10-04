@@ -221,3 +221,63 @@ than four cards (PANEL.md §1).
     700 neutral G03 short; the four weapons are at grade 4.
 - Not built yet from JOURNEY.md: the chest rewards and the timeloop prisms (§4 research), Haze links.
 
+## 7. Choice puzzles: the right slot, a hint at a time (2026-10-05)
+
+Asked: research the ceramic flowers quest and design a puzzle guide for it in the mod, then look
+for puzzles like it and build it.
+
+**The puzzles.** Two in the game ask the player to choose a slot for each item, with decoys among
+them. Both use one blueprint, `Base_1SlotPlacementPuzzleCheck_PassiveInteract_BP`, and nothing else
+does (the survey's 70 other placements take one item at one place: keys, gears, keystones):
+
+- **The Watcher's Nest, Vyssa Hills** (Quest02, "Family Legacy"): four Ceramic Flowers, found on
+  Pentos Algea's coffin, go into 19 flower-shaped grooves. The riddle is "Note - Wall Grooves":
+  "Through his name, his title, the symbol of his Order, and the date of inception of his Order,
+  shall the path be revealed." Vitalis's computer has a research file per set of grooves: 8 under
+  wooden shields in the entrance hall (his title, Warden of Grief), 3 under metal shields in the
+  corridor (the Vigil's coat of arms), 2 flanking the old banner (1513), 4 in the alcoves behind the
+  whiteboard (his name, Algea), and 2 by the armour rack, which the file calls meaningless. All four
+  in, the ground rumbles; the coffin's lever then opens it (Mark of the Betrayed, the Blue Flower
+  Scroll, Gildas Brom). Players get stuck on the scattered clues, the alcove hidden behind the
+  whiteboard, picking the wrong groove of a set, and pulling the lever early or missing the rumble.
+  A flower put in the wrong groove can be taken out again (the user, in play).
+- **The Eye of God, Lake Cynon** (Quest06): four orbs (Gold, Cobalt, Crimson, Emerald) go to eight
+  statues of the Order's founders. "Scroll - Failsafe" names eight keepers; the orbs belong to the
+  keepers of Ecstasy, Grief, Rage and Terror, which their descriptions tell (great bliss, sorrow,
+  anger, fear). The statues of Vigilance, Admiration, Loathing and Amazement are decoys.
+
+Sources: Fextralife (Ceramic Flower, Scroll - Failsafe, the orbs), TheGamer, DualShockers,
+NerdStash, BaseDotaku, Game8, Vandal; hellisus.org contradicts all of them and was not used.
+
+**What a slot counts as right.** The slot's placement `Solution` is only what it accepts: every orb
+at each statue, a stand-in (Bronze Cup) at each wrong groove, which the panel used to show as the
+answer. The answer is the class default's `Item`: the base sets `ItemPlacementValidation_DummyItem`,
+the right slots' classes set the flower or their orb, the decoys keep the dummy. The survey writes it
+as the puzzle's `expects` (SURVEY.md). The family home's picture holders (Quest01) take any of the
+three photos and check nothing per slot: the door's code from the photos' car numbers (32-17-13) is
+the puzzle there, and they are left as they were.
+
+**Grouping** (`src/guide/slots.rs`): choice slots within 250 m of each other in a world are one
+puzzle; within it, slots within 10 m and 1.5 m of height are one set (one wall's grooves; a floor up
+is another). The Watcher's Nest comes out as sets of 8, 4, 3, 2 and 2 (one of the pairs with no right
+slot); the Eye of God as eight single statues, four with no right slot.
+
+**State.** What a slot holds is read live while it is loaded (`ItemPlacementActionComponent.Slots`
+→ `ItemPlacementSlotComponent.Item`, `puzzles.rs`), matched to the survey's slot within 1 m, and
+remembered through the run. A set is done (the right item in the right slot, nothing in its decoys),
+wrong (something in a decoy, or the wrong orb), open, not seen yet, or one where nothing goes. The
+save holds each slot's state only as rune bytes, not read.
+
+**The card** (Puzzles page, across the page, the Settings page's "answers" granted as for the whole
+page): each puzzle with its sets placed right out of those with an answer, and that a wrong
+placement can be taken out again; on asking, the game's riddle (the note or scroll, its inline
+images dropped); then per set, its name (the research file's title, or "Spot n"), slots, distance
+and state, with two steps on asking: the game's clue for that set (the research file; the orb
+statues have none, the scroll covers them) and the answer (the right slot and its item, or that
+nothing goes there). A set with no right slot reads like the others until its answer is asked for,
+so the list does not give the decoys away. The line guides to the set, or once its answer is told,
+to the right slot. With all four flowers in, it says to go back and pull the tomb's lever.
+
+Not done: map markers for the sets, a line on the Now page when the player holds the items near the
+puzzle, and the Eye of God's per-statue keeper names (the decoys' keepers are not in the data).
+

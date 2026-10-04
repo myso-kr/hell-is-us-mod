@@ -19,6 +19,18 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   is not drawn again: about 40 % less work a frame, and next to none while the hero stands.
 - `doctor profile [seconds]` shows where the panel's reading of the game spends its time.
 
+### Added
+
+- Choice puzzles on the Puzzles page: the Watcher's Nest's ceramic flowers and the Eye of God's
+  orbs, each with its sets of slots and how they stand (placed right, not yet, something in a wrong
+  slot), the game's riddle, and per set the game's own clue and then the right slot, one step at a
+  time. The wrong slots no longer show a stand-in item as their answer.
+
+### Fixed
+
+- A person is pinned where they are: Victor Gaz, already at the forge in Jova, was still pinned where
+  he is first met, and some people were listed twice.
+
 ## 0.3.0 — 2026-10-04
 
 Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
