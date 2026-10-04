@@ -207,6 +207,43 @@ fn doctor(opt: &Options) -> R {
             .collect();
         println!("        {} · {}: [{}]", p.world, p.items.join(", "), sets.join(" "));
     }
+    if let Ok(w) = a.chain().and_then(|c| c.world(&a.game, &a.anchors)) {
+        println!("        world {w}");
+    }
+    // The choice slots loaded near the hero as the panel reads them: the actor's place,
+    // its slot's (the groove), and what the slot holds. The quest pass finds them, so the
+    // engine runs a few seconds first, only with one within 60 m.
+    let near = a.pose().ok().is_some_and(|(h, _)| {
+        a.catalogue()
+            .iter()
+            .any(|(p, _)| p.choice.is_some() && (p.at[0] - h[0] as f32).hypot(p.at[1] - h[1] as f32) < 6_000.0)
+    });
+    if let Some(mut engine) = near.then(hiumod::engine::Engine::new).and_then(Result::ok) {
+        let until = std::time::Instant::now() + Duration::from_secs(12);
+        let mut snap = engine.step();
+        while std::time::Instant::now() < until && !snap.puzzles.iter().any(|p| p.class.contains("PuzzleCheck")) {
+            std::thread::sleep(Duration::from_millis(100));
+            snap = engine.step();
+        }
+        for p in snap.puzzles.iter().filter(|p| p.class.contains("PuzzleCheck")) {
+            let short = p.class.split('_').next().unwrap_or("");
+            let at = |v: &[f32; 3]| format!("{:.0},{:.0},{:.0}", v[0], v[1], v[2]);
+            let slots: Vec<String> = p.slot_at.iter().map(at).collect();
+            println!("        {short} at {} slot {:?} holds {:?}", at(&p.at), slots, p.placed);
+        }
+    }
+    // The choice slots loaded near the hero, as the panel reads them: where, and what
+    // each of their slots holds.
+    if let Ok((h, _)) = a.pose() {
+        for p in a
+            .puzzles([h[0] as f32, h[1] as f32, h[2] as f32], 4_000.0)
+            .iter()
+            .filter(|p| p.class.contains("PuzzleCheck"))
+        {
+            let short = p.class.split('_').next().unwrap_or("");
+            println!("        {short} at {:.0},{:.0},{:.0} holds {:?}", p.at[0], p.at[1], p.at[2], p.placed);
+        }
+    }
 
     let s = match a.session() {
         Ok(s) => s,
