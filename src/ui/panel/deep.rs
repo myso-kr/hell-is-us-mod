@@ -548,12 +548,14 @@ impl Panel {
                         crate::ui::svg::sort(ui, Sub::Puzzle, 18.0);
                     };
                     let hints = &mut self.slot_hints;
+                    let mut answered = false;
                     let pressed = tw::line(t, on, icon, RichText::new(head).color(colour), |t| {
                         if told == 0 && file.is_some() && w(t, |ui| ui.small_button(tr!("SLOT_CLUE"))).clicked() {
                             hints.insert(s.id, 1);
                         }
                         if told < 2 && w(t, |ui| ui.small_button(tr!("SHOW_ANSWER"))).clicked() {
                             hints.insert(s.id, 2);
+                            answered = true;
                         }
                         if told > 0 && w(t, |ui| ui.small_button(tr!("HIDE"))).clicked() {
                             hints.remove(&s.id);
@@ -587,7 +589,9 @@ impl Panel {
                         };
                         text(t, RichText::new(format!("    {line}")).color(OK));
                     }
-                    if pressed {
+                    // Asking for the answer guides to it at once: the ring in the game's view
+                    // marks the guide's target, and a second press on the line was missed.
+                    if pressed || answered && right.is_some() {
                         // To the set; once its answer is told, to the right slot itself.
                         let at = right.filter(|_| told >= 2).map_or(s.at(), |r| r.groove);
                         let x = crate::survey::Need {
