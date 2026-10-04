@@ -33,8 +33,10 @@ pub fn client(hwnd: windows_sys::Win32::Foundation::HWND) -> Option<(i32, i32, i
 }
 
 /// Where `p` (cm) is in a `w` × `h` view from `cam`, in pixels from the top left, and how
-/// far from the camera; `None` behind it. Unreal's camera looks along its X, Y right, Z up,
-/// and its field of view is the horizontal one.
+/// far from the camera; `None` behind it. Unreal's camera looks along its X, Y right, Z up.
+/// Its field of view is the horizontal one of a 16:9 view, and the game keeps the vertical
+/// one (a wider screen sees more to the sides): on a 3440 × 1440 screen, taking it as the
+/// screen's own horizontal put the rings a third too far from the middle.
 pub fn project(cam: &Camera, p: [f32; 3], w: f32, h: f32) -> Option<(f32, f32, f32)> {
     let (pitch, yaw, roll) = (cam.rotation[0].to_radians(), cam.rotation[1].to_radians(), cam.rotation[2].to_radians());
     let (sp, cp, sy, cy, sr, cr) = (pitch.sin(), pitch.cos(), yaw.sin(), yaw.cos(), roll.sin(), roll.cos());
@@ -48,7 +50,7 @@ pub fn project(cam: &Camera, p: [f32; 3], w: f32, h: f32) -> Option<(f32, f32, f
     if x < 10.0 {
         return None;
     }
-    let focal = (w as f64 / 2.0) / (cam.fov as f64 / 2.0).to_radians().tan();
+    let focal = (h as f64 * 16.0 / 9.0 / 2.0) / (cam.fov as f64 / 2.0).to_radians().tan();
     let sx = w as f64 / 2.0 + y / x * focal;
     let sy = h as f64 / 2.0 - z / x * focal;
     let far = (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt();
@@ -84,6 +86,15 @@ mod tests {
         assert!((x - 960.0).abs() < 0.5 && (y - 540.0).abs() < 0.5, "{x} {y}");
         assert!((far - 1000.0).abs() < 0.5);
         assert!(project(&cam(0.0, 0.0), [-1000.0, 0.0, 0.0], 1920.0, 1080.0).is_none());
+    }
+
+    #[test]
+    fn an_ultrawide_screen_keeps_the_vertical_view() {
+        // Measured in the Watcher's Nest on a 3440 × 1440 screen: the right groove of the
+        // corridor's three showed at about (2208, 780).
+        let cam = Camera { at: [-11501.0, 22246.0, 2803.0], rotation: [0.7, 135.6, 0.0], fov: 70.0 };
+        let (x, y, _) = project(&cam, [-12449.0, 22782.0, 2785.0], 3440.0, 1440.0).unwrap();
+        assert!((x - 2208.0).abs() < 15.0 && (y - 780.0).abs() < 15.0, "{x} {y}");
     }
 
     #[test]
