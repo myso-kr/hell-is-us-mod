@@ -406,10 +406,15 @@ impl Panel {
                             )
                         });
                         w(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
-                        if w(t, |ui| ui.selectable_label(state.target == Some(id), tr!("GUIDE"))).clicked() {
-                            state.target = Some(id);
-                            state.chosen = true;
-                            state.route = true;
+                        if w(t, |ui| ui.selectable_label(state.is_followed(id), tr!("GUIDE"))).clicked() {
+                            state.follow(crate::guide::track::Track {
+                                id,
+                                world: crate::survey::Survey::world_of(wd).to_string(),
+                                at: m.at,
+                                label: m.title(),
+                                place: false,
+                                colour: 0,
+                            });
                         }
                         if w(t, |ui| ui.small_button("×")).on_hover_text(tr!("REMOVE_THIS_PIN")).clicked() {
                             remove = Some(i);

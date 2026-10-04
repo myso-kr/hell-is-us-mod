@@ -407,14 +407,25 @@ pub fn draw_map(
     icons: Option<&Icons>,
     footprints: &[Footprint],
     goals: &[Goal],
-    route: &Path,
+    routes: &[Drawn],
     relief: Option<&Relief>,
 ) {
     let r = draw_ground(cv, state, view, relief, footprints);
     if state.dots {
         dots(cv, cv.h);
     }
-    draw_above(cv, state, world, view, things, icons, goals, route, r);
+    draw_above(cv, state, world, view, things, icons, goals, routes, r);
+}
+
+/// A goal followed (guide/track.rs), as the maps draw it: its route (empty with routes
+/// off: a straight dashed line then), its colour (`None`: its tier's, the auto guide's
+/// pick) and whether it is in focus (drawn bolder, larger).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Drawn {
+    pub id: u64,
+    pub path: Path,
+    pub colour: Option<[u8; 3]>,
+    pub focus: bool,
 }
 
 /// The map's radius on a canvas (px): a full-screen map's circle leaves `FULL_FILL` of the
@@ -704,7 +715,7 @@ pub fn draw_above(
     things: &[Thing],
     icons: Option<&Icons>,
     goals: &[Goal],
-    route: &Path,
+    routes: &[Drawn],
     r: f32,
 ) {
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
@@ -838,17 +849,22 @@ pub fn draw_above(
         }
     }
 
-    // Goals: diamonds in their tier's colour; the guide's target larger, with a line
-    // from the hero to it — or an arrow on the rim when it is off the map.
-    for g in goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || Some(g.id) == state.target) {
+    // Goals: diamonds in their tier's colour; each followed larger, in its own colour,
+    // with its route from the hero (the one in focus bolder) — or an arrow on the rim
+    // when it is off the map.
+    let followed = |id: u64| routes.iter().find(|d| d.id == id);
+    for g in goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || followed(g.id).is_some()) {
         // A map pin guided to: its route is drawn here, the pin itself above.
         let pin = crate::minimap::is_pin(g.id);
-        let target = Some(g.id) == state.target;
-        let [cr, cg, cb] = g.tier.rgb();
+        let drawn = followed(g.id);
+        let target = drawn.is_some();
+        let route = drawn.map(|d| &d.path).filter(|p| p.points.len() >= 2);
+        let (outer, inner) = if drawn.is_some_and(|d| d.focus) { (4.5, 2.5) } else { (3.2, 1.6) };
+        let [cr, cg, cb] = drawn.and_then(|d| d.colour).unwrap_or(g.tier.rgb());
         let colour = Rgba(cr, cg, cb, 255);
         let p = view.project(g.at);
         let d = (p.0 * p.0 + p.1 * p.1).sqrt();
-        if target && route.points.len() >= 2 {
+        if let Some(route) = route {
             // The walking route: a line through its points, cut at the rim. Legs that go
             // through an obstacle — no way in was found — are dashed in yellow.
             let pts: Vec<(f32, f32)> = route.points.iter().map(|q| view.project([q[0], q[1], 0.0])).collect();
@@ -884,13 +900,13 @@ pub fn draw_above(
                     while t < len {
                         let e = (t + 5.0).min(len);
                         let (p0, p1) = ((cx + a.0 + ux * t, cy + a.1 + uy * t), (cx + a.0 + ux * e, cy + a.1 + uy * e));
-                        cv.line(p0, p1, 4.5, faded(Rgba(0, 0, 0, 160), lines));
-                        cv.line(p0, p1, 2.5, faded(Rgba(255, 220, 60, 235), lines));
+                        cv.line(p0, p1, outer, faded(Rgba(0, 0, 0, 160), lines));
+                        cv.line(p0, p1, inner, faded(Rgba(255, 220, 60, 235), lines));
                         t += 9.0;
                     }
                 } else {
-                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 4.5, faded(Rgba(0, 0, 0, 160), lines));
-                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), 2.5, faded(Rgba(cr, cg, cb, 235), lines));
+                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), outer, faded(Rgba(0, 0, 0, 160), lines));
+                    cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), inner, faded(Rgba(cr, cg, cb, 235), lines));
                 }
             }
         } else if target {
@@ -1158,7 +1174,7 @@ mod tests {
         draw_compass(
             &mut cv,
             0.0,
-            &[Pin { bearing: 45.0, rgb: [255, 0, 255], target: true, distance_m: 8.0, dz_m: -12.0 }],
+            &[Pin { bearing: 45.0, rgb: [255, 0, 255], target: true, followed: true, distance_m: 8.0, dz_m: -12.0 }],
         );
         let ppd = (400.0 / 2.0 - 22.0) / COMPASS_SPAN;
         let x = (200.0 + 45.0 * ppd) as usize;
@@ -1218,13 +1234,13 @@ mod tests {
         let ceiling =
             crate::geometry::footprint([0.0, 0.0, 900.0], 0.0, [1.0; 3], [0.0; 3], [400.0, 400.0, 20.0]).unwrap();
         let mut cv = Canvas::new(200, 200);
-        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling], &[], &Path::default(), None);
+        draw_map(&mut cv, &s, "W", &v, &[], None, &[wall, ceiling], &[], &[], None);
         // The wall at 10 m north, 0.05 px/cm: 50 px above the centre.
         assert!((cv.px[50 * 200 + 100] >> 16) & 0xFF > 60, "wall drawn");
         // Beside the hero (10 px left), where only the ceiling would be.
         let bg = cv.px[100 * 200 + 85];
         let mut plain = Canvas::new(200, 200);
-        draw_map(&mut plain, &s, "W", &v, &[], None, &[], &[], &Path::default(), None);
+        draw_map(&mut plain, &s, "W", &v, &[], None, &[], &[], &[], None);
         assert_eq!(bg, plain.px[100 * 200 + 85], "ceiling not drawn");
     }
 
@@ -1251,7 +1267,7 @@ mod tests {
             Some(&icons),
             &[],
             &[],
-            &Path::default(),
+            &[],
             None,
         );
         assert!(cv.px[70 * 200 + 100] >> 24 > 200, "item icon 30 px above the centre");
@@ -1282,7 +1298,7 @@ mod tests {
             None,
             &[],
             &[],
-            &Path::default(),
+            &[],
             None,
         );
         assert_eq!(cv.px[100 * 200 + 100] >> 24, 255, "hero arrow");
@@ -1298,7 +1314,7 @@ mod tests {
             None,
             &[],
             &[],
-            &Path::default(),
+            &[],
             None,
         );
         assert_ne!((cv.px[70 * 200 + 100] >> 16) & 0xFF, 235, "layer off, not drawn");

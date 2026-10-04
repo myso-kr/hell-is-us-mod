@@ -10,9 +10,12 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-/// Work the route out again after this long, or when the hero has moved this far (cm).
+/// Work the route out again after this long, or when the hero has moved this far (cm);
+/// a route not in focus (guide/track.rs) the slower pace: only one is looked at closely.
 const ROUTE_EVERY: Duration = Duration::from_secs(1);
 const ROUTE_MOVED: f32 = 500.0;
+const SLOW_EVERY: Duration = Duration::from_secs(3);
+const SLOW_MOVED: f32 = 1500.0;
 /// The compass points at the route this far ahead (cm), not at the goal itself.
 pub const ROUTE_AHEAD: f32 = 800.0;
 /// A goal's actor stands about this far above the floor it is on (cm).
@@ -42,6 +45,7 @@ impl Route {
         trail: impl FnOnce() -> Vec<[f32; 2]>,
         scene: &Arc<Scene>,
         nav: &Arc<crate::navmesh::NavMesh>,
+        slow: bool,
     ) {
         let Some(g) = goal else {
             let blocked = std::mem::take(&mut self.blocked);
@@ -49,7 +53,8 @@ impl Route {
             return;
         };
         let moved = ((p[0] - self.from[0]).powi(2) + (p[1] - self.from[1]).powi(2)).sqrt();
-        let due = self.goal != Some(g.id) || moved > ROUTE_MOVED || self.at.is_none_or(|t| t.elapsed() >= ROUTE_EVERY);
+        let (every, far) = if slow { (SLOW_EVERY, SLOW_MOVED) } else { (ROUTE_EVERY, ROUTE_MOVED) };
+        let due = self.goal != Some(g.id) || moved > far || self.at.is_none_or(|t| t.elapsed() >= every);
         if self.pending.as_ref().is_some_and(|h| h.is_finished()) {
             if let Ok((path, id)) = self.pending.take().unwrap().join() {
                 // Whether it can be walked to at all: a route that has to go through

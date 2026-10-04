@@ -53,7 +53,7 @@ impl Panel {
                         let sort = crate::survey::collect_sort(c.label);
                         if tw::pick_with(
                             t,
-                            state.target == Some(x.id),
+                            state.is_followed(x.id),
                             |ui| {
                                 ui.add_space(14.0);
                                 crate::ui::svg::sort(ui, sort, 16.0);
@@ -145,7 +145,7 @@ impl Panel {
                 let far = here.map_or(String::new(), |h| crate::raster::span(h, x.at));
                 if tw::pick_with(
                     t,
-                    state.target == Some(x.id),
+                    state.is_followed(x.id),
                     |ui| {
                         crate::ui::svg::sort(ui, crate::actors::Sub::Npc, 16.0);
                     },

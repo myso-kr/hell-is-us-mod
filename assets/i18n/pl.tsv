@@ -673,3 +673,9 @@ SLOT_REMOVABLE	Źle włożony przedmiot można wyjąć.
 SLOT_ALL_DONE	Wszystko na miejscu.
 SLOT_AFTER_FLOWERS	Potem wróć do grobowca i pociągnij dźwignię.
 SLOT_FROM_LEFT	patrząc na nie, {n}. z {all} od lewej
+TRACKING	Śledzone ({n}/{max})
+TRACK_FOCUS	Skup
+TRACK_FOCUS_HINT	Odległość na kompasie, śledzenie zadań i klawisz następnego celu dotyczą tego miejsca.
+TRACK_DROP	Puść
+TRACK_DROP_ALL	Puść wszystkie
+TRACK_HINT	Naciśnij miejsce tutaj lub na innej stronie, aby też je śledzić: do {max}, każde we własnym kolorze na mapach, kompasie i w grze.

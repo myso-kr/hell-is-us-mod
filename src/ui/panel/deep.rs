@@ -376,7 +376,7 @@ impl Panel {
                     crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0);
                 };
                 let head = RichText::new(head).color(if *solved { DIM } else { super::super::theme::TEXT }).small();
-                let on = (!*solved).then(|| state.target == Some(id));
+                let on = (!*solved).then(|| state.is_followed(id));
                 if tw::line(t, on, icon, head, |t| reveal(t, &mut self.revealed, id, tr!("SHOW_ANSWER"))) {
                     let x = crate::survey::Need {
                         world: p.world.clone(),
@@ -443,7 +443,7 @@ impl Panel {
                     crate::ui::svg::sort(ui, puzzle_sort(p.kind), 18.0);
                 };
                 let head = RichText::new(head).color(if p.solved { DIM } else { super::super::theme::TEXT });
-                let on = (!p.solved).then(|| state.target == Some(p.id));
+                let on = (!p.solved).then(|| state.is_followed(p.id));
                 if tw::line(t, on, icon, head, |t| reveal(t, &mut self.revealed, p.id, tr!("SHOW_ANSWER"))) {
                     let x = crate::survey::Need {
                         world: world.clone(),
@@ -543,7 +543,7 @@ impl Panel {
                         _ => super::super::theme::TEXT,
                     };
                     let id = s.id | 1 << 63;
-                    let on = (st != State::Done).then(|| state.target == Some(id));
+                    let on = (st != State::Done).then(|| state.is_followed(id));
                     let icon = |ui: &mut egui::Ui| {
                         crate::ui::svg::sort(ui, Sub::Puzzle, 18.0);
                     };
@@ -642,7 +642,7 @@ impl Panel {
                 let shut = v.state != VaultState::Opened;
                 let colour = if shut { super::super::theme::TEXT } else { DIM };
                 let door = v.door.clone().filter(|_| shut);
-                let on = door.as_ref().map(|_| state.target == Some(id));
+                let on = door.as_ref().map(|_| state.is_followed(id));
                 let revealed = &mut self.revealed;
                 let end = |t: &mut Tui| {
                     tw::chip(t, status, tone);
@@ -720,7 +720,7 @@ impl Panel {
                         })
                     });
                     let id = near.map(|at| id_of(&format!("hollow{at:?}")));
-                    let on = id.map(|id| state.target == Some(id));
+                    let on = id.map(|id| state.is_followed(id));
                     let beaten = h.all - h.left;
                     let end = |t: &mut Tui| w(t, |ui| tw::meter(ui, Some(56.0), beaten, h.all));
                     if tw::line(t, on, icon, RichText::new(line).color(colour), end) {
@@ -786,7 +786,7 @@ impl Panel {
                             tw::chip(t, tr!("OPENS_NOW"), tw::Tone::Ok);
                         }
                     };
-                    if tw::line(t, Some(state.target == Some(l.id)), icon, head, end) {
+                    if tw::line(t, Some(state.is_followed(l.id)), icon, head, end) {
                         let x = crate::survey::Need {
                             world: l.world.clone(),
                             id: l.id,
@@ -818,7 +818,7 @@ impl Panel {
                             ui.allocate_exact_size(egui::vec2(18.0, 1.0), egui::Sense::hover());
                         };
                         let colour = if source.is_some() { super::super::theme::TEXT } else { DIM };
-                        let on = source.map(|s| state.target == Some(s.id));
+                        let on = source.map(|s| state.is_followed(s.id));
                         if tw::line(t, on, indent, RichText::new(line).color(colour).small(), |_| {}) {
                             if let Some(s) = source {
                                 guide_to(state, &goals, s);

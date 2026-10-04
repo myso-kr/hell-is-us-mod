@@ -9,8 +9,11 @@ use super::canvas::{Canvas, Rgba};
 pub struct Pin {
     pub bearing: f32,
     pub rgb: [u8; 3],
-    /// The guide's target: drawn larger, with its distance.
+    /// What is in focus (guide/track.rs): drawn larger, with its distance.
     pub target: bool,
+    /// Followed, not in focus: a diamond in its own colour, and an arrow at the strip's
+    /// end when it is off it.
+    pub followed: bool,
     pub distance_m: f32,
     /// How far above (+) or below (−) the hero it is (m).
     pub dz_m: f32,
@@ -170,6 +173,15 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
                 // A thread from the band down to the pill.
                 cv.line((x, bar_bottom + 1.0), (x, bar_bottom + 5.0), 1.0, faded(ACCENT, 0.8 * a));
                 target_label(cv, x, bar_bottom + 12.0, p);
+            } else if p.followed {
+                // A smaller diamond in its own colour, on a dark halo.
+                let s = 5.0 * k;
+                let diamond = |s: f32| [(x, y - s), (x + s, y), (x, y + s), (x - s, y)];
+                cv.polygon(&diamond(s + 2.2), faded(WASH, 1.2 * a));
+                cv.polygon(&diamond(s), Rgba(r, g, b, 255));
+                if p.dz_m.abs() >= FLOOR_DZ {
+                    floor_tick(cv, x + s + 6.0, y, p.dz_m, a);
+                }
             } else {
                 // A dot, quieter with distance, on a faint dark halo for bright scenes.
                 let s = 3.0 * k;
@@ -187,6 +199,13 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
             cv.triangle(chevron(8.5), faded(WASH, 1.2));
             cv.triangle(chevron(6.5), ACCENT);
             target_label(cv, x - side * 4.0, bar_bottom + 12.0, p);
+        } else if p.followed {
+            // Behind or beside: a small chevron in its own colour at the nearer end.
+            let side = d.signum();
+            let x = cx + side * (w / 2.0 - 30.0);
+            let chevron = |s: f32| [(x + side * s, y), (x - side * s * 0.4, y - s), (x - side * s * 0.4, y + s)];
+            cv.triangle(chevron(6.5), faded(WASH, 1.2));
+            cv.triangle(chevron(4.8), Rgba(r, g, b, 255));
         }
     }
 }

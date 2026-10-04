@@ -1,4 +1,5 @@
-//! The guide page: the guide's target and why, the tiers it may pick from, its switches
+//! The guide page: what is in focus and why, everything followed (the auto guide's pick
+//! and the places chosen, guide/track.rs), the tiers the guide may pick from, its switches
 //! (compass included), and every place with something new.
 
 use super::super::theme::{
@@ -22,11 +23,19 @@ impl Panel {
                 list.iter().filter(|x| !x.done && Some(&x.world) != here.as_ref()).count()
             })
             .unwrap_or(0);
-        let uncertain = state.route && *self.shared.route_uncertain.lock().unwrap();
-        let target = state.target.and_then(|id| goals.iter().find(|g| g.id == id)).cloned();
+        let uncertain: std::collections::HashSet<u64> =
+            if state.route { self.shared.route_uncertain.lock().unwrap().clone() } else { Default::default() };
+        let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
+        // The goals, and the places followed that are no goal (a groove, a lock).
+        let mut all: Vec<crate::goals::Goal> = goals.iter().cloned().collect();
+        all.extend(state.place_goals(&goals, &world));
+        let focus = state.focused();
+        let target = focus.and_then(|id| all.iter().find(|g| g.id == id)).cloned();
+        let by_hand = focus.is_some_and(|f| state.tracks.iter().any(|x| x.id == f));
 
         card(t, tr!("GUIDE"), |t| {
-            // The target first, in large type: what the guide points at, how far, and why.
+            // What is in focus first, in large type: what the compass points at, how far,
+            // and why.
             well(t, |t| match &target {
                 Some(g) => {
                     t.style(tw::row(BLOCK)).add(|t| {
@@ -37,13 +46,15 @@ impl Panel {
                                 ui.add(egui::Label::new(name).wrap()).on_hover_text(&g.detail);
                             });
                             t.style(tw::wrap(TIGHT)).add(|t| {
-                                let (mode, tone, why) = if state.chosen {
+                                let (mode, tone, why) = if by_hand {
+                                    (tr!("GUIDE_BY_HAND"), tw::Tone::Accent, tr!("TRACK_FOCUS_HINT"))
+                                } else if state.held {
                                     (tr!("GUIDE_BY_HAND"), tw::Tone::Accent, tr!("PICKED_BY_HAND_KEPT_UNTIL_IT"))
                                 } else {
                                     (tr!("GUIDE_AUTO"), tw::Tone::Quiet, tr!("AUTO_GUIDE_KEEPS_GUIDING_TO_THE"))
                                 };
                                 w(t, |ui| tw::pill(ui, mode, tone).on_hover_text(why));
-                                if uncertain {
+                                if uncertain.contains(&g.id) {
                                     w(t, |ui| {
                                         tw::pill(ui, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait)
                                             .on_hover_text(tr!("NO_WALKING_ROUTE_IT_MAY_BE"))
@@ -84,34 +95,83 @@ impl Panel {
                 }
             });
 
-            // The actions, normal size, and what was skipped with its undo.
-            if target.is_some() || !state.skipped.is_empty() {
-                t.style(tw::wrap(INLINE)).add(|t| {
-                    if let Some(g) = &target {
-                        if w(t, |ui| ui.button(tr!("NEXT_GOAL")))
+            // Everything followed: the auto guide's pick, then the places chosen, each in
+            // its colour, with its distance; one in focus.
+            let followed = state.followed();
+            block(t, |ui| {
+                tw::group_heading(
+                    ui,
+                    &trf!("TRACKING", n = state.tracks.len(), max = crate::guide::track::MAX),
+                    followed.len(),
+                )
+            });
+            if state.tracks.is_empty() {
+                note(t, trf!("TRACK_HINT", max = crate::guide::track::MAX));
+            }
+            for f in &followed {
+                let Some(g) = all.iter().find(|g| g.id == f.id) else { continue };
+                let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
+                let auto = f.colour.is_none();
+                t.style(tw::row(INLINE)).add(|t| {
+                    w(t, |ui| match f.colour {
+                        Some(c) => dot(ui, c),
+                        None => {
+                            crate::ui::svg::tier(ui, g.tier, 14.0);
+                        }
+                    });
+                    let colour = if f.focus { TITLE } else { TEXT };
+                    let mut name = g.label.clone();
+                    if auto {
+                        name = format!("{} · {name}", tr!("GUIDE_AUTO"));
+                    }
+                    t.style(tw::grow(tw::row(TIGHT))).add(|t| {
+                        block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).truncate()));
+                    });
+                    if uncertain.contains(&g.id) {
+                        tw::chip(t, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait);
+                    }
+                    block(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
+                    if !f.focus
+                        && w(t, |ui| ui.small_button(tr!("TRACK_FOCUS")))
+                            .on_hover_text(tr!("TRACK_FOCUS_HINT"))
+                            .clicked()
+                    {
+                        state.focus = (!auto).then_some(f.id);
+                    }
+                    if auto {
+                        if w(t, |ui| ui.small_button(tr!("NEXT_GOAL")))
                             .on_hover_text(tr!("THIS_GOAL_IS_DONE_OR_OUT"))
                             .clicked()
                         {
                             state.skipped.insert(g.id);
-                            state.target = None;
-                            state.chosen = false;
-                            state.guide_auto = true;
+                            state.auto = None;
+                            state.held = false;
                         }
-                        if state.chosen
-                            && w(t, |ui| ui.button(tr!("BACK_TO_AUTO")))
+                        if state.held
+                            && w(t, |ui| ui.small_button(tr!("BACK_TO_AUTO")))
                                 .on_hover_text(tr!("PICKED_BY_HAND_KEPT_UNTIL_IT"))
                                 .clicked()
                         {
-                            state.chosen = false;
-                            state.target = None;
-                            state.guide_auto = true;
+                            state.held = false;
+                            state.auto = None;
                         }
+                    } else if w(t, |ui| ui.small_button(tr!("TRACK_DROP"))).clicked() {
+                        state.unfollow(f.id);
+                    }
+                });
+            }
+
+            // Letting go of all, and what was skipped with its undo.
+            if !state.tracks.is_empty() || !state.skipped.is_empty() {
+                t.style(tw::wrap(INLINE)).add(|t| {
+                    if !state.tracks.is_empty() && w(t, |ui| ui.button(tr!("TRACK_DROP_ALL"))).clicked() {
+                        state.unfollow_all();
                     }
                     if !state.skipped.is_empty() {
                         tw::chip(t, trf!("GOALS_SKIPPED", count = state.skipped.len()), tw::Tone::Quiet);
                         if w(t, |ui| ui.button(tr!("UNDO"))).clicked() {
                             state.skipped.clear();
-                            state.target = None;
+                            state.auto = None;
                         }
                     }
                 });
@@ -132,6 +192,7 @@ impl Panel {
     /// Every place with something new, nearest first: press to guide there.
     pub(super) fn goals_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
         let dist = |g: &crate::goals::Goal| {
             here.map_or(f32::MAX, |h| ((g.at[0] - h[0]).powi(2) + (g.at[1] - h[1]).powi(2)).sqrt() / 100.0)
@@ -163,9 +224,8 @@ impl Panel {
                         }
                         for g in list {
                             let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
-                            if place_row(ui, g, &far, state.target == Some(g.id)).clicked() {
-                                state.target = Some(g.id);
-                                state.chosen = true;
+                            if place_row(ui, g, &far, state.is_followed(g.id)).clicked() {
+                                follow_goal(state, g, &world);
                             }
                         }
                     }
@@ -173,6 +233,12 @@ impl Panel {
             });
         });
     }
+}
+
+/// A followed place's colour, as a dot.
+fn dot(ui: &mut egui::Ui, c: [u8; 3]) {
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(14.0, 14.0), egui::Sense::hover());
+    ui.painter().circle_filled(rect.center(), 5.5, egui::Color32::from_rgb(c[0], c[1], c[2]));
 }
 
 /// A quiet inset inside a card (a fill, no edge) that holds the page's main figure.

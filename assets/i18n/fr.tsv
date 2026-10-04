@@ -673,3 +673,9 @@ SLOT_REMOVABLE	Un objet mal placé peut être retiré.
 SLOT_ALL_DONE	Tout est en place.
 SLOT_AFTER_FLOWERS	Retournez ensuite au tombeau et tirez le levier.
 SLOT_FROM_LEFT	de face, le {n}e sur {all} en partant de la gauche
+TRACKING	Suivis ({n}/{max})
+TRACK_FOCUS	Cibler
+TRACK_FOCUS_HINT	La distance de la boussole, le suivi de quête et la touche d'objectif suivant portent sur celui-ci.
+TRACK_DROP	Lâcher
+TRACK_DROP_ALL	Tout lâcher
+TRACK_HINT	Appuyez sur un lieu ici ou sur une autre page pour le suivre aussi : jusqu'à {max}, chacun de sa couleur sur les cartes, la boussole et en jeu.

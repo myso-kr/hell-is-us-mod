@@ -143,7 +143,7 @@ impl Panel {
                 }
             });
             // The guide's goal now, and how far.
-            let goal = state.target.and_then(|id| goals.iter().find(|g| g.id == id));
+            let goal = state.focused().and_then(|id| goals.iter().find(|g| g.id == id));
             match (goal, here) {
                 (Some(g), Some(h)) => {
                     let far = crate::raster::span(h, g.at);
@@ -185,7 +185,7 @@ impl Panel {
                 let talk = trf!("TALK_GOAL", npc = "");
                 let who = n.label.strip_prefix(talk.as_str()).unwrap_or(&n.label);
                 let line = trf!("HAND_OVER_LINE", what = n.what, who = who, far = far(n.at));
-                if tw::pick(t, state.target == Some(n.id), line) {
+                if tw::pick(t, state.is_followed(n.id), line) {
                     guide_to(state, &goals, n);
                 }
             }
@@ -194,7 +194,7 @@ impl Panel {
             opens.sort_by(|a, b| dist(a.at).total_cmp(&dist(b.at)));
             for l in opens.iter().take(2) {
                 any = true;
-                if tw::pick(t, state.target == Some(l.id), trf!("LOCK_OPENS_NOW_LINE", far = far(l.at))) {
+                if tw::pick(t, state.is_followed(l.id), trf!("LOCK_OPENS_NOW_LINE", far = far(l.at))) {
                     let x = crate::survey::Need {
                         world: l.world.clone(),
                         id: l.id,
@@ -210,9 +210,8 @@ impl Panel {
             near.sort_by(|a, b| a.tier.cmp(&b.tier).then(dist(a.at).total_cmp(&dist(b.at))));
             for g in near.iter().take(3) {
                 any = true;
-                if tw::pick(t, state.target == Some(g.id), format!("{} ({})", g.label, far(g.at))) {
-                    state.target = Some(g.id);
-                    state.chosen = true;
+                if tw::pick(t, state.is_followed(g.id), format!("{} ({})", g.label, far(g.at))) {
+                    follow_goal(state, g, &world);
                 }
             }
             if !any {
@@ -272,8 +271,8 @@ impl Panel {
                         let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
                         if tw::pick(t, state.quest.as_deref() == Some(d.key.as_str()), label) && d.started {
                             state.quest = Some(d.key.clone());
-                            state.target = None;
-                            state.chosen = false;
+                            state.auto = None;
+                            state.held = false;
                             state.guide_auto = true;
                             state.route = true;
                         }

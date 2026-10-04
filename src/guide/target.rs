@@ -55,11 +55,11 @@ pub fn settle_target(
     journal: &[Quest],
     blocked: &std::collections::HashSet<u64>,
 ) {
-    if state.target.is_some_and(|t| !goals.iter().any(|g| g.id == t)) {
-        state.target = None;
-        state.chosen = false;
+    if state.auto.is_some_and(|t| !goals.iter().any(|g| g.id == t)) {
+        state.auto = None;
+        state.held = false;
     }
-    if !state.guide_auto || state.chosen {
+    if !state.guide_auto || state.held {
         return;
     }
     let near = |a: &&Goal, b: &&Goal| flat(a.at, here).total_cmp(&flat(b.at, here));
@@ -80,11 +80,11 @@ pub fn settle_target(
     });
     // Keep the target while it is still what would be picked, or still wanted and not
     // blocked (nearness alone does not make the guide hop between goals).
-    let keep = state.target.is_some_and(|t| {
+    let keep = state.auto.is_some_and(|t| {
         Some(t) == pick.map(|g| g.id) || wanted_all.iter().any(|g| g.id == t) && !blocked.contains(&t) && open.is_some()
     });
     if !keep {
-        state.target = pick.map(|g| g.id);
+        state.auto = pick.map(|g| g.id);
     }
 }
 
@@ -92,12 +92,12 @@ pub fn settle_target(
 pub fn cycle(state: &mut MapState, goals: &[Goal], here: [f32; 3]) {
     let mut shown: Vec<&Goal> = goals.iter().filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0).collect();
     shown.sort_by(|a, b| flat(a.at, here).total_cmp(&flat(b.at, here)));
-    let next = match state.target.and_then(|t| shown.iter().position(|g| g.id == t)) {
+    let next = match state.auto.and_then(|t| shown.iter().position(|g| g.id == t)) {
         Some(i) => shown.get(i + 1).or(shown.first()),
         None => shown.first(),
     };
-    state.target = next.map(|g| g.id);
-    state.chosen = state.target.is_some();
+    state.auto = next.map(|g| g.id);
+    state.held = state.auto.is_some();
 }
 
 #[cfg(test)]
@@ -124,12 +124,12 @@ mod tests {
         let mut s = MapState::default();
         let goals = [goal(1, Tier::Clue, 100.0), goal(2, Tier::Quest, 5000.0), goal(3, Tier::Quest, 900.0)];
         settle_target(&mut s, &goals, [0.0; 3], None, &[], &Default::default());
-        assert_eq!(s.target, Some(3));
+        assert_eq!(s.auto, Some(3));
         settle_target(&mut s, &goals[..2], [0.0; 3], None, &[], &Default::default());
-        assert_eq!(s.target, Some(2), "3 used up: the next quest goal");
+        assert_eq!(s.auto, Some(2), "3 used up: the next quest goal");
         s.guide_auto = false;
         settle_target(&mut s, &goals[..1], [0.0; 3], None, &[], &Default::default());
-        assert_eq!(s.target, None, "auto off: nothing chosen for the player");
+        assert_eq!(s.auto, None, "auto off: nothing chosen for the player");
     }
 
     #[test]
@@ -150,16 +150,16 @@ mod tests {
         let goals = [goal(3, Tier::Quest, 900.0), hand_over];
         let mut s = MapState::default();
         settle_target(&mut s, &goals, [0.0; 3], None, &[], &Default::default());
-        assert_eq!(s.target, Some(3), "the main story: the nearest quest goal");
+        assert_eq!(s.auto, Some(3), "the main story: the nearest quest goal");
         settle_target(&mut s, &goals, [0.0; 3], Some(&deed), &[], &Default::default());
-        assert_eq!(s.target, Some(4), "following the deed: its hand-over, though farther");
+        assert_eq!(s.auto, Some(4), "following the deed: its hand-over, though farther");
         settle_target(&mut s, &goals[..1], [0.0; 3], Some(&deed), &[], &Default::default());
-        assert_eq!(s.target, None, "nothing of the deed loaded: no stand-in");
+        assert_eq!(s.auto, None, "nothing of the deed loaded: no stand-in");
         let mut door = goal(5, Tier::Quest, 10.0);
         door.gate = Gate::Conditional;
         let mut s2 = MapState::default();
         settle_target(&mut s2, &[door, goal(6, Tier::Quest, 500.0)], [0.0; 3], None, &[], &Default::default());
-        assert_eq!(s2.target, Some(6), "a locked door is not where auto guiding sends the hero");
+        assert_eq!(s2.auto, Some(6), "a locked door is not where auto guiding sends the hero");
         // Blocked: the wanted goal is behind a door; a note near it is reachable.
         let mut cellar = goal(7, Tier::Quest, 1000.0);
         cellar.at[2] = -1200.0;
@@ -167,11 +167,11 @@ mod tests {
         let blocked: std::collections::HashSet<u64> = [7].into_iter().collect();
         let mut s3 = MapState::default();
         settle_target(&mut s3, &[cellar, note], [0.0; 3], None, &[], &blocked);
-        assert_eq!(s3.target, Some(8), "behind a door: first what is near it and reachable");
-        s.target = Some(3);
-        s.chosen = true;
+        assert_eq!(s3.auto, Some(8), "behind a door: first what is near it and reachable");
+        s.auto = Some(3);
+        s.held = true;
         settle_target(&mut s, &goals, [0.0; 3], Some(&deed), &[], &Default::default());
-        assert_eq!(s.target, Some(3), "picked by hand: kept");
+        assert_eq!(s.auto, Some(3), "picked by hand: kept");
     }
 
     #[test]
@@ -179,11 +179,11 @@ mod tests {
         let mut s = MapState { guide_auto: false, ..MapState::default() };
         let goals = [goal(1, Tier::Clue, 300.0), goal(2, Tier::Quest, 100.0), goal(3, Tier::Secret, 200.0)];
         cycle(&mut s, &goals, [0.0; 3]);
-        assert_eq!(s.target, Some(2));
+        assert_eq!(s.auto, Some(2));
         cycle(&mut s, &goals, [0.0; 3]);
-        assert_eq!(s.target, Some(3));
+        assert_eq!(s.auto, Some(3));
         s.goal_tiers = 0b011; // no clues
         cycle(&mut s, &goals, [0.0; 3]);
-        assert_eq!(s.target, Some(2), "wraps, skipping the hidden tier");
+        assert_eq!(s.auto, Some(2), "wraps, skipping the hidden tier");
     }
 }

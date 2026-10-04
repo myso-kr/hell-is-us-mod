@@ -85,7 +85,7 @@ pub struct Shared {
     /// minimap and panel: the map's trail, markers and settings.
     pub map: Mutex<crate::minimap::MapState>,
     /// overlay: the guide's route goes through an obstacle somewhere (no way in found).
-    pub route_uncertain: Mutex<bool>,
+    pub route_uncertain: Mutex<std::collections::HashSet<u64>>,
     /// overlay: the menu signals last seen — (game cursor showing, game paused).
     pub menu: Mutex<(bool, bool)>,
     /// overlay: a north-up map round the hero for the panel's "now" page, redrawn about

@@ -673,3 +673,9 @@ SLOT_REMOVABLE	Um item mal colocado pode ser retirado.
 SLOT_ALL_DONE	Tudo no lugar.
 SLOT_AFTER_FLOWERS	Depois volte ao túmulo e puxe a alavanca.
 SLOT_FROM_LEFT	de frente, o {n}º de {all} pela esquerda
+TRACKING	Seguidos ({n}/{max})
+TRACK_FOCUS	Focar
+TRACK_FOCUS_HINT	A distância da bússola, o rastreador de missões e a tecla de próximo objetivo se referem a este.
+TRACK_DROP	Soltar
+TRACK_DROP_ALL	Soltar todos
+TRACK_HINT	Toque um lugar aqui ou em outra página para segui-lo também: até {max}, cada um com sua cor nos mapas, na bússola e no jogo.

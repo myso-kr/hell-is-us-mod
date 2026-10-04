@@ -5,8 +5,7 @@ use super::route::ROUTE_AHEAD;
 use crate::goals::{Gate, Goal, Tier};
 use crate::guide::target::flat;
 use crate::minimap::MapState;
-use crate::pathfind::Path;
-use crate::raster::Pin;
+use crate::raster::{Drawn, Pin};
 use std::sync::Arc;
 
 /// The things the maps show, worked out again only for a new snapshot's things (once a
@@ -52,15 +51,15 @@ impl Pinned {
     }
 }
 
-/// What `with_pins` adds, as a hash: the world's pins and the goal picked in the panel.
+/// What `with_pins` adds, as a hash: the world's pins and the places followed.
 fn pins_key(state: &MapState, world: &str) -> u64 {
     use std::hash::{Hash, Hasher};
     let mut h = std::collections::hash_map::DefaultHasher::new();
     for m in state.markers.get(world).into_iter().flatten() {
         (m.id(world), m.title(), m.at.map(f32::to_bits)).hash(&mut h);
     }
-    if let Some((w, id, at, label)) = &state.adhoc {
-        (w, id, at.map(f32::to_bits), label).hash(&mut h);
+    for t in &state.tracks {
+        (&t.world, t.id, t.at.map(f32::to_bits), &t.label, t.place).hash(&mut h);
     }
     h.finish()
 }
@@ -123,46 +122,48 @@ pub fn with_pins(goals: &[Goal], state: &MapState, world: &str) -> Vec<Goal> {
     for m in state.markers.get(world).into_iter().flatten() {
         goals.push(place(m.id(world), m.title(), tr!("MAP_PIN"), m.at));
     }
-    if let Some((w, id, at, label)) = state.adhoc.clone() {
-        if crate::survey::Survey::world_of(world) == w && !goals.iter().any(|g| g.id == id) {
-            goals.push(place(id, label, tr!("PICKED_IN_THE_PANEL"), at));
-        }
-    }
+    // The places followed that are no goal (a groove, a lock), as goals.
+    let places = state.place_goals(&goals, world);
+    goals.extend(places.into_iter().map(|g| Goal { detail: tr!("PICKED_IN_THE_PANEL").into(), ..g }));
     goals
 }
 
-/// The compass marks: the goals of the tiers shown (the target along its route) and
-/// the pins of this world.
-pub fn compass_pins(goals: &[Goal], state: &MapState, world: &str, p: [f32; 3], path: &Path) -> Vec<Pin> {
+/// The compass marks: the goals of the tiers shown, everything followed along its route
+/// in its colour (the one in focus with its distance), and the pins of this world.
+pub fn compass_pins(goals: &[Goal], state: &MapState, world: &str, p: [f32; 3], routes: &[Drawn]) -> Vec<Pin> {
+    let followed = |id: u64| routes.iter().find(|d| d.id == id);
     let mut pins: Vec<Pin> = goals
         .iter()
-        .filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || Some(g.id) == state.target)
-        .filter(|g| !crate::minimap::is_pin(g.id) || Some(g.id) == state.target)
+        .filter(|g| state.goal_tiers & (1 << g.tier as u8) != 0 || followed(g.id).is_some())
+        .filter(|g| !crate::minimap::is_pin(g.id) || followed(g.id).is_some())
         .map(|g| {
-            let target = Some(g.id) == state.target;
-            // The target is pointed at along its route, and its distance is the route's.
-            let (aim, distance) = match (target, path.points.len() >= 2) {
-                (true, true) => {
+            let drawn = followed(g.id);
+            let path = drawn.map(|d| &d.path).filter(|p| p.points.len() >= 2);
+            // Followed: pointed at along its route, its distance the route's.
+            let (aim, distance) = match path {
+                Some(path) => {
                     let next = crate::pathfind::next_point(&path.points, [p[0], p[1]], ROUTE_AHEAD)
                         .unwrap_or([g.at[0], g.at[1]]);
                     ([next[0], next[1], g.at[2]], crate::pathfind::length(&path.points))
                 }
-                _ => (g.at, flat(p, g.at)),
+                None => (g.at, flat(p, g.at)),
             };
             Pin {
                 bearing: bearing(p, aim) - state.north_yaw,
-                rgb: g.tier.rgb(),
-                target,
+                rgb: drawn.and_then(|d| d.colour).unwrap_or(g.tier.rgb()),
+                target: drawn.is_some_and(|d| d.focus),
+                followed: drawn.is_some(),
                 distance_m: distance / 100.0,
                 dz_m: (g.at[2] - p[2]) / 100.0,
             }
         })
         .collect();
     if let Some(markers) = state.markers.get(world) {
-        pins.extend(markers.iter().filter(|m| state.target != Some(m.id(world))).map(|m| Pin {
+        pins.extend(markers.iter().filter(|m| followed(m.id(world)).is_none()).map(|m| Pin {
             bearing: bearing(p, m.at) - state.north_yaw,
             rgb: m.kind.rgb(),
             target: false,
+            followed: false,
             distance_m: flat(p, m.at) / 100.0,
             dz_m: (m.at[2] - p[2]) / 100.0,
         }));

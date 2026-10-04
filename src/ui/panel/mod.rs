@@ -127,19 +127,30 @@ fn pin_picker(ui: &mut egui::Ui, id: &str, kind: &mut crate::minimap::PinKind) -
     *kind != before
 }
 
-/// Guide to a place the survey names: the live goal there if it is loaded, else the
-/// place itself (the overlay adds it as a goal).
+/// Follow a place the survey names (guide/track.rs): the goal there if there is one, else
+/// the place itself (the overlay adds it as a goal). Followed already: into focus; in
+/// focus: let go.
 fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], x: &crate::survey::Need) {
-    let live = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0).map(|g| g.id);
-    match live {
-        Some(id) => state.target = Some(id),
-        None => {
-            state.adhoc = Some((x.world.clone(), x.id, x.at, format!("{} {}", x.what, x.label).trim().to_string()));
-            state.target = Some(x.id);
-        }
-    }
-    state.chosen = true;
-    state.route = true;
+    let label = format!("{} {}", x.what, x.label).trim().to_string();
+    let goal = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0);
+    let world = crate::survey::Survey::world_of(&x.world).to_string();
+    let track = match goal {
+        Some(g) => crate::guide::track::Track { id: g.id, world, at: g.at, label, place: false, colour: 0 },
+        None => crate::guide::track::Track { id: x.id, world, at: x.at, label, place: true, colour: 0 },
+    };
+    state.follow(track);
+}
+
+/// Follow a goal of the goal list (guide/track.rs), as `guide_to`.
+fn follow_goal(state: &mut crate::minimap::MapState, g: &crate::goals::Goal, world: &str) {
+    state.follow(crate::guide::track::Track {
+        id: g.id,
+        world: crate::survey::Survey::world_of(world).to_string(),
+        at: g.at,
+        label: g.label.clone(),
+        place: false,
+        colour: 0,
+    });
 }
 
 /// The tool pages in the sidebar, under the cheat groups.

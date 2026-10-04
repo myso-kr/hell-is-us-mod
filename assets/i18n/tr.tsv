@@ -673,3 +673,9 @@ SLOT_REMOVABLE	Yanlış konan bir şey geri çıkarılabilir.
 SLOT_ALL_DONE	Hepsi yerinde.
 SLOT_AFTER_FLOWERS	Sonra mezara dönüp kolu çekin.
 SLOT_FROM_LEFT	karşıdan bakınca soldan {n}. ({all} yuvadan)
+TRACKING	Takip edilen ({n}/{max})
+TRACK_FOCUS	Odakla
+TRACK_FOCUS_HINT	Pusulanın mesafesi, görev takibi ve sonraki hedef tuşu bunu gösterir.
+TRACK_DROP	Bırak
+TRACK_DROP_ALL	Hepsini bırak
+TRACK_HINT	Burada ya da başka bir sayfada bir yere basarak onu da takip edin: en fazla {max}, her biri haritada, pusulada ve oyunda kendi renginde.

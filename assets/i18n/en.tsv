@@ -673,3 +673,9 @@ SLOT_REMOVABLE	A wrong placement can be taken out again.
 SLOT_ALL_DONE	All in place.
 SLOT_AFTER_FLOWERS	Then go back to the tomb and pull the lever.
 SLOT_FROM_LEFT	facing it, {n} of {all} from the left
+TRACKING	Followed ({n}/{max})
+TRACK_FOCUS	Focus
+TRACK_FOCUS_HINT	The compass's distance, the quest tracker and the next-goal key are about this one.
+TRACK_DROP	Let go
+TRACK_DROP_ALL	Let go of all
+TRACK_HINT	Press a place here or on another page to follow it as well: up to {max}, each in its own colour on the maps, the compass and in the game.

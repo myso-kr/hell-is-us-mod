@@ -673,3 +673,9 @@ SLOT_REMOVABLE	間違えて置いても取り出せます。
 SLOT_ALL_DONE	すべて正しく置きました。
 SLOT_AFTER_FLOWERS	その後、墓に戻ってレバーを引いてください。
 SLOT_FROM_LEFT	向かって左から{n}番目（{all}か所中）
+TRACKING	追跡中（{n}/{max}）
+TRACK_FOCUS	注目
+TRACK_FOCUS_HINT	コンパスの距離、クエスト表示、次の目標キーはこれを対象にします。
+TRACK_DROP	解除
+TRACK_DROP_ALL	すべて解除
+TRACK_HINT	ここや他のページで場所を押すと一緒に追跡します。最大{max}か所、地図・コンパス・ゲーム画面にそれぞれの色で表示します。

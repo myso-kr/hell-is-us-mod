@@ -121,7 +121,7 @@ impl Panel {
                     let icon = |ui: &mut egui::Ui| {
                         crate::ui::svg::sort(ui, sort, 16.0);
                     };
-                    if tw::line(t, Some(state.target == Some(x.id)), icon, label, |t| distance(t, span)) {
+                    if tw::line(t, Some(state.is_followed(x.id)), icon, label, |t| distance(t, span)) {
                         guide_to(state, &goals, x);
                     }
                 }
@@ -143,8 +143,8 @@ impl Panel {
             if let Some(p) = pick {
                 state.quest = p;
                 // Guide anew, to the newly followed quest.
-                state.target = None;
-                state.chosen = false;
+                state.auto = None;
+                state.held = false;
                 state.guide_auto = true;
                 state.route = true;
                 state.dirty = true;
@@ -189,8 +189,8 @@ impl Panel {
                     };
                     if tw::line(t, on, icon, d.title.as_str(), end) {
                         state.quest = Some(d.key.clone());
-                        state.target = None;
-                        state.chosen = false;
+                        state.auto = None;
+                        state.held = false;
                         state.guide_auto = true;
                         state.route = true;
                     }
@@ -248,7 +248,7 @@ impl Panel {
                 };
                 // In this world: press to guide there, the distance at the end. Elsewhere: not
                 // pressable, the way there as a chip.
-                let on = same.then_some(state.target == Some(x.id));
+                let on = same.then_some(state.is_followed(x.id));
                 let end = |t: &mut Tui| {
                     if same {
                         distance(t, here.map_or(String::new(), |h| crate::raster::span(h, x.at)));

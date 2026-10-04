@@ -57,20 +57,23 @@ pub fn project(cam: &Camera, p: [f32; 3], w: f32, h: f32) -> Option<(f32, f32, f
     Some((sx as f32, sy as f32, far as f32))
 }
 
-/// The marker for a target `far` cm from the hero: a ring, smaller the farther, and the
+/// The marker for a place followed `far` cm from the hero: a ring in its colour (`None`,
+/// gold: the auto guide's pick), smaller the farther and thinner out of focus, and the
 /// distance.
-pub fn draw(cv: &mut Canvas, far: f32) {
+pub fn draw(cv: &mut Canvas, far: f32, colour: Option<[u8; 3]>, focus: bool) {
     cv.px.fill(0);
-    let r = (22.0 - far / 400.0).clamp(10.0, 22.0);
+    let c = colour.map_or(GOLD, |[r, g, b]| crate::map::canvas::Rgba(r, g, b, 255));
+    let r = (22.0 - far / 400.0).clamp(10.0, 22.0) * if focus { 1.0 } else { 0.8 };
+    let width = if focus { 2.5 } else { 1.8 };
     let (cx, cy) = (CX as f32, CY as f32);
-    cv.ring(cx, cy, r + 1.5, 4.5, SHADE);
-    cv.ring(cx, cy, r, 2.5, GOLD);
-    cv.disc(cx, cy, 2.5, GOLD);
+    cv.ring(cx, cy, r + 1.5, width + 2.0, SHADE);
+    cv.ring(cx, cy, r, width, c);
+    cv.disc(cx, cy, 2.5, c);
     let m = far / 100.0;
     let label = if m < 10.0 { format!("{m:.1}m") } else { format!("{m:.0}m") };
     let ty = cy + r + 14.0;
     cv.text(cx + 1.0, ty + 1.0, 13.0, &label, SHADE);
-    cv.text(cx, ty, 13.0, &label, GOLD);
+    cv.text(cx, ty, 13.0, &label, c);
 }
 
 #[cfg(test)]

@@ -673,3 +673,9 @@ SLOT_REMOVABLE	放错了可以再取出来。
 SLOT_ALL_DONE	全部放对了。
 SLOT_AFTER_FLOWERS	然后回到墓室拉下拉杆。
 SLOT_FROM_LEFT	面对时从左数第{n}个（共{all}个）
+TRACKING	追踪中（{n}/{max}）
+TRACK_FOCUS	聚焦
+TRACK_FOCUS_HINT	指南针的距离、任务追踪和下一目标键都以此为准。
+TRACK_DROP	取消
+TRACK_DROP_ALL	全部取消
+TRACK_HINT	在此处或其他页面点击地点即可一并追踪：最多{max}处，在地图、指南针和游戏中各有颜色。

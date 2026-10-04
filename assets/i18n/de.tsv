@@ -673,3 +673,9 @@ SLOT_REMOVABLE	Falsch Platziertes lässt sich wieder herausnehmen.
 SLOT_ALL_DONE	Alles am richtigen Platz.
 SLOT_AFTER_FLOWERS	Dann zurück zum Grab und den Hebel ziehen.
 SLOT_FROM_LEFT	davor stehend {n}. von links (von {all})
+TRACKING	Verfolgt ({n}/{max})
+TRACK_FOCUS	Fokus
+TRACK_FOCUS_HINT	Die Entfernung im Kompass, die Questanzeige und die Taste für das nächste Ziel beziehen sich hierauf.
+TRACK_DROP	Loslassen
+TRACK_DROP_ALL	Alle loslassen
+TRACK_HINT	Einen Ort hier oder auf einer anderen Seite drücken, um ihm ebenfalls zu folgen: bis zu {max}, jeder in eigener Farbe auf den Karten, im Kompass und im Spiel.

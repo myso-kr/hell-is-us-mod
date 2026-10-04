@@ -113,7 +113,7 @@ pub fn frame(
     icons: Option<&crate::icons::Icons>,
     footprints: &Arc<Vec<Footprint>>,
     goals: &[crate::goals::Goal],
-    path: &crate::pathfind::Path,
+    routes: &[crate::raster::Drawn],
     relief: Option<&Arc<Relief>>,
 ) -> bool {
     let (w, h) = (out.w, out.h);
@@ -183,8 +183,11 @@ pub fn frame(
         let mut k = std::collections::hash_map::DefaultHasher::new();
         (g.cv.px.as_ptr() as usize, g.key, ox, oy, p.map(f32::to_bits), yaw.to_bits()).hash(&mut k);
         (things.as_ptr() as usize, things.len(), goals.as_ptr() as usize, goals.len(), world).hash(&mut k);
-        path.points.iter().for_each(|q| q.map(f32::to_bits).hash(&mut k));
-        (state.target, state.goal_tiers, state.big_radius_m.to_bits()).hash(&mut k);
+        for d in routes {
+            (d.id, d.colour, d.focus).hash(&mut k);
+            d.path.points.iter().for_each(|q| q.map(f32::to_bits).hash(&mut k));
+        }
+        (state.goal_tiers, state.big_radius_m.to_bits()).hash(&mut k);
         k.finish()
     };
     if scroll.next.is_none() && scroll.shown.is_some_and(|(s, at)| s == seen && at.elapsed() < REDRAW) {
@@ -196,7 +199,7 @@ pub fn frame(
         let at = (y + sy) * g.cv.w + sx;
         row.copy_from_slice(&g.cv.px[at..at + w]);
     }
-    crate::raster::draw_above(out, state, world, &here, things, icons, goals, path, r);
+    crate::raster::draw_above(out, state, world, &here, things, icons, goals, routes, r);
     crate::raster::fade_edges(out);
     true
 }
@@ -209,10 +212,9 @@ mod tests {
     fn an_unchanged_frame_is_not_drawn_again() {
         let state = MapState::default();
         let footprints = Arc::new(Vec::new());
-        let path = crate::pathfind::Path { points: vec![], through: vec![] };
         let (mut scroll, mut cv) = (Scroll::default(), Canvas::new(64, 48));
         let mut at = |x: f32| {
-            frame(&mut scroll, &mut cv, &state, "W", ([x, 0.0, 0.0], 0.0), &[], None, &footprints, &[], &path, None)
+            frame(&mut scroll, &mut cv, &state, "W", ([x, 0.0, 0.0], 0.0), &[], None, &footprints, &[], &[], None)
         };
         assert!(at(0.0));
         assert!(!at(0.0), "the hero standing: nothing new to draw");
@@ -227,12 +229,11 @@ mod tests {
     fn frame_cost() {
         let state = MapState::default();
         let footprints = Arc::new(Vec::new());
-        let path = crate::pathfind::Path { points: vec![], through: vec![] };
         for (w, h) in [(2560, 1440), (1440, 1440)] {
             let (mut scroll, mut cv) = (Scroll::default(), Canvas::new(w, h));
             let mut frame_at = |i: usize| {
                 let p = [i as f32 * 10.0, 0.0, 0.0];
-                frame(&mut scroll, &mut cv, &state, "W", (p, 0.0), &[], None, &footprints, &[], &path, None);
+                frame(&mut scroll, &mut cv, &state, "W", (p, 0.0), &[], None, &footprints, &[], &[], None);
             };
             frame_at(0);
             let started = std::time::Instant::now();

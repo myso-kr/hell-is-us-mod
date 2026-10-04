@@ -97,6 +97,10 @@ fn cursor_shown() -> bool {
 /// near, whether the guided goal is blocked, and the needs line.
 type Tracked = (Arc<Vec<Quest>>, Option<String>, bool, bool, String);
 
+/// A ring to draw in the game's view (marker.rs): where on the screen, the hero's
+/// distance, the colour (`None`, the auto guide's) and whether in focus.
+type Mark = (i32, i32, f32, Option<[u8; 3]>, bool);
+
 pub fn run(shared: Arc<Shared>) {
     let (Some(mut map_window), Some(mut compass_window)) = (
         Layered::new("hiumod-minimap", "Hell Is Us Minimap", MAP_PX, MAP_PX),
@@ -108,7 +112,7 @@ pub fn run(shared: Arc<Shared>) {
     // The quest tracker: drawn again only when what it shows changes.
     let mut tracker_window = Layered::new("hiumod-tracker", "Hell Is Us Quests", tracker::W, tracker::H);
     // The target marked in the game's view (marker.rs).
-    let mut marker_window = Layered::new("hiumod-marker", "Hell Is Us Marker", marker::W, marker::H);
+    let mut marker_windows: Vec<Option<Layered>> = Vec::new();
     let mut marker_cv = Canvas::new(marker::W as usize, marker::H as usize);
     let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
     let mut pen = Pen::new(tracker::W, tracker::H);
@@ -145,7 +149,10 @@ pub fn run(shared: Arc<Shared>) {
     // Half-size icons for the Map page's big-map preview, which is drawn small.
     let mut icons_small = make((icon_px / 2).max(8));
     let mut was = [false; 4];
-    let mut route = route::Route::default();
+    // A route per thing followed (guide/track.rs), and since when a goal followed has been
+    // gone.
+    let mut routes: std::collections::HashMap<u64, route::Route> = Default::default();
+    let mut missing = std::collections::HashMap::new();
     let mut baking = bake::Baking::default();
     let mut saved = Instant::now();
     let mut tick = 0u32;
@@ -188,6 +195,7 @@ pub fn run(shared: Arc<Shared>) {
             needs,
             deadlines,
             puzzle_near,
+            slot_puzzles,
         ) = match shared.snap.lock().unwrap().as_ref() {
             Some(s) => (
                 s.pose_src,
@@ -203,6 +211,7 @@ pub fn run(shared: Arc<Shared>) {
                 s.needs.clone(),
                 s.deadlines.clone(),
                 hud::puzzle_near(s),
+                s.slot_puzzles.clone(),
             ),
             None => (
                 None,
@@ -218,6 +227,7 @@ pub fn run(shared: Arc<Shared>) {
                 Default::default(),
                 Default::default(),
                 false,
+                Default::default(),
             ),
         };
         // The pose read now, from where the worker found it: the worker's own reading
@@ -293,7 +303,7 @@ pub fn run(shared: Arc<Shared>) {
                     icons.as_ref(),
                     &footprints,
                     &goals,
-                    &Default::default(),
+                    &[],
                     relief.as_deref(),
                 );
                 state.dots = dots;
@@ -335,7 +345,7 @@ pub fn run(shared: Arc<Shared>) {
                     icons.as_ref(),
                     &footprints,
                     &goals,
-                    &Default::default(),
+                    &[],
                     relief.as_deref(),
                 );
                 state.dots = dots;
@@ -362,7 +372,7 @@ pub fn run(shared: Arc<Shared>) {
                         icons_small.as_ref(),
                         &footprints,
                         &goals,
-                        &Default::default(),
+                        &[],
                         relief.as_ref(),
                     );
                     if state.big_alpha < 100 {
@@ -397,32 +407,61 @@ pub fn run(shared: Arc<Shared>) {
                         p[2]
                     ));
                 }
+                // The places followed matched to the goals of now, the gone let go: a goal
+                // taken or done, a choice puzzle's groove once its set is done.
+                let before = pinned.get(&goals, &state, world);
+                state.relink(&before, world, &mut missing);
+                for set in slot_puzzles.iter().flat_map(|p| &p.sets) {
+                    if let (crate::slots::State::Done, Some(right)) = (set.state(), set.answer()) {
+                        state.done_at(world, right.groove);
+                    }
+                }
                 let goals = pinned.get(&goals, &state, world);
                 let chosen = state.quest.clone();
+                // What can only be reached through something, by any route.
+                let blocked: std::collections::HashSet<u64> =
+                    routes.values().flat_map(|r| r.blocked.iter().copied()).collect();
                 settle_target(
                     &mut state,
                     &goals,
                     p,
                     crate::quests::followed(&journal, chosen.as_deref()),
                     &journal,
-                    &route.blocked,
+                    &blocked,
                 );
-                if cycle_now {
+                // The cycle key: the focus through what is followed; with one or none, the
+                // auto guide's next goal.
+                if cycle_now && !state.cycle_focus() {
                     cycle(&mut state, &goals, p);
                 }
 
-                // The route to the goal, when it is due.
-                let goal = state.target.and_then(|t| goals.iter().find(|g| g.id == t)).filter(|_| state.route);
-                let trail = || {
-                    state
-                        .trails
-                        .get(world)
-                        .map(|t| t.iter().flatten().map(|q| [q[0], q[1]]).collect())
-                        .unwrap_or_default()
-                };
-                route.follow(goal, p, trail, &obstacles, &nav);
-                let path = route.drawn(p);
-                *shared.route_uncertain.lock().unwrap() = path.uncertain();
+                // A route to each thing followed, when due (the one in focus more often).
+                let followed = state.followed();
+                routes.retain(|id, _| followed.iter().any(|f| f.id == *id));
+                let mut drawn: Vec<crate::raster::Drawn> = Vec::new();
+                let mut uncertain = std::collections::HashSet::new();
+                for f in &followed {
+                    let Some(g) = goals.iter().find(|g| g.id == f.id) else { continue };
+                    let path = if state.route {
+                        let trail = || {
+                            state
+                                .trails
+                                .get(world)
+                                .map(|t| t.iter().flatten().map(|q| [q[0], q[1]]).collect())
+                                .unwrap_or_default()
+                        };
+                        let r = routes.entry(f.id).or_default();
+                        r.follow(Some(g), p, trail, &obstacles, &nav, !f.focus);
+                        r.drawn(p)
+                    } else {
+                        Default::default()
+                    };
+                    if path.uncertain() {
+                        uncertain.insert(f.id);
+                    }
+                    drawn.push(crate::raster::Drawn { id: f.id, path, colour: f.colour, focus: f.focus });
+                }
+                *shared.route_uncertain.lock().unwrap() = uncertain;
 
                 let relief = baking.relief(&state, p, &obstacles);
 
@@ -456,7 +495,7 @@ pub fn run(shared: Arc<Shared>) {
                             icons.as_ref(),
                             &footprints,
                             &goals,
-                            &path,
+                            &drawn,
                             relief.as_ref(),
                         );
                         drop(t);
@@ -495,7 +534,7 @@ pub fn run(shared: Arc<Shared>) {
                             icons.as_ref(),
                             &footprints,
                             &goals,
-                            &path,
+                            &drawn,
                             relief.as_deref(),
                         );
                         state.dots = dots;
@@ -507,30 +546,42 @@ pub fn run(shared: Arc<Shared>) {
                     }
                 }
 
-                // The target marked where it stands in the game's view, when near (marker.rs).
-                let target = state.target.and_then(|t| goals.iter().find(|g| g.id == t));
-                let mark =
-                    target.filter(|g| (g.at[0] - p[0]).hypot(g.at[1] - p[1]) < marker::NEAR && !paused).and_then(|g| {
-                        let cam = pose_src.and_then(|s| s.camera(reader.as_ref()?))?;
-                        let (left, top, w, h) = marker::client(game_win?.0)?;
-                        let (x, y, _) = marker::project(&cam, g.at, w as f32, h as f32)?;
+                // Each thing followed marked where it stands in the game's view, when near
+                // (marker.rs): a ring in its colour, one window each.
+                let cam = pose_src.and_then(|s| s.camera(reader.as_ref()?)).filter(|_| !paused);
+                let client = game_win.and_then(|(h, _)| marker::client(h));
+                let marks: Vec<Mark> = followed
+                    .iter()
+                    .filter_map(|f| {
+                        let g = goals.iter().find(|g| g.id == f.id)?;
+                        if (g.at[0] - p[0]).hypot(g.at[1] - p[1]) >= marker::NEAR {
+                            return None;
+                        }
+                        let ((left, top, w, h), cam) = (client?, cam.as_ref()?);
+                        let (x, y, _) = marker::project(cam, g.at, w as f32, h as f32)?;
                         // How far from the hero, not from the camera behind them.
                         let far =
                             ((g.at[0] - p[0]).powi(2) + (g.at[1] - p[1]).powi(2) + (g.at[2] - p[2]).powi(2)).sqrt();
                         let on = (0.0..w as f32).contains(&x) && (0.0..h as f32).contains(&y);
-                        on.then_some((left + x as i32, top + y as i32, far))
-                    });
-                match (mark, marker_window.as_mut()) {
-                    (Some((x, y, far)), Some(w)) => {
-                        marker::draw(&mut marker_cv, far);
-                        w.present(&marker_cv, x - marker::CX, y - marker::CY);
+                        on.then_some((left + x as i32, top + y as i32, far, f.colour, f.focus))
+                    })
+                    .collect();
+                while marker_windows.len() < marks.len() {
+                    marker_windows.push(Layered::new("hiumod-marker", "Hell Is Us Marker", marker::W, marker::H));
+                }
+                for (i, w) in marker_windows.iter_mut().enumerate() {
+                    let Some(w) = w.as_mut() else { continue };
+                    match marks.get(i) {
+                        Some(&(x, y, far, colour, focus)) => {
+                            marker::draw(&mut marker_cv, far, colour, focus);
+                            w.present(&marker_cv, x - marker::CX, y - marker::CY);
+                        }
+                        None => w.hide(),
                     }
-                    (_, Some(w)) => w.hide(),
-                    _ => {}
                 }
 
                 if state.compass {
-                    let pins = hud::compass_pins(&goals, &state, world, p, &path);
+                    let pins = hud::compass_pins(&goals, &state, world, p, &drawn);
                     draw_compass(&mut compass_cv, yaw - state.north_yaw, &pins);
                     let x = r.left + (r.right - r.left - COMPASS_W) / 2;
                     compass_window.present(&compass_cv, x, r.top + 12);
@@ -542,7 +593,7 @@ pub fn run(shared: Arc<Shared>) {
                     // Whether any place that moves the followed quest along is loaded.
                     let near = followed.is_none_or(|q| goals.iter().any(|g| g.serves(q)));
                     // The goal being guided to can only be reached through something.
-                    let stuck = state.target.is_some_and(|t| route.blocked.contains(&t));
+                    let stuck = state.focused().is_some_and(|t| blocked.contains(&t));
                     // A deadline due now comes first; then what it still needs.
                     let mut line = hud::needs_line(followed, &needs, &deadlines, world);
                     if puzzle_near {
@@ -580,7 +631,7 @@ pub fn run(shared: Arc<Shared>) {
                     if let Some(w) = big_window.as_ref() {
                         w.keep_on_top(panel);
                     }
-                    if let Some(w) = marker_window.as_ref() {
+                    for w in marker_windows.iter().flatten() {
                         w.keep_on_top(panel);
                     }
                 }
@@ -588,7 +639,7 @@ pub fn run(shared: Arc<Shared>) {
             _ => {
                 map_window.hide();
                 compass_window.hide();
-                if let Some(w) = marker_window.as_mut() {
+                for w in marker_windows.iter_mut().flatten() {
                     w.hide();
                 }
                 if let Some(w) = tracker_window.as_mut() {

@@ -63,12 +63,14 @@ pub struct MapState {
     pub quest: Option<String>,
     /// The quest tracker at the right of the screen.
     pub tracker: bool,
-    /// The target was picked by hand (the goal list, the cycle key): auto guiding
-    /// leaves it until it is used up. Not kept across runs.
-    pub chosen: bool,
-    /// A place picked in the panel that is no goal of the moment (a collectible, an NPC
-    /// out of range): (world, id, where, label). The overlay guides to it as to a goal.
-    pub adhoc: Option<(String, u64, Point, String)>,
+    /// The auto guide's pick was stepped by hand (the cycle key): kept until it is used
+    /// up. Not kept across runs.
+    pub held: bool,
+    /// The places followed by hand, oldest first (guide/track.rs): kept across runs by
+    /// where they are.
+    pub tracks: Vec<crate::guide::track::Track>,
+    /// Which of them is in focus; `None`, the auto guide's pick.
+    pub focus: Option<u64>,
     /// Goals the player skipped (done in a way the guide could not see): auto guiding
     /// passes them by this run.
     pub skipped: std::collections::HashSet<u64>,
@@ -98,9 +100,9 @@ pub struct MapState {
     pub hide_in_menus: bool,
     /// Draw a walking route (A*) to the guide's goal, not just a straight line.
     pub route: bool,
-    /// The goal being guided to, by actor — chosen in the panel or with the cycle key.
-    /// Not kept across runs: actors are new each time.
-    pub target: Option<u64>,
+    /// The auto guide's pick, by actor (guide/target.rs). Not kept across runs: actors are
+    /// new each time.
+    pub auto: Option<u64>,
     /// Per world: the trail, with `None` where it breaks.
     pub trails: BTreeMap<String, Vec<Option<Point>>>,
     pub markers: BTreeMap<String, Vec<Marker>>,
@@ -131,10 +133,11 @@ impl Default for MapState {
             goal_tiers: 0b111,
             quest: None,
             tracker: true,
-            chosen: false,
+            held: false,
             skipped: Default::default(),
-            adhoc: None,
-            target: None,
+            tracks: Vec::new(),
+            focus: None,
+            auto: None,
             north_yaw: 270.0,
             big_radius_m: 250.0,
             big_alpha: 100,
@@ -241,6 +244,7 @@ impl MapState {
             out += &format!("hide {}\n", s.id());
         }
         out += &format!("pin_kind {}\n", self.pin_kind.word());
+        out += &self.render_tracks();
         for (world, list) in &self.markers {
             for m in list {
                 let note = m.note.replace(['\n', '\r'], " ");
@@ -327,6 +331,10 @@ impl MapState {
                 ["guide_auto", v] => s.guide_auto = v == "true",
                 ["tracker", v] => s.tracker = v == "true",
                 ["quest", v] => s.quest = Some(v.to_string()),
+                ["track", ref rest @ ..] => s.parse_track(rest),
+                ["track_focus", i] => {
+                    s.focus = i.parse::<usize>().ok().and_then(|i| s.tracks.get(i)).map(|t| t.id);
+                }
                 ["goal_tiers", v] => {
                     if let Ok(b) = v.parse::<u8>() {
                         s.goal_tiers = b & 0b111;
