@@ -74,6 +74,9 @@ pub struct Survey {
     pub doors: Vec<(String, [f32; 3])>,
     /// Every puzzle placed in the worlds, with its answer (F6's list).
     pub puzzles: Vec<Placed>,
+    /// The ways out of each world: the APC's door and the save points (those that take
+    /// the hero to the APC, and those that do not) — (world, which, where).
+    pub exits: Vec<(String, crate::actors::Sub, [f32; 3])>,
 }
 
 /// A puzzle the survey found: where, and what solves it.
@@ -287,6 +290,11 @@ impl Entry {
 }
 
 impl Survey {
+    /// The ways out of `world` (its name as the survey has it).
+    pub fn exits(&self, world: &str) -> Vec<(crate::actors::Sub, [f32; 3])> {
+        self.exits.iter().filter(|(w, ..)| w == world).map(|(_, s, at)| (*s, *at)).collect()
+    }
+
     /// Read `dir\*.json`; empty when there is none.
     pub fn load(dir: &Path) -> Survey {
         let read = |p: &Path| std::fs::read_to_string(p).ok().and_then(|t| serde_json::from_str::<Value>(&t).ok());
@@ -309,6 +317,7 @@ impl Survey {
         let mut worlds = HashMap::new();
         let mut doors = Vec::new();
         let mut puzzles = Vec::new();
+        let mut exits: Vec<(String, crate::actors::Sub, [f32; 3])> = Vec::new();
         let Ok(files) = std::fs::read_dir(dir) else { return Survey::default() };
         for f in files.flatten() {
             let path = f.path();
@@ -322,6 +331,23 @@ impl Survey {
                 let at =
                     a["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
                 let Some(at) = at.filter(|x| x.len() == 3) else { continue };
+                if let Some(travel) = a["travel"].as_str() {
+                    use crate::actors::Sub;
+                    let sub = match travel {
+                        "apc" => Sub::Apc,
+                        "save.local" => Sub::SavePointLocal,
+                        _ => Sub::SavePoint,
+                    };
+                    let at = [at[0], at[1], at[2]];
+                    // One per place: a blueprint holds a copy per cell it streams in.
+                    if !exits
+                        .iter()
+                        .any(|(w, s, p)| w == world && *s == sub && (p[0] - at[0]).hypot(p[1] - at[1]) < 300.0)
+                    {
+                        exits.push((world.to_string(), sub, at));
+                    }
+                    continue;
+                }
                 if let Some((kind, answer)) = placed_answer(&a["puzzle"]) {
                     let p = Placed {
                         world: world.to_string(),
@@ -375,7 +401,7 @@ impl Survey {
             }
             worlds.insert(world.to_string(), list);
         }
-        Survey { worlds, doors, puzzles }
+        Survey { worlds, doors, puzzles, exits }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -728,6 +754,7 @@ mod tests {
             worlds: HashMap::from([("W".to_string(), vec![talk("Tunnel_BP_2", 9000.0), talk("Forge_BP_2", 10.0)])]),
             doors: Vec::new(),
             puzzles: Vec::new(),
+            exits: Vec::new(),
         };
         let none = HashSet::new();
         let k = Known { facts: &none, tags: &none, held: &none, saved: &none, talked: &none };
@@ -800,6 +827,7 @@ mod tests {
                 lock("Talju", Some("L2"), &["LymbicRod_XRay_Rage_Item_DA"]),
                 Placed { answer: Answer::Items(vec!["Door_Key_Item_DA".into()]), ..lock("Talju", None, &[]) },
             ],
+            exits: Vec::new(),
         };
         let (facts, tags, talked) = (HashSet::new(), HashSet::new(), HashSet::new());
         let held = HashSet::from(["LymbicRod_XRay_Rage_Item_DA".to_string()]);

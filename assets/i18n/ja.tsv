@@ -711,3 +711,11 @@ JOURNEY_NONE	今回はまだ達成した追跡がありません。
 LEGEND_ICONS	アイコン
 LEGEND_GOALS	目標
 LEGEND_LINES	線と領域
+NPC_OTHER	通りすがりの人
+NPC_TALK	会話相手
+NPC_SECRET	秘密を知る人
+NPC_QUEST	クエストの人物
+SAVE_POINT_LOCAL	セーブ地点（移動不可）
+APC	装甲車
+SAVE_AND_TRAVEL	セーブ・移動
+SAVE_POINT_TO_APC	セーブ地点（装甲車へ移動）

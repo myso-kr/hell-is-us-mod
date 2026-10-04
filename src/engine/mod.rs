@@ -158,6 +158,7 @@ impl Engine {
             journal: Default::default(),
             paused: false,
             obstacles: Arc::default(),
+            exits: Arc::default(),
             slots: self.slots.clone(),
         };
         if let Err(e) = self.refresh() {
@@ -257,6 +258,7 @@ impl Engine {
                         // every frame.
                         snap.goals = Arc::new(goals);
                         snap.obstacles = a.obstacles();
+                        snap.exits = Arc::new(snap.world.as_deref().map(|w| a.exits(w)).unwrap_or_default());
                         snap.nav = a.nav();
                     }
                     Err(e) => snap.notice = Some(trf!("MINIMAP_ERROR", e = e)),

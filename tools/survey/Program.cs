@@ -390,7 +390,13 @@ class Survey(DefaultFileProvider provider)
         foreach (var actor in exports.Where(e => e.Outer?.Name == "PersistentLevel"))
         {
             if (!byOuter.TryGetValue(actor.Name, out var comps)) continue;
-            if (!comps.Any(c => Wanted.Contains(c.Class?.Name))) continue;
+            // The ways out of a region: the APC's door, and the save points that take the
+            // hero to it (all but the `…NoTravel…` ones), wherever they are.
+            var cls = actor.Class?.Name ?? "";
+            string? travel = cls.Contains("APC_Enter") ? "apc"
+                : cls.Contains("SavePoint") ? (cls.Contains("NoTravel") ? "save.local" : "save")
+                : null;
+            if (travel == null && !comps.Any(c => Wanted.Contains(c.Class?.Name))) continue;
             var rec = new JObject { ["name"] = actor.Name, ["class"] = actor.Class?.Name ?? "", ["cell"] = cell };
             // Where: the root component in world space — through what it is attached to.
             var actorProps = Props(actor);
@@ -438,7 +444,8 @@ class Survey(DefaultFileProvider provider)
             // A Vault of Forbidden Knowledge's dial door: where the vault notebook guides to.
             var vault = rec["class"]!.ToString().StartsWith("VOFK_") && rec["class"]!.ToString().Contains("DialPuzzle");
             if (vault) rec["vault"] = true;
-            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null || vault || puzzle != null) found.Add(rec);
+            if (travel != null) rec["travel"] = travel;
+            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null || vault || puzzle != null || travel != null) found.Add(rec);
         }
         return found;
     }

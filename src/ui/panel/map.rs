@@ -229,32 +229,37 @@ impl Panel {
             // What each line and colour is, as drawn now.
             let entries = crate::raster::legend(state, outline);
             section(t, tr!("LEGEND_LINES"));
-            t.style(tw::grid(4, INLINE)).add(|t| {
-                for (swatch, c, name) in entries {
-                    w(t, |ui| {
-                        ui.horizontal(|ui| {
-                            let (r, _) = ui.allocate_exact_size(egui::vec2(18.0, 10.0), egui::Sense::hover());
-                            let colour = Color32::from_rgba_unmultiplied(c.0, c.1, c.2, c.3.max(160));
-                            let p = ui.painter();
-                            let y = r.center().y;
-                            match swatch {
-                                crate::raster::Swatch::Line => {
-                                    p.line_segment([egui::pos2(r.left(), y), egui::pos2(r.right(), y)], (2.0, colour));
-                                }
-                                crate::raster::Swatch::Dashed => {
-                                    for k in 0..3 {
-                                        let x = r.left() + k as f32 * 7.0;
-                                        p.line_segment([egui::pos2(x, y), egui::pos2(x + 4.0, y)], (2.0, colour));
+            super::guide::well(t, |t| {
+                t.style(tw::grid(4, INLINE)).add(|t| {
+                    for (swatch, c, name) in entries {
+                        w(t, |ui| {
+                            ui.horizontal(|ui| {
+                                let (r, _) = ui.allocate_exact_size(egui::vec2(18.0, 10.0), egui::Sense::hover());
+                                let colour = Color32::from_rgba_unmultiplied(c.0, c.1, c.2, c.3.max(160));
+                                let p = ui.painter();
+                                let y = r.center().y;
+                                match swatch {
+                                    crate::raster::Swatch::Line => {
+                                        p.line_segment(
+                                            [egui::pos2(r.left(), y), egui::pos2(r.right(), y)],
+                                            (2.0, colour),
+                                        );
+                                    }
+                                    crate::raster::Swatch::Dashed => {
+                                        for k in 0..3 {
+                                            let x = r.left() + k as f32 * 7.0;
+                                            p.line_segment([egui::pos2(x, y), egui::pos2(x + 4.0, y)], (2.0, colour));
+                                        }
+                                    }
+                                    crate::raster::Swatch::Fill => {
+                                        p.rect_filled(r.shrink(1.0), 2.0, colour);
                                     }
                                 }
-                                crate::raster::Swatch::Fill => {
-                                    p.rect_filled(r.shrink(1.0), 2.0, colour);
-                                }
-                            }
-                            ui.label(RichText::new(name).small().color(DIM));
+                                ui.label(RichText::new(name).small().color(DIM));
+                            });
                         });
-                    });
-                }
+                    }
+                });
             });
             // The icons: each kind shown in an inset of its own, two to a row, its sorts
             // under its name (a sort hidden, dimmed); the kinds with one icon share an

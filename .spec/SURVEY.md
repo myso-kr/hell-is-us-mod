@@ -272,3 +272,11 @@ Rejected by the user: shipping the survey tool self-contained with its runtime (
 Research behind this: Microsoft's deployment documentation (framework-dependent vs.
 self-contained), winget's unattended-install options, the dotnet-install script (non-admin), and
 the "You must install .NET" dialog that a framework-dependent apphost shows.
+
+## 9. The ways out (2026-10-05)
+
+Actors whose class is the APC's door (`APC_Enter…`) or a save point (`…SavePoint…`) are kept
+whatever their components, with `travel`: `apc`, `save`, or `save.local` (the `…NoTravel…` ones,
+which do not take the hero to the APC). `Survey::exits` reads them, one per place (a blueprint is
+in each cell it streams in). Every region has at least one APC door (one per place, after the one-per-cell
+merge). Re-run: every other actor came out the same.

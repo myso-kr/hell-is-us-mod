@@ -80,6 +80,18 @@ pub fn with_survey(things: &[crate::actors::Thing], s: &crate::engine::Snapshot)
             .filter(|(p, solved)| !solved && p.world == world && p.kind != crate::puzzles::Kind::Placement)
             .map(|(p, _)| Thing { sub: Sub::Puzzle, at: p.at }),
     );
+    // The ways out the survey knows, where none of the scan's stands (the APC's door far
+    // off, a save point not loaded).
+    let scanned: Vec<crate::actors::Thing> =
+        things.iter().copied().filter(|t| t.kind() == crate::actors::Kind::Save).collect();
+    out.extend(
+        s.exits
+            .iter()
+            .filter(|(sub, at)| {
+                !scanned.iter().any(|t| t.sub == *sub && (t.at[0] - at[0]).hypot(t.at[1] - at[1]) < 500.0)
+            })
+            .map(|&(sub, at)| Thing { sub, at }),
+    );
     out.extend(
         s.vaults
             .iter()

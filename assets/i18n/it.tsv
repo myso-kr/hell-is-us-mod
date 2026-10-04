@@ -711,3 +711,11 @@ JOURNEY_NONE	Ancora nulla di seguito raggiunto in questa sessione.
 LEGEND_ICONS	Icone
 LEGEND_GOALS	Obiettivi
 LEGEND_LINES	Linee e aree
+NPC_OTHER	Passanti
+NPC_TALK	Conversazioni
+NPC_SECRET	Conoscono un segreto
+NPC_QUEST	Per una missione
+SAVE_POINT_LOCAL	Punto di salvataggio (senza APC)
+APC	APC
+SAVE_AND_TRAVEL	Salvataggio e viaggio
+SAVE_POINT_TO_APC	Punto di salvataggio (all'APC)

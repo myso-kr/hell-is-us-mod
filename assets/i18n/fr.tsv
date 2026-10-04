@@ -711,3 +711,11 @@ JOURNEY_NONE	Rien de suivi n'a encore été atteint cette fois.
 LEGEND_ICONS	Icônes
 LEGEND_GOALS	Objectifs
 LEGEND_LINES	Lignes et zones
+NPC_OTHER	Passants
+NPC_TALK	Conversations
+NPC_SECRET	Connaissent un secret
+NPC_QUEST	Pour une quête
+SAVE_POINT_LOCAL	Point de sauvegarde (sans APC)
+APC	APC
+SAVE_AND_TRAVEL	Sauvegarde et voyage
+SAVE_POINT_TO_APC	Point de sauvegarde (vers l'APC)

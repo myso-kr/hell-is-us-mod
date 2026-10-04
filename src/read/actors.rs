@@ -41,7 +41,7 @@ impl Kind {
             Kind::Loot => tr!("LOOT"),
             Kind::Npc => "NPC",
             Kind::Interact => tr!("DOORS_AND_PUZZLES"),
-            Kind::Save => tr!("SAVE"),
+            Kind::Save => tr!("SAVE_AND_TRAVEL"),
         }
     }
 
@@ -83,11 +83,23 @@ pub enum Sub {
     Stash,
     OtherItem,
     Loot,
+    /// Someone with nothing more to say than a line or two (a villager, a soldier).
     Npc,
+    /// Someone to talk with: the story's conversations, the forge, the trades.
+    NpcTalk,
+    /// Someone who tells a secret (a quick chat that is one).
+    NpcSecret,
+    /// Someone a quest needs (a quick chat that is one).
+    NpcQuest,
     Door,
     LymbicLock,
     Translation,
+    /// A save point that also takes the hero to the APC (most do).
     SavePoint,
+    /// A save point that does not take the hero to the APC (`…NoTravel…`).
+    SavePointLocal,
+    /// The APC's door: the way to the other regions.
+    Apc,
     /// An enemy group (spawner) not beaten yet — from the survey, not the scan.
     EnemyGroup,
     /// A puzzle not solved yet (dial, code, item placement) — from the survey.
@@ -97,7 +109,7 @@ pub enum Sub {
 }
 
 impl Sub {
-    pub const ALL: [Sub; 26] = [
+    pub const ALL: [Sub; 31] = [
         Sub::Feral,
         Sub::Primeval,
         Sub::Negator,
@@ -117,10 +129,15 @@ impl Sub {
         Sub::OtherItem,
         Sub::Loot,
         Sub::Npc,
+        Sub::NpcTalk,
+        Sub::NpcSecret,
+        Sub::NpcQuest,
         Sub::Door,
         Sub::LymbicLock,
         Sub::Translation,
         Sub::SavePoint,
+        Sub::SavePointLocal,
+        Sub::Apc,
         Sub::EnemyGroup,
         Sub::Puzzle,
         Sub::Vault,
@@ -133,9 +150,9 @@ impl Sub {
             Medicine | Food | Consumable | Weapon | Gear | Skill | DroneModule | Research | Lore | Quest | Stash
             | OtherItem => Kind::Item,
             Loot => Kind::Loot,
-            Npc => Kind::Npc,
+            Npc | NpcTalk | NpcSecret | NpcQuest => Kind::Npc,
             Door | LymbicLock | Translation | Puzzle | Vault => Kind::Interact,
-            SavePoint => Kind::Save,
+            SavePoint | SavePointLocal | Apc => Kind::Save,
         }
     }
 
@@ -162,10 +179,15 @@ impl Sub {
             OtherItem => "item.other",
             Loot => "loot",
             Npc => "npc",
+            NpcTalk => "npc.talk",
+            NpcSecret => "npc.secret",
+            NpcQuest => "npc.quest",
             Door => "interact.door",
             LymbicLock => "interact.lock",
             Translation => "interact.translation",
             SavePoint => "save",
+            SavePointLocal => "save.local",
+            Apc => "save.apc",
             EnemyGroup => "enemy.group",
             Puzzle => "interact.puzzle",
             Vault => "interact.vault",
@@ -193,11 +215,16 @@ impl Sub {
             Stash => tr!("SUPPLIES"),
             OtherItem => tr!("OTHER"),
             Loot => tr!("ENEMY_LOOT_BOX"),
-            Npc => "NPC",
+            Npc => tr!("NPC_OTHER"),
+            NpcTalk => tr!("NPC_TALK"),
+            NpcSecret => tr!("NPC_SECRET"),
+            NpcQuest => tr!("NPC_QUEST"),
             Door => tr!("DOOR"),
             LymbicLock => tr!("LYMBIC_LOCK"),
             Translation => tr!("DRONE_TRANSLATION"),
             SavePoint => tr!("SAVE_POINT"),
+            SavePointLocal => tr!("SAVE_POINT_LOCAL"),
+            Apc => tr!("APC"),
             EnemyGroup => tr!("ENEMY_GROUP_LEFT"),
             Puzzle => tr!("UNSOLVED_PUZZLE"),
             Vault => tr!("VAULT_DOOR"),
@@ -259,9 +286,24 @@ pub fn classify(lineage: &[String]) -> Option<Sub> {
     } else if has("Base_EnemyLootContainer_BP_C") {
         Some(Sub::Loot)
     } else if has("NpcActor") {
-        Some(Sub::Npc)
+        // As the game names them: `Convo_…` (a conversation), `Quickchat_Secret_…`,
+        // `Quickchat_Quest_…`, else a line or two (`…Generic…`).
+        let own = own.to_ascii_lowercase();
+        Some(if has("Base_NPC_Conversation_BP_C") {
+            Sub::NpcTalk
+        } else if own.contains("_secret_") {
+            Sub::NpcSecret
+        } else if own.contains("_quest_") {
+            Sub::NpcQuest
+        } else {
+            Sub::Npc
+        })
     } else if has("InteractableCheckpointActor") {
-        Some(Sub::SavePoint)
+        // Every save point can take the hero to the APC (`TravelToAPCAction`) but the
+        // `…NoTravel…` ones.
+        Some(if own.contains("NoTravel") { Sub::SavePointLocal } else { Sub::SavePoint })
+    } else if has("APC_Enter_Interact_BP_C") {
+        Some(Sub::Apc)
     } else if any("LymbicLockPanel") {
         Some(Sub::LymbicLock)
     } else if any("DroneTranslation") {
@@ -611,7 +653,18 @@ mod tests {
             assert_eq!(classify(&gather(own)), Some(want), "{own}");
         }
         assert_eq!(classify(&l(&["Base_EnemyLootContainer_BP_C", "InteractableActor"])), Some(Sub::Loot));
-        assert_eq!(classify(&l(&["Quickchat_X_BP_C", "Base_NPC_QuickChat_BP_C", "NpcActor"])), Some(Sub::Npc));
+        let quick = |own: &str| l(&[own, "Base_NPC_QuickChat_BP_C", "NpcActor"]);
+        assert_eq!(classify(&quick("Quickchat_ZGeneric_SabinianSoldier04_BP_C")), Some(Sub::Npc));
+        assert_eq!(classify(&quick("QuickChat_Secret_JudithKarryBabyAlive_BP_C")), Some(Sub::NpcSecret));
+        assert_eq!(classify(&quick("Quickchat_Quest_DyingOMSIF_BP_C")), Some(Sub::NpcQuest));
+        assert_eq!(classify(&l(&["Convo_Sophie_BP_C", "Base_NPC_Conversation_BP_C", "NpcActor"])), Some(Sub::NpcTalk));
+        assert_eq!(classify(&l(&["APC_Enter_Interact_BP_C", "InteractableActor"])), Some(Sub::Apc));
+        let local = l(&[
+            "Child_SavePointLeftNoTravel_Interact_BP_C",
+            "Base_SavePoint_Interact_BP_C",
+            "InteractableCheckpointActor",
+        ]);
+        assert_eq!(classify(&local), Some(Sub::SavePointLocal));
         assert_eq!(
             classify(&l(&["LymbicLockPanel_2ndGen_Rage_Y_Z_Interact_BP_C", "InteractableActor"])),
             Some(Sub::LymbicLock)

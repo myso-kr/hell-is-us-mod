@@ -450,6 +450,17 @@ pub fn text(tui: &mut Tui, text: impl Into<RichText>) {
 
 /// A titled card: `flex flex-col gap-2 p-4 border rounded`, the accent bar beside its title.
 pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> T {
+    card_with(tui, title, |_| {}, body)
+}
+
+/// A card whose header holds an action at its right end (a button that acts on the
+/// whole card, as "let go of all"), level with the title.
+pub fn card_with<T>(
+    tui: &mut Tui,
+    title: &str,
+    action: impl FnOnce(&mut egui::Ui),
+    body: impl FnOnce(&mut Tui) -> T,
+) -> T {
     // Its rows at the top: a card stretched to its row's height keeps its spare room
     // below them, not spread between them.
     tui.style(Style {
@@ -460,7 +471,10 @@ pub fn card<T>(tui: &mut Tui, title: &str, body: impl FnOnce(&mut Tui) -> T) -> 
     .add_with_background_ui(background, |tui, _| {
         // The header: the title over a hairline as wide as the card's content.
         block(tui, |ui| {
-            ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE));
+            ui.horizontal(|ui| {
+                ui.label(RichText::new(title).strong().size(13.5).color(super::theme::TITLE));
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), action);
+            });
             let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 5.0), egui::Sense::hover());
             ui.painter().hline(rect.x_range(), rect.bottom() - 0.5, egui::Stroke::new(1.0, super::theme::EDGE));
         });

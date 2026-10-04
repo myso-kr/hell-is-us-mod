@@ -711,3 +711,11 @@ JOURNEY_NONE	В этот раз ещё ничего не достигнуто.
 LEGEND_ICONS	Значки
 LEGEND_GOALS	Цели
 LEGEND_LINES	Линии и области
+NPC_OTHER	Прохожие
+NPC_TALK	Собеседники
+NPC_SECRET	Знают секрет
+NPC_QUEST	Для задания
+SAVE_POINT_LOCAL	Точка сохранения (без БТР)
+APC	БТР
+SAVE_AND_TRAVEL	Сохранение и переезд
+SAVE_POINT_TO_APC	Точка сохранения (к БТР)

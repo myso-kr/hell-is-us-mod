@@ -223,3 +223,21 @@ tier always on; split the auto guide and the manual following into separate card
   track in its colour, a quest as "quest -> its goal now", "in focus", Focus, Let go; Let go of all).
   The tier filter is gone: every tier is shown and guided to (`goal_tiers` is no longer saved).
 
+## 8. The ways out of a region: the APC and the save points (2026-10-05)
+
+The only way between regions is the APC (there is no other fast travel). Its door is
+`APC_Enter_Interact_BP_C`; and every save point (`Base_SavePoint_Interact_BP_C`) carries a
+`TravelToAPCAction` that takes the hero to it, but the `Child_SavePoint…NoTravel…` ones (read from
+the class tree in memory, build 24045435). Neither was on the maps nor anywhere to be guided to.
+
+- **On the maps**: the "Save" kind is now "Save & travel", with three sorts: save points that take
+  the hero to the APC, those that do not, and the APC's door. The scan finds those near; the survey
+  (`travel` on its actors, §SURVEY 9) the rest of the region, so the APC shows from anywhere.
+- **Guided to**: when the region holds nothing more of the story followed and other regions do
+  ("22 in other regions, by APC"), the auto guide's card lists the nearest APC door and the nearest
+  save point that takes the hero to it, each with its distance and the Follow toggle (a place track).
+- Acasa Marshes has two APC doors, neither behind a data layer: both are shown, the nearer offered.
+
+The NPCs' kind is split as the game names them: `Convo_…` (a conversation: the story's people,
+the forge, trades), `Quickchat_Secret_…` (tells a secret), `Quickchat_Quest_…` (a quest's), and the
+rest (a line or two). Loot has one class only (`Base_EnemyLootContainer_BP_C`): no finer sort.

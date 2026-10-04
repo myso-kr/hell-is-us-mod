@@ -25,6 +25,12 @@ impl Panel {
             state.route && state.auto.is_some_and(|a| self.shared.route_uncertain.lock().unwrap().contains(&a));
         let target = state.auto.and_then(|id| goals.iter().find(|g| g.id == id)).cloned();
         let focus = state.in_focus(None);
+        // With nothing left here: the ways to the other regions, nearest first.
+        let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
+        let ways = match (snap, here) {
+            (Some(s), Some(h)) if target.is_none() && elsewhere > 0 => ways_out(s, h),
+            _ => Vec::new(),
+        };
 
         card(t, tr!("GUIDE_AUTO_CARD"), |t| {
             well(t, |t| match &target {
@@ -87,6 +93,23 @@ impl Panel {
                         tr!("NO_QUEST_GOAL_NEARBY").to_string()
                     };
                     text(t, RichText::new(why).color(DIM));
+                    for (sub, at) in &ways {
+                        let track = way_track(*sub, *at, &world);
+                        t.style(tw::row(INLINE)).add(|t| {
+                            w(t, |ui| crate::ui::svg::sort(ui, *sub, 18.0));
+                            let name =
+                                if *sub == crate::actors::Sub::Apc { tr!("APC") } else { tr!("SAVE_POINT_TO_APC") };
+                            text(t, RichText::new(name).color(TEXT));
+                            if let Some(h) = here {
+                                w(t, |ui| {
+                                    ui.label(RichText::new(crate::raster::span(h, *at)).monospace().small().color(DIM))
+                                });
+                            }
+                            if tw::follow_toggle(t, state.track_colour(track.id)) {
+                                state.toggle(track.clone());
+                            }
+                        });
+                    }
                 }
             });
 
@@ -145,59 +168,71 @@ impl Panel {
         let mut all: Vec<crate::goals::Goal> = goals.iter().cloned().collect();
         all.extend(state.place_goals(&goals, &world));
         let title = trf!("TRACKING", n = state.tracks.len(), max = crate::guide::track::MAX);
-        card(t, &title, |t| {
-            if state.tracks.is_empty() {
-                note(t, trf!("TRACK_HINT", max = crate::guide::track::MAX));
-                return;
-            }
-            let tracks = state.tracks.clone();
-            for tr in &tracks {
-                let goal = state.goal_of(tr).and_then(|id| all.iter().find(|g| g.id == id));
-                let focus = state.in_focus(Some(tr.id));
-                let far = goal.zip(here).map_or(String::new(), |(g, h)| crate::raster::span(h, g.at));
-                t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| dot(ui, tr.rgb()));
-                    let name = match (&tr.quest, goal) {
-                        (Some(_), Some(g)) => format!("{} → {}", tr.label, g.label),
-                        (Some(_), None) => format!("{} · {}", tr.label, tr!("QUEST_NOT_HERE")),
-                        (None, _) => tr.shown(),
-                    };
-                    let colour = if focus {
-                        TITLE
-                    } else if goal.is_some() {
-                        TEXT
-                    } else {
-                        DIM
-                    };
-                    t.style(tw::grow(tw::row(TIGHT))).add(|t| {
-                        if tr.quest.is_some() {
-                            w(t, |ui| ui.label(RichText::new(tr!("QUEST_TAG")).small().color(DIM)));
+        // "Let go of all" acts on the card as a whole: in its header, at the right.
+        let mut drop_all = false;
+        let any = !state.tracks.is_empty();
+        tw::card_with(
+            t,
+            &title,
+            |ui| {
+                if any {
+                    drop_all = ui.small_button(tr!("TRACK_DROP_ALL")).clicked();
+                }
+            },
+            |t| {
+                if state.tracks.is_empty() {
+                    note(t, trf!("TRACK_HINT", max = crate::guide::track::MAX));
+                    return;
+                }
+                let tracks = state.tracks.clone();
+                for tr in &tracks {
+                    let goal = state.goal_of(tr).and_then(|id| all.iter().find(|g| g.id == id));
+                    let focus = state.in_focus(Some(tr.id));
+                    let far = goal.zip(here).map_or(String::new(), |(g, h)| crate::raster::span(h, g.at));
+                    t.style(tw::row(INLINE)).add(|t| {
+                        w(t, |ui| dot(ui, tr.rgb()));
+                        let name = match (&tr.quest, goal) {
+                            (Some(_), Some(g)) => format!("{} → {}", tr.label, g.label),
+                            (Some(_), None) => format!("{} · {}", tr.label, tr!("QUEST_NOT_HERE")),
+                            (None, _) => tr.shown(),
+                        };
+                        let colour = if focus {
+                            TITLE
+                        } else if goal.is_some() {
+                            TEXT
+                        } else {
+                            DIM
+                        };
+                        t.style(tw::grow(tw::row(TIGHT))).add(|t| {
+                            if tr.quest.is_some() {
+                                w(t, |ui| ui.label(RichText::new(tr!("QUEST_TAG")).small().color(DIM)));
+                            }
+                            block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).wrap()));
+                        });
+                        if focus {
+                            tw::chip(t, tr!("TRACK_IN_FOCUS"), tw::Tone::Ok);
                         }
-                        block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).wrap()));
+                        if goal.is_some_and(|g| uncertain.contains(&g.id)) {
+                            tw::chip(t, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait);
+                        }
+                        block(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
+                        if !focus
+                            && w(t, |ui| ui.small_button(tr!("TRACK_FOCUS")))
+                                .on_hover_text(tr!("TRACK_FOCUS_HINT"))
+                                .clicked()
+                        {
+                            state.focus = Some(tr.id);
+                        }
+                        if w(t, |ui| ui.small_button(tr!("TRACK_DROP"))).clicked() {
+                            state.unfollow(tr.id);
+                        }
                     });
-                    if focus {
-                        tw::chip(t, tr!("TRACK_IN_FOCUS"), tw::Tone::Ok);
-                    }
-                    if goal.is_some_and(|g| uncertain.contains(&g.id)) {
-                        tw::chip(t, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait);
-                    }
-                    block(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
-                    if !focus
-                        && w(t, |ui| ui.small_button(tr!("TRACK_FOCUS")))
-                            .on_hover_text(tr!("TRACK_FOCUS_HINT"))
-                            .clicked()
-                    {
-                        state.focus = Some(tr.id);
-                    }
-                    if w(t, |ui| ui.small_button(tr!("TRACK_DROP"))).clicked() {
-                        state.unfollow(tr.id);
-                    }
-                });
-            }
-            if w(t, |ui| ui.button(tr!("TRACK_DROP_ALL"))).clicked() {
-                state.unfollow_all();
-            }
-        });
+                }
+            },
+        );
+        if drop_all {
+            state.unfollow_all();
+        }
     }
 
     /// The area's map (`Shared::ops`, drawn by the overlay while this page shows): what is
@@ -391,6 +426,38 @@ impl Panel {
                 });
             });
         });
+    }
+}
+
+/// The ways to the other regions from `here`: the nearest APC door and the nearest save
+/// point that takes the hero to it, scanned or (not loaded) from the survey.
+fn ways_out(s: &Snapshot, here: [f32; 3]) -> Vec<(crate::actors::Sub, [f32; 3])> {
+    use crate::actors::Sub;
+    let far = |at: &[f32; 3]| (at[0] - here[0]).hypot(at[1] - here[1]);
+    let mut all: Vec<(Sub, [f32; 3])> = s.things.iter().map(|t| (t.sub, t.at)).collect();
+    all.extend(s.exits.iter().copied());
+    [Sub::Apc, Sub::SavePoint]
+        .into_iter()
+        .filter_map(|want| {
+            all.iter().filter(|(sub, _)| *sub == want).min_by(|a, b| far(&a.1).total_cmp(&far(&b.1))).copied()
+        })
+        .collect()
+}
+
+/// A way out as a place to follow; its id from what and where it is, so the same one
+/// keeps its track.
+fn way_track(sub: crate::actors::Sub, at: [f32; 3], world: &str) -> crate::guide::track::Track {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    ("way", sub.id(), (at[0] / 100.0) as i32, (at[1] / 100.0) as i32).hash(&mut h);
+    let label = if sub == crate::actors::Sub::Apc { tr!("APC") } else { tr!("SAVE_POINT_TO_APC") };
+    crate::guide::track::Track {
+        id: h.finish(),
+        world: crate::survey::Survey::world_of(world).to_string(),
+        at,
+        label: label.to_string(),
+        place: true,
+        ..Default::default()
     }
 }
 

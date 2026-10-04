@@ -396,6 +396,12 @@ impl Attached {
         out
     }
 
+    /// The ways out of `world` the survey knows: the APC's door and the save points.
+    pub fn exits(&self, world: &str) -> Vec<(crate::actors::Sub, [f32; 3])> {
+        let g = self.guide.borrow();
+        g.survey.as_ref().map(|s| s.exits(crate::survey::Survey::world_of(world))).unwrap_or_default()
+    }
+
     /// The collectibles' counts here and everywhere, and the NPCs with more to tell.
     pub fn collection(&self, world: &str) -> (Vec<crate::survey::Collect>, Vec<crate::survey::Need>) {
         let g = self.guide.borrow();

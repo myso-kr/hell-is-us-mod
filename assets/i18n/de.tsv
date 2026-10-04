@@ -711,3 +711,11 @@ JOURNEY_NONE	In dieser Sitzung noch nichts Verfolgtes erreicht.
 LEGEND_ICONS	Symbole
 LEGEND_GOALS	Ziele
 LEGEND_LINES	Linien und Flächen
+NPC_OTHER	Passanten
+NPC_TALK	Gespräche
+NPC_SECRET	Kennen ein Geheimnis
+NPC_QUEST	Für eine Quest
+SAVE_POINT_LOCAL	Speicherpunkt (kein APC)
+APC	APC
+SAVE_AND_TRAVEL	Speichern & Reisen
+SAVE_POINT_TO_APC	Speicherpunkt (zum APC)

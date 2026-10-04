@@ -711,3 +711,11 @@ JOURNEY_NONE	Bu oturumda henüz takip edilen bir şeye ulaşılmadı.
 LEGEND_ICONS	Simgeler
 LEGEND_GOALS	Hedefler
 LEGEND_LINES	Çizgiler ve alanlar
+NPC_OTHER	Yoldan geçenler
+NPC_TALK	Sohbetler
+NPC_SECRET	Bir sır bilenler
+NPC_QUEST	Görev için
+SAVE_POINT_LOCAL	Kayıt noktası (APC yok)
+APC	APC
+SAVE_AND_TRAVEL	Kayıt ve yolculuk
+SAVE_POINT_TO_APC	Kayıt noktası (APC'ye)

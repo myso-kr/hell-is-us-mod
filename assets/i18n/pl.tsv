@@ -711,3 +711,11 @@ JOURNEY_NONE	W tej sesji nie osiągnięto jeszcze nic śledzonego.
 LEGEND_ICONS	Ikony
 LEGEND_GOALS	Cele
 LEGEND_LINES	Linie i obszary
+NPC_OTHER	Przechodnie
+NPC_TALK	Rozmowy
+NPC_SECRET	Znają sekret
+NPC_QUEST	Do zadania
+SAVE_POINT_LOCAL	Punkt zapisu (bez APC)
+APC	APC
+SAVE_AND_TRAVEL	Zapis i podróż
+SAVE_POINT_TO_APC	Punkt zapisu (do APC)

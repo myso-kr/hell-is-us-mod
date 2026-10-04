@@ -711,3 +711,11 @@ JOURNEY_NONE	Nothing followed was reached yet this run.
 LEGEND_ICONS	Icons
 LEGEND_GOALS	Goals
 LEGEND_LINES	Lines and areas
+NPC_OTHER	Passers-by
+NPC_TALK	Conversations
+NPC_SECRET	Tell a secret
+NPC_QUEST	For a quest
+SAVE_POINT_LOCAL	Save point (no APC)
+APC	APC
+SAVE_AND_TRAVEL	Save & travel
+SAVE_POINT_TO_APC	Save point (to the APC)

@@ -711,3 +711,11 @@ JOURNEY_NONE	이번 실행에서 아직 해낸 추적이 없습니다.
 LEGEND_ICONS	아이콘
 LEGEND_GOALS	목표
 LEGEND_LINES	선·영역
+NPC_OTHER	그 밖의 사람
+NPC_TALK	대화 상대
+NPC_SECRET	비밀을 아는 사람
+NPC_QUEST	퀘스트 인물
+SAVE_POINT_LOCAL	저장 지점 (이동 불가)
+APC	장갑차
+SAVE_AND_TRAVEL	저장·이동
+SAVE_POINT_TO_APC	저장 지점 (장갑차로 이동)
