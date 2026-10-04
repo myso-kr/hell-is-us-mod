@@ -359,3 +359,13 @@ page: as many 360 px cards as fit in 55 % of its width, three at most (two on 10
 columns; the Settings page's two-column grid widens); the debug page is as wide as the rest. The
 height still follows the page, up to 72 % of the monitor's.
 
+**One height too** (2026-10-05, asked next): the page's room is 72 % of the monitor's height less the
+chrome and footer on every page (`set_min_height` on the room: the scroll area itself shrinks to a
+short page), so the footer stays put and a long page scrolls. Captured: every page 1372 x 1008 on
+this screen.
+
+**The Map page's masonry** (same pass): its middle "column" was one masonry item holding four cards
+(minimap, terrain, big map, layer opacity), three times as tall as the others. Each is a card of its
+own now (`map_card(which)`), and so are the Guide page's map layers and pins (`marks_card(which)`):
+the columns even out (minimap | legend, keys | big map, terrain, opacity).
+
