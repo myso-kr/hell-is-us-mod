@@ -719,3 +719,18 @@ SAVE_POINT_LOCAL	저장 지점 (이동 불가)
 APC	장갑차
 SAVE_AND_TRAVEL	저장·이동
 SAVE_POINT_TO_APC	저장 지점 (장갑차로 이동)
+TELEPORT_TO_FOLLOWED	추적 대상으로 순간이동
+TELEPORT_TO_FOLLOWED_HINT	대상 바로 앞에 내려 줍니다(이 지역 안에서만). 막힌 곳에 갇힐 수 있으니 먼저 위치를 저장해 두세요.
+NOTHING_FOLLOWED_HERE	이 지역에서 추적 중인 대상이 없습니다.
+TELEPORT	이동
+MOVED_TO_TARGET	{name}(으)로 이동했습니다
+TARGET_IN_ANOTHER_REGION	다른 지역({world})에 있습니다
+SAVES_OVERVIEW	한눈에 보기
+LAST_BACKUP	최근 백업
+BACKUPS_KEPT	보관 중인 백업
+BACKUPS_SIZE	백업 용량
+LAST_GAME_SAVE	마지막 게임 저장
+DEBUG_STATUS	상태
+MEMORY_NOW	메모리
+MEMORY_PEAK	메모리 최대
+MEMORY_ALSO_LOGGED	메모리는 1분마다 로그에도 기록됩니다.

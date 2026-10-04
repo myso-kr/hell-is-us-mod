@@ -333,6 +333,8 @@ pub struct Panel {
     /// The save backups, as last listed.
     backups: Vec<(String, std::path::PathBuf)>,
     backups_read: Option<Instant>,
+    /// What the backups take on disk, all told (bytes): read with the list.
+    backups_size: u64,
     /// The size last asked of the window, so it is asked once per change.
     height: f32,
     width: f32,
@@ -445,6 +447,7 @@ impl Panel {
             show_unlocked: false,
             columns: 2,
             backups: Vec::new(),
+            backups_size: 0,
             backups_read: None,
             height: 0.0,
             width: 0.0,
@@ -783,22 +786,36 @@ impl Panel {
         self.shared.preview_wanted.store(self.tool == Some(Tool::Map), std::sync::atomic::Ordering::SeqCst);
         self.shared.ops_wanted.store(self.tool == Some(Tool::Guide), std::sync::atomic::Ordering::SeqCst);
         match self.tab {
-            _ if self.tool == Some(Tool::Debug) => block(t, |ui| self.debug_tab(ui, snap)),
-            _ if self.tool == Some(Tool::Saves) => {
+            // The figures beside what the cheats on write; the test record across the page.
+            _ if self.tool == Some(Tool::Debug) => {
                 let cols = self.columns;
-                tw::masonry(t, "saves", cols, 2, |t, i| match i {
-                    0 => self.backups_card(t),
+                tw::spans(t, cols, &[1, 2, 3], |t, i| match i {
+                    0 => self.debug_status(t, snap),
+                    1 => self.debug_writes(t, snap),
+                    _ => self.debug_marks(t),
+                })
+            }
+            _ if self.tool == Some(Tool::Saves) => {
+                // The figures and actions across the top; the backups two columns wide,
+                // the game's own files beside them.
+                let cols = self.columns;
+                tw::spans(t, cols, &[3, 2, 1], |t, i| match i {
+                    0 => self.saves_overview(t),
+                    1 => self.backups_card(t),
                     _ => self.slots_card(t),
                 })
             }
             _ if self.tool.is_some() => self.map_tab(t, snap),
+            // A group's cheats two columns wide, what is on (every group's) beside them;
+            // Movement adds the teleport to what is followed and the saved positions.
             g => {
                 let cols = self.columns;
-                let n = if g == Group::Movement { 3 } else { 2 };
-                tw::masonry(t, "cheats", cols, n, |t, i| match (i, n) {
-                    (0, _) => card(t, g.label(), |t| self.held(t, g, snap)),
-                    (1, 3) => self.positions(t, snap),
-                    _ => self.summary(t, snap),
+                let spans: &[u16] = if g == Group::Movement { &[2, 1, 2, 1] } else { &[2, 1] };
+                tw::spans(t, cols, spans, |t, i| match i {
+                    0 => card(t, g.label(), |t| self.held(t, g, snap)),
+                    1 => self.summary(t, snap),
+                    2 => self.teleports(t, snap),
+                    _ => self.positions(t, snap),
                 })
             }
         }

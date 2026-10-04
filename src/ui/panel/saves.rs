@@ -4,7 +4,30 @@ use super::*;
 use crate::ui::theme::{ACCENT, EDGE, INLINE, TEXT};
 
 /// How many backups the timeline shows; the rest are in the folder.
-const SHOWN: usize = 6;
+const SHOWN: usize = 10;
+
+/// What a folder's files take (bytes), one level down.
+fn size_of(dir: &std::path::Path) -> u64 {
+    std::fs::read_dir(dir).into_iter().flatten().flatten().filter_map(|e| e.metadata().ok()).map(|m| m.len()).sum()
+}
+
+/// The game's save files: name, when last written, size; newest first.
+type SaveFile = (String, std::time::SystemTime, u64);
+fn save_files() -> Option<(std::path::PathBuf, Vec<SaveFile>)> {
+    let dir = crate::backup::saves()?;
+    let mut files: Vec<SaveFile> = std::fs::read_dir(&dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|e| e.path().extension().is_some_and(|x| x.eq_ignore_ascii_case("sav")))
+        .filter_map(|e| {
+            let m = e.metadata().ok()?;
+            Some((e.file_name().to_string_lossy().to_string(), m.modified().ok()?, m.len()))
+        })
+        .collect();
+    files.sort_by_key(|f| std::cmp::Reverse(f.1));
+    Some((dir, files))
+}
 
 /// How long ago, said as people say it: just now, 5 min ago, 3h ago, 2 d ago.
 fn ago(at: std::time::SystemTime) -> String {
@@ -73,33 +96,37 @@ fn timeline(ui: &mut egui::Ui, rows: &[(String, String, String)]) {
 }
 
 impl Panel {
-    /// The save backups (backup.rs): a timeline of the newest, a backup now, the folder.
-    pub(super) fn backups_card(&mut self, t: &mut Tui) {
-        // Listed once a second at most: it reads the folder.
+    /// The backups, listed once a second at most (it reads the folder), and their size.
+    fn read_backups(&mut self) {
         if self.backups_read.is_none_or(|at| at.elapsed() >= Duration::from_secs(1)) {
             self.backups = crate::backup::list();
+            self.backups_size = self.backups.iter().map(|(_, p)| size_of(p)).sum();
             self.backups_read = Some(Instant::now());
         }
-        card(t, tr!("SAVE_BACKUPS"), |t| {
-            note(t, trf!("COPIES_THE_SAVE_FILES_EACH_TIME", count = crate::backup::KEEP));
-            if self.backups.is_empty() {
-                text(t, RichText::new(tr!("NO_BACKUPS_YET")).color(DIM).small());
-            } else {
-                let rows: Vec<(String, String, String)> = self
-                    .backups
-                    .iter()
-                    .take(SHOWN)
-                    .map(|(name, path)| {
-                        let (time, why) = when_and_why(name);
-                        let age = path.metadata().and_then(|m| m.modified()).map(ago).unwrap_or_default();
-                        (time, why, age)
-                    })
-                    .collect();
-                block(t, |ui| {
-                    ui.spacing_mut().item_spacing.y = 0.0;
-                    timeline(ui, &rows);
-                });
-            }
+    }
+
+    /// The page's figures (the last backup, how many are kept, what they take, the
+    /// game's last save) and its actions: back up now, open the folder.
+    pub(super) fn saves_overview(&mut self, t: &mut Tui) {
+        self.read_backups();
+        let last_backup = self.backups.first().and_then(|(_, p)| p.metadata().and_then(|m| m.modified()).ok());
+        let last_save = save_files().and_then(|(_, f)| f.first().map(|x| x.1));
+        let dash = || "-".to_string();
+        let figures = [
+            (tr!("LAST_BACKUP"), last_backup.map(ago).unwrap_or_else(dash)),
+            (tr!("BACKUPS_KEPT"), format!("{}/{}", self.backups.len(), crate::backup::KEEP)),
+            (tr!("BACKUPS_SIZE"), format!("{:.1} MB", self.backups_size as f64 / 1_048_576.0)),
+            (tr!("LAST_GAME_SAVE"), last_save.map(ago).unwrap_or_else(dash)),
+        ];
+        card(t, tr!("SAVES_OVERVIEW"), |t| {
+            t.style(tw::grid(4, INLINE)).add(|t| {
+                for (label, value) in &figures {
+                    let icon = |ui: &mut egui::Ui| {
+                        crate::ui::svg::sort(ui, crate::actors::Sub::SavePoint, 14.0);
+                    };
+                    tw::stat(t, icon, value, label, None);
+                }
+            });
             choices(t, |t| {
                 if w(t, |ui| ui.button(tr!("BACK_UP_NOW"))).clicked() {
                     self.reply = Some(match crate::backup::make("manual") {
@@ -123,25 +150,40 @@ impl Panel {
         });
     }
 
+    /// The save backups (backup.rs): a timeline of the newest.
+    pub(super) fn backups_card(&mut self, t: &mut Tui) {
+        self.read_backups();
+        card(t, tr!("SAVE_BACKUPS"), |t| {
+            note(t, trf!("COPIES_THE_SAVE_FILES_EACH_TIME", count = crate::backup::KEEP));
+            if self.backups.is_empty() {
+                text(t, RichText::new(tr!("NO_BACKUPS_YET")).color(DIM).small());
+            } else {
+                let rows: Vec<(String, String, String)> = self
+                    .backups
+                    .iter()
+                    .take(SHOWN)
+                    .map(|(name, path)| {
+                        let (time, why) = when_and_why(name);
+                        let age = path.metadata().and_then(|m| m.modified()).map(ago).unwrap_or_default();
+                        (time, why, age)
+                    })
+                    .collect();
+                block(t, |ui| {
+                    ui.spacing_mut().item_spacing.y = 0.0;
+                    timeline(ui, &rows);
+                });
+            }
+        });
+    }
+
     /// The game's own save files, newest first: the name, when it was last written
     /// (dim), and its size at the right edge in monospace so the sizes line up.
     pub(super) fn slots_card(&mut self, t: &mut Tui) {
         card(t, tr!("SAVE_FILES"), |t| {
-            let Some(dir) = crate::backup::saves() else {
+            let Some((dir, files)) = save_files() else {
                 note(t, tr!("THE_GAMES_SAVE_FOLDER_WAS_NOT"));
                 return;
             };
-            let mut files: Vec<(String, std::time::SystemTime, u64)> = std::fs::read_dir(&dir)
-                .into_iter()
-                .flatten()
-                .flatten()
-                .filter(|e| e.path().extension().is_some_and(|x| x.eq_ignore_ascii_case("sav")))
-                .filter_map(|e| {
-                    let m = e.metadata().ok()?;
-                    Some((e.file_name().to_string_lossy().to_string(), m.modified().ok()?, m.len()))
-                })
-                .collect();
-            files.sort_by_key(|f| std::cmp::Reverse(f.1));
             for (name, at, len) in files {
                 t.style(tw::row(INLINE)).add(|t| {
                     block(t, |ui| {

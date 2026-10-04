@@ -36,6 +36,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   is followed in its colours and their routes. Pointing at a place says what it is and how far;
   pressing it follows it, or lets it go. Beside it, the journey: how far was walked this run and in
   each region, and what was followed and reached.
+- Teleport to what is followed: the Movement cheats list the auto guide's pick and every track
+  in the region, each with a Teleport button that lands a step short of it.
+- The Saves, Debug and cheat pages are laid out as the others: an overview of the backups across
+  the top, the debug status beside the cheats' writes, the cheats as tiles.
 - The APC is on the maps, and guided to: with nothing more of the story in the region, the auto
   guide offers the nearest APC and the nearest save point that takes you to it, to follow. Save
   points that cannot take you there are marked apart.

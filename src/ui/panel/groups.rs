@@ -2,17 +2,6 @@
 
 use super::*;
 use crate::ui::theme::INLINE;
-use egui_taffy::taffy::prelude::{auto, length};
-use egui_taffy::taffy::{Size, Style};
-
-/// How wide a cheat row's slider is (track and value box), so the names line up
-/// beside it and the values sit at the row's right edge (px).
-const SLIDER: f32 = 148.0;
-
-/// `w-{px} shrink-0`: a node of a fixed width.
-fn fixed(px: f32) -> Style {
-    Style { size: Size { width: length(px), height: auto() }, flex_shrink: 0.0, ..Default::default() }
-}
 
 /// A cheat's name, growing to fill its row, with an "unverified" chip after it when
 /// it has not been seen working. The game's own value, when there is one, is its hover.
@@ -47,58 +36,64 @@ fn split_label(label: &str) -> (&str, bool) {
 }
 
 impl Panel {
-    /// A group's cheats, one row each: the switch, the name (growing), and the value
-    /// at the right edge (a slider, or a slider and its button). Toggles end at the name.
+    /// A group's cheats, a tile each, two to a row: the switch and the name on top, the
+    /// value under them (a slider, or a slider and its button), and the game's own value
+    /// now at the foot, when it reads.
     pub(super) fn held(&mut self, t: &mut Tui, group: Group, snap: Option<&Snapshot>) {
         let mut changed = false;
-        for c in CHEATS.iter().filter(|c| c.group == group) {
-            if matches!(c.kind, Kind::Set { .. }) {
-                continue;
-            }
-            let mut on = self.on.get(c.id).copied().unwrap_or(false);
-            let now = chosen(c).and_then(|a| snap.and_then(|s| s.value(a)));
-            t.style(tw::row(INLINE)).add(|t| match c.kind {
-                Kind::Toggle(_) => {
-                    changed |= w(t, |ui| toggle(ui, &mut on)).changed();
-                    name(t, c, now);
+        // A row's tiles as tall as each other: a slider's next to a switch's.
+        let tiles = egui_taffy::taffy::Style {
+            align_items: Some(egui_taffy::taffy::AlignItems::Stretch),
+            ..tw::grid(2, INLINE)
+        };
+        t.style(tiles).add(|t| {
+            for c in CHEATS.iter().filter(|c| c.group == group) {
+                if matches!(c.kind, Kind::Set { .. }) {
+                    continue;
                 }
-                Kind::Slider { min, max, .. } => {
-                    changed |= w(t, |ui| toggle(ui, &mut on)).changed();
-                    name(t, c, now);
-                    let step = if max - min > 50.0 { 10.0 } else { 0.05 };
-                    let v = self.value.entry(c.id).or_insert(min);
-                    let mut slider = t.style(fixed(SLIDER)).add(|t| tw::slider(t, v, min..=max, step, ""));
-                    if let Some(now) = now {
-                        slider = slider.on_hover_text(trf!("THE_GAMES_VALUE_NOW", now = now));
-                    }
-                    // Live while dragging, at most every 150 ms, and always on release.
-                    let due = self.slid.get(c.id).is_none_or(|x| x.elapsed() >= Duration::from_millis(150));
-                    if on && ((slider.changed() && due) || slider.drag_stopped()) {
-                        self.slid.insert(c.id, Instant::now());
-                        changed = true;
-                    }
-                }
-                Kind::SetStock { max, default, .. } => {
-                    // Written once, on the button, not held: no switch, but its room kept
-                    // so the name starts where the others do.
-                    w(t, |ui| {
-                        let size = ui.text_style_height(&egui::TextStyle::Body) * egui::vec2(2.0, 1.0);
-                        ui.allocate_exact_size(size, egui::Sense::hover());
+                let mut on = self.on.get(c.id).copied().unwrap_or(false);
+                let now = chosen(c).and_then(|a| snap.and_then(|s| s.value(a)));
+                super::guide::well(t, |t| {
+                    t.style(tw::row(INLINE)).add(|t| {
+                        if !matches!(c.kind, Kind::SetStock { .. }) {
+                            changed |= w(t, |ui| toggle(ui, &mut on)).changed();
+                        }
+                        name(t, c, now);
                     });
-                    name(t, c, now);
-                    let v = self.value.entry(c.id).or_insert(default);
-                    t.style(fixed(SLIDER)).add(|t| tw::slider(t, v, 1.0..=max, 1.0, ""));
-                    let v = *v;
-                    if w(t, |ui| ui.button(tr!("APPLY"))).clicked() {
-                        let _ = self.tx.send(Request::Set(c.id, v));
+                    match c.kind {
+                        Kind::Slider { min, max, .. } => {
+                            let step = if max - min > 50.0 { 10.0 } else { 0.05 };
+                            let v = self.value.entry(c.id).or_insert(min);
+                            let slider = tw::slider(t, v, min..=max, step, "");
+                            // Live while dragging, at most every 150 ms, and always on release.
+                            let due = self.slid.get(c.id).is_none_or(|x| x.elapsed() >= Duration::from_millis(150));
+                            if on && ((slider.changed() && due) || slider.drag_stopped()) {
+                                self.slid.insert(c.id, Instant::now());
+                                changed = true;
+                            }
+                        }
+                        // Written once, on the button, not held: no switch.
+                        Kind::SetStock { max, default, .. } => {
+                            t.style(tw::row(INLINE)).add(|t| {
+                                let v = self.value.entry(c.id).or_insert(default);
+                                tw::slider(t, v, 1.0..=max, 1.0, "");
+                                let v = *v;
+                                if w(t, |ui| ui.button(tr!("APPLY"))).clicked() {
+                                    let _ = self.tx.send(Request::Set(c.id, v));
+                                }
+                            });
+                        }
+                        _ => {}
                     }
+                    if let Some(now) = now {
+                        note(t, trf!("THE_GAMES_VALUE_NOW", now = now));
+                    }
+                });
+                if !matches!(c.kind, Kind::SetStock { .. }) {
+                    self.on.insert(c.id, on);
                 }
-                Kind::Set { .. } => {}
-            });
-            if !matches!(c.kind, Kind::SetStock { .. }) {
-                self.on.insert(c.id, on);
             }
-        }
+        });
         if changed {
             self.send_active();
         }
@@ -133,6 +128,51 @@ impl Panel {
                     });
                     if load.clicked() {
                         let _ = self.tx.send(Request::LoadPosition(i));
+                    }
+                });
+            }
+        });
+    }
+
+    /// What is followed (the auto guide's pick and every track) with a button each that
+    /// moves the hero there: a step short of it, in this region only.
+    pub(super) fn teleports(&self, t: &mut Tui, snap: Option<&Snapshot>) {
+        card(t, tr!("TELEPORT_TO_FOLLOWED"), |t| {
+            let Some(s) = snap else { return };
+            let world = s.world.clone().unwrap_or_default();
+            let here = s.pose.map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+            let state = self.shared.map.lock().unwrap();
+            let mut goals: Vec<crate::goals::Goal> = s.goals.iter().cloned().collect();
+            goals.extend(state.place_goals(&s.goals, &world));
+            let rows: Vec<(String, [u8; 3], [f32; 3])> = state
+                .followed()
+                .into_iter()
+                .filter_map(|f| {
+                    let g = goals.iter().find(|g| g.id == f.id)?;
+                    let label = match f.track.and_then(|id| state.tracks.iter().find(|t| t.id == id)) {
+                        Some(tr) => tr.shown(),
+                        None => format!("{} · {}", tr!("GUIDE_AUTO_CARD"), g.label),
+                    };
+                    Some((label, f.colour.unwrap_or([235, 235, 235]), g.at))
+                })
+                .collect();
+            drop(state);
+            note(t, tr!("TELEPORT_TO_FOLLOWED_HINT"));
+            if rows.is_empty() {
+                text(t, RichText::new(tr!("NOTHING_FOLLOWED_HERE")).color(DIM));
+            }
+            for (label, [r, g, b], at) in rows {
+                t.style(tw::row(INLINE)).add(|t| {
+                    w(t, |ui| {
+                        let (rect, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                        ui.painter().circle_filled(rect.center(), 5.0, Color32::from_rgb(r, g, b));
+                    });
+                    block(t, |ui| ui.add(egui::Label::new(&label).truncate()));
+                    if let Some(h) = here {
+                        w(t, |ui| ui.label(RichText::new(crate::raster::span(h, at)).monospace().small().color(DIM)));
+                    }
+                    if w(t, |ui| ui.button(tr!("TELEPORT"))).clicked() {
+                        let _ = self.tx.send(Request::Teleport(world.clone(), at, label.clone()));
                     }
                 });
             }

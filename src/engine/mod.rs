@@ -31,6 +31,10 @@ pub use snapshot::{Snapshot, SLOTS};
 /// A teleport lands this far above the saved spot (cm), so it does not start in the
 /// ground.
 const LIFT: f64 = 50.0;
+/// A teleport to a place followed lands this far short of it, toward the hero, and this
+/// far above it (cm): not inside what stands there (a chest, a person), and on its floor.
+const SHORT_OF: f64 = 150.0;
+const ABOVE: f64 = 120.0;
 
 /// What the journal and the survey give, worked out once a second (`DERIVE_EVERY`).
 struct Derived {
@@ -314,6 +318,25 @@ impl Engine {
         let world = a.chain()?.world(&a.game, &a.anchors)?;
         *self.slots.get_mut(i).ok_or(tr!("NO_SUCH_SLOT"))? = Some((world, p));
         Ok(p)
+    }
+
+    /// To a place followed, in the hero's world only: a step short of it on the hero's
+    /// side, a little above it (`SHORT_OF`, `ABOVE`).
+    pub fn teleport_to(&mut self, world: &str, at: [f32; 3]) -> Result<(), String> {
+        self.refresh()?;
+        let a = self.attached.as_ref().unwrap();
+        a.gate()?;
+        let here = a.chain()?.world(&a.game, &a.anchors)?;
+        let of = crate::survey::Survey::world_of;
+        if of(&here) != of(world) {
+            return Err(trf!("TARGET_IN_ANOTHER_REGION", world = crate::i18n::place(of(world))));
+        }
+        let (p, _) = a.pose()?;
+        let at = [at[0] as f64, at[1] as f64, at[2] as f64];
+        let (dx, dy) = (p[0] - at[0], p[1] - at[1]);
+        let d = dx.hypot(dy);
+        let back = if d > 1.0 { SHORT_OF.min(d) / d } else { 0.0 };
+        a.teleport([at[0] + dx * back, at[1] + dy * back, at[2] + ABOVE])
     }
 
     /// Back to slot `i` — only in the world it was saved in.

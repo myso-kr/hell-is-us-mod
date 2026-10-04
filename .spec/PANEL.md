@@ -391,3 +391,16 @@ they go under it, the row's width. Every page captured after: nothing else ran p
 inset of its own, two to a row, its sorts under its name (a hidden sort dimmed; the kinds with a
 single icon share one inset), then the goals' icons. As one run of rows it read as a jumble.
 
+**System and cheat pages, col-span** (2026-10-05), as the Guide and Map pages:
+
+- **Saves**: an overview across the top (the last backup, backups kept, what they take, the game's
+  last save, as stat tiles; Back up now, Open folder), then the backups' timeline two columns wide
+  (ten shown, from six) and the game's save files beside it.
+- **Debug**: a status card (memory now and at its peak, cheats on, verified, the log folder) beside
+  what the cheats on write (two wide; what the columns mean is the header's "?"), then the test
+  record across the page in two columns, no longer in a 260 px scroll. The egui-frame `section`
+  is gone: every part is a card like the rest.
+- **Cheat groups**: a group's cheats two wide, as tiles two to a row (the switch and name, the
+  slider under them, the game's value now at the foot), every row's tiles as tall as each other;
+  what is on beside them. Movement adds the teleport to what is followed (two wide) and the saved
+  positions.

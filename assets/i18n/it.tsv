@@ -719,3 +719,18 @@ SAVE_POINT_LOCAL	Punto di salvataggio (senza APC)
 APC	APC
 SAVE_AND_TRAVEL	Salvataggio e viaggio
 SAVE_POINT_TO_APC	Punto di salvataggio (all'APC)
+TELEPORT_TO_FOLLOWED	Teletrasporto al seguito
+TELEPORT_TO_FOLLOWED_HINT	Atterra un passo prima, solo in questa regione. Salva prima la posizione: un luogo chiuso può intrappolarti.
+NOTHING_FOLLOWED_HERE	Niente di seguito in questa regione.
+TELEPORT	Teletrasporta
+MOVED_TO_TARGET	Spostato a {name}
+TARGET_IN_ANOTHER_REGION	È in un'altra regione ({world})
+SAVES_OVERVIEW	A colpo d'occhio
+LAST_BACKUP	Ultimo backup
+BACKUPS_KEPT	Backup conservati
+BACKUPS_SIZE	Spazio dei backup
+LAST_GAME_SAVE	Ultimo salvataggio
+DEBUG_STATUS	Stato
+MEMORY_NOW	Memoria
+MEMORY_PEAK	Picco di memoria
+MEMORY_ALSO_LOGGED	La memoria viene scritta anche nel log ogni minuto.

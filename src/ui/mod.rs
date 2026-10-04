@@ -47,6 +47,8 @@ pub enum Request {
     /// Remember where the hero stands, in a slot; go back to one.
     SavePosition(usize),
     LoadPosition(usize),
+    /// To a place followed: its world, where it is, and its name (for the reply).
+    Teleport(String, [f32; 3], String),
     Quit,
 }
 
@@ -195,6 +197,10 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
             },
             Ok(Request::LoadPosition(i)) => match engine.load_position(i) {
                 Ok(()) => reply(true, trf!("MOVED_TO_POSITION", slot = i + 1)),
+                Err(e) => reply(false, e),
+            },
+            Ok(Request::Teleport(world, at, label)) => match engine.teleport_to(&world, at) {
+                Ok(()) => reply(true, trf!("MOVED_TO_TARGET", name = label)),
                 Err(e) => reply(false, e),
             },
             Ok(Request::Restore) => match engine.stop() {

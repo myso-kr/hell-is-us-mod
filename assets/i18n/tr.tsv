@@ -719,3 +719,18 @@ SAVE_POINT_LOCAL	Kayıt noktası (APC yok)
 APC	APC
 SAVE_AND_TRAVEL	Kayıt ve yolculuk
 SAVE_POINT_TO_APC	Kayıt noktası (APC'ye)
+TELEPORT_TO_FOLLOWED	Takip edilene ışınlan
+TELEPORT_TO_FOLLOWED_HINT	Bir adım önüne indirir, yalnızca bu bölgede. Önce konumunu kaydet: kapalı bir yerde sıkışabilirsin.
+NOTHING_FOLLOWED_HERE	Bu bölgede takip edilen bir şey yok.
+TELEPORT	Işınlan
+MOVED_TO_TARGET	{name} konumuna gidildi
+TARGET_IN_ANOTHER_REGION	Başka bir bölgede ({world})
+SAVES_OVERVIEW	Bir bakışta
+LAST_BACKUP	Son yedek
+BACKUPS_KEPT	Saklanan yedekler
+BACKUPS_SIZE	Yedek boyutu
+LAST_GAME_SAVE	Son oyun kaydı
+DEBUG_STATUS	Durum
+MEMORY_NOW	Bellek
+MEMORY_PEAK	Bellek zirvesi
+MEMORY_ALSO_LOGGED	Bellek dakikada bir günlüğe de yazılır.

@@ -719,3 +719,18 @@ SAVE_POINT_LOCAL	Точка сохранения (без БТР)
 APC	БТР
 SAVE_AND_TRAVEL	Сохранение и переезд
 SAVE_POINT_TO_APC	Точка сохранения (к БТР)
+TELEPORT_TO_FOLLOWED	Телепорт к отслеживаемому
+TELEPORT_TO_FOLLOWED_HINT	Приземляет за шаг до цели, только в этом регионе. Сначала сохраните позицию: можно застрять в закрытом месте.
+NOTHING_FOLLOWED_HERE	В этом регионе ничего не отслеживается.
+TELEPORT	Телепорт
+MOVED_TO_TARGET	Перемещено к: {name}
+TARGET_IN_ANOTHER_REGION	Это в другом регионе ({world})
+SAVES_OVERVIEW	Обзор
+LAST_BACKUP	Последняя копия
+BACKUPS_KEPT	Хранится копий
+BACKUPS_SIZE	Объём копий
+LAST_GAME_SAVE	Последнее сохранение
+DEBUG_STATUS	Состояние
+MEMORY_NOW	Память
+MEMORY_PEAK	Пик памяти
+MEMORY_ALSO_LOGGED	Память также записывается в журнал раз в минуту.

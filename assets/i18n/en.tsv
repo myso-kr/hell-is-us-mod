@@ -719,3 +719,18 @@ SAVE_POINT_LOCAL	Save point (no APC)
 APC	APC
 SAVE_AND_TRAVEL	Save & travel
 SAVE_POINT_TO_APC	Save point (to the APC)
+TELEPORT_TO_FOLLOWED	Teleport to what is followed
+TELEPORT_TO_FOLLOWED_HINT	Lands a step short of it, in this region only. Save your position first: a closed-off spot can trap you.
+NOTHING_FOLLOWED_HERE	Nothing followed in this region.
+TELEPORT	Teleport
+MOVED_TO_TARGET	Moved to {name}
+TARGET_IN_ANOTHER_REGION	It is in another region ({world})
+SAVES_OVERVIEW	At a glance
+LAST_BACKUP	Last backup
+BACKUPS_KEPT	Backups kept
+BACKUPS_SIZE	Backups take
+LAST_GAME_SAVE	Last game save
+DEBUG_STATUS	Status
+MEMORY_NOW	Memory
+MEMORY_PEAK	Memory peak
+MEMORY_ALSO_LOGGED	The memory is also written to the log once a minute.

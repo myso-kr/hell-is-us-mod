@@ -719,3 +719,18 @@ SAVE_POINT_LOCAL	Punkt zapisu (bez APC)
 APC	APC
 SAVE_AND_TRAVEL	Zapis i podróż
 SAVE_POINT_TO_APC	Punkt zapisu (do APC)
+TELEPORT_TO_FOLLOWED	Teleport do śledzonego
+TELEPORT_TO_FOLLOWED_HINT	Ląduje krok przed celem, tylko w tym regionie. Najpierw zapisz pozycję: zamknięte miejsce może cię uwięzić.
+NOTHING_FOLLOWED_HERE	Nic nie jest śledzone w tym regionie.
+TELEPORT	Teleportuj
+MOVED_TO_TARGET	Przeniesiono do: {name}
+TARGET_IN_ANOTHER_REGION	Jest w innym regionie ({world})
+SAVES_OVERVIEW	W skrócie
+LAST_BACKUP	Ostatnia kopia
+BACKUPS_KEPT	Zachowane kopie
+BACKUPS_SIZE	Rozmiar kopii
+LAST_GAME_SAVE	Ostatni zapis gry
+DEBUG_STATUS	Stan
+MEMORY_NOW	Pamięć
+MEMORY_PEAK	Szczyt pamięci
+MEMORY_ALSO_LOGGED	Pamięć jest też zapisywana w logu co minutę.

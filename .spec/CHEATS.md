@@ -83,3 +83,13 @@ hero.
 ## Out of scope
 
 Anything that unlocks achievements, and anything that hides the tool from the game.
+
+## Teleport to what is followed (2026-10-05)
+
+The Movement page lists what is followed (the auto guide's pick and each track that has a goal in
+this region) with a Teleport button each. It uses the same write as the saved positions
+(`Attached::teleport`: the root component's location and its `ComponentToWorld`, the velocity
+cleared), landing `SHORT_OF` (150 cm) short of the target on the hero's side and `ABOVE` (120 cm)
+over it: not inside what stands there (a chest, a person), and dropping onto its floor. Only in the
+hero's region: another region's place has no ground loaded to land on. A closed-off target can trap
+the hero, so the card says to save a position first. Not yet tried in play.
