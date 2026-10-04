@@ -375,21 +375,18 @@ impl Panel {
                         if let Some(tier) = tier {
                             tw::group_heading(ui, tier.label(), list.len());
                         }
-                        // Two columns (the card is two wide): the nearer half down the left,
-                        // the rest down the right.
-                        let half = list.len().div_ceil(2);
-                        ui.columns(2, |cols| {
-                            for (k, part) in list.chunks(half.max(1)).enumerate() {
-                                let ui = &mut cols[k];
-                                ui.spacing_mut().item_spacing.y = 2.0;
-                                for g in part {
+                        // Two columns (the card is two wide), read across: each row the next
+                        // two, so the nearest come first on every row.
+                        for pair in list.chunks(2) {
+                            ui.columns(2, |cols| {
+                                for (col, g) in cols.iter_mut().zip(pair) {
                                     let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
-                                    if place_row(ui, g, &far, state.is_followed(g.id)).clicked() {
+                                    if place_row(col, g, &far, state.is_followed(g.id)).clicked() {
                                         follow_goal(state, g, &world);
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 });
             });
