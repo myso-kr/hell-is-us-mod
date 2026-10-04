@@ -57,7 +57,8 @@ pub fn project(cam: &Camera, p: [f32; 3], w: f32, h: f32) -> Option<(f32, f32, f
     Some((sx as f32, sy as f32, far as f32))
 }
 
-/// The marker for a target `far` cm away: a ring, smaller the farther, and the distance.
+/// The marker for a target `far` cm from the hero: a ring, smaller the farther, and the
+/// distance.
 pub fn draw(cv: &mut Canvas, far: f32) {
     cv.px.fill(0);
     let r = (22.0 - far / 400.0).clamp(10.0, 22.0);

@@ -513,7 +513,10 @@ pub fn run(shared: Arc<Shared>) {
                     target.filter(|g| (g.at[0] - p[0]).hypot(g.at[1] - p[1]) < marker::NEAR && !paused).and_then(|g| {
                         let cam = pose_src.and_then(|s| s.camera(reader.as_ref()?))?;
                         let (left, top, w, h) = marker::client(game_win?.0)?;
-                        let (x, y, far) = marker::project(&cam, g.at, w as f32, h as f32)?;
+                        let (x, y, _) = marker::project(&cam, g.at, w as f32, h as f32)?;
+                        // How far from the hero, not from the camera behind them.
+                        let far =
+                            ((g.at[0] - p[0]).powi(2) + (g.at[1] - p[1]).powi(2) + (g.at[2] - p[2]).powi(2)).sqrt();
                         let on = (0.0..w as f32).contains(&x) && (0.0..h as f32).contains(&y);
                         on.then_some((left + x as i32, top + y as i32, far))
                     });
