@@ -708,3 +708,6 @@ JOURNEY	旅程
 JOURNEY_THIS_RUN	面板启动后行走的距离；以下为各区域合计：
 JOURNEY_DONE	已完成追踪
 JOURNEY_NONE	本次尚未完成任何追踪。
+LEGEND_ICONS	图标
+LEGEND_GOALS	目标
+LEGEND_LINES	线条与区域

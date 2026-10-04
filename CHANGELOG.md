@@ -36,6 +36,7 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   is followed in its colours and their routes. Pointing at a place says what it is and how far;
   pressing it follows it, or lets it go. Beside it, the journey: how far was walked this run and in
   each region, and what was followed and reached.
+- The map legend shows every icon: each kind's sorts in an inset of their own, and the goals'.
 - The Map page's presets (Explore, Fight, Minimal, Photos) set the display, radius, layers and
   icons in one press, under both maps' previews side by side.
 

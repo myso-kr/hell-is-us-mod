@@ -708,3 +708,6 @@ JOURNEY	Reise
 JOURNEY_THIS_RUN	gelaufen seit dem Start des Panels; nach Region, insgesamt:
 JOURNEY_DONE	Erreicht
 JOURNEY_NONE	In dieser Sitzung noch nichts Verfolgtes erreicht.
+LEGEND_ICONS	Symbole
+LEGEND_GOALS	Ziele
+LEGEND_LINES	Linien und Flächen

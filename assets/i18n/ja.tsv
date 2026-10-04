@@ -708,3 +708,6 @@ JOURNEY	旅の記録
 JOURNEY_THIS_RUN	パネル起動後に歩いた距離。下は地域ごとの合計：
 JOURNEY_DONE	達成した追跡
 JOURNEY_NONE	今回はまだ達成した追跡がありません。
+LEGEND_ICONS	アイコン
+LEGEND_GOALS	目標
+LEGEND_LINES	線と領域

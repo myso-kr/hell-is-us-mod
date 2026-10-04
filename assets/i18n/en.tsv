@@ -708,3 +708,6 @@ JOURNEY	Journey
 JOURNEY_THIS_RUN	walked since the panel started; by region, all told:
 JOURNEY_DONE	Reached
 JOURNEY_NONE	Nothing followed was reached yet this run.
+LEGEND_ICONS	Icons
+LEGEND_GOALS	Goals
+LEGEND_LINES	Lines and areas

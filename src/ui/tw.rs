@@ -583,9 +583,13 @@ pub fn kbd(ui: &mut egui::Ui, key: &str) -> egui::Response {
 
 /// A form row: the label in 42 % of the row (72–200 px, wrapping), then the
 /// controls in what is left, wrapping onto a second line rather than overflowing.
+/// Controls that cannot share a line with the label at all (a set of choices wider than
+/// what is left) go under it, as wide as the row: the row wraps, so nothing in it runs
+/// past the card's edge.
 pub fn field<T>(tui: &mut Tui, label: impl Into<RichText>, body: impl FnOnce(&mut Tui) -> T) -> T {
     let label = label.into();
-    tui.style(Style { align_items: Some(AlignItems::Center), ..row(super::theme::BLOCK) }).add(|tui| {
+    let line = Style { align_items: Some(AlignItems::Center), flex_wrap: FlexWrap::Wrap, ..row(super::theme::BLOCK) };
+    tui.style(line).add(|tui| {
         tui.style(Style {
             flex_basis: percent(0.42_f32),
             flex_shrink: 0.0,
@@ -604,7 +608,10 @@ pub fn field<T>(tui: &mut Tui, label: impl Into<RichText>, body: impl FnOnce(&mu
                 infinite: egui::Vec2b::FALSE,
             }
         });
-        tui.style(grow(wrap(super::theme::INLINE))).add(body)
+        // As wide as its controls want (their one line), else what is left; never less
+        // than its widest control, so a row too narrow for both wraps instead.
+        tui.style(Style { flex_grow: 1.0, flex_shrink: 1.0, flex_basis: auto(), ..wrap(super::theme::INLINE) })
+            .add(body)
     })
 }
 

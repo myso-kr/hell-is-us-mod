@@ -409,7 +409,7 @@ fn dot(ui: &mut egui::Ui, c: [u8; 3]) {
 }
 
 /// A quiet inset inside a card (a fill, no edge) that holds the page's main figure.
-fn well<T>(t: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
+pub(super) fn well<T>(t: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
     let style = Style { padding: length(BLOCK), ..tw::col(INLINE) };
     t.style(style)
         .add_with_background_ui(

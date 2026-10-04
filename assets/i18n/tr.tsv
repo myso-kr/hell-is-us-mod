@@ -708,3 +708,6 @@ JOURNEY	Yolculuk
 JOURNEY_THIS_RUN	panel açıldığından beri yürünen; bölgelere göre toplam:
 JOURNEY_DONE	Ulaşılanlar
 JOURNEY_NONE	Bu oturumda henüz takip edilen bir şeye ulaşılmadı.
+LEGEND_ICONS	Simgeler
+LEGEND_GOALS	Hedefler
+LEGEND_LINES	Çizgiler ve alanlar

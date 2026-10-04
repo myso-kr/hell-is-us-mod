@@ -381,3 +381,13 @@ with, so a pointer over the image projects back onto the places. The journey's "
 trail's length less what it was when the panel first saw each world; its list is
 `MapState::done`, the follows that ended by themselves (not kept across runs).
 
+**Nothing past a card's edge** (2026-10-05): the Terrain card's view choices ran past its right
+edge. `field` gave the label a fixed share that does not shrink and the controls what was left,
+and a set of choices is one block that cannot wrap within itself. The field's row wraps now and
+its controls take their one-line width as their basis: when they do not fit beside the label,
+they go under it, the row's width. Every page captured after: nothing else ran past a card.
+
+**The legend, in sections**: lines and areas (four across), then the icons, each kind shown in an
+inset of its own, two to a row, its sorts under its name (a hidden sort dimmed; the kinds with a
+single icon share one inset), then the goals' icons. As one run of rows it read as a jumble.
+

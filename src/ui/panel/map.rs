@@ -8,6 +8,35 @@ const MINI_PREVIEW: f32 = 180.0;
 
 /// A preview frame the overlay made, as a texture kept in `slot` (made once, then set
 /// each new frame): its id and size.
+/// A section's heading inside a card: small, quiet, set apart from what came before.
+fn section(t: &mut Tui, name: &str) {
+    w(t, |ui| {
+        ui.add_space(4.0);
+        ui.label(RichText::new(name).small().strong().color(DIM));
+    });
+}
+
+/// A kind's name in its colour, with its icon: the head of its inset.
+fn kind_heading(t: &mut Tui, k: ThingKind) {
+    let [r, g, b] = k.rgb();
+    t.style(tw::row(INLINE)).add(|t| {
+        w(t, |ui| crate::ui::svg::kind(ui, k, 16.0));
+        w(t, |ui| ui.label(RichText::new(k.label()).strong().color(Color32::from_rgb(r, g, b))));
+    });
+}
+
+/// An icon and what it is; `dim` for one the map hides now.
+fn icon_entry(t: &mut Tui, icon: impl FnOnce(&mut egui::Ui), name: &str, dim: bool) {
+    let colour = if dim { DIM.gamma_multiply(0.5) } else { super::super::theme::TEXT };
+    w(t, |ui| {
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 6.0;
+            icon(ui);
+            ui.add(egui::Label::new(RichText::new(name).small().color(colour)).truncate());
+        })
+    });
+}
+
 /// A preset: a name, what it is for (the hover), how it sets the maps, and whether they
 /// are set so now.
 struct Preset {
@@ -199,7 +228,8 @@ impl Panel {
             let outline = state.mini_outline && state.big_outline;
             // What each line and colour is, as drawn now.
             let entries = crate::raster::legend(state, outline);
-            t.style(tw::grid(2, INLINE)).add(|t| {
+            section(t, tr!("LEGEND_LINES"));
+            t.style(tw::grid(4, INLINE)).add(|t| {
                 for (swatch, c, name) in entries {
                     w(t, |ui| {
                         ui.horizontal(|ui| {
@@ -225,6 +255,56 @@ impl Panel {
                         });
                     });
                 }
+            });
+            // The icons: each kind shown in an inset of its own, two to a row, its sorts
+            // under its name (a sort hidden, dimmed); the kinds with one icon share an
+            // inset. Then the goals'.
+            section(t, tr!("LEGEND_ICONS"));
+            let shown: Vec<ThingKind> = ThingKind::ALL.into_iter().filter(|k| state.layers & k.bit() != 0).collect();
+            let sorts = |k: ThingKind| Sub::ALL.into_iter().filter(move |x| x.kind() == k);
+            let (many, single): (Vec<ThingKind>, Vec<ThingKind>) =
+                shown.into_iter().partition(|k| sorts(*k).count() > 1);
+            t.style(tw::grid(2, tw::GAP / 2.0)).add(|t| {
+                for k in many {
+                    super::guide::well(t, |t| {
+                        kind_heading(t, k);
+                        t.style(tw::grid(2, INLINE)).add(|t| {
+                            for sub in sorts(k) {
+                                let dim = state.hidden.contains(&sub);
+                                icon_entry(
+                                    t,
+                                    |ui| {
+                                        crate::ui::svg::sort(ui, sub, 15.0);
+                                    },
+                                    sub.label(),
+                                    dim,
+                                );
+                            }
+                        });
+                    });
+                }
+                if !single.is_empty() {
+                    super::guide::well(t, |t| {
+                        for k in single {
+                            kind_heading(t, k);
+                        }
+                    });
+                }
+            });
+            section(t, tr!("LEGEND_GOALS"));
+            super::guide::well(t, |t| {
+                t.style(tw::grid(3, INLINE)).add(|t| {
+                    for tier in crate::goals::Tier::ALL {
+                        icon_entry(
+                            t,
+                            |ui| {
+                                crate::ui::svg::tier(ui, tier, 15.0);
+                            },
+                            tier.label(),
+                            false,
+                        );
+                    }
+                });
             });
         });
     }

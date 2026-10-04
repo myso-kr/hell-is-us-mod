@@ -708,3 +708,6 @@ JOURNEY	Parcours
 JOURNEY_THIS_RUN	parcourus depuis le lancement du panneau ; par région, au total :
 JOURNEY_DONE	Atteints
 JOURNEY_NONE	Rien de suivi n'a encore été atteint cette fois.
+LEGEND_ICONS	Icônes
+LEGEND_GOALS	Objectifs
+LEGEND_LINES	Lignes et zones

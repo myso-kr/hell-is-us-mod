@@ -708,3 +708,6 @@ JOURNEY	여정 기록
 JOURNEY_THIS_RUN	패널을 켠 뒤 걸은 거리, 아래는 지역별 전체:
 JOURNEY_DONE	해낸 추적
 JOURNEY_NONE	이번 실행에서 아직 해낸 추적이 없습니다.
+LEGEND_ICONS	아이콘
+LEGEND_GOALS	목표
+LEGEND_LINES	선·영역
