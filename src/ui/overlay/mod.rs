@@ -119,6 +119,8 @@ pub fn run(shared: Arc<Shared>) {
     let mut glide = glide::Glide::default();
     // The game opened for reading the pose each frame (player::PoseSource).
     let mut reader: Option<crate::game::process::Reader> = None;
+    // What the maps show, kept between frames (hud::Shown, hud::Pinned).
+    let (mut shown, mut pinned) = (hud::Shown::default(), hud::Pinned::default());
     let mut big_on = false;
     let (mut hero_at, mut preview_at) = (Instant::now(), Instant::now());
     let mut map_cv = Canvas::new(MAP_PX as usize, MAP_PX as usize);
@@ -156,15 +158,19 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
+        // What the player agreed to (settings::Consent): without "where hidden things are"
+        // the maps show the land, the enemies (seen in a fight anyway) and their own pins.
+        let consent = crate::settings::Consent(shared.consent.load(Ordering::SeqCst));
+        let places = consent.has(crate::settings::Consent::PLACES);
         let (pose_src, pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines, puzzle_near) =
             match shared.snap.lock().unwrap().as_ref() {
                 Some(s) => (
                     s.pose_src,
                     s.pose,
                     s.world.clone(),
-                    hud::with_survey(&s.things, s),
+                    shown.things(s, places),
                     s.footprints.clone(),
-                    s.goals.clone(),
+                    if places { s.goals.clone() } else { Default::default() },
                     s.paused,
                     s.obstacles.clone(),
                     s.journal.clone(),
@@ -177,9 +183,9 @@ pub fn run(shared: Arc<Shared>) {
                     None,
                     None,
                     None,
-                    Vec::new(),
                     Default::default(),
-                    Vec::new(),
+                    Default::default(),
+                    Default::default(),
                     false,
                     Default::default(),
                     Default::default(),
@@ -189,14 +195,6 @@ pub fn run(shared: Arc<Shared>) {
                     false,
                 ),
             };
-        // What the player agreed to (settings::Consent): without "where hidden things are"
-        // the maps show the land, the enemies (seen in a fight anyway) and their own pins.
-        let consent = crate::settings::Consent(shared.consent.load(Ordering::SeqCst));
-        let (things, goals) = if consent.has(crate::settings::Consent::PLACES) {
-            (things, goals)
-        } else {
-            (things.into_iter().filter(|t| t.kind() == crate::actors::Kind::Enemy).collect(), Vec::new())
-        };
         // The pose read now, from where the worker found it: the worker's own reading
         // comes only after its whole step, a second late with the guide's reading.
         let fast = pose_src.and_then(|src| {
@@ -256,7 +254,7 @@ pub fn run(shared: Arc<Shared>) {
                     full: false,
                 };
                 let relief = baking.relief(&state, p, &obstacles);
-                let goals = hud::with_pins(&goals, &state, world);
+                let goals = pinned.get(&goals, &state, world);
                 let mut cv = Canvas::new(HERO_PX, HERO_PX);
                 // Dots are for seeing the game through the map; the hero sits on the panel.
                 let dots = std::mem::replace(&mut state.dots, false);
@@ -288,7 +286,7 @@ pub fn run(shared: Arc<Shared>) {
             preview_at = Instant::now();
             if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
                 let relief = baking.relief(&state, p, &obstacles);
-                let goals = hud::with_pins(&goals, &state, world);
+                let goals = pinned.get(&goals, &state, world);
                 // The minimap, as it draws (solid: dots are the big map's).
                 let side = MAP_PX as usize;
                 let view = View {
@@ -373,7 +371,7 @@ pub fn run(shared: Arc<Shared>) {
                         p[2]
                     ));
                 }
-                let goals = hud::with_pins(&goals, &state, world);
+                let goals = pinned.get(&goals, &state, world);
                 let chosen = state.quest.clone();
                 settle_target(
                     &mut state,

@@ -7,6 +7,63 @@ use crate::guide::target::flat;
 use crate::minimap::MapState;
 use crate::pathfind::Path;
 use crate::raster::Pin;
+use std::sync::Arc;
+
+/// The things the maps show, worked out again only for a new snapshot's things (once a
+/// worker step) or a changed consent, not every frame: `with_survey`, and without
+/// "where hidden things are" the enemies alone.
+#[derive(Default)]
+pub struct Shown {
+    from: Option<(Arc<Vec<crate::actors::Thing>>, bool)>,
+    things: Arc<Vec<crate::actors::Thing>>,
+}
+
+impl Shown {
+    pub fn things(&mut self, s: &crate::engine::Snapshot, places: bool) -> Arc<Vec<crate::actors::Thing>> {
+        let fresh = self.from.as_ref().is_some_and(|(t, p)| Arc::ptr_eq(t, &s.things) && *p == places);
+        if !fresh {
+            let all = with_survey(&s.things, s);
+            let kept =
+                if places { all } else { all.into_iter().filter(|t| t.kind() == crate::actors::Kind::Enemy).collect() };
+            self.things = Arc::new(kept);
+            self.from = Some((s.things.clone(), places));
+        }
+        self.things.clone()
+    }
+}
+
+/// `with_pins`, worked out again only when the goals, the world or the pins change:
+/// it copied every goal, several times a frame.
+#[derive(Default)]
+pub struct Pinned {
+    from: Option<(Arc<Vec<Goal>>, String, u64)>,
+    goals: Arc<Vec<Goal>>,
+}
+
+impl Pinned {
+    pub fn get(&mut self, goals: &Arc<Vec<Goal>>, state: &MapState, world: &str) -> Arc<Vec<Goal>> {
+        let key = pins_key(state, world);
+        let fresh = self.from.as_ref().is_some_and(|(g, w, k)| Arc::ptr_eq(g, goals) && w == world && *k == key);
+        if !fresh {
+            self.goals = Arc::new(with_pins(goals, state, world));
+            self.from = Some((goals.clone(), world.to_string(), key));
+        }
+        self.goals.clone()
+    }
+}
+
+/// What `with_pins` adds, as a hash: the world's pins and the goal picked in the panel.
+fn pins_key(state: &MapState, world: &str) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    for m in state.markers.get(world).into_iter().flatten() {
+        (m.id(world), m.title(), m.at.map(f32::to_bits)).hash(&mut h);
+    }
+    if let Some((w, id, at, label)) = &state.adhoc {
+        (w, id, at.map(f32::to_bits), label).hash(&mut h);
+    }
+    h.finish()
+}
 
 /// The things to draw: the scanned ones, and for the hero's world what the survey
 /// knows is left — enemy groups not beaten, puzzles not solved (dials and codes),

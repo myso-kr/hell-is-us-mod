@@ -134,10 +134,10 @@ impl Engine {
             pose: None,
             pose_src: None,
             world: None,
-            things: Vec::new(),
+            things: Arc::default(),
             haze_links: Default::default(),
             footprints: Arc::default(),
-            goals: Vec::new(),
+            goals: Arc::default(),
             collection: Default::default(),
             stories: Default::default(),
             secret_totals: [0; 3],
@@ -174,7 +174,7 @@ impl Engine {
             if snap.gate.is_ok() {
                 match a.things() {
                     Ok(t) => {
-                        snap.things = t;
+                        snap.things = Arc::new(t);
                         snap.footprints = a.footprints();
                         let links = a.haze_links();
                         // Logged as the count changes: a fight with a Haze shows here.
@@ -188,7 +188,7 @@ impl Engine {
                 }
                 match a.goals() {
                     Ok((g, _)) => {
-                        snap.goals = g;
+                        let mut goals = g;
                         // What follows from the journal and the survey changes with the
                         // knowledge (read every 2 s): worked out once a second, shared.
                         if self.derived.as_ref().is_none_or(|(at, _)| at.elapsed() >= DERIVE_EVERY) {
@@ -237,11 +237,14 @@ impl Engine {
                         // Triggers the game's text did not name, named after the good deed,
                         // mystery or timeloop their tags say (begun or not).
                         if let Some((_, d)) = &self.derived {
-                            crate::goals::name_by_secrets(&mut snap.goals, &d.secret_titles);
+                            crate::goals::name_by_secrets(&mut goals, &d.secret_titles);
                         }
                         // Then after the place the trigger's name holds, in the game's text.
                         let world = snap.world.as_deref().map(crate::survey::Survey::world_of);
-                        crate::goals::name_by_place(&mut snap.goals, world, crate::i18n::location, crate::i18n::region);
+                        crate::goals::name_by_place(&mut goals, world, crate::i18n::location, crate::i18n::region);
+                        // Shared, not copied: the overlay and the panel's cards take it
+                        // every frame.
+                        snap.goals = Arc::new(goals);
                         snap.obstacles = a.obstacles();
                         snap.nav = a.nav();
                     }

@@ -25,13 +25,13 @@ pub struct Snapshot {
     /// The world the hero is in, by name.
     pub world: Option<String>,
     /// What the minimap marks besides the hero.
-    pub things: Vec<Thing>,
+    pub things: Arc<Vec<Thing>>,
     /// A Haze and a Hollow Walker it keeps alive, each pair (JOURNEY §3.7).
     pub haze_links: Arc<Vec<crate::actors::HazeLink>>,
     /// The minimap's background.
     pub footprints: Arc<Vec<Footprint>>,
     /// Places with something new to learn.
-    pub goals: Vec<Goal>,
+    pub goals: Arc<Vec<Goal>>,
     /// The quest journal: main quests and good deeds, with their state.
     pub journal: Arc<Vec<crate::quests::Quest>>,
     /// The game is paused (a menu that stops it is open).
