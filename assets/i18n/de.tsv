@@ -672,3 +672,4 @@ SLOT_RIGHT	Der richtige Platz: {item}, {far}
 SLOT_REMOVABLE	Falsch Platziertes lässt sich wieder herausnehmen.
 SLOT_ALL_DONE	Alles am richtigen Platz.
 SLOT_AFTER_FLOWERS	Dann zurück zum Grab und den Hebel ziehen.
+SLOT_FROM_LEFT	davor stehend {n}. von links (von {all})

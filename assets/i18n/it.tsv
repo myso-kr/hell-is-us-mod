@@ -672,3 +672,4 @@ SLOT_RIGHT	Il posto giusto: {item}, {far}
 SLOT_REMOVABLE	Un oggetto messo male si può togliere.
 SLOT_ALL_DONE	Tutto al suo posto.
 SLOT_AFTER_FLOWERS	Poi torna alla tomba e tira la leva.
+SLOT_FROM_LEFT	di fronte, il {n}° di {all} da sinistra

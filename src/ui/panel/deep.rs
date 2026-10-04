@@ -485,6 +485,7 @@ impl Panel {
         let list = snap.map(|s| s.slot_puzzles.clone()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let yaw = snap.and_then(|s| s.pose).map(|(_, y)| y as f32);
         let world_here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
         card(t, tr!("SLOT_PUZZLES"), |t| {
             if list.is_empty() {
@@ -574,7 +575,13 @@ impl Panel {
                                     crate::survey::Choice::Decoy => String::new(),
                                 };
                                 let far = here.map_or(String::new(), |h| crate::raster::span(h, r.at));
-                                trf!("SLOT_RIGHT", item = item, far = far)
+                                let mut line = trf!("SLOT_RIGHT", item = item, far = far);
+                                // Which of them, as the hero faces now; the game shows it too,
+                                // ringed, once the line is chosen and the hero is near.
+                                if let Some((n, all)) = yaw.and_then(|y| s.from_left(y)).filter(|(_, all)| *all > 1) {
+                                    line += &format!(" · {}", trf!("SLOT_FROM_LEFT", n = n, all = all));
+                                }
+                                line
                             }
                             None => tr!("SLOT_NOTHING").to_string(),
                         };

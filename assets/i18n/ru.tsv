@@ -672,3 +672,4 @@ SLOT_RIGHT	Нужное место: {item}, {far}
 SLOT_REMOVABLE	Неправильно положенное можно вынуть.
 SLOT_ALL_DONE	Всё на своих местах.
 SLOT_AFTER_FLOWERS	Затем вернитесь к гробнице и потяните рычаг.
+SLOT_FROM_LEFT	лицом к ним: {n}-е из {all} слева

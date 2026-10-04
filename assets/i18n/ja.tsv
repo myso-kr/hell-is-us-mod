@@ -672,3 +672,4 @@ SLOT_RIGHT	正しい場所：{item}、{far}
 SLOT_REMOVABLE	間違えて置いても取り出せます。
 SLOT_ALL_DONE	すべて正しく置きました。
 SLOT_AFTER_FLOWERS	その後、墓に戻ってレバーを引いてください。
+SLOT_FROM_LEFT	向かって左から{n}番目（{all}か所中）

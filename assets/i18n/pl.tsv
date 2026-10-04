@@ -672,3 +672,4 @@ SLOT_RIGHT	Właściwe gniazdo: {item}, {far}
 SLOT_REMOVABLE	Źle włożony przedmiot można wyjąć.
 SLOT_ALL_DONE	Wszystko na miejscu.
 SLOT_AFTER_FLOWERS	Potem wróć do grobowca i pociągnij dźwignię.
+SLOT_FROM_LEFT	patrząc na nie, {n}. z {all} od lewej

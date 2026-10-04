@@ -672,3 +672,4 @@ SLOT_RIGHT	The right slot: {item}, {far}
 SLOT_REMOVABLE	A wrong placement can be taken out again.
 SLOT_ALL_DONE	All in place.
 SLOT_AFTER_FLOWERS	Then go back to the tomb and pull the lever.
+SLOT_FROM_LEFT	facing it, {n} of {all} from the left

@@ -73,6 +73,18 @@ impl Set {
         }
     }
 
+    /// Where the right slot is among the set's, counted from the left as one faces `yaw`
+    /// (degrees, Unreal's: 0 east along X, 90 along Y): (n from 1, of how many). Only the
+    /// sideways order counts; at a wall, facing it, that is the groove.
+    pub fn from_left(&self, yaw: f32) -> Option<(usize, usize)> {
+        let right = self.answer()?;
+        let (s, c) = yaw.to_radians().sin_cos();
+        // Unreal's right of a yaw: (-sin, cos).
+        let side = |p: [f32; 3]| -s * p[0] + c * p[1];
+        let n = self.slots.iter().filter(|x| side(x.at) < side(right.at)).count();
+        Some((n + 1, self.slots.len()))
+    }
+
     /// Where it is: the middle of its slots.
     pub fn at(&self) -> [f32; 3] {
         let n = self.slots.len().max(1) as f32;
@@ -410,6 +422,18 @@ mod tests {
         assert!(file(8, true).ends_with("File01_Title"));
         assert!(file(4, true).ends_with("File05_Title"));
         assert!(file(2, false).ends_with("File04_Title"));
+    }
+
+    #[test]
+    fn the_right_groove_is_counted_from_the_left_as_one_faces() {
+        let p = &group(&nest(), &Seen::default())[0];
+        let alcove = p.sets.iter().find(|s| s.slots.len() == 4).unwrap();
+        // The alcoves' grooves run along a line; facing one way the right one is n from
+        // the left, facing back the other way it is n from the right.
+        let (n, all) = alcove.from_left(0.0).unwrap();
+        let (m, _) = alcove.from_left(180.0).unwrap();
+        assert_eq!(all, 4);
+        assert_eq!(n + m, all + 1);
     }
 
     #[test]

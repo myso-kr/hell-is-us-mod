@@ -20,6 +20,7 @@ mod bake;
 mod bigmap;
 mod glide;
 mod hud;
+mod marker;
 mod route;
 
 use super::hotkey::{game_window, pid_of};
@@ -106,6 +107,9 @@ pub fn run(shared: Arc<Shared>) {
     };
     // The quest tracker: drawn again only when what it shows changes.
     let mut tracker_window = Layered::new("hiumod-tracker", "Hell Is Us Quests", tracker::W, tracker::H);
+    // The target marked in the game's view (marker.rs).
+    let mut marker_window = Layered::new("hiumod-marker", "Hell Is Us Marker", marker::W, marker::H);
+    let mut marker_cv = Canvas::new(marker::W as usize, marker::H as usize);
     let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
     let mut pen = Pen::new(tracker::W, tracker::H);
     let mut tracked: Option<Tracked> = None;
@@ -377,9 +381,9 @@ pub fn run(shared: Arc<Shared>) {
         }
 
         // No map at all without the map's consent: no minimap, big map, compass or tracker.
-        let window = game_window(game)
-            .filter(|_| focused && !menu && consent.has(crate::settings::Consent::MAP))
-            .map(|(_, r)| r);
+        let game_win = game_window(game);
+        let window =
+            game_win.filter(|_| focused && !menu && consent.has(crate::settings::Consent::MAP)).map(|(_, r)| r);
         match (here, world.as_deref(), window) {
             (Some((p, yaw)), Some(world), Some(r)) => {
                 state.observe(world, p);
@@ -503,6 +507,25 @@ pub fn run(shared: Arc<Shared>) {
                     }
                 }
 
+                // The target marked where it stands in the game's view, when near (marker.rs).
+                let target = state.target.and_then(|t| goals.iter().find(|g| g.id == t));
+                let mark =
+                    target.filter(|g| (g.at[0] - p[0]).hypot(g.at[1] - p[1]) < marker::NEAR && !paused).and_then(|g| {
+                        let cam = pose_src.and_then(|s| s.camera(reader.as_ref()?))?;
+                        let (left, top, w, h) = marker::client(game_win?.0)?;
+                        let (x, y, far) = marker::project(&cam, g.at, w as f32, h as f32)?;
+                        let on = (0.0..w as f32).contains(&x) && (0.0..h as f32).contains(&y);
+                        on.then_some((left + x as i32, top + y as i32, far))
+                    });
+                match (mark, marker_window.as_mut()) {
+                    (Some((x, y, far)), Some(w)) => {
+                        marker::draw(&mut marker_cv, far);
+                        w.present(&marker_cv, x - marker::CX, y - marker::CY);
+                    }
+                    (_, Some(w)) => w.hide(),
+                    _ => {}
+                }
+
                 if state.compass {
                     let pins = hud::compass_pins(&goals, &state, world, p, &path);
                     draw_compass(&mut compass_cv, yaw - state.north_yaw, &pins);
@@ -554,11 +577,17 @@ pub fn run(shared: Arc<Shared>) {
                     if let Some(w) = big_window.as_ref() {
                         w.keep_on_top(panel);
                     }
+                    if let Some(w) = marker_window.as_ref() {
+                        w.keep_on_top(panel);
+                    }
                 }
             }
             _ => {
                 map_window.hide();
                 compass_window.hide();
+                if let Some(w) = marker_window.as_mut() {
+                    w.hide();
+                }
                 if let Some(w) = tracker_window.as_mut() {
                     w.hide();
                 }

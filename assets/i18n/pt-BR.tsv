@@ -672,3 +672,4 @@ SLOT_RIGHT	O encaixe certo: {item}, {far}
 SLOT_REMOVABLE	Um item mal colocado pode ser retirado.
 SLOT_ALL_DONE	Tudo no lugar.
 SLOT_AFTER_FLOWERS	Depois volte ao túmulo e puxe a alavanca.
+SLOT_FROM_LEFT	de frente, o {n}º de {all} pela esquerda

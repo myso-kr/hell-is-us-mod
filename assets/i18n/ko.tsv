@@ -672,3 +672,4 @@ SLOT_RIGHT	맞는 홈: {item}, {far}
 SLOT_REMOVABLE	잘못 넣어도 다시 뺄 수 있어요.
 SLOT_ALL_DONE	모두 맞게 놓았어요.
 SLOT_AFTER_FLOWERS	이제 무덤으로 돌아가 레버를 당기세요.
+SLOT_FROM_LEFT	바라볼 때 왼쪽에서 {n}번째 ({all}개 중)

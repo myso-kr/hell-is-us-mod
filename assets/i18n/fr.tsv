@@ -672,3 +672,4 @@ SLOT_RIGHT	Le bon emplacement : {item}, {far}
 SLOT_REMOVABLE	Un objet mal placé peut être retiré.
 SLOT_ALL_DONE	Tout est en place.
 SLOT_AFTER_FLOWERS	Retournez ensuite au tombeau et tirez le levier.
+SLOT_FROM_LEFT	de face, le {n}e sur {all} en partant de la gauche

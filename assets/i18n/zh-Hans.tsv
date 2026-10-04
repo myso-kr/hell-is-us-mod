@@ -672,3 +672,4 @@ SLOT_RIGHT	正确位置：{item}，{far}
 SLOT_REMOVABLE	放错了可以再取出来。
 SLOT_ALL_DONE	全部放对了。
 SLOT_AFTER_FLOWERS	然后回到墓室拉下拉杆。
+SLOT_FROM_LEFT	面对时从左数第{n}个（共{all}个）

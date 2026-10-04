@@ -672,3 +672,4 @@ SLOT_RIGHT	El hueco correcto: {item}, {far}
 SLOT_REMOVABLE	Lo mal colocado se puede volver a sacar.
 SLOT_ALL_DONE	Todo en su sitio.
 SLOT_AFTER_FLOWERS	Después vuelve a la tumba y tira de la palanca.
+SLOT_FROM_LEFT	de frente, el {n}.º de {all} desde la izquierda

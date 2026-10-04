@@ -672,3 +672,4 @@ SLOT_RIGHT	Doğru yuva: {item}, {far}
 SLOT_REMOVABLE	Yanlış konan bir şey geri çıkarılabilir.
 SLOT_ALL_DONE	Hepsi yerinde.
 SLOT_AFTER_FLOWERS	Sonra mezara dönüp kolu çekin.
+SLOT_FROM_LEFT	karşıdan bakınca soldan {n}. ({all} yuvadan)
