@@ -24,6 +24,7 @@
 use crate::gobjects::Objects;
 use crate::mem::{self, Memory};
 use crate::names::{Names, CLASS};
+use crate::scene_cache;
 use crate::terrain::{self, Heightfield, Terrain};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -446,8 +447,12 @@ pub struct Obstacles {
     /// Owner classes, by whether they are deadly water.
     deadly: HashMap<u64, bool>,
     bounds: Option<u64>,
-    /// The last complete pass.
+    /// The last complete pass, its ground merged with what was kept (scene_cache.rs).
     pub done: Arc<Scene>,
+    /// The world the scene is of (as `chain.world` names it).
+    world: String,
+    /// No pass of this run has ended in `world` yet: `done` is the kept scene.
+    from_cache: bool,
 }
 
 impl Obstacles {
@@ -582,14 +587,36 @@ impl Obstacles {
     }
 
     /// One slice of the pass; when the pass completes, `done` is replaced.
-    pub fn step(&mut self, m: &dyn Memory, n: &Names, objects: &Objects, hero: [f64; 3]) {
+    pub fn step(&mut self, m: &dyn Memory, n: &Names, objects: &Objects, hero: [f64; 3], world: &str) {
+        // An empty name is a world not read this step (loading): the scene stays.
+        if !world.is_empty() && world != self.world {
+            // Another world: what this pass gathered is not of it. Start from what was
+            // kept of the new one, until a pass of its own ends.
+            self.world = world.to_string();
+            self.pending.clear();
+            self.cursor = 0;
+            self.building.clear();
+            self.hazards.clear();
+            self.fields.clear();
+            self.rested = None;
+            self.done = Arc::new(scene_cache::load(world).unwrap_or_default());
+            self.from_cache = true;
+        }
         if self.cursor >= self.pending.len() {
             if !self.pending.is_empty() {
-                let terrain = Terrain::new(std::mem::take(&mut self.fields));
+                // The ground gathered: this pass's over what was kept.
+                let live = std::mem::take(&mut self.fields);
+                let (fields, grew) = scene_cache::merge(self.done.terrain.fields(), live);
+                let terrain = Terrain::new(fields);
                 let mut obstacles = std::mem::take(&mut self.building);
                 let wet = water(&std::mem::take(&mut self.hazards), &terrain, &obstacles, hero);
                 obstacles.extend(wet);
                 self.done = Arc::new(Scene { obstacles, terrain });
+                // Kept when the ground grew, and once a run for the obstacles.
+                if (grew || self.from_cache) && !self.world.is_empty() {
+                    scene_cache::save(&self.world, self.done.clone());
+                }
+                self.from_cache = false;
                 self.pending.clear();
                 self.rested = Some(std::time::Instant::now());
             }

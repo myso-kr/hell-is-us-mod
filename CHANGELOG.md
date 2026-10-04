@@ -17,6 +17,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   class layouts already read are kept.
 - The big map's window is only as wide as the map's circle, and a frame that would show nothing new
   is not drawn again: about 40 % less work a frame, and next to none while the hero stands.
+- The maps' ground shows from the start: each world's ground and obstacles are kept in
+  `Mods\cache\`, as a game keeps its shader cache, instead of waiting about 6 s for the first
+  reading of the game. The ground walked is gathered, so the maps show it even where the game has
+  not loaded it.
 - `doctor profile [seconds]` shows where the panel's reading of the game spends its time.
 
 ### Added

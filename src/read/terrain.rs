@@ -103,6 +103,11 @@ impl Terrain {
         self.fields.is_empty()
     }
 
+    /// The heightfields, as given to `new`.
+    pub fn fields(&self) -> &[Heightfield] {
+        &self.fields
+    }
+
     pub fn len(&self) -> usize {
         self.fields.len()
     }

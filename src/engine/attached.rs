@@ -322,7 +322,9 @@ impl Attached {
         if let Ok((p, _)) = chain.pose(m, &self.anchors) {
             let _t = crate::prof::span("obstacles");
             let objects = g.objects.take().unwrap();
-            g.obstacles.step(m, n, &objects, p);
+            // The world names the scene kept on disk (scene_cache.rs); unknown, none is.
+            let world = chain.world(m, &self.anchors).unwrap_or_default();
+            g.obstacles.step(m, n, &objects, p, &world);
             g.objects = Some(objects);
         }
         {

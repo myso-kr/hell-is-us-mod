@@ -7,4 +7,5 @@ pub mod knowledge;
 pub mod navmesh;
 pub mod obstacles;
 pub mod puzzles;
+pub mod scene_cache;
 pub mod terrain;

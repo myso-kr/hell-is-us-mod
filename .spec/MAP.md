@@ -326,3 +326,25 @@ before the next. The glide added up to 200 ms. On top, steps that coincided with
    leaves out (the settings, the trail).
 
 The worker and the overlay log their spans every 30 s (`worker time …`, `overlay time …`).
+
+## 14. The scene kept on disk (2026-10-05)
+
+Every run started with no ground on the maps (and no obstacles for the routes) until the first
+pass over the game's objects ended: about 6 s from launch, measured. Like an engine's shader
+cache, each world's scene is now kept in `Mods\cache\<world>.bin` (`scene_cache.rs`, under
+`paths::data_dir()` like every other file of the mod) and shown as soon as the world is known.
+Captured: the Guide page's map had its ground 4 s after launch, before the first pass ended.
+
+- **Ground is gathered.** The game holds only the landscape near the hero, so each pass's
+  heightfields are merged into the kept ones (a live field replaces its square; the rest stay).
+  The maps show ground walked before even where it is not loaded now.
+- **Obstacles are not merged** (they can move): the kept ones stand in only until the run's first
+  pass, which replaces them.
+- **Written** when the ground grew, and once a run after the first pass: off the worker thread,
+  to a `.part` file renamed over the old one. Acasa Marshes: 9.4 MB.
+- **Format**: little-endian, `HIUS` and a version, the heightfields, then the obstacles. Another
+  version, a cut-short file or a count past the end is ignored and written anew.
+- A world name that does not read (loading) keeps the scene; another world resets the pass and
+  loads that world's kept scene.
+- The file is made from the game's memory: it stays on the player's machine, never in the repo.
+

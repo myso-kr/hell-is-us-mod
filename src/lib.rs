@@ -25,5 +25,5 @@ pub use cheat::{cheats, extras, hold};
 pub use guide::{budget, clues, goals, ledger, missables, pathfind, quests, slots, survey, tables};
 pub use infra::{backup, gamedata, log, logfile, memstat, paths, prof, runtime, session, settings, verify};
 pub use map::{icons, minimap, raster, relief, symbols};
-pub use read::{actors, attr, geometry, knowledge, navmesh, obstacles, puzzles, terrain};
+pub use read::{actors, attr, geometry, knowledge, navmesh, obstacles, puzzles, scene_cache, terrain};
 pub use unreal::{anchors, gobjects, mem, names, player, probe, usmap};
