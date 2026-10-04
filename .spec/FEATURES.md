@@ -288,6 +288,21 @@ answer line makes the right groove the target. The answer line also counts the r
 left as the hero faces the wall ("facing it, 3 of 8 from the left"). The ring does not know what is
 in between: farther than 60 m it is not drawn.
 
+**What play showed, and fixed** (2026-10-05, at the corridor's three metal shields):
+
+- A flower in the right groove read as "in a wrong slot": a slot's `Item` is the hero's own
+  `CharlieInventoryItem`, not the data asset; its `ItemData` is followed now.
+- The ring sat by a crate on the floor: the slot actor's place is on the floor, its groove 1.55 m up
+  the wall. The groove is the slot's `PlacedItemMeshComponent`, read live; until seen, 155 cm above
+  the actor (the base blueprint's, measured).
+- On a 3440 × 1440 screen the ring for the right groove was 165 px off: the camera's FOV is the
+  horizontal one of a 16:9 view and the game keeps the vertical one, so the focal length is the 16:9
+  width's (a test keeps the measured screenshot's numbers).
+- The ring's distance was the camera's, a few metres behind the hero: it is the hero's now.
+- The answer became the guide's target only on a second press on its line; asking for the answer
+  now guides there at once. Confirmed in play: the ring on the third groove, the flower in and out
+  read as it changed.
+
 Not done: map markers for the sets, a line on the Now page when the player holds the items near the
 puzzle, and the Eye of God's per-statue keeper names (the decoys' keepers are not in the data).
 
