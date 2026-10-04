@@ -19,6 +19,7 @@ are found by **showing the gaps, watching for changes and scanning for values**.
 | `doctor find <text>` | Searches property names across all classes and structs (≈14,000): `Owner.Prop type @+offset (size)` |
 | `doctor dump [prefix…]` | An SDK-style listing (default prefixes `Charlie`, `Story` → 471 entries, `sdk.txt`), including struct and array element types |
 | `doctor watch <target> [seconds]` | Compares the object's memory every 0.1 s and prints changed fields by name — native ones by offset — with timestamps |
+| `doctor profile [seconds]` | Runs the panel's worker steps (ten a second, no toggles, so nothing is written) for 30 s or `seconds`, and prints each phase's calls, mean and worst ms (`prof.rs`), the first 8 s apart as the warm-up |
 | `doctor scan <target> <value>` / `scan next <value>` | Where a value (u32/f32/f64) sits in an object; after changing the value in game, `scan next` keeps only the places that still match |
 
 Targets: `hero`, `controller`, `asc`, `sets[:N]`, `inventory`, `items[:N]`, `save` (the latest

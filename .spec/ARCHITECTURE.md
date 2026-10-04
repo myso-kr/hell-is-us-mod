@@ -123,7 +123,7 @@ src/
                         names.rs (the game's own names, Mods\locale) · text.rs (the mod's text tables, assets/i18n) ·
                         fill.rs (runtime fill for trf!) — tr!("KEY") / trf! macros
   infra/                log.rs logfile.rs (hiumod.log) · paths.rs (the Mods\ folder; every file path starts here) ·
-                        settings.rs · verify.rs · backup.rs (save backups) · memstat.rs (this process's memory) · session.rs (where the last session left off) ·
+                        settings.rs · verify.rs · backup.rs (save backups) · memstat.rs (this process's memory) · prof.rs (where a thread's time goes) · session.rs (where the last session left off) ·
                         gamedata.rs runtime.rs (reading the survey automatically; the .NET 8 runtime — SURVEY.md §8)
   game/                 the game seen from outside: locate.rs (install), launch.rs, process.rs (RPM/WPM),
                         achievements.rs (Steam's achievement cache, FEATURES.md §4)

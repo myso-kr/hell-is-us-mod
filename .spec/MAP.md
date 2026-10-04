@@ -251,7 +251,8 @@ with gaps between them, as Diablo's and Path of Exile's maps do.
   two; on the overlay's thread each took 80–140 ms and stopped the map.
 - **The hero glides** (`overlay/glide.rs`): the worker reads the game ten times a second; between
   readings the pose is interpolated from where it is shown to the latest reading, over the time
-  readings take (60–200 ms), so the maps move smoothly a reading behind at most. Over 30 m is a
+  readings take (60–200 ms), so the maps move smoothly a reading behind at most. Since §13 the
+  overlay reads the pose itself every frame, and the glide is only the fallback. Over 30 m is a
   jump, shown at once; yaw turns the short way. While the big map shows the overlay draws every
   30 ms (else 50).
 - **The trail is sliced to draw**: the latest 2,000 points, fading to nothing at the slice's start,
@@ -271,3 +272,57 @@ with gaps between them, as Diablo's and Path of Exile's maps do.
   each is drawn (`raster.rs` `faded`); the big map's own opacity multiplies them. Presets: Solid
   100/100/100, Balanced 60/90/100, Subtle 30/65/90, Icons only 0/35/100; anything else shows as
   Custom.
+
+## 13. Latency and CPU (2026-10-04)
+
+Reported: the minimap ran about a second behind the hero. Asked: research memory, CPU and tick
+optimisation, then do all of it.
+
+**Why it was late.** The worker read the pose first in its step, but published the snapshot only at
+the step's end, after the actors, the guide and the toggles; and it then waited a whole `STEP`
+before the next. The glide added up to 200 ms. On top, steps that coincided with the periodic rescans
+(the actors every 1 s, the guide's triggers and knowledge every 2 s) ran to 300 ms or more.
+
+**Research** (what applied here):
+
+- Reading another process's memory costs per call, not per byte, and Windows serialises the calls
+  against one process, so more threads do not help: fewer, larger reads do (HunterPie cut ~474
+  calls a tick to 50–80, github.com/HunterPie/HunterPie/issues/828; memflow's page cache,
+  docs.rs/memflow).
+- Fast and slow work at their own rates: what the screen needs every frame read every frame, the
+  rest time-sliced and paced (allenchou.net/2021/05/time-slicing; gafferongames.com "Fix your
+  timestep").
+- A layered window is composed on the CPU and its cost grows with its area; keep it small and update
+  it only when it changed (learn.microsoft.com, UpdateLayeredWindow and "Windows with C++: High
+  performance window layering", MSDN Magazine 2014-06). DirectComposition with a flip-model swap
+  chain avoids the copy altogether: not done, a larger change.
+- Share snapshots by `Arc` rather than cloning large lists each frame (docs.rs/arc-swap).
+- Rust's `thread::sleep` already uses a high-resolution waitable timer on Windows
+  (rust-lang/rust#116461); no `timeBeginPeriod`.
+
+**Done, measured with `doctor profile` in play (steady state, after an 8 s warm-up):**
+
+| Change | A worker step, mean / worst |
+|---|---|
+| Before | 55 ms / 152 |
+| The two object walks rest between passes (quests 5 s, ground 3 s) | 22 / 97 |
+| Their class pointers read a 4 KiB page at a time, objects in address order (`mem::Paged`) | 19 / 100 |
+| Names, properties and lineages kept once read (`names.rs` `Cache`) | 10.7 / 64 |
+
+1. **The pose every frame** (`player::PoseSource`): the worker hands over the controller, the pawn and
+   the offsets; the overlay reads the pose through a read-only handle each frame (four reads,
+   checked against the controller still holding that pawn) and draws it as read. The worker's pose
+   remains the fallback, glided.
+2. **Shared, not copied**: the snapshot's things and goals are `Arc`s; the overlay keeps what it shows
+   (the survey's things merged, the consent's filter, the pins added) and works it out again only
+   when the worker brings new lists, the consent or the pins change (`hud::Shown`, `hud::Pinned`).
+3. **Steps on a beat**: steps start `STEP` apart, not `STEP` after the last ended.
+4. **Fewer calls**: as in the table. The attributes the toggles hold went from 4.2 to 0.4 ms a step,
+   the once-a-second derived lists from 31 to 7.8 ms; the first step from 1.4 to 1.1 s.
+5. **The big map**: its window is as wide as it is tall (the short side, centred), since past the
+   circle every pixel faded to nothing; at 1440p, drawing 4.8 → 2.8 ms a frame and showing it 5.3 →
+   3.2 ms (ignored benchmarks in `bigmap.rs` and `layered.rs`). A frame that would show what the last
+   did is neither drawn nor shown again, but one is drawn at least every 250 ms for what its key
+   leaves out (the settings, the trail).
+
+The worker and the overlay log their spans every 30 s (`worker time …`, `overlay time …`).

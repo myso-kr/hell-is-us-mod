@@ -6,6 +6,19 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## Unreleased
+
+### Changed (performance)
+
+- The minimap and the big map keep up with the hero: the overlay reads where the hero stands every
+  frame, instead of waiting for the rest of the game's reading (up to a second behind before).
+- The panel's reading of the game takes a fifth of the time it did (10.7 ms a step on average, from
+  55): the walks over every object rest between passes and read a page at a time, and names and
+  class layouts already read are kept.
+- The big map's window is only as wide as the map's circle, and a frame that would show nothing new
+  is not drawn again: about 40 % less work a frame, and next to none while the hero stands.
+- `doctor profile [seconds]` shows where the panel's reading of the game spends its time.
+
 ## 0.3.0 — 2026-10-04
 
 Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
