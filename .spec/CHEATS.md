@@ -92,4 +92,4 @@ this region) with a Teleport button each. It uses the same write as the saved po
 cleared), landing `SHORT_OF` (150 cm) short of the target on the hero's side and `ABOVE` (120 cm)
 over it: not inside what stands there (a chest, a person), and dropping onto its floor. Only in the
 hero's region: another region's place has no ground loaded to land on. A closed-off target can trap
-the hero, so the card says to save a position first. Not yet tried in play.
+the hero, so the card says to save a position first. Confirmed in play by the user (2026-10-05).
