@@ -22,11 +22,19 @@ const SET_HEIGHT: f32 = 150.0;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Slot {
+    /// The actor's place, on the floor below the groove.
     pub at: [f32; 3],
+    /// The groove: where what is put in shows, as read live, or until then `GROOVE` above `at`.
+    pub groove: [f32; 3],
     pub choice: Choice,
     /// What it holds: `None` not seen loaded yet this run, `Some(None)` empty.
     pub holds: Option<Option<String>>,
 }
+
+/// How far above its actor's place a choice slot's groove is (cm): the base blueprint's
+/// (Base_1SlotPlacementPuzzleCheck), measured at the Watcher's Nest's grooves, 155 up and
+/// under 30 to the side.
+const GROOVE: f32 = 155.0;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Set {
@@ -122,7 +130,10 @@ impl SlotPuzzle {
 /// What each slot was last seen to hold, by where it stands (kept through the run: a set
 /// left behind keeps its state).
 #[derive(Default)]
-pub struct Seen(HashMap<[i32; 3], Option<String>>);
+pub struct Seen(HashMap<[i32; 3], Sight>);
+
+/// A slot as last seen: what it held, and where its groove is.
+type Sight = (Option<String>, Option<[f32; 3]>);
 
 fn key(at: [f32; 3]) -> [i32; 3] {
     at.map(|v| (v / 50.0).round() as i32)
@@ -136,7 +147,7 @@ impl Seen {
         for l in live.iter().filter(|l| l.kind == crate::puzzles::Kind::Placement) {
             let off = |p: &&Placed| (l.at[0] - p.at[0]).hypot(l.at[1] - p.at[1]);
             if let Some(p) = slots.iter().filter(|p| off(p) < 100.0).min_by(|a, b| off(a).total_cmp(&off(b))) {
-                self.0.insert(key(p.at), l.placed.iter().flatten().next().cloned());
+                self.0.insert(key(p.at), (l.placed.iter().flatten().next().cloned(), l.slot_at.first().copied()));
             }
         }
     }
@@ -169,7 +180,13 @@ pub fn group(catalogue: &[(Placed, bool)], seen: &Seen) -> Vec<SlotPuzzle> {
                                     items.push(item.clone());
                                 }
                             }
-                            Slot { at: p.at, choice, holds: seen.0.get(&key(p.at)).cloned() }
+                            let seen = seen.0.get(&key(p.at));
+                            Slot {
+                                at: p.at,
+                                groove: seen.and_then(|s| s.1).unwrap_or([p.at[0], p.at[1], p.at[2] + GROOVE]),
+                                choice,
+                                holds: seen.map(|s| s.0.clone()),
+                            }
                         })
                         .collect();
                     let mut set = Set { id: 0, slots };
@@ -390,6 +407,7 @@ mod tests {
             answer: Answer::Items(vec![]),
             solved: false,
             placed: vec![holds.map(str::to_string)],
+            slot_at: vec![],
         };
         let mut seen = Seen::default();
         seen.see(

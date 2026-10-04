@@ -79,6 +79,9 @@ pub struct Puzzle {
     /// For an item placement, what its slots hold now, by data asset name (`None` empty):
     /// a choice puzzle's slot is right only with the right item in it (slots.rs).
     pub placed: Vec<Option<String>>,
+    /// And where each slot shows what is put in it (its PlacedItemMeshComponent): the groove
+    /// itself, 1.5 m up the wall from the actor's own place (`at`), which is on the floor.
+    pub slot_at: Vec<[f32; 3]>,
 }
 
 /// Where an actor stands: its root component's RelativeLocation (doubles).
@@ -164,23 +167,40 @@ pub fn read(m: &dyn Memory, n: &Names, comp: u64, kind: Kind) -> Option<Puzzle> 
             (Answer::Items(names), activated(m, n, comp))
         }
     };
-    // ItemPlacementActionComponent.Slots: ItemPlacementSlotComponents, each `Item`.
-    let placed = match kind {
-        Kind::Placement => n
-            .field(m, comp, "Slots")
-            .map(|f| objects(m, comp + f.offset as u64))
-            .unwrap_or_default()
-            .into_iter()
-            .map(|slot| {
-                n.field(m, slot, "Item")
-                    .and_then(|f| mem::read_u64(m, slot + f.offset as u64))
-                    .filter(|&i| mem::plausible(i))
-                    .and_then(|i| n.object(m, i))
-            })
-            .collect(),
+    // ItemPlacementActionComponent.Slots: ItemPlacementSlotComponents, each `Item`, and
+    // where it is (its ComponentToWorld).
+    let slots = match kind {
+        Kind::Placement => n.field(m, comp, "Slots").map(|f| objects(m, comp + f.offset as u64)).unwrap_or_default(),
         _ => Vec::new(),
     };
-    Some(Puzzle { id: comp, kind, class, at, answer, solved, placed })
+    // A slot holds the hero's own CharlieInventoryItem, not the item's data asset: its
+    // ItemData is what the slot counts (compared as a CharlieInventoryItem, a flower put in
+    // the right groove read as wrong).
+    let placed = slots
+        .iter()
+        .map(|&slot| {
+            let item = n
+                .field(m, slot, "Item")
+                .and_then(|f| mem::read_u64(m, slot + f.offset as u64))
+                .filter(|&i| mem::plausible(i))?;
+            let data = if n.is_a(m, item, "ItemData") { Some(item) } else { n.follow(m, item, "ItemData").ok() };
+            data.and_then(|d| n.object(m, d))
+        })
+        .collect();
+    let slot_at = slots
+        .iter()
+        .filter_map(|&slot| {
+            let mesh = n
+                .field(m, slot, "PlacedItemMeshComponent")
+                .and_then(|f| mem::read_u64(m, slot + f.offset as u64))
+                .filter(|&p| mem::plausible(p))
+                .unwrap_or(slot);
+            crate::obstacles::Transform::read_at(m, mesh + crate::obstacles::COMPONENT_TO_WORLD)
+        })
+        .map(|t| t.t.map(|v| v as f32))
+        .filter(|p| p.iter().all(|v| v.is_finite() && v.abs() < 1.0e7))
+        .collect();
+    Some(Puzzle { id: comp, kind, class, at, answer, solved, placed, slot_at })
 }
 
 #[cfg(test)]

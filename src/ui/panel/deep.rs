@@ -589,7 +589,7 @@ impl Panel {
                     }
                     if pressed {
                         // To the set; once its answer is told, to the right slot itself.
-                        let at = right.filter(|_| told >= 2).map_or(s.at(), |r| r.at);
+                        let at = right.filter(|_| told >= 2).map_or(s.at(), |r| r.groove);
                         let x = crate::survey::Need {
                             world: p.world.clone(),
                             id,
