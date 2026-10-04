@@ -371,11 +371,14 @@ impl Quests {
             if self.ready() && self.rested.is_some_and(|t| t.elapsed() < REST) {
                 return;
             }
+            // In address order, so neighbours' class pointers come from one page read.
             self.pending = objects();
+            self.pending.sort_unstable();
             self.cursor = 0;
         }
         let budget = if self.ready() { LATER } else { FIRST };
         let started = std::time::Instant::now();
+        let paged = mem::Paged::new(m);
         let mut i = self.cursor;
         while i < self.pending.len() {
             if i % 512 == 0 && started.elapsed() >= budget {
@@ -383,7 +386,7 @@ impl Quests {
             }
             let o = self.pending[i];
             i += 1;
-            let Some(class) = mem::read_u64(m, o + CLASS).filter(|&c| mem::plausible(c)) else { continue };
+            let Some(class) = mem::read_u64(&paged, o + CLASS).filter(|&c| mem::plausible(c)) else { continue };
             let role = *self.roles.entry(class).or_insert_with(|| match n.object(m, class).as_deref() {
                 Some("QuestData") => Role::Quest,
                 Some("SecretsSubsystem") => Role::Secrets,

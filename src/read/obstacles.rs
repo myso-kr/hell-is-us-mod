@@ -596,13 +596,16 @@ impl Obstacles {
             if self.rested.is_some_and(|t| t.elapsed() < REST) {
                 return;
             }
+            // In address order, so neighbours' class pointers come from one page read.
             self.pending = objects.all(m);
+            self.pending.sort_unstable();
             self.cursor = 0;
         }
         let end = (self.cursor + SLICE).min(self.pending.len());
+        let paged = mem::Paged::new(m);
         for i in self.cursor..end {
             let o = self.pending[i];
-            let Some(class) = mem::read_u64(m, o + CLASS).filter(|&c| mem::plausible(c)) else { continue };
+            let Some(class) = mem::read_u64(&paged, o + CLASS).filter(|&c| mem::plausible(c)) else { continue };
             if let Some(f) = self.fields(m, n, o, class) {
                 self.component(m, n, o, f, hero);
             }
