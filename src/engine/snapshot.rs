@@ -60,6 +60,8 @@ pub struct Snapshot {
     pub puzzles: Arc<Vec<crate::puzzles::Puzzle>>,
     /// Every puzzle in the worlds (the survey) and whether it was solved.
     pub catalogue: Arc<Vec<(crate::survey::Placed, bool)>>,
+    /// The choice puzzles (slots.rs): the Watcher's Nest's flowers, the Eye of God's orbs.
+    pub slot_puzzles: Arc<Vec<crate::slots::SlotPuzzle>>,
     /// Every Lymbic lock: the rods it takes, held or where to find them (JOURNEY.md §3.3).
     pub locks: Arc<Vec<crate::survey::Lock>>,
     /// The clue board: the Datapad by entry, and the items held (clues.rs).

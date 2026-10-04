@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	Süren bir iyilik ya da gizem yok.
 MORE_N	ve {n} tane daha
 TRIPS_THAT_PAY	Gitmeye değer
 TRIP_LINE	Teslim {handovers} · açılabilir kilit {locks} · kalan {left}
+SLOT_PUZZLES	Doğru yer bulmacaları
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Bilmece
+SLOT_CLUE	İpucu
+SLOT_SET	{n}. yer
+SLOT_SLOTS	{n} yuva
+SLOT_DONE	doğru yerde
+SLOT_OPEN	henüz değil
+SLOT_UNSEEN	yakından görünür
+SLOT_WRONG	yanlış yuvada bir şey var: çıkarın
+SLOT_NOTHING	Buraya hiçbir şey konmaz.
+SLOT_RIGHT	Doğru yuva: {item}, {far}
+SLOT_REMOVABLE	Yanlış konan bir şey geri çıkarılabilir.
+SLOT_ALL_DONE	Hepsi yerinde.
+SLOT_AFTER_FLOWERS	Sonra mezara dönüp kolu çekin.

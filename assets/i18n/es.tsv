@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	No hay buenas acciones ni misterios en curso.
 MORE_N	y {n} más
 TRIPS_THAT_PAY	Vale el viaje
 TRIP_LINE	Entregas {handovers} · cerraduras abribles {locks} · quedan {left}
+SLOT_PUZZLES	Puzles de colocación
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Acertijo
+SLOT_CLUE	Pista
+SLOT_SET	Lugar {n}
+SLOT_SLOTS	{n} huecos
+SLOT_DONE	bien colocado
+SLOT_OPEN	todavía no
+SLOT_UNSEEN	se ve de cerca
+SLOT_WRONG	hay algo en un hueco equivocado: sácalo
+SLOT_NOTHING	Aquí no va nada.
+SLOT_RIGHT	El hueco correcto: {item}, {far}
+SLOT_REMOVABLE	Lo mal colocado se puede volver a sacar.
+SLOT_ALL_DONE	Todo en su sitio.
+SLOT_AFTER_FLOWERS	Después vuelve a la tumba y tira de la palanca.

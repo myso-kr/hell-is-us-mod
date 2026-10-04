@@ -76,6 +76,9 @@ pub struct Puzzle {
     pub at: [f32; 3],
     pub answer: Answer,
     pub solved: bool,
+    /// For an item placement, what its slots hold now, by data asset name (`None` empty):
+    /// a choice puzzle's slot is right only with the right item in it (slots.rs).
+    pub placed: Vec<Option<String>>,
 }
 
 /// Where an actor stands: its root component's RelativeLocation (doubles).
@@ -161,7 +164,23 @@ pub fn read(m: &dyn Memory, n: &Names, comp: u64, kind: Kind) -> Option<Puzzle> 
             (Answer::Items(names), activated(m, n, comp))
         }
     };
-    Some(Puzzle { id: comp, kind, class, at, answer, solved })
+    // ItemPlacementActionComponent.Slots: ItemPlacementSlotComponents, each `Item`.
+    let placed = match kind {
+        Kind::Placement => n
+            .field(m, comp, "Slots")
+            .map(|f| objects(m, comp + f.offset as u64))
+            .unwrap_or_default()
+            .into_iter()
+            .map(|slot| {
+                n.field(m, slot, "Item")
+                    .and_then(|f| mem::read_u64(m, slot + f.offset as u64))
+                    .filter(|&i| mem::plausible(i))
+                    .and_then(|i| n.object(m, i))
+            })
+            .collect(),
+        _ => Vec::new(),
+    };
+    Some(Puzzle { id: comp, kind, class, at, answer, solved, placed })
 }
 
 #[cfg(test)]

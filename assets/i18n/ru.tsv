@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	Нет добрых дел или тайн в процесс
 MORE_N	и ещё {n}
 TRIPS_THAT_PAY	Стоит съездить
 TRIP_LINE	Передать {handovers} · открыть замков {locks} · осталось {left}
+SLOT_PUZZLES	Головоломки с выбором места
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Загадка
+SLOT_CLUE	Подсказка
+SLOT_SET	Место {n}
+SLOT_SLOTS	гнёзд: {n}
+SLOT_DONE	на месте
+SLOT_OPEN	ещё нет
+SLOT_UNSEEN	видно вблизи
+SLOT_WRONG	что-то лежит не на месте: выньте
+SLOT_NOTHING	Сюда ничего не кладут.
+SLOT_RIGHT	Нужное место: {item}, {far}
+SLOT_REMOVABLE	Неправильно положенное можно вынуть.
+SLOT_ALL_DONE	Всё на своих местах.
+SLOT_AFTER_FLOWERS	Затем вернитесь к гробнице и потяните рычаг.

@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	진행 중인 선행이나 미스터리가 없어요.
 MORE_N	외 {n}개
 TRIPS_THAT_PAY	가 볼 만한 지역
 TRIP_LINE	건네기 {handovers} · 열 수 있는 잠금 {locks} · 남은 것 {left}
+SLOT_PUZZLES	제자리 퍼즐
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	수수께끼
+SLOT_CLUE	단서
+SLOT_SET	{n}번 자리
+SLOT_SLOTS	홈 {n}개
+SLOT_DONE	맞게 놓음
+SLOT_OPEN	아직
+SLOT_UNSEEN	가까이 가면 확인돼요
+SLOT_WRONG	엉뚱한 홈에 들어 있어요. 빼 주세요
+SLOT_NOTHING	여기에는 아무것도 넣지 않아요.
+SLOT_RIGHT	맞는 홈: {item}, {far}
+SLOT_REMOVABLE	잘못 넣어도 다시 뺄 수 있어요.
+SLOT_ALL_DONE	모두 맞게 놓았어요.
+SLOT_AFTER_FLOWERS	이제 무덤으로 돌아가 레버를 당기세요.

@@ -132,6 +132,7 @@ mod tests {
             guid: None,
             kind,
             answer: Answer::Code("1".into()),
+            choice: None,
         }
     }
 

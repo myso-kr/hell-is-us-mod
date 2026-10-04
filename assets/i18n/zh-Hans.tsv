@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	没有进行中的善行或谜团。
 MORE_N	另有 {n} 个
 TRIPS_THAT_PAY	值得一去的区域
 TRIP_LINE	可交付 {handovers} · 可开锁 {locks} · 剩余 {left}
+SLOT_PUZZLES	归位谜题
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	谜语
+SLOT_CLUE	线索
+SLOT_SET	第{n}处
+SLOT_SLOTS	{n}个槽位
+SLOT_DONE	已放对
+SLOT_OPEN	尚未放置
+SLOT_UNSEEN	靠近后可见
+SLOT_WRONG	有东西放错了位置：请取出
+SLOT_NOTHING	这里什么都不用放。
+SLOT_RIGHT	正确位置：{item}，{far}
+SLOT_REMOVABLE	放错了可以再取出来。
+SLOT_ALL_DONE	全部放对了。
+SLOT_AFTER_FLOWERS	然后回到墓室拉下拉杆。

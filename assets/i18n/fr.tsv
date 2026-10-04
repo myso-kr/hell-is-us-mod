@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	Aucune bonne action ni mystère en cours.
 MORE_N	et {n} de plus
 TRIPS_THAT_PAY	Vaut le déplacement
 TRIP_LINE	Remises {handovers} · serrures ouvrables {locks} · {left} restants
+SLOT_PUZZLES	Énigmes d'emplacement
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Énigme
+SLOT_CLUE	Indice
+SLOT_SET	Emplacement {n}
+SLOT_SLOTS	{n} emplacements
+SLOT_DONE	bien placé
+SLOT_OPEN	pas encore
+SLOT_UNSEEN	visible de près
+SLOT_WRONG	un objet est au mauvais endroit : retirez-le
+SLOT_NOTHING	Rien ne va ici.
+SLOT_RIGHT	Le bon emplacement : {item}, {far}
+SLOT_REMOVABLE	Un objet mal placé peut être retiré.
+SLOT_ALL_DONE	Tout est en place.
+SLOT_AFTER_FLOWERS	Retournez ensuite au tombeau et tirez le levier.

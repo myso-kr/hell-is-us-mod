@@ -15,6 +15,12 @@ fn puzzle_sort(k: crate::puzzles::Kind) -> Sub {
     }
 }
 
+/// A choice puzzle's slot read live (slots.rs): its card tells it, set by set; listed
+/// alone here it showed what the slot accepts (every orb, a stand-in) as its answer.
+fn is_choice_slot(class: &str) -> bool {
+    class.contains("PuzzleCheck")
+}
+
 /// A stable id for a place the guide is sent to, from a GUID (bit 63: a survey id).
 fn id_of(s: &str) -> u64 {
     use std::hash::{Hash, Hasher};
@@ -99,6 +105,7 @@ fn catalogue_here(
         .iter()
         .filter(|(p, _)| Some(&p.world) == here.as_ref())
         .filter(|(p, _)| placements || p.kind != crate::puzzles::Kind::Placement)
+        .filter(|(p, _)| p.choice.is_none())
         .filter(|(p, _)| !listed(p))
         .cloned()
         .collect()
@@ -406,7 +413,8 @@ impl Panel {
     /// holds, read live), then the rest of the region from the survey. Press one to be
     /// guided to it; the answer is behind its button.
     pub(super) fn puzzles_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
-        let list = snap.map(|s| s.puzzles.clone()).unwrap_or_default();
+        let list: Vec<Puzzle> =
+            snap.map(|s| s.puzzles.iter().filter(|p| !is_choice_slot(&p.class)).cloned().collect()).unwrap_or_default();
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let world = snap
             .and_then(|s| s.world.clone())
@@ -460,6 +468,133 @@ impl Panel {
             let rest = catalogue_here(snap, self.show_placements, &near).len();
             block(t, |ui| tw::group_heading(ui, tr!("REST_OF_THIS_REGION"), rest));
             self.catalogue_rows(t, state, snap, &near);
+        });
+    }
+
+    /// The choice puzzles (slots.rs): items into one of several slots, the Watcher's Nest's
+    /// ceramic flowers and the Eye of God's orbs. Each with its sets and how they stand,
+    /// the game's riddle on asking; per set, on asking, the game's clue to it (a research
+    /// file), then the right slot. A line guides to its set, or once told, to the slot.
+    pub(super) fn slot_puzzles_card(
+        &mut self,
+        t: &mut Tui,
+        state: &mut crate::minimap::MapState,
+        snap: Option<&Snapshot>,
+    ) {
+        use crate::slots::State;
+        let list = snap.map(|s| s.slot_puzzles.clone()).unwrap_or_default();
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let world_here = snap.and_then(|s| s.world.clone()).map(|w| crate::survey::Survey::world_of(&w).to_string());
+        card(t, tr!("SLOT_PUZZLES"), |t| {
+            if list.is_empty() {
+                note(t, tr!("NO_PUZZLE_LIST_RUN_DOCTOR_SURVEY"));
+                return;
+            }
+            note(t, tr!("SLOT_REMOVABLE"));
+            // This region's first.
+            let mut order: Vec<&crate::slots::SlotPuzzle> = list.iter().collect();
+            order.sort_by_key(|p| Some(&p.world) != world_here.as_ref());
+            for p in order {
+                let what: Vec<String> = p.items.iter().map(|i| crate::goals::item_label(i)).collect();
+                let (done, all) = p.progress();
+                let place = crate::i18n::place(&p.world);
+                let head = trf!("SLOT_PUZZLE_HEAD", what = what.join(", "), place = place, done = done, all = all);
+                block(t, |ui| ui.label(RichText::new(head).strong()));
+                let clue = p.clue();
+                if done == all && all > 0 {
+                    let after =
+                        clue.and_then(|c| c.after).map(|k| format!(" {}", crate::i18n::text(k))).unwrap_or_default();
+                    text(t, RichText::new(format!("{}{after}", tr!("SLOT_ALL_DONE"))).color(OK));
+                }
+                if let Some(c) = clue {
+                    let id = crate::slots::riddle_id(p);
+                    reveal(t, &mut self.revealed, id, tr!("SLOT_RIDDLE"));
+                    if self.revealed.contains(&id) {
+                        text(t, RichText::new(crate::i18n::game_text(c.title)).strong());
+                        text(t, RichText::new(crate::slots::plain(&crate::i18n::game_text(c.text))).small().color(DIM));
+                    }
+                }
+                for (i, s) in p.sets.iter().enumerate() {
+                    let told = self.slot_hints.get(&s.id).copied().unwrap_or(0);
+                    let file = clue.and_then(|c| c.for_set(s));
+                    let label = file
+                        .map(|(title, _)| crate::i18n::game_text(title))
+                        .unwrap_or_else(|| trf!("SLOT_SET", n = i + 1));
+                    let far = here.map_or(String::new(), |h| format!(" ({})", crate::raster::span(h, s.at())));
+                    // A set no slot of which is right says so only once its answer is asked
+                    // for: before, it reads like the others, or it would give itself away.
+                    let st = s.state();
+                    let how = match st {
+                        State::Done => tr!("SLOT_DONE"),
+                        State::Wrong => tr!("SLOT_WRONG"),
+                        State::Open => tr!("SLOT_OPEN"),
+                        State::Unseen => tr!("SLOT_UNSEEN"),
+                        State::Nothing if told >= 2 => tr!("SLOT_NOTHING"),
+                        State::Nothing => tr!("SLOT_UNSEEN"),
+                    };
+                    let count = trf!("SLOT_SLOTS", n = s.slots.len());
+                    let tick = if st == State::Done { " ✓" } else { "" };
+                    let head = format!("{label} · {count}{far} · {how}{tick}");
+                    let colour = match st {
+                        State::Done => DIM,
+                        State::Wrong => super::super::theme::WAIT,
+                        _ => super::super::theme::TEXT,
+                    };
+                    let id = s.id | 1 << 63;
+                    let on = (st != State::Done).then(|| state.target == Some(id));
+                    let icon = |ui: &mut egui::Ui| {
+                        crate::ui::svg::sort(ui, Sub::Puzzle, 18.0);
+                    };
+                    let hints = &mut self.slot_hints;
+                    let pressed = tw::line(t, on, icon, RichText::new(head).color(colour), |t| {
+                        if told == 0 && file.is_some() && w(t, |ui| ui.small_button(tr!("SLOT_CLUE"))).clicked() {
+                            hints.insert(s.id, 1);
+                        }
+                        if told < 2 && w(t, |ui| ui.small_button(tr!("SHOW_ANSWER"))).clicked() {
+                            hints.insert(s.id, 2);
+                        }
+                        if told > 0 && w(t, |ui| ui.small_button(tr!("HIDE"))).clicked() {
+                            hints.remove(&s.id);
+                        }
+                    });
+                    let told = self.slot_hints.get(&s.id).copied().unwrap_or(0);
+                    if told >= 1 {
+                        if let Some((_, content)) = file {
+                            let body = crate::slots::plain(&crate::i18n::game_text(content));
+                            text(t, RichText::new(body).small().color(DIM));
+                        }
+                    }
+                    let right = s.answer();
+                    if told >= 2 {
+                        let line = match right {
+                            Some(r) => {
+                                let item = match &r.choice {
+                                    crate::survey::Choice::Right(item) => crate::goals::item_label(item),
+                                    crate::survey::Choice::Decoy => String::new(),
+                                };
+                                let far = here.map_or(String::new(), |h| crate::raster::span(h, r.at));
+                                trf!("SLOT_RIGHT", item = item, far = far)
+                            }
+                            None => tr!("SLOT_NOTHING").to_string(),
+                        };
+                        text(t, RichText::new(format!("    {line}")).color(OK));
+                    }
+                    if pressed {
+                        // To the set; once its answer is told, to the right slot itself.
+                        let at = right.filter(|_| told >= 2).map_or(s.at(), |r| r.at);
+                        let x = crate::survey::Need {
+                            world: p.world.clone(),
+                            id,
+                            label: label.clone(),
+                            what: String::new(),
+                            at,
+                            done: false,
+                        };
+                        guide_to(state, &goals, &x);
+                    }
+                }
+            }
         });
     }
 

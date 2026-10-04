@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	進行中の善行やミステリーはありません。
 MORE_N	ほか {n} 件
 TRIPS_THAT_PAY	行く価値のある地域
 TRIP_LINE	渡せる物 {handovers} · 開けられる錠 {locks} · 残り {left}
+SLOT_PUZZLES	置き場所パズル
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	謎かけ
+SLOT_CLUE	手がかり
+SLOT_SET	{n}番目の場所
+SLOT_SLOTS	{n}か所
+SLOT_DONE	正しく置いた
+SLOT_OPEN	まだ
+SLOT_UNSEEN	近づくと分かります
+SLOT_WRONG	違う場所に入っています。取り出してください
+SLOT_NOTHING	ここには何も置きません。
+SLOT_RIGHT	正しい場所：{item}、{far}
+SLOT_REMOVABLE	間違えて置いても取り出せます。
+SLOT_ALL_DONE	すべて正しく置きました。
+SLOT_AFTER_FLOWERS	その後、墓に戻ってレバーを引いてください。

@@ -273,6 +273,8 @@ pub struct Panel {
     clue_open: Option<String>,
     /// Puzzle answers and vault codes asked for, by id (not kept between runs).
     revealed: std::collections::HashSet<u64>,
+    /// How far each choice puzzle's set has been told (slots.rs): 1 its clue, 2 its answer.
+    slot_hints: std::collections::HashMap<u64, u8>,
     /// The puzzle list shows key doors and item placements too.
     show_placements: bool,
     /// Steam's achievements (game/achievements.rs), read again every 10 s.
@@ -386,6 +388,7 @@ impl Panel {
             clue_query: String::new(),
             clue_open: None,
             revealed: Default::default(),
+            slot_hints: Default::default(),
             show_placements: false,
             achievements: None,
             show_unlocked: false,

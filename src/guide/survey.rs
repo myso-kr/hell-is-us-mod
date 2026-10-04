@@ -87,6 +87,18 @@ pub struct Placed {
     pub kind: crate::puzzles::Kind,
     /// The dials as the game sets them (`now` 0), the code, or the items.
     pub answer: crate::puzzles::Answer,
+    /// A slot of a choice puzzle (slots.rs): what it counts as right. `answer` is then
+    /// only what it accepts.
+    pub choice: Option<Choice>,
+}
+
+/// A choice puzzle's slot (the survey's `expects`): the item it counts as right, or none,
+/// a decoy (the Watcher's Nest's grooves but one in each set, the Eye of God's four
+/// statues of keepers the orbs do not belong to).
+#[derive(Clone, Debug, PartialEq)]
+pub enum Choice {
+    Right(String),
+    Decoy,
 }
 
 impl Placed {
@@ -318,6 +330,10 @@ impl Survey {
                         guid: a["guid"].as_str().map(str::to_string),
                         kind,
                         answer,
+                        choice: a["puzzle"]["expects"].as_str().map(|e| match e.rsplit('/').next().unwrap_or("") {
+                            "" => Choice::Decoy,
+                            item => Choice::Right(item.to_string()),
+                        }),
                     };
                     // A blueprint holds a copy per cell it streams in: one is enough.
                     if !puzzles.iter().any(|q: &Placed| {
@@ -758,6 +774,7 @@ mod tests {
             guid: guid.map(str::to_string),
             kind: Kind::Placement,
             answer: Answer::Items(rods.iter().map(|r| r.to_string()).collect()),
+            choice: None,
         };
         // Through the payload reader, as the survey's own paths come in.
         let pick = |name: &str, at: [f32; 3], guid: &str, item: &str| {

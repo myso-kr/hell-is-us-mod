@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	Keine gute Tat und kein Rätsel läuft gerade.
 MORE_N	und {n} weitere
 TRIPS_THAT_PAY	Lohnt eine Reise
 TRIP_LINE	Übergaben {handovers} · öffenbare Schlösser {locks} · {left} übrig
+SLOT_PUZZLES	Rätsel um den richtigen Platz
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Rätsel
+SLOT_CLUE	Hinweis
+SLOT_SET	Stelle {n}
+SLOT_SLOTS	{n} Plätze
+SLOT_DONE	richtig platziert
+SLOT_OPEN	noch nicht
+SLOT_UNSEEN	aus der Nähe zu sehen
+SLOT_WRONG	etwas steckt am falschen Platz: herausnehmen
+SLOT_NOTHING	Hier kommt nichts hinein.
+SLOT_RIGHT	Der richtige Platz: {item}, {far}
+SLOT_REMOVABLE	Falsch Platziertes lässt sich wieder herausnehmen.
+SLOT_ALL_DONE	Alles am richtigen Platz.
+SLOT_AFTER_FLOWERS	Dann zurück zum Grab und den Hebel ziehen.

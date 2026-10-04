@@ -56,6 +56,8 @@ struct Guide {
     obstacles: Obstacles,
     /// Where each NPC's conversation was last seen loaded, by flow (`Survey::goals`).
     met: HashMap<String, String>,
+    /// What each choice puzzle's slot was last seen to hold (slots.rs).
+    slots_seen: crate::slots::Seen,
 }
 
 impl Guide {
@@ -459,6 +461,18 @@ impl Attached {
         let g = self.guide.borrow();
         let Some(survey) = g.survey.as_ref() else { return Vec::new() };
         survey.puzzles.iter().map(|p| (p.clone(), p.guid.as_ref().is_some_and(|id| g.saved.contains(id)))).collect()
+    }
+
+    /// The choice puzzles (slots.rs), with what their slots were last seen to hold: the
+    /// loaded ones among `live`.
+    pub fn slot_puzzles(
+        &self,
+        catalogue: &[(crate::survey::Placed, bool)],
+        live: &[crate::puzzles::Puzzle],
+    ) -> Vec<crate::slots::SlotPuzzle> {
+        let mut g = self.guide.borrow_mut();
+        g.slots_seen.see(catalogue, live);
+        crate::slots::group(catalogue, &g.slots_seen)
     }
 
     /// The puzzles within `reach` (cm) of `here`, with their answers (F6).

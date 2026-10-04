@@ -8,6 +8,7 @@ pub mod ledger;
 pub mod missables;
 pub mod pathfind;
 pub mod quests;
+pub mod slots;
 pub mod survey;
 pub mod tables;
 pub mod target;

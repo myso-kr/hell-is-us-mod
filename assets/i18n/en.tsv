@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	No good deed or mystery is under way.
 MORE_N	and {n} more
 TRIPS_THAT_PAY	Worth a trip
 TRIP_LINE	Hand-overs {handovers} · locks you can open {locks} · {left} left
+SLOT_PUZZLES	Right-place puzzles
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Riddle
+SLOT_CLUE	Clue
+SLOT_SET	Spot {n}
+SLOT_SLOTS	{n} slots
+SLOT_DONE	placed right
+SLOT_OPEN	not yet
+SLOT_UNSEEN	seen when you are close
+SLOT_WRONG	something is in a wrong slot: take it out
+SLOT_NOTHING	Nothing goes here.
+SLOT_RIGHT	The right slot: {item}, {far}
+SLOT_REMOVABLE	A wrong placement can be taken out again.
+SLOT_ALL_DONE	All in place.
+SLOT_AFTER_FLOWERS	Then go back to the tomb and pull the lever.

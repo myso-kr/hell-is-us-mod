@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	Nessuna buona azione o mistero in corso.
 MORE_N	e altri {n}
 TRIPS_THAT_PAY	Vale il viaggio
 TRIP_LINE	Consegne {handovers} · serrature apribili {locks} · {left} rimasti
+SLOT_PUZZLES	Enigmi di collocazione
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Indovinello
+SLOT_CLUE	Indizio
+SLOT_SET	Punto {n}
+SLOT_SLOTS	{n} alloggiamenti
+SLOT_DONE	al posto giusto
+SLOT_OPEN	non ancora
+SLOT_UNSEEN	visibile da vicino
+SLOT_WRONG	c'è qualcosa nel posto sbagliato: toglilo
+SLOT_NOTHING	Qui non va niente.
+SLOT_RIGHT	Il posto giusto: {item}, {far}
+SLOT_REMOVABLE	Un oggetto messo male si può togliere.
+SLOT_ALL_DONE	Tutto al suo posto.
+SLOT_AFTER_FLOWERS	Poi torna alla tomba e tira la leva.

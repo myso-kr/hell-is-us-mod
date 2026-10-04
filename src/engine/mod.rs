@@ -46,6 +46,7 @@ struct Derived {
     hollows: Arc<Vec<crate::tables::Hollows>>,
     puzzles: Arc<Vec<crate::puzzles::Puzzle>>,
     catalogue: Arc<Vec<(crate::survey::Placed, bool)>>,
+    slot_puzzles: Arc<Vec<crate::slots::SlotPuzzle>>,
     locks: Arc<Vec<crate::survey::Lock>>,
     clues: Arc<crate::clues::Clues>,
     budget: Arc<crate::budget::Budget>,
@@ -146,6 +147,7 @@ impl Engine {
             hollows: Default::default(),
             puzzles: Default::default(),
             catalogue: Default::default(),
+            slot_puzzles: Default::default(),
             locks: Default::default(),
             clues: Default::default(),
             budget: Default::default(),
@@ -201,15 +203,19 @@ impl Engine {
                                 snap.world.as_deref().map(|w| a.collection(w)).unwrap_or_default();
                             let (vaults, lore_known) = a.vaults();
                             let here = snap.pose.map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+                            let catalogue = a.catalogue();
+                            let puzzles = here.map(|h| a.puzzles(h, PUZZLE_REACH)).unwrap_or_default();
+                            let slot_puzzles = Arc::new(a.slot_puzzles(&catalogue, &puzzles));
                             let d = Derived {
                                 vaults: Arc::new(vaults),
                                 lore_known,
                                 hollows: Arc::new(a.hollows()),
-                                catalogue: Arc::new(a.catalogue()),
+                                catalogue: Arc::new(catalogue),
+                                slot_puzzles,
                                 locks: Arc::new(a.locks()),
                                 clues: Arc::new(a.clues()),
                                 budget: Arc::new(a.budget()),
-                                puzzles: Arc::new(here.map(|h| a.puzzles(h, PUZZLE_REACH)).unwrap_or_default()),
+                                puzzles: Arc::new(puzzles),
                                 needs: Arc::new(a.needs(&journal)),
                                 handovers: Arc::new(a.handovers()),
                                 deadlines: Arc::new(crate::missables::deadlines(&journal, &a.deeds())),
@@ -234,6 +240,7 @@ impl Engine {
                             snap.hollows = d.hollows.clone();
                             snap.puzzles = d.puzzles.clone();
                             snap.catalogue = d.catalogue.clone();
+                            snap.slot_puzzles = d.slot_puzzles.clone();
                             snap.locks = d.locks.clone();
                             snap.clues = d.clues.clone();
                             snap.budget = d.budget.clone();

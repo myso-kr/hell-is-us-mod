@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	Żaden dobry uczynek ani zagadka nie jest w toku.
 MORE_N	i {n} więcej
 TRIPS_THAT_PAY	Warto pojechać
 TRIP_LINE	Do oddania {handovers} · zamki do otwarcia {locks} · zostało {left}
+SLOT_PUZZLES	Zagadki właściwego miejsca
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Zagadka
+SLOT_CLUE	Wskazówka
+SLOT_SET	Miejsce {n}
+SLOT_SLOTS	gniazda: {n}
+SLOT_DONE	na właściwym miejscu
+SLOT_OPEN	jeszcze nie
+SLOT_UNSEEN	widać z bliska
+SLOT_WRONG	coś jest w złym gnieździe: wyjmij to
+SLOT_NOTHING	Tu nic nie wkładasz.
+SLOT_RIGHT	Właściwe gniazdo: {item}, {far}
+SLOT_REMOVABLE	Źle włożony przedmiot można wyjąć.
+SLOT_ALL_DONE	Wszystko na miejscu.
+SLOT_AFTER_FLOWERS	Potem wróć do grobowca i pociągnij dźwignię.

@@ -657,3 +657,18 @@ NO_SIDE_IN_PROGRESS	Nenhuma boa ação ou mistério em andamento.
 MORE_N	e mais {n}
 TRIPS_THAT_PAY	Vale a viagem
 TRIP_LINE	Entregas {handovers} · fechaduras abríveis {locks} · faltam {left}
+SLOT_PUZZLES	Quebra-cabeças de encaixe
+SLOT_PUZZLE_HEAD	{what} · {place} ({done}/{all})
+SLOT_RIDDLE	Enigma
+SLOT_CLUE	Pista
+SLOT_SET	Local {n}
+SLOT_SLOTS	{n} encaixes
+SLOT_DONE	no lugar certo
+SLOT_OPEN	ainda não
+SLOT_UNSEEN	visível de perto
+SLOT_WRONG	há algo no encaixe errado: retire
+SLOT_NOTHING	Nada vai aqui.
+SLOT_RIGHT	O encaixe certo: {item}, {far}
+SLOT_REMOVABLE	Um item mal colocado pode ser retirado.
+SLOT_ALL_DONE	Tudo no lugar.
+SLOT_AFTER_FLOWERS	Depois volte ao túmulo e puxe a alavanca.
