@@ -151,6 +151,11 @@ pub fn run(shared: Arc<Shared>) {
         std::thread::sleep(frame.saturating_sub(spent).max(Duration::from_millis(5)));
         big_on = false;
         frame_start = Instant::now();
+        // Where the frames' time goes, every half a minute (prof.rs).
+        if let Some(l) = crate::prof::report("overlay", Duration::from_secs(30)) {
+            crate::logfile::line(&l);
+        }
+        let _frame = crate::prof::span("frame");
         tick = tick.wrapping_add(1);
 
         let game = shared.game_pid.load(Ordering::SeqCst);
@@ -198,6 +203,7 @@ pub fn run(shared: Arc<Shared>) {
         // The pose read now, from where the worker found it: the worker's own reading
         // comes only after its whole step, a second late with the guide's reading.
         let fast = pose_src.and_then(|src| {
+            let _t = crate::prof::span("pose");
             if reader.as_ref().map(|r| r.pid) != Some(game) {
                 reader = crate::game::process::Reader::open(game);
             }
@@ -412,6 +418,7 @@ pub fn run(shared: Arc<Shared>) {
                     }
                     if let Some(w) = big_window.as_mut() {
                         big_on = true;
+                        let t = crate::prof::span("big.draw");
                         bigmap::frame(
                             &mut big_scroll,
                             &mut big_cv,
@@ -425,6 +432,8 @@ pub fn run(shared: Arc<Shared>) {
                             &path,
                             relief.as_ref(),
                         );
+                        drop(t);
+                        let _t = crate::prof::span("big.present");
                         w.present_alpha(&big_cv, r.left, r.top, (state.big_alpha as u32 * 255 / 100) as u8);
                     }
                 } else {
@@ -443,6 +452,7 @@ pub fn run(shared: Arc<Shared>) {
                         };
                         // Dots are the big map's: the minimap is small, in a corner.
                         let dots = std::mem::replace(&mut state.dots, false);
+                        let t = crate::prof::span("mini.draw");
                         draw_map(
                             &mut map_cv,
                             &state,
@@ -456,6 +466,8 @@ pub fn run(shared: Arc<Shared>) {
                             relief.as_deref(),
                         );
                         state.dots = dots;
+                        drop(t);
+                        let _t = crate::prof::span("mini.present");
                         map_window.present(&map_cv, r.right - MAP_PX - MARGIN, r.top + MARGIN + 24);
                     } else {
                         map_window.hide();

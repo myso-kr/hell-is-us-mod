@@ -7,6 +7,7 @@ pub mod log;
 pub mod logfile;
 pub mod memstat;
 pub mod paths;
+pub mod prof;
 pub mod runtime;
 pub mod session;
 pub mod settings;

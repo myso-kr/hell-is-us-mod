@@ -261,6 +261,9 @@ fn survey_tool() -> Option<std::path::PathBuf> {
 fn probe(args: &[String]) -> R {
     use hiumod::mem::{self, Memory};
     use hiumod::probe;
+    if args.first().map(String::as_str) == Some("profile") {
+        return profile(args.get(1).and_then(|s| s.parse().ok()).unwrap_or(30));
+    }
     let a = attach()?;
     let (m, n) = (&a.game, &a.anchors.names);
     let objects = hiumod::gobjects::discover(m, a.game.base)?;
@@ -533,6 +536,38 @@ fn target(a: &hiumod::engine::Attached, objects: &hiumod::gobjects::Objects, wha
 }
 
 /// Where the hero is, twice a second until Ctrl+C — what the minimap will draw.
+/// `doctor profile [seconds]`: the panel's worker steps, as the panel runs them (ten a
+/// second, no toggles: nothing is written), and where their time goes (prof.rs).
+fn profile(seconds: u64) -> R {
+    let mut engine = hiumod::engine::Engine::new()?;
+    process::catch_ctrl_c();
+    let until = std::time::Instant::now() + Duration::from_secs(seconds);
+    // The first steps read everything once (the journal's first pass, the survey):
+    // timed apart, so the rest shows the steady state.
+    let mut warm = Some(std::time::Instant::now() + Duration::from_secs(8));
+    while !process::STOP.load(Ordering::SeqCst) && std::time::Instant::now() < until {
+        let started = std::time::Instant::now();
+        {
+            let _t = hiumod::prof::span("step");
+            engine.step();
+        }
+        if warm.is_some_and(|w| std::time::Instant::now() >= w) {
+            warm = None;
+            if let Some(line) = hiumod::prof::report("warm-up", Duration::ZERO) {
+                println!("{line}
+");
+            }
+        }
+        std::thread::sleep(Duration::from_millis(100).saturating_sub(started.elapsed()));
+    }
+    if let Some(line) = hiumod::prof::report("worker", Duration::ZERO) {
+        for part in line.split(", ") {
+            println!("{part}");
+        }
+    }
+    Ok(())
+}
+
 fn pose() -> R {
     let a = attach()?;
     process::catch_ctrl_c();

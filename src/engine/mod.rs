@@ -172,6 +172,7 @@ impl Engine {
             // A closed gate pauses the toggles rather than ending them: it closes on
             // every loading screen, and the player expects god mode to survive one.
             if snap.gate.is_ok() {
+                let t = crate::prof::span("things");
                 match a.things() {
                     Ok(t) => {
                         snap.things = Arc::new(t);
@@ -186,12 +187,15 @@ impl Engine {
                     }
                     Err(e) => snap.notice = Some(trf!("MINIMAP_ERROR", e = e)),
                 }
+                drop(t);
+                let t = crate::prof::span("goals");
                 match a.goals() {
                     Ok((g, _)) => {
                         let mut goals = g;
                         // What follows from the journal and the survey changes with the
                         // knowledge (read every 2 s): worked out once a second, shared.
                         if self.derived.as_ref().is_none_or(|(at, _)| at.elapsed() >= DERIVE_EVERY) {
+                            let _t = crate::prof::span("derive");
                             let journal = Arc::new(a.journal());
                             let (collection, stories) =
                                 snap.world.as_deref().map(|w| a.collection(w)).unwrap_or_default();
@@ -250,6 +254,8 @@ impl Engine {
                     }
                     Err(e) => snap.notice = Some(trf!("MINIMAP_ERROR", e = e)),
                 }
+                drop(t);
+                let _t = crate::prof::span("hold");
                 match a.session() {
                     Err(e) => snap.notice = Some(e),
                     Ok(s) => {

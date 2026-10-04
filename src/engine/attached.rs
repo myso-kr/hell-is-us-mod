@@ -287,10 +287,12 @@ impl Attached {
             g.saves_read = Some(Instant::now());
             g.knowledge_read = None;
         } else if g.saves.is_empty() || seen.is_empty() && g.saves_read.is_none_or(|t| t.elapsed() >= SAVES_EVERY) {
+            let _t = crate::prof::span("saves");
             g.saves = g.objects.as_ref().unwrap().of_class(m, n, "CharlieSaveGame");
             g.saves_read = Some(Instant::now());
         }
         if g.knowledge.is_none() || g.knowledge_read.is_none_or(|t| t.elapsed() >= KNOWLEDGE_EVERY) {
+            let _t = crate::prof::span("knowledge");
             let save = knowledge::current(n, m, &g.saves).ok_or(tr!("NO_SAVE_STATE_FOUND"))?;
             g.save = save;
             g.knowledge = Some(knowledge::read(n, m, save).ok_or(tr!("THE_SAVE_STATE_COULD_NOT_BE"))?);
@@ -309,10 +311,12 @@ impl Attached {
         }
         let actors = self.scanner.borrow().actors_offset().ok_or(tr!("ACTORS_NOT_SCANNED_YET"))?;
         {
+            let _t = crate::prof::span("goals.refresh");
             let g = &mut *g;
             g.goals.refresh(m, n, hero, chain.root, actors, g.quests.flows());
         }
         if let Ok((p, _)) = chain.pose(m, &self.anchors) {
+            let _t = crate::prof::span("obstacles");
             let objects = g.objects.take().unwrap();
             g.obstacles.step(m, n, &objects, p);
             g.objects = Some(objects);
@@ -320,16 +324,24 @@ impl Attached {
         {
             let g = &mut *g;
             let objects = g.objects.as_ref().unwrap();
-            g.quests.step(m, n, || objects.all(m));
+            {
+                let _t = crate::prof::span("quests");
+                g.quests.step(m, n, || objects.all(m));
+            }
+            let _t = crate::prof::span("nav");
             g.nav.step(m, n, g.quests.nav_actors());
         }
         let k = g.knowledge.clone().unwrap();
-        let mut goals = g.goals.evaluate(m, &k, chain.location);
+        let mut goals = {
+            let _t = crate::prof::span("goals.evaluate");
+            g.goals.evaluate(m, &k, chain.location)
+        };
         // What the survey knows of this world beyond what is loaded.
         let g = &mut *g;
         let survey =
             g.survey.get_or_insert_with(|| crate::survey::Survey::load(&crate::paths::data_dir().join("survey")));
         if let Ok(world) = chain.world(m, &self.anchors) {
+            let _t = crate::prof::span("survey");
             let known = crate::survey::Known {
                 facts: &g.known_facts,
                 tags: &g.known_tags,

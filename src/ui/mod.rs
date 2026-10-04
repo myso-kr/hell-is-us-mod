@@ -38,7 +38,7 @@ use crate::game::{launch, locate, process::Game};
 use std::sync::atomic::{AtomicBool, AtomicIsize, AtomicU32, Ordering};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 pub enum Request {
     Set(&'static str, f32),
@@ -158,8 +158,11 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
             return;
         }
     };
+    // When the next step is due: steps start STEP apart (a request answered in between
+    // does not move it). Waiting a whole STEP after each step made them ~160 ms apart.
+    let mut due = Instant::now();
     loop {
-        match rx.recv_timeout(STEP) {
+        match rx.recv_timeout(due.saturating_duration_since(Instant::now())) {
             Ok(Request::Quit) | Err(RecvTimeoutError::Disconnected) => {
                 match engine.stop() {
                     Ok(()) => log("panel closed — originals restored"),
@@ -192,7 +195,18 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
             },
             Err(RecvTimeoutError::Timeout) => {}
         }
-        let snap = engine.step();
+        if Instant::now() < due {
+            continue;
+        }
+        due = Instant::now() + STEP;
+        let snap = {
+            let _t = crate::prof::span("step");
+            engine.step()
+        };
+        // Where the steps' time went, every half a minute (prof.rs).
+        if let Some(l) = crate::prof::report("worker", Duration::from_secs(30)) {
+            log(&l);
+        }
         let game = match &snap.game {
             Ok((pid, v)) => format!("game attached — v{v}, pid {pid}"),
             Err(e) => format!("game not attached — {e}"),
