@@ -162,7 +162,7 @@ BACK_TO_AUTO	Wróć do auto
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ Brak trasy pieszej: może być za zamkniętymi drzwiami, łamigłówką lub kluczem. Prowadzi tak daleko, jak się da; reszta to żółta przerywana linia
 AUTO_GUIDE_IS_OFF_TURN_ON	Auto-prowadzenie wyłączone. Włącz przełącznik wyżej lub wybierz z „Miejsc”
 NOTHING_NEW_TO_GET_FOUND_NEARBY	W pobliżu nie znaleziono nic nowego
-NO_QUEST_GOAL_IN_REGION	Śledzone zadanie nie ma celu w tym regionie. W innych regionach: {elsewhere} (jedź transporterem)
+NO_QUEST_GOAL_IN_REGION	Główna historia nie ma tu celu; {elsewhere} w innych regionach (weź transporter)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Pominięto wszystkie pozostałe cele
 NO_QUEST_GOAL_NEARBY	Śledzone zadanie nie ma celu w pobliżu. Wybierz ręcznie z „Miejsc”
 GOALS_SKIPPED	Pominięte cele: {count}
@@ -199,7 +199,7 @@ KEYS	Klawisze
 SWITCH_MAP_DISPLAY	Przełącz widok mapy
 PLACE_OR_REMOVE_A_MARKER	Postaw lub usuń znacznik
 SHOW_OR_HIDE_THE_COMPASS	Pokaż lub ukryj kompas
-GUIDE_TO_THE_NEXT_GOAL	Prowadź do następnego celu
+GUIDE_TO_THE_NEXT_GOAL	Następny cel / następne śledzone
 MAP	Mapa
 QUESTS	Zadania
 COLLECT	Zbieranie
@@ -511,7 +511,7 @@ HELP_Q_REPORT	Zgłaszanie problemu
 HELP_A_REPORT	Zakładka „{debug}” otwiera folder dzienników. Dołącz hiumod.log i verify.txt.
 ABOUT_NOW	gdzie skończyłeś, co tu zostało
 ABOUT_MAP	minimapa, duża mapa, wygląd
-ABOUT_GUIDE	kompas, następny cel, pinezki
+ABOUT_GUIDE	prowadzenie automatyczne, śledzone, dokąd iść, pinezki
 ABOUT_QUESTS	zadania, dobre uczynki do przegapienia, przekazania
 ABOUT_CLUES	co wiesz, z wyszukiwaniem; kto ma coś więcej do powiedzenia
 ABOUT_PUZZLES	odpowiedzi, zamki limbiczne, skarbce

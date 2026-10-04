@@ -109,12 +109,21 @@ impl Panel {
             Some(Tool::Help) => self.help_tab(t, guard),
             Some(Tool::Settings) => self.settings_tab(t),
             // Where to go: the guide, the places, and the pins the player drops to go back to.
-            Some(Tool::Guide) => tw::masonry(t, "guide", cols, 4, |t, i| match i {
-                0 => self.auto_card(t, guard, snap),
-                1 => self.tracks_card(t, guard, snap),
-                2 => self.goals_card(t, guard, snap),
-                _ => self.marks_column(t, guard, snap),
-            }),
+            // The auto guide in the first column and what is followed in the last, whatever
+            // their heights: following and letting go does not move the page about.
+            Some(Tool::Guide) => tw::masonry_pinned(
+                t,
+                "guide",
+                cols,
+                4,
+                |i| [Some(0), Some(usize::MAX), None, None][i],
+                |t, i| match i {
+                    0 => self.auto_card(t, guard, snap),
+                    1 => self.tracks_card(t, guard, snap),
+                    2 => self.goals_card(t, guard, snap),
+                    _ => self.marks_column(t, guard, snap),
+                },
+            ),
             // What is known: the quests' clues, a clue looked up, and who still has more to tell.
             // Who has more to tell is where they are: with "where hidden things are".
             // The quest's clues two columns wide, the search beside; who has more to tell
@@ -215,9 +224,15 @@ impl Panel {
 
         card(t, tr!("TERRAIN"), |t| {
             field(t, tr!("TERRAIN_VIEW"), |t| {
-                for m in crate::minimap::ReliefMode::ALL {
-                    w(t, |ui| ui.selectable_value(&mut state.relief, m, m.label()));
-                }
+                // One control on one line: as separate items they wrapped one by one in a
+                // narrow card.
+                w(t, |ui| {
+                    ui.horizontal(|ui| {
+                        for m in crate::minimap::ReliefMode::ALL {
+                            ui.selectable_value(&mut state.relief, m, m.label());
+                        }
+                    })
+                });
             });
             field(t, tr!("WALL_AND_FLOOR_OUTLINES"), |t| w(t, |ui| toggle(ui, &mut state.terrain)));
             if state.terrain {

@@ -142,7 +142,12 @@ fn follow_need(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal
 /// A place the survey names, as a track: the goal there if there is one, else the place
 /// itself (the overlay adds it as a goal).
 fn need_track(goals: &[crate::goals::Goal], x: &crate::survey::Need) -> crate::guide::track::Track {
-    let label = format!("{} {}", x.what, x.label).trim().to_string();
+    // What it is, in words: some pages give a collectible's kind by its key (`RECORDS`).
+    let what = match x.what.as_str() {
+        w if !w.is_empty() && w.bytes().all(|b| b.is_ascii_uppercase() || b == b'_') => crate::i18n::text(w),
+        w => w.to_string(),
+    };
+    let label = format!("{what} {}", x.label).trim().to_string();
     let goal = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0);
     let world = crate::survey::Survey::world_of(&x.world).to_string();
     match goal {

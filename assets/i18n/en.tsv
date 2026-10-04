@@ -162,7 +162,7 @@ BACK_TO_AUTO	Back to auto
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ No walking route. It may lie past a closed door, puzzle or key. Guiding as far as possible; the yellow dashed line shows the rest
 AUTO_GUIDE_IS_OFF_TURN_ON	Auto guide is off. Turn on the switch above or pick from 'Places'
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Nothing new to collect nearby
-NO_QUEST_GOAL_IN_REGION	The followed quest has no goal in this region; {elsewhere} in other regions (take the APC)
+NO_QUEST_GOAL_IN_REGION	The main story has no goal in this region; {elsewhere} in other regions (take the APC)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Every remaining goal was skipped
 NO_QUEST_GOAL_NEARBY	The followed quest has no goal nearby. Pick one from 'Places'
 GOALS_SKIPPED	Goals skipped: {count}
@@ -199,7 +199,7 @@ KEYS	Keys
 SWITCH_MAP_DISPLAY	Switch map display
 PLACE_OR_REMOVE_A_MARKER	Place or remove a marker
 SHOW_OR_HIDE_THE_COMPASS	Show or hide the compass
-GUIDE_TO_THE_NEXT_GOAL	Guide to the next goal
+GUIDE_TO_THE_NEXT_GOAL	Next goal / next followed
 MAP	Map
 QUESTS	Quests
 COLLECT	Collect
@@ -511,7 +511,7 @@ HELP_Q_REPORT	Reporting a problem
 HELP_A_REPORT	The {debug} page opens the log folder. Attach hiumod.log and verify.txt.
 ABOUT_NOW	where you left off, what is left here
 ABOUT_MAP	minimap, big map, how they look
-ABOUT_GUIDE	compass, where to go next, pins
+ABOUT_GUIDE	auto guide, what you follow, where to go, pins
 ABOUT_QUESTS	journal, missable deeds, hand-overs
 ABOUT_CLUES	what you know, searchable; who has more to tell
 ABOUT_PUZZLES	answers, Lymbic locks, vaults

@@ -162,7 +162,7 @@ BACK_TO_AUTO	Voltar ao automático
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ Sem rota a pé. Pode estar atrás de porta fechada, quebra-cabeça ou chave. Guia até onde dá; o resto é a linha amarela tracejada
 AUTO_GUIDE_IS_OFF_TURN_ON	Guia automático desligado. Ative o botão acima ou escolha em 'Locais'
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Nada de novo para obter por perto
-NO_QUEST_GOAL_IN_REGION	A missão acompanhada não tem objetivo nesta região. {elsewhere} em outras regiões (use o APC)
+NO_QUEST_GOAL_IN_REGION	A história principal não tem objetivo nesta região; {elsewhere} em outras regiões (pegue o blindado)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Todos os objetivos restantes foram pulados
 NO_QUEST_GOAL_NEARBY	A missão acompanhada não tem objetivo por perto. Escolha um em 'Locais'
 GOALS_SKIPPED	{count} objetivos pulados
@@ -199,7 +199,7 @@ KEYS	Atalhos
 SWITCH_MAP_DISPLAY	Alternar exibição do mapa
 PLACE_OR_REMOVE_A_MARKER	Colocar ou remover marcador
 SHOW_OR_HIDE_THE_COMPASS	Mostrar ou ocultar a bússola
-GUIDE_TO_THE_NEXT_GOAL	Guiar ao próximo objetivo
+GUIDE_TO_THE_NEXT_GOAL	Próximo objetivo / próximo seguido
 MAP	Mapa
 QUESTS	Missões
 COLLECT	Coleta
@@ -511,7 +511,7 @@ HELP_Q_REPORT	Relatar um problema
 HELP_A_REPORT	A aba “{debug}” abre a pasta de logs. Anexe hiumod.log e verify.txt.
 ABOUT_NOW	onde você parou, o que resta aqui
 ABOUT_MAP	minimapa, mapa grande, aparência
-ABOUT_GUIDE	bússola, próximo destino, marcadores
+ABOUT_GUIDE	guia automático, o que você segue, para onde ir, marcadores
 ABOUT_QUESTS	missões, boas ações que se perdem, entregas
 ABOUT_CLUES	o que você sabe, pesquisável; quem tem mais a contar
 ABOUT_PUZZLES	respostas, travas límbicas, câmaras

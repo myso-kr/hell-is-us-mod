@@ -304,14 +304,14 @@ impl Panel {
             }
             for d in &soon {
                 tw::item(t, |t| {
-                    t.style(tw::row(INLINE)).add(|t| {
-                        tw::chip(t, tr!("SOON"), tw::Tone::Bad);
-                        let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
-                        let on = d.started.then(|| state.quest_track(&d.key).map(|x| x.rgb()));
-                        if tw::track_line(t, on, |_| {}, label, |_| {}) {
-                            state.toggle(crate::guide::track::Track::quest(&d.key, &d.title));
-                        }
-                    });
+                    let label = format!("{}{}", d.title, if d.started { "" } else { tr!("NOT_STARTED") });
+                    let on = d.started.then(|| state.quest_track(&d.key).map(|x| x.rgb()));
+                    let soon = |ui: &mut egui::Ui| {
+                        tw::pill(ui, tr!("SOON"), tw::Tone::Bad);
+                    };
+                    if tw::track_line(t, on, soon, label, |_| {}) {
+                        state.toggle(crate::guide::track::Track::quest(&d.key, &d.title));
+                    }
                     note(t, format!("{}: {}", d.due.label(), d.what));
                 });
             }

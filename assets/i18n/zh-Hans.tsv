@@ -162,7 +162,7 @@ BACK_TO_AUTO	恢复自动
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ 无可步行的路线，可能被关闭的门、谜题或钥匙挡住。引导至能到达处，其余以黄色虚线表示
 AUTO_GUIDE_IS_OFF_TURN_ON	自动引导已关闭，请打开上方开关，或从“地点”中选择
 NOTHING_NEW_TO_GET_FOUND_NEARBY	附近没有可获得新内容的地方
-NO_QUEST_GOAL_IN_REGION	所追踪任务在本区域没有目标，其他区域有 {elsewhere} 处（乘 APC 前往）
+NO_QUEST_GOAL_IN_REGION	主线在此区域没有目标；其他区域有{elsewhere}处（乘装甲车前往）
 EVERY_REMAINING_GOAL_WAS_SKIPPED	剩余目标已全部跳过
 NO_QUEST_GOAL_NEARBY	所追踪任务附近没有目标，可从“地点”中选择
 GOALS_SKIPPED	已跳过目标：{count}
@@ -199,7 +199,7 @@ KEYS	按键
 SWITCH_MAP_DISPLAY	切换地图显示
 PLACE_OR_REMOVE_A_MARKER	放置 / 删除标记
 SHOW_OR_HIDE_THE_COMPASS	显示 / 隐藏指南针
-GUIDE_TO_THE_NEXT_GOAL	引导至下一个目标
+GUIDE_TO_THE_NEXT_GOAL	下一目标／切换追踪对象
 MAP	地图
 QUESTS	任务
 COLLECT	收集
@@ -511,7 +511,7 @@ HELP_Q_REPORT	报告问题
 HELP_A_REPORT	在“{debug}”页可打开日志文件夹，请附上 hiumod.log 和 verify.txt。
 ABOUT_NOW	接着做什么、此地区还剩什么
 ABOUT_MAP	小地图、大地图、显示方式
-ABOUT_GUIDE	指南针、下一个目的地、标记
+ABOUT_GUIDE	自动向导、追踪中、去处、标记
 ABOUT_QUESTS	任务、易错过的善行、交付
 ABOUT_CLUES	可搜索的已知线索、还有话可说的人
 ABOUT_PUZZLES	谜题答案、林比克锁、宝库

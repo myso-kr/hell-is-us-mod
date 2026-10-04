@@ -160,7 +160,7 @@ impl Panel {
                     let name = match (&tr.quest, goal) {
                         (Some(_), Some(g)) => format!("{} → {}", tr.label, g.label),
                         (Some(_), None) => format!("{} · {}", tr.label, tr!("QUEST_NOT_HERE")),
-                        (None, _) => tr.label.clone(),
+                        (None, _) => tr.shown(),
                     };
                     let colour = if focus {
                         TITLE

@@ -162,7 +162,7 @@ BACK_TO_AUTO	Zurück zu Auto
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ Kein Laufweg – evtl. hinter einer verschlossenen Tür oder einem Rätsel, oder ein Schlüssel fehlt. Führung so weit wie möglich, der Rest als gelbe gestrichelte Linie
 AUTO_GUIDE_IS_OFF_TURN_ON	Auto-Führung ist aus – oben einschalten oder unter „Orte“ wählen
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Nichts Neues zum Einsammeln in der Nähe
-NO_QUEST_GOAL_IN_REGION	Die verfolgte Quest hat in dieser Region kein Ziel – {elsewhere} in anderen Regionen (mit dem APC fahren)
+NO_QUEST_GOAL_IN_REGION	Die Hauptgeschichte hat in dieser Region kein Ziel; {elsewhere} in anderen Regionen (mit dem Schützenpanzer)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Alle verbleibenden Ziele wurden übersprungen
 NO_QUEST_GOAL_NEARBY	Die verfolgte Quest hat in der Nähe kein Ziel – unter „Orte“ selbst wählen
 GOALS_SKIPPED	{count} Ziele übersprungen
@@ -199,7 +199,7 @@ KEYS	Tasten
 SWITCH_MAP_DISPLAY	Kartenanzeige wechseln
 PLACE_OR_REMOVE_A_MARKER	Markierung setzen/löschen
 SHOW_OR_HIDE_THE_COMPASS	Kompass ein-/ausblenden
-GUIDE_TO_THE_NEXT_GOAL	Zum nächsten Ziel führen
+GUIDE_TO_THE_NEXT_GOAL	Nächstes Ziel / nächstes Verfolgtes
 MAP	Karte
 QUESTS	Quests
 COLLECT	Sammeln
@@ -511,7 +511,7 @@ HELP_Q_REPORT	Ein Problem melden
 HELP_A_REPORT	Die Seite „{debug}“ öffnet den Log-Ordner. Hänge hiumod.log und verify.txt an.
 ABOUT_NOW	wo du aufgehört hast, was hier übrig ist
 ABOUT_MAP	Minikarte, große Karte, Darstellung
-ABOUT_GUIDE	Kompass, nächstes Ziel, Pins
+ABOUT_GUIDE	automatische Führung, Verfolgtes, Ziele, Pins
 ABOUT_QUESTS	Quests, verpassbare Taten, Übergaben
 ABOUT_CLUES	was du weißt, durchsuchbar; wer mehr erzählen kann
 ABOUT_PUZZLES	Lösungen, lymbische Schlösser, Grüfte

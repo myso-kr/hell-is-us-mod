@@ -72,6 +72,17 @@ impl Track {
     pub fn rgb(&self) -> [u8; 3] {
         COLOURS[self.colour as usize % MAX]
     }
+
+    /// Its name to show: a leading key (`RECORDS`, a collectible's kind, as some pages gave
+    /// it before) in words.
+    pub fn shown(&self) -> String {
+        match self.label.split_once(' ') {
+            Some((head, rest)) if head.len() > 1 && head.bytes().all(|b| b.is_ascii_uppercase() || b == b'_') => {
+                format!("{} {rest}", crate::i18n::text(head))
+            }
+            _ => self.label.clone(),
+        }
+    }
 }
 
 /// One thing followed with a goal to go to now, as the maps, the compass and the rings
@@ -315,7 +326,7 @@ impl MapState {
             .map(|t| Goal {
                 tier: Tier::Clue,
                 id: t.id,
-                label: t.label.clone(),
+                label: t.shown(),
                 detail: String::new(),
                 at: t.at,
                 quests: vec![],

@@ -102,15 +102,40 @@ pub fn grow(s: Style) -> Style {
 /// shortest so far — by the heights the cards had the frame before (kept in egui's
 /// memory under `key`), so the columns come out about even however tall each card
 /// grows. `card(tui, i)` draws card `i`. A card not measured yet counts as `GUESS` tall.
-pub fn masonry(tui: &mut Tui, key: &str, columns: usize, n: usize, mut card: impl FnMut(&mut Tui, usize)) {
+pub fn masonry(tui: &mut Tui, key: &str, columns: usize, n: usize, card: impl FnMut(&mut Tui, usize)) {
+    masonry_pinned(tui, key, columns, n, |_| None, card)
+}
+
+/// `masonry`, with cards that keep their column (`pin(i)`: `Some(column)`, the last one at
+/// most): a card that grows and shrinks as it is used (what is followed, on the Guide page)
+/// stays where the eye looks for it, and the others fill around it. And the cards are not
+/// moved for every change in height: the columns of the frame before are kept while they
+/// are within `SLACK` of the best.
+pub fn masonry_pinned(
+    tui: &mut Tui,
+    key: &str,
+    columns: usize,
+    n: usize,
+    pin: impl Fn(usize) -> Option<usize>,
+    mut card: impl FnMut(&mut Tui, usize),
+) {
     const GUESS: f32 = 240.0;
+    const SLACK: f32 = 160.0;
     let columns = columns.clamp(1, n.max(1));
     let id = |i: usize| egui::Id::new(("masonry", key, i));
-    let heights: Vec<f32> = {
+    let kept = egui::Id::new(("masonry-lanes", key));
+    let pins: Vec<Option<usize>> = (0..n).map(|i| pin(i).map(|c| c.min(columns - 1))).collect();
+    let (heights, before) = {
         let ctx = tui.egui_ctx();
-        (0..n).map(|i| ctx.data(|d| d.get_temp::<f32>(id(i))).unwrap_or(GUESS)).collect()
+        let heights: Vec<f32> = (0..n).map(|i| ctx.data(|d| d.get_temp::<f32>(id(i))).unwrap_or(GUESS)).collect();
+        (heights, ctx.data(|d| d.get_temp::<Vec<Vec<usize>>>(kept)))
     };
-    let lanes = place(&heights, columns);
+    let best = place_pinned(&heights, columns, &pins);
+    let lanes = match before.filter(|b| still_fits(b, columns, &pins)) {
+        Some(b) if tallest(&b, &heights) <= tallest(&best, &heights) + SLACK => b,
+        _ => best,
+    };
+    tui.egui_ctx().data_mut(|d| d.insert_temp(kept, lanes.clone()));
     tui.style(Style { align_items: Some(AlignItems::Start), ..full(row(GAP)) }).add(|tui| {
         for lane in lanes {
             tui.style(grow(col(GAP))).add(|tui| {
@@ -131,16 +156,51 @@ pub fn masonry(tui: &mut Tui, key: &str, columns: usize, n: usize, mut card: imp
 }
 
 /// Which card goes in which column: in order, each to the shortest column so far.
-pub fn place(heights: &[f32], columns: usize) -> Vec<Vec<usize>> {
+#[cfg(test)]
+fn place(heights: &[f32], columns: usize) -> Vec<Vec<usize>> {
+    place_pinned(heights, columns, &vec![None; heights.len()])
+}
+
+/// `place`, a card pinned going to its own column whatever the heights.
+pub fn place_pinned(heights: &[f32], columns: usize, pins: &[Option<usize>]) -> Vec<Vec<usize>> {
     let columns = columns.max(1);
     let mut lanes = vec![Vec::new(); columns];
     let mut tall = vec![0.0f32; columns];
     for (i, h) in heights.iter().enumerate() {
-        let c = (0..columns).min_by(|&a, &b| tall[a].total_cmp(&tall[b])).unwrap();
+        let c = match pins.get(i).copied().flatten() {
+            Some(c) => c.min(columns - 1),
+            None => (0..columns).min_by(|&a, &b| tall[a].total_cmp(&tall[b])).unwrap(),
+        };
         lanes[c].push(i);
         tall[c] += h + GAP;
     }
     lanes
+}
+
+/// The tallest column's height, with `heights`.
+fn tallest(lanes: &[Vec<usize>], heights: &[f32]) -> f32 {
+    lanes
+        .iter()
+        .map(|l| l.iter().map(|&i| heights.get(i).copied().unwrap_or(0.0) + GAP).sum::<f32>())
+        .fold(0.0, f32::max)
+}
+
+/// Whether columns kept from the frame before still hold every card once, in `columns`
+/// columns, the pinned ones in theirs.
+fn still_fits(lanes: &[Vec<usize>], columns: usize, pins: &[Option<usize>]) -> bool {
+    let mut seen = vec![false; pins.len()];
+    if lanes.len() != columns {
+        return false;
+    }
+    for (c, lane) in lanes.iter().enumerate() {
+        for &i in lane {
+            if i >= seen.len() || seen[i] || pins[i].is_some_and(|p| p != c) {
+                return false;
+            }
+            seen[i] = true;
+        }
+    }
+    seen.iter().all(|s| *s)
 }
 
 /// `grid grid-cols-[{side}px_1fr] gap-{gap}`: a sidebar and the rest.
@@ -326,9 +386,21 @@ pub fn track_line(
             });
         });
         end(tui);
-        followed.is_some_and(|c| follow_toggle(tui, c))
+        match followed {
+            Some(c) => follow_toggle(tui, c),
+            // Its room kept: the buttons before it stay in line with the lines that have one.
+            None => {
+                w(tui, |ui| {
+                    ui.allocate_space(egui::vec2(TOGGLE_W, 1.0));
+                });
+                false
+            }
+        }
     })
 }
+
+/// How wide the Follow toggle is, the same on every line.
+const TOGGLE_W: f32 = 78.0;
 
 /// The Follow toggle: "Follow", or "● Following" in the track's colour. Whether pressed.
 pub fn follow_toggle(tui: &mut Tui, colour: Option<[u8; 3]>) -> bool {
@@ -339,7 +411,8 @@ pub fn follow_toggle(tui: &mut Tui, colour: Option<[u8; 3]>) -> bool {
             }
             None => RichText::new(tr!("QUEST_FOLLOW")),
         };
-        ui.selectable_label(colour.is_some(), label).on_hover_text(tr!("TRACK_TOGGLE_HINT")).clicked()
+        let button = egui::Button::selectable(colour.is_some(), label);
+        ui.add_sized([TOGGLE_W, ui.spacing().interact_size.y], button).on_hover_text(tr!("TRACK_TOGGLE_HINT")).clicked()
     })
 }
 
@@ -791,6 +864,14 @@ mod tests {
         assert_eq!(place(&[500.0, 100.0, 100.0, 100.0], 2), vec![vec![0], vec![1, 2, 3]]);
         assert_eq!(place(&[100.0, 100.0, 100.0], 3), vec![vec![0], vec![1], vec![2]]);
         assert_eq!(place(&[100.0; 4], 1), vec![vec![0, 1, 2, 3]]);
+        // Pinned: the first to the first column, the second to the last, whatever the heights.
+        let pins = [Some(0), Some(9), None, None];
+        assert_eq!(place_pinned(&[50.0, 900.0, 100.0, 100.0], 2, &pins), vec![vec![0, 2, 3], vec![1]]);
+        // As masonry_pinned has them: each within the columns.
+        let pins = [Some(0), Some(1), None, None];
+        assert!(still_fits(&[vec![0, 2], vec![1, 3]], 2, &pins));
+        assert!(!still_fits(&[vec![1, 2], vec![0, 3]], 2, &pins), "a pinned card out of its column");
+        assert!(!still_fits(&[vec![0, 2], vec![1]], 2, &pins), "a card missing");
     }
 
     #[test]

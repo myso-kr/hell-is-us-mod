@@ -162,7 +162,7 @@ BACK_TO_AUTO	Torna in automatico
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ Nessun percorso a piedi. Potrebbe essere oltre una porta chiusa, un enigma o una chiave. Guida fin dove arriva; il resto è la linea gialla tratteggiata
 AUTO_GUIDE_IS_OFF_TURN_ON	La guida automatica è disattivata. Attiva l'interruttore sopra o scegli da «Luoghi»
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Qui vicino non c'è nulla di nuovo da trovare
-NO_QUEST_GOAL_IN_REGION	L'indagine seguita non ha obiettivi in questa regione. {elsewhere} in altre regioni (usa il VTT)
+NO_QUEST_GOAL_IN_REGION	La storia principale non ha obiettivi in questa regione; {elsewhere} in altre regioni (prendi il blindato)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Tutti gli obiettivi rimasti sono stati saltati
 NO_QUEST_GOAL_NEARBY	L'indagine seguita non ha obiettivi qui vicino. Scegline uno da «Luoghi»
 GOALS_SKIPPED	Obiettivi saltati: {count}
@@ -199,7 +199,7 @@ KEYS	Tasti
 SWITCH_MAP_DISPLAY	Cambia visualizzazione mappa
 PLACE_OR_REMOVE_A_MARKER	Metti o rimuovi un segnalino
 SHOW_OR_HIDE_THE_COMPASS	Mostra o nascondi la bussola
-GUIDE_TO_THE_NEXT_GOAL	Guida al prossimo obiettivo
+GUIDE_TO_THE_NEXT_GOAL	Obiettivo successivo / prossimo seguito
 MAP	Mappa
 QUESTS	Indagini
 COLLECT	Raccolta
@@ -511,7 +511,7 @@ HELP_Q_REPORT	Segnalare un problema
 HELP_A_REPORT	La scheda «{debug}» apre la cartella dei log. Allega hiumod.log e verify.txt.
 ABOUT_NOW	dove eri rimasto, cosa resta qui
 ABOUT_MAP	minimappa, mappa grande, aspetto
-ABOUT_GUIDE	bussola, prossima meta, segnaposti
+ABOUT_GUIDE	guida automatica, cosa segui, dove andare, segnaposti
 ABOUT_QUESTS	indagini, buone azioni da non perdere, consegne
 ABOUT_CLUES	ciò che sai, ricercabile; chi ha altro da dire
 ABOUT_PUZZLES	risposte, blocchi limbici, camere

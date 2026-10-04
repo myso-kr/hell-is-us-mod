@@ -142,6 +142,16 @@ impl Panel {
                     (a.at[0] - h[0]).hypot(a.at[1] - h[1]).total_cmp(&(b.at[0] - h[0]).hypot(b.at[1] - h[1]))
                 });
             }
+            // One person twice (two of their placements, a few metres apart): the nearer.
+            let mut seen: Vec<&crate::survey::Need> = Vec::new();
+            mine.retain(|x| {
+                let twice =
+                    seen.iter().any(|y| y.label == x.label && (y.at[0] - x.at[0]).hypot(y.at[1] - x.at[1]) < 1000.0);
+                if !twice {
+                    seen.push(x);
+                }
+                !twice
+            });
             for x in mine.iter().take(10) {
                 let far = here.map_or(String::new(), |h| crate::raster::span(h, x.at));
                 if tw::track_line(

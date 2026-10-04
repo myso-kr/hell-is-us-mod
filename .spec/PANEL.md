@@ -333,3 +333,21 @@ W3C Flexbox/Grid implementation, MIT) and wrote `src/ui/tw.rs` (§1).
   big map description, "show on map" description, the investigations-in-progress card, "Places" and
   key descriptions, the game menu card (its switch moved to the minimap card), region name and
   coordinates, the Cheats page's notes card. The position-saving description became one line.
+
+**Cards that keep their place** (2026-10-05, after "the Guide page jumps about as things are followed
+and let go"): `tw::masonry` put each card in the shortest column by last frame's heights, so a card
+that grew or shrank moved the others between columns. `tw::masonry_pinned` takes a column per card
+(`Some(column)`, the last one at most): pinned cards stay put, the rest fill around them; and the
+columns of the frame before are kept while they are within 160 px of the best, so no card moves for a
+small change in height. The Guide page pins the auto guide to the first column and what is followed
+to the last.
+
+**Found in the same pass over every page** (captured through UI Automation): the Follow toggle now
+keeps its room on every line (`TOGGLE_W`), so the buttons before it line up whether a line can be
+followed or not; the Now page's "before you go on" lines broke one letter per line (a chip beside a
+row of its own: the chip is the line's icon now); a followed collectible's name began with its kind's
+key (`RECORDS`); one person was listed twice among those with more to tell (two placements a few
+metres apart: the nearer); the Map page's terrain view wrapped its four choices one per line (one
+control now); the auto guide's "no goal in this region" spoke of the followed quest (the main story),
+the next-goal key's name and the Help page's line for the Guide page were from before following.
+

@@ -162,7 +162,7 @@ BACK_TO_AUTO	Otomatiğe dön
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ Yürünebilir yol yok. Kapalı kapının, bulmacanın ya da anahtarın ardında olabilir. Gidilebilen yere kadar yönlendirir; gerisi sarı kesikli çizgi
 AUTO_GUIDE_IS_OFF_TURN_ON	Otomatik rehber kapalı. Yukarıdaki anahtarı aç ya da 'Yerler'den seç
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Yakında alınacak yeni bir şey bulunamadı
-NO_QUEST_GOAL_IN_REGION	Takip edilen görevin bu bölgede hedefi yok. Diğer bölgelerde: {elsewhere} (ZPT ile git)
+NO_QUEST_GOAL_IN_REGION	Ana hikâyenin bu bölgede hedefi yok; diğer bölgelerde {elsewhere} tane (zırhlı araçla gidin)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Kalan tüm hedefler atlandı
 NO_QUEST_GOAL_NEARBY	Takip edilen görevin yakında hedefi yok. 'Yerler'den kendin seç
 GOALS_SKIPPED	{count} hedef atlandı
@@ -199,7 +199,7 @@ KEYS	Tuşlar
 SWITCH_MAP_DISPLAY	Harita görünümünü değiştir
 PLACE_OR_REMOVE_A_MARKER	İşaret koy veya kaldır
 SHOW_OR_HIDE_THE_COMPASS	Pusulayı göster veya gizle
-GUIDE_TO_THE_NEXT_GOAL	Sıradaki hedefe yönlendir
+GUIDE_TO_THE_NEXT_GOAL	Sonraki hedef / sonraki takip edilen
 MAP	Harita
 QUESTS	Görevler
 COLLECT	Toplama
@@ -511,7 +511,7 @@ HELP_Q_REPORT	Sorun bildirmek
 HELP_A_REPORT	“{debug}” sekmesi günlük klasörünü açar. hiumod.log ve verify.txt dosyalarını ekleyin.
 ABOUT_NOW	kaldığınız yer, burada kalanlar
 ABOUT_MAP	mini harita, büyük harita, görünüm
-ABOUT_GUIDE	pusula, sonraki hedef, işaretler
+ABOUT_GUIDE	otomatik rehber, takip edilenler, gidilecek yerler, işaretler
 ABOUT_QUESTS	görevler, kaçırılabilecek iyilikler, teslimler
 ABOUT_CLUES	bildiklerin, aranabilir; anlatacağı olanlar
 ABOUT_PUZZLES	cevaplar, limbik kilitler, mahzenler

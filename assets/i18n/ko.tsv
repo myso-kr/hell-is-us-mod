@@ -162,7 +162,7 @@ BACK_TO_AUTO	자동으로
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ 걸어서 닿는 길이 없습니다. 닫힌 문·퍼즐·열쇠 너머일 수 있습니다. 닿는 곳까지만 안내하고 나머지는 노란 점선입니다
 AUTO_GUIDE_IS_OFF_TURN_ON	자동 안내가 꺼져 있습니다. 위 스위치를 켜거나 '갈 곳'에서 고르세요
 NOTHING_NEW_TO_GET_FOUND_NEARBY	근처에 새로 얻을 만한 곳이 없습니다
-NO_QUEST_GOAL_IN_REGION	이 지역에는 추적 중인 퀘스트의 목표가 없습니다. 다른 지역에 {elsewhere}곳 있습니다 (장갑차로 이동)
+NO_QUEST_GOAL_IN_REGION	이 지역에는 메인 스토리의 목표가 없습니다. 다른 지역에 {elsewhere}곳 있습니다 (장갑차로 이동)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	남은 목표를 모두 건너뛰었습니다
 NO_QUEST_GOAL_NEARBY	근처에 추적 중인 퀘스트의 목표가 없습니다. '갈 곳'에서 직접 고를 수 있습니다
 GOALS_SKIPPED	건너뛴 목표 {count}개
@@ -199,7 +199,7 @@ KEYS	단축키
 SWITCH_MAP_DISPLAY	지도 표시 방식 전환
 PLACE_OR_REMOVE_A_MARKER	마커 표시/삭제
 SHOW_OR_HIDE_THE_COMPASS	나침반 표시/숨김
-GUIDE_TO_THE_NEXT_GOAL	다음 목표로 안내
+GUIDE_TO_THE_NEXT_GOAL	다음 목표 / 추적 대상 전환
 MAP	지도
 QUESTS	퀘스트
 COLLECT	수집
@@ -511,7 +511,7 @@ HELP_Q_REPORT	문제 알리기
 HELP_A_REPORT	'{debug}' 탭에서 로그 폴더를 열 수 있습니다. hiumod.log와 verify.txt를 첨부해 주세요.
 ABOUT_NOW	이어서 할 일, 이 지역에 남은 것
 ABOUT_MAP	미니맵, 큰 지도, 보이는 방식
-ABOUT_GUIDE	나침반, 다음 갈 곳, 핀
+ABOUT_GUIDE	자동 안내, 추적 목록, 갈 곳, 핀
 ABOUT_QUESTS	퀘스트, 놓치기 쉬운 선행, 건네주기
 ABOUT_CLUES	아는 단서 찾기, 이야기가 남은 NPC
 ABOUT_PUZZLES	퍼즐 답, 림빅 잠금, 금고

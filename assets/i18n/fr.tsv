@@ -162,7 +162,7 @@ BACK_TO_AUTO	Retour en auto
 NO_WALKING_ROUTE_IT_MAY_BE	⚠ Aucun itinéraire à pied. Peut-être derrière une porte fermée, une énigme ou une clé. Guidage aussi loin que possible, le reste en pointillés jaunes
 AUTO_GUIDE_IS_OFF_TURN_ON	Le guidage auto est désactivé. Activez l'interrupteur ci-dessus ou choisissez dans « Lieux »
 NOTHING_NEW_TO_GET_FOUND_NEARBY	Rien de nouveau à récupérer trouvé à proximité
-NO_QUEST_GOAL_IN_REGION	La quête suivie n'a aucun objectif dans cette région ; {elsewhere} dans d'autres régions (prendre le véhicule blindé)
+NO_QUEST_GOAL_IN_REGION	L'histoire principale n'a pas d'objectif dans cette région ; {elsewhere} dans d'autres régions (prenez le blindé)
 EVERY_REMAINING_GOAL_WAS_SKIPPED	Tous les objectifs restants ont été ignorés
 NO_QUEST_GOAL_NEARBY	La quête suivie n'a aucun objectif à proximité. Choisissez-en un dans « Lieux »
 GOALS_SKIPPED	Objectifs ignorés : {count}
@@ -199,7 +199,7 @@ KEYS	Touches
 SWITCH_MAP_DISPLAY	Changer l'affichage de la carte
 PLACE_OR_REMOVE_A_MARKER	Placer ou supprimer un repère
 SHOW_OR_HIDE_THE_COMPASS	Afficher ou masquer la boussole
-GUIDE_TO_THE_NEXT_GOAL	Guider vers l'objectif suivant
+GUIDE_TO_THE_NEXT_GOAL	Objectif suivant / suivi suivant
 MAP	Carte
 QUESTS	Quêtes
 COLLECT	Collecte
@@ -511,7 +511,7 @@ HELP_Q_REPORT	Signaler un problème
 HELP_A_REPORT	L’onglet « {debug} » ouvre le dossier des journaux. Joignez hiumod.log et verify.txt.
 ABOUT_NOW	où vous en étiez, ce qui reste ici
 ABOUT_MAP	mini-carte, grande carte, affichage
-ABOUT_GUIDE	boussole, prochaine destination, repères
+ABOUT_GUIDE	guidage automatique, suivis, où aller, épingles
 ABOUT_QUESTS	quêtes, bonnes actions à ne pas manquer, remises
 ABOUT_CLUES	ce que tu sais, consultable ; qui a encore à dire
 ABOUT_PUZZLES	réponses, verrous lymbiques, chambres
