@@ -965,7 +965,8 @@ impl Panel {
         }
     }
 
-    /// The window is exactly as tall as what is in it: nothing clipped, nothing empty.
+    /// The window as big as what is in it: the page area is the same on every page, so
+    /// it changes only with the monitor (and the console's or the update's footer).
     fn fit(&mut self, ui: &egui::Ui, width: f32, height: f32) {
         let (width, height) = (width.ceil(), height.ceil());
         if (height - self.height).abs() > 1.0 || (width - self.width).abs() > 1.0 {
@@ -1065,8 +1066,8 @@ impl eframe::App for Panel {
         }
         let open = snap.as_ref().is_some_and(|s| s.gate.is_ok());
 
-        // As tall as what it shows, up to a share of the monitor; past that the page
-        // scrolls and the sidebar and footer stay put.
+        // A share of the monitor tall, whatever the page: past that the page scrolls and the
+        // sidebar and footer stay put.
         let monitor = ui.ctx().input(|i| i.viewport().monitor_size).map_or(1080.0, |m| m.y);
         let max_height = (monitor * MAX_SHARE).max(480.0);
         let page_height = (max_height - CHROME - FOOTER).max(240.0);
@@ -1141,11 +1142,16 @@ impl eframe::App for Panel {
                     let page = tw::block_at_least(t, page_w + lane, |ui| {
                         // A ScrollArea is no taller than the room its parent has, and a taffy
                         // leaf's room is the height it reported last frame: from 0, it stayed
-                        // 0 and the page drew nothing. Its room is given here outright; it
-                        // still shrinks to its content.
+                        // 0 and the page drew nothing. Its room is given here outright, and it
+                        // takes all of it, whatever the page: the window's height no longer
+                        // changes from page to page (a short page leaves room under its cards,
+                        // a long one scrolls).
                         let room = egui::vec2(page_w + lane, page_height);
                         ui.allocate_ui_with_layout(room, egui::Layout::top_down(egui::Align::Min), |ui| {
-                            tw::scroll(ui, "page", page_height, 0.0, super::theme::SURFACE, |ui| {
+                            // The scroll area shrinks to a short page; the room it is in does
+                            // not, so the footer stays where it is from page to page.
+                            ui.set_min_height(page_height);
+                            tw::scroll(ui, "page", page_height, page_height, super::theme::SURFACE, |ui| {
                                 // The cards' width, whether the bar shows or not.
                                 ui.set_width(page_w);
                                 ui.add_enabled_ui(open, |ui| {
