@@ -37,7 +37,13 @@ pub struct Scroll {
     /// The footprints' content hash, by the list it was taken from: the list is made
     /// anew whenever any actor comes or goes, mostly with the same footprints.
     prints: (usize, u64),
+    /// What the last frame drawn showed (`frame`'s `seen`), and when it was drawn.
+    shown: Option<(u64, std::time::Instant)>,
 }
+
+/// A frame the same as the last is not drawn again, but one is drawn at least this often:
+/// the settings and the trail (not in a frame's key) show this much later at most.
+const REDRAW: std::time::Duration = std::time::Duration::from_millis(250);
 
 /// What the footprints are, whatever their order: changes only when one does.
 fn prints_hash(footprints: &[Footprint]) -> u64 {
@@ -109,7 +115,7 @@ pub fn frame(
     goals: &[crate::goals::Goal],
     path: &crate::pathfind::Path,
     relief: Option<&Arc<Relief>>,
-) {
+) -> bool {
     let (w, h) = (out.w, out.h);
     let r = crate::raster::map_radius(out, true);
     let scale = r / (state.big_radius_m * 100.0);
@@ -169,6 +175,22 @@ pub fn frame(
     // the margin (the next ground not ready yet) the edge is held.
     let g = scroll.ground.as_ref().unwrap();
     let (ox, oy) = offset(g);
+    // What this frame would show: the same as the last (the hero standing, the map open)
+    // and it is not drawn, nor shown again. Things and goals are compared by their list
+    // (a new one each worker step), the route by its points.
+    let seen = {
+        use std::hash::{Hash, Hasher};
+        let mut k = std::collections::hash_map::DefaultHasher::new();
+        (g.cv.px.as_ptr() as usize, g.key, ox, oy, p.map(f32::to_bits), yaw.to_bits()).hash(&mut k);
+        (things.as_ptr() as usize, things.len(), goals.as_ptr() as usize, goals.len(), world).hash(&mut k);
+        path.points.iter().for_each(|q| q.map(f32::to_bits).hash(&mut k));
+        (state.target, state.goal_tiers, state.big_radius_m.to_bits()).hash(&mut k);
+        k.finish()
+    };
+    if scroll.next.is_none() && scroll.shown.is_some_and(|(s, at)| s == seen && at.elapsed() < REDRAW) {
+        return false;
+    }
+    scroll.shown = Some((seen, std::time::Instant::now()));
     let (sx, sy) = ((m - ox).clamp(0, 2 * m) as usize, (m - oy).clamp(0, 2 * m) as usize);
     for (y, row) in out.px.chunks_mut(w).enumerate() {
         let at = (y + sy) * g.cv.w + sx;
@@ -176,4 +198,48 @@ pub fn frame(
     }
     crate::raster::draw_above(out, state, world, &here, things, icons, goals, path, r);
     crate::raster::fade_edges(out);
+    true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn an_unchanged_frame_is_not_drawn_again() {
+        let state = MapState::default();
+        let footprints = Arc::new(Vec::new());
+        let path = crate::pathfind::Path { points: vec![], through: vec![] };
+        let (mut scroll, mut cv) = (Scroll::default(), Canvas::new(64, 48));
+        let mut at = |x: f32| {
+            frame(&mut scroll, &mut cv, &state, "W", ([x, 0.0, 0.0], 0.0), &[], None, &footprints, &[], &path, None)
+        };
+        assert!(at(0.0));
+        assert!(!at(0.0), "the hero standing: nothing new to draw");
+        assert!(at(1.0), "the hero moved");
+    }
+
+    /// `cargo test --release bigmap -- --ignored --nocapture`: a frame's cost on a 1440p
+    /// screen, the window as wide as the screen and as wide as it is tall (measured:
+    /// 4.8 and 2.8 ms).
+    #[test]
+    #[ignore]
+    fn frame_cost() {
+        let state = MapState::default();
+        let footprints = Arc::new(Vec::new());
+        let path = crate::pathfind::Path { points: vec![], through: vec![] };
+        for (w, h) in [(2560, 1440), (1440, 1440)] {
+            let (mut scroll, mut cv) = (Scroll::default(), Canvas::new(w, h));
+            let mut frame_at = |i: usize| {
+                let p = [i as f32 * 10.0, 0.0, 0.0];
+                frame(&mut scroll, &mut cv, &state, "W", (p, 0.0), &[], None, &footprints, &[], &path, None);
+            };
+            frame_at(0);
+            let started = std::time::Instant::now();
+            for i in 0..60 {
+                frame_at(i);
+            }
+            println!("{w}x{h}: {:.2} ms a frame", started.elapsed().as_secs_f64() * 1000.0 / 60.0);
+        }
+    }
 }

@@ -151,3 +151,26 @@ pub fn pump() {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `cargo test --release layered -- --ignored --nocapture`: what showing a frame costs
+    /// (the copy into the window's bitmap, and Windows taking it), by the window's size;
+    /// shown off the screen.
+    #[test]
+    #[ignore]
+    fn present_cost() {
+        for (w, h) in [(2560, 1440), (1440, 1440), (1920, 1080), (1080, 1080)] {
+            let mut win = Layered::new("hiumod-bench", "bench", w, h).unwrap();
+            let cv = Canvas { w: w as usize, h: h as usize, px: vec![0x8000_0000; (w * h) as usize] };
+            win.present(&cv, -30000, -30000);
+            let started = std::time::Instant::now();
+            for _ in 0..60 {
+                win.present(&cv, -30000, -30000);
+            }
+            println!("{w}x{h}: {:.2} ms a frame", started.elapsed().as_secs_f64() * 1000.0 / 60.0);
+        }
+    }
+}

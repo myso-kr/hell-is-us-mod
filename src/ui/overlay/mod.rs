@@ -116,6 +116,9 @@ pub fn run(shared: Arc<Shared>) {
     // The big map is drawn at half size, then shown at full: these are its half-size
     // canvas and icons.
     let mut big_scroll = bigmap::Scroll::default();
+    // Where the big map was last shown, and how faded: none while it is hidden.
+    const NOT_SHOWN: (i32, i32, u8) = (i32::MIN, i32::MIN, 0);
+    let mut big_at = NOT_SHOWN;
     let mut glide = glide::Glide::default();
     // The game opened for reading the pose each frame (player::PoseSource).
     let mut reader: Option<crate::game::process::Reader> = None;
@@ -410,16 +413,23 @@ pub fn run(shared: Arc<Shared>) {
                     map_window.hide();
                     // The whole game window is its canvas: centred on the hero, fading out
                     // toward the edges (as Diablo's and Path of Exile's overlay maps).
-                    let (gw, gh) = (r.right - r.left, r.bottom - r.top);
+                    // As wide as it is tall, the game window's short side: past the map's
+                    // circle (raster::map_radius, fade_edges) nothing shows, and a window
+                    // as wide as the screen drew, copied and composed 44 % more pixels,
+                    // all of them clear, every frame.
+                    let side = (r.right - r.left).min(r.bottom - r.top);
+                    let (gw, gh) = (side, side);
+                    let (bx, by) = (r.left + (r.right - r.left - side) / 2, r.top + (r.bottom - r.top - side) / 2);
                     if big_window.as_ref().is_none_or(|w| (w.w, w.h) != (gw, gh)) {
                         big_window = Layered::new("hiumod-bigmap", "Hell Is Us Map", gw, gh);
                         big_cv = Canvas::new(gw as usize, gh as usize);
                         big_scroll = bigmap::Scroll::default();
+                        big_at = NOT_SHOWN;
                     }
                     if let Some(w) = big_window.as_mut() {
                         big_on = true;
                         let t = crate::prof::span("big.draw");
-                        bigmap::frame(
+                        let drawn = bigmap::frame(
                             &mut big_scroll,
                             &mut big_cv,
                             &state,
@@ -433,13 +443,19 @@ pub fn run(shared: Arc<Shared>) {
                             relief.as_ref(),
                         );
                         drop(t);
-                        let _t = crate::prof::span("big.present");
-                        w.present_alpha(&big_cv, r.left, r.top, (state.big_alpha as u32 * 255 / 100) as u8);
+                        // Shown again only when drawn anew, or moved, or faded otherwise.
+                        let alpha = (state.big_alpha as u32 * 255 / 100) as u8;
+                        if drawn || big_at != (bx, by, alpha) {
+                            let _t = crate::prof::span("big.present");
+                            w.present_alpha(&big_cv, bx, by, alpha);
+                            big_at = (bx, by, alpha);
+                        }
                     }
                 } else {
                     if let Some(w) = big_window.as_mut() {
                         w.hide();
                     }
+                    big_at = NOT_SHOWN;
                     if state.display == Display::Mini {
                         let view = View {
                             center: p,
@@ -536,6 +552,7 @@ pub fn run(shared: Arc<Shared>) {
                 if let Some(w) = big_window.as_mut() {
                     w.hide();
                 }
+                big_at = NOT_SHOWN;
             }
         }
         if saved.elapsed() >= SAVE_EVERY {
