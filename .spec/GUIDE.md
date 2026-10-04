@@ -188,7 +188,19 @@ goal), one route and one ring; fifteen buttons across the panel replaced it. Now
   the compass a diamond in its colour (the one in focus as before, with its distance), a chevron at
   the strip's end when off it; in the game's view a ring each within 60 m (one small window each),
   thinner out of focus.
-- **The Guide page:** the focus as before, in large type, then "Followed (n/5)": the auto guide's
-  line (skip, back to auto) and each place in its colour with its distance, a "no route" chip, Focus
-  and Let go; Let go of all. A hint says how to follow more when nothing is.
+- **Quests followed** (asked next: "several quests must be followed at once", and "the panel's
+  roles must change with it, not only the logic"): a track can be a quest. Each frame it goes to its
+  own next goal by the auto guide's rule (`target::next_goal`, shared), on to the next once one is
+  done, and is let go when the quest is completed or failed; with nothing of it in this region it
+  has no goal for now. Kept as `track_quest` lines.
+- **The panel, page by page:**
+  - Guide: the focus in large type, then "Followed (n/5)": the auto guide's line (skip, back to
+    auto) and each track in its colour (a quest as "quest → its goal now", or "nothing of it
+    here"), with its distance, a "no route" chip, Focus and Let go; Let go of all.
+  - Quests: each quest line has a Follow button (in the quest's track colour once followed);
+    pressing the line still picks the quest the auto guide, the needs list and the clues are about.
+  - Now: the story card lists the quests followed besides, each with its colour, next goal and
+    distance; pressing one brings it into focus.
+  - The quest tracker in the game: after the quest guided, the quests followed besides, bold and
+    ringed in their colours, then the others.
 

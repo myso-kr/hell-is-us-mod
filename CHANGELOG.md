@@ -33,6 +33,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   mark and ring in the game's view. The Guide page lists them all, with Focus and Let go; the
   next-goal key moves the focus. Places followed are kept across runs and let go by themselves once
   done.
+- Follow several quests at once: the Quests page's Follow button adds a quest, which then goes to its
+  own next goal with its own colour, and on to the next. The Guide page shows each with the goal it
+  is at, the Now page lists them under the story followed, and the quest tracker in the game shows
+  them in their colours.
 
 ### Fixed
 
