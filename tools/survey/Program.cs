@@ -326,6 +326,30 @@ class Survey(DefaultFileProvider provider)
         return null;
     }
 
+    /// The item a slot of a choice puzzle (`…_1SlotPlacementPuzzleCheck_…`) counts as right: its
+    /// `Item`, set on the placed actor or else by its class default. The slot's placement
+    /// `Solution` is only what it accepts (every orb, or a stand-in), so it is not the
+    /// answer. A slot that keeps the base's `ItemPlacementValidation_DummyItem` is a
+    /// decoy: "" here.
+    string Expected(UObject actor)
+    {
+        try
+        {
+            var own = Props(actor).Properties().FirstOrDefault(p => p.Name == "Item" || p.Name.StartsWith("Item["));
+            if (Paths(own?.Value).FirstOrDefault(x => x.Contains("/Items/")) is { } placed) return placed;
+            var path = actor.Class?.GetPathName();
+            if (path == null) return "";
+            var pkg = path[..path.LastIndexOf('.')];
+            pkg = pkg.StartsWith("/Game/") ? "HellIsUs/Content/" + pkg["/Game/".Length..] : pkg.TrimStart('/');
+            var cdo = provider.LoadPackage(pkg).GetExports().FirstOrDefault(e => e.Name == "Default__" + actor.Class!.Name);
+            if (cdo == null) return "";
+            var item = Props(cdo).Properties().FirstOrDefault(p => p.Name == "Item" || p.Name.StartsWith("Item["));
+            var expected = Paths(item?.Value).FirstOrDefault(x => x.Contains("/Items/"));
+            return expected ?? "";
+        }
+        catch { return ""; }
+    }
+
     /// A PayloadData as {items, facts, tags}.
     static JObject Payload(JToken? data) => new()
     {
@@ -378,6 +402,8 @@ class Survey(DefaultFileProvider provider)
             if (layers.Count > 0) rec["layers"] = new JArray(layers);
             // A puzzle: its dials (in name order), its keypad code, or the items it takes.
             var puzzle = PuzzleOf(comps);
+            if (puzzle != null && (actor.Class?.Name ?? "").Contains("PuzzleCheck"))
+                puzzle["expects"] = Expected(actor);
             if (puzzle != null) rec["puzzle"] = puzzle;
             foreach (var c in comps)
             {
