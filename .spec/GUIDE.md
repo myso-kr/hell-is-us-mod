@@ -156,3 +156,39 @@ time several of these lived in different files.
 - The guide card has a **skip** button ("This goal is done or out of reach — skip to the next one
   (this session)"): it passes over a goal that finished while the mod was not watching, for the rest
   of the run, and moves to the next goal.
+
+## 7. Following several places (2026-10-05)
+
+Asked: "Route following is spread around (quests, puzzles…): follow several at once, managed in
+one place on the Guide page; the ring in the game's view should rest on the same following."
+
+Before, the guide had one target (`MapState.target`, `chosen`, and an `adhoc` place for what was no
+goal), one route and one ring; fifteen buttons across the panel replaced it. Now (`guide/track.rs`):
+
+- **What is followed:** the auto guide's pick (`auto`, settled as before; `held` when stepped by
+  hand) and up to five places chosen (`tracks`): a quest goal, a choice puzzle's groove, a lock, a
+  vault's door, a pin. Each place has its own colour, none a goal tier's; the auto guide's pick
+  keeps its tier's.
+- **Focus:** one of them (`focus`; none, the auto guide's pick). The compass's distance and label,
+  the tracker's "no way through" and the cycle key are about it. The cycle key moves the focus
+  through everything followed; with one or none, it steps the auto guide as before.
+- **Following from anywhere:** every button that guided (puzzles, locks, vaults, enemy groups,
+  collectibles, stories, quests, hand-overs, the Now page, pins, the goal list) now follows: a place
+  not followed is added and focused, one followed is focused, the one in focus is let go. The oldest
+  goes past five. A place that is a goal is followed as that goal; one that is not (a groove, a lock)
+  is followed as a place and shown as a goal of its own.
+- **Ending by itself:** a goal followed is matched each frame to the goal standing there (its actor
+  loads and unloads: the same place under another id), and let go once no goal has stood there for
+  3 s (taken, talked to, done). A choice puzzle's groove is let go when its set is done. A place
+  otherwise stays until let go.
+- **Kept across runs:** by world, place, label and kind (`track` lines in `minimap.txt`, and
+  `track_focus`); read back under a place id until matched to its goal by place.
+- **Drawn:** a route each (the one in focus worked out as before, the others every 3 s or 15 m,
+  each on its own thread), on the minimap and the big map in its colour, the one in focus bolder; on
+  the compass a diamond in its colour (the one in focus as before, with its distance), a chevron at
+  the strip's end when off it; in the game's view a ring each within 60 m (one small window each),
+  thinner out of focus.
+- **The Guide page:** the focus as before, in large type, then "Followed (n/5)": the auto guide's
+  line (skip, back to auto) and each place in its colour with its distance, a "no route" chip, Focus
+  and Let go; Let go of all. A hint says how to follow more when nothing is.
+

@@ -28,6 +28,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - The guide's target is ringed in the game's own view when it is near (within 60 m) and in sight, with
   its distance: a choice puzzle's answer shows exactly which groove or statue.
 
+- Follow up to five places at once besides the auto guide: every Guide button across the panel adds
+  its place (press again to focus it, again to let it go), each with its own colour, route, compass
+  mark and ring in the game's view. The Guide page lists them all, with Focus and Let go; the
+  next-goal key moves the focus. Places followed are kept across runs and let go by themselves once
+  done.
+
 ### Fixed
 
 - A person is pinned where they are: Victor Gaz, already at the forge in Jova, was still pinned where
