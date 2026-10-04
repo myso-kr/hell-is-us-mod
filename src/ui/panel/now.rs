@@ -8,11 +8,6 @@ use crate::actors::Sub;
 use eframe::egui::Color32;
 
 impl Panel {
-    /// The cards under the hero: five, whatever there is (each says when it is empty).
-    pub(super) fn now_cards(&self) -> usize {
-        5
-    }
-
     /// The page, after the pains players name most (JOURNEY.md §1): the story followed
     /// and where it was left (the Datapad buries the clue; a break loses the thread),
     /// what can be done right here (whom an item goes to), the side stories under way

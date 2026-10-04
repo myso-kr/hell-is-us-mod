@@ -351,3 +351,11 @@ metres apart: the nearer); the Map page's terrain view wrapped its four choices 
 control now); the auto guide's "no goal in this region" spoke of the followed quest (the main story),
 the next-goal key's name and the Help page's line for the Guide page were from before following.
 
+**One width for every page** (2026-10-05, asked: "find the width that does not change from page to
+page"): the columns were two or three by the page's cards, and the window grew and shrank as pages
+were changed (988 and 1372 px on a 3440-wide screen). They are now the monitor's, the same on every
+page: as many 360 px cards as fit in 55 % of its width, three at most (two on 1080p, 988 px; three on
+1440p and wider, 1372 px). Pages with fewer cards spread them over the width (masonry fills the
+columns; the Settings page's two-column grid widens); the debug page is as wide as the rest. The
+height still follows the page, up to 72 % of the monitor's.
+

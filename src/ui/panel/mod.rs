@@ -41,10 +41,8 @@ pub const WIDTH: f32 = 960.0;
 /// scrollbar (px).
 const FRAME: f32 = 2.0 * super::theme::BLOCK;
 const SCROLLBAR: f32 = 14.0;
-/// The debug page's single card is this wide (px): its tables scroll sideways past it.
 /// The most masonry columns a page gets.
 const MAX_COLUMNS: usize = 3;
-const DEBUG_PAGE: f32 = 620.0;
 /// The sidebar's width, and the gap between it and the page with the divider in its
 /// middle (px).
 const NAV: f32 = 176.0;
@@ -977,43 +975,20 @@ impl Panel {
         }
     }
 
-    /// How wide the chosen page is: as many cards side by side as it has columns of
-    /// them — two for the cheat groups and the map, one wide one for debugging.
+    /// How wide every page is: the monitor's columns of cards, the same on every page, so
+    /// the window keeps its width from page to page (it changed with each before).
     fn page_width(&self) -> f32 {
-        if self.tool == Some(Tool::Debug) {
-            DEBUG_PAGE
-        } else {
-            tw::cards_width(self.columns as u32)
-        }
+        tw::cards_width(self.columns as u32)
     }
 
-    /// How many cards the page shown has.
-    fn page_cards(&self) -> usize {
-        match self.tool {
-            // Five cards in rows of three: the story two columns wide (now.rs).
-            Some(Tool::Now) => self.now_cards(),
-            // Laid out three columns wide with cards spanning two or three (tw::spans): asked
-            // for as "more than four" so the page gets its third column.
-            Some(Tool::Collect) | Some(Tool::Quests) | Some(Tool::Clues) | Some(Tool::Puzzles) => 5,
-            Some(Tool::Map) | Some(Tool::Guide) => 3,
-            Some(Tool::Help) => 4,
-            // Two columns of questions, whatever the width (consent.rs).
-            Some(Tool::Settings) => 2,
-            Some(Tool::Saves) => 2,
-            Some(Tool::Debug) => 1,
-            None if self.tab == Group::Movement => 3,
-            None => 2,
-        }
-    }
-
-    /// Masonry columns for the page: as many as its cards need, up to three, as many
-    /// as the monitor has room for — the window grows and shrinks with them.
+    /// Masonry columns, the same for every page: as many as the monitor has room for in
+    /// `MAX_WIDTH_SHARE`, up to three (two on 1080p, three on 1440p and wider). They were
+    /// two or three by the page's cards, and the window grew and shrank from page to page;
+    /// a page with fewer cards now spreads them, or its two-column grid, over the width.
     fn fit_columns(&mut self, monitor_w: f32) {
         let room = monitor_w * MAX_WIDTH_SHARE - (FRAME + NAV + DIVIDER + SCROLLBAR);
         let fits = (((room + tw::GAP) / (tw::CARD + tw::GAP)).floor() as usize).max(1);
-        // Two columns hold up to four cards evenly; more cards want a third.
-        let wanted = if self.page_cards() > 4 { 3 } else { 2 };
-        self.columns = wanted.min(fits).min(MAX_COLUMNS);
+        self.columns = fits.min(MAX_COLUMNS);
     }
 }
 
