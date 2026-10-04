@@ -6,7 +6,17 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
-## Unreleased
+## 0.4.0 — 2026-10-05
+
+Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
+
+### Changed
+
+- The panel keeps one size on every page: as wide as the monitor's columns allow and 72 % of its
+  height, so the window no longer jumps between pages; a long page scrolls.
+- Every page is laid out on a column grid: what is seen spans two columns, what is done one. The
+  Guide page's followed cards stay where they are as the list grows and shrinks; the Map page's
+  settings are cards of their own, its previews across the top.
 
 ### Changed (performance)
 
@@ -66,6 +76,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- A form row's choices no longer run past the card's edge (the Terrain card's view): they go under
+  the label when they do not fit beside it.
+- The Guide page's places read across, row by row, nearest first.
 - A person is pinned where they are: Victor Gaz, already at the forge in Jova, was still pinned where
   he is first met, and some people were listed twice.
 
