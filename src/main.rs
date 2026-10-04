@@ -611,6 +611,20 @@ fn pose() -> R {
             Ok((p, yaw)) => log!("x {:>10.0}  y {:>10.0}  z {:>8.0}  yaw {:>7.1}", p[0], p[1], p[2], yaw),
             Err(e) => warn!("{e}"),
         }
+        // And the camera the frame was drawn from (the overlay's marks in the world).
+        if let Some(c) =
+            a.chain().ok().and_then(|c| c.pose_source(&a.game, &a.anchors).ok()).and_then(|s| s.camera(&a.game))
+        {
+            log!(
+                "camera x {:>10.0}  y {:>10.0}  z {:>8.0}  pitch {:>6.1}  yaw {:>7.1}  fov {:>5.1}",
+                c.at[0],
+                c.at[1],
+                c.at[2],
+                c.rotation[0],
+                c.rotation[1],
+                c.fov
+            );
+        }
         std::thread::sleep(Duration::from_millis(500));
     }
     Ok(())

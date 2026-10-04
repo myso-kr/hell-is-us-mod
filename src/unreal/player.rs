@@ -161,6 +161,12 @@ impl Chain {
     pub fn pose_source(&self, m: &dyn Memory, a: &Anchors) -> Result<PoseSource, String> {
         let pc = self.controller(m, a)?;
         let pawn = self.hero(m, a)?;
+        // The camera: PlayerCameraManager's CameraCachePrivate.POV, what the game drew from.
+        let camera = a.names.field(m, pc, "PlayerCameraManager").and_then(|f| {
+            let pcm = mem::read_u64(m, pc + f.offset as u64).filter(|&p| mem::plausible(p))?;
+            let (pov, _) = a.names.path(m, pcm, &["CameraCachePrivate", "POV"])?;
+            Some((f.offset as u64, pov - pcm))
+        });
         Ok(PoseSource {
             pc,
             pawn,
@@ -168,6 +174,7 @@ impl Chain {
             root: self.root,
             location: self.location,
             rotation: self.rotation,
+            camera,
         })
     }
 }
@@ -183,9 +190,33 @@ pub struct PoseSource {
     root: u64,
     location: u64,
     rotation: u64,
+    /// Controller → PlayerCameraManager, and its POV (MinimalViewInfo) within it.
+    camera: Option<(u64, u64)>,
+}
+
+/// Where the game's camera is and what it sees: location (cm), rotation (pitch, yaw, roll,
+/// degrees) and horizontal field of view (degrees), as the last frame was drawn from.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Camera {
+    pub at: [f64; 3],
+    pub rotation: [f64; 3],
+    pub fov: f32,
 }
 
 impl PoseSource {
+    /// The camera now: one read of MinimalViewInfo's Location, Rotation and FOV.
+    pub fn camera(&self, m: &dyn Memory) -> Option<Camera> {
+        let (pcm_off, pov) = self.camera?;
+        let pcm = mem::read_u64(m, self.pc + pcm_off).filter(|&p| mem::plausible(p))?;
+        let mut b = [0u8; 0x34];
+        m.read(pcm + pov, &mut b).then_some(())?;
+        let d = |i: usize| f64::from_le_bytes(b[i * 8..i * 8 + 8].try_into().unwrap());
+        let fov = f32::from_le_bytes(b[0x30..0x34].try_into().unwrap());
+        let c = Camera { at: [d(0), d(1), d(2)], rotation: [d(3), d(4), d(5)], fov };
+        let sane = c.at.iter().chain(&c.rotation).all(|v| v.is_finite() && v.abs() < 1.0e9);
+        (sane && (5.0..170.0).contains(&fov)).then_some(c)
+    }
+
     /// The pose now, or `None` once the pawn changed (a load, a cinematic) or a read failed.
     pub fn read(&self, m: &dyn Memory) -> Option<([f64; 3], f64)> {
         if mem::read_u64(m, self.pc + self.pawn_off)? != self.pawn {
