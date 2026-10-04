@@ -10,6 +10,8 @@
 //! of every UE5 build starts with the same two names, `None` then `ByteProperty`.
 
 use crate::mem::{self, Memory};
+use std::collections::HashMap;
+use std::sync::Mutex;
 
 /// UObjectBase::ClassPrivate and ::NamePrivate.
 pub const CLASS: u64 = 0x10;
@@ -46,7 +48,7 @@ pub const LAYOUTS: [Layout; 4] = [
 ];
 
 /// One property a class declares.
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Property {
     pub name: String,
     pub offset: u32,
@@ -63,20 +65,44 @@ const BLOCK_BYTES: u32 = 0x20000;
 pub struct Names {
     pub pool: u64,
     pub layout: Layout,
+    /// What has been read, kept: every `field`, `follow` and `is_a` walked a class's
+    /// properties or lineage and decoded each name on the way, three reads a name, and
+    /// the worker does dozens of them a step (`Cache`).
+    cache: Mutex<Cache>,
+}
+
+/// The names decoded, by index: the pool only grows, so an index once decoded keeps its
+/// string. A class's own properties and its lineage's names, by the class's address and
+/// its own name's index (a class unloaded and another made at its address is told
+/// apart by its name). Empty results are not kept: a class may be read half loaded.
+#[derive(Default)]
+struct Cache {
+    names: HashMap<u32, String>,
+    properties: HashMap<(u64, u32), Vec<Property>>,
+    lineage: HashMap<(u64, u32), Vec<String>>,
 }
 
 impl Names {
     pub fn new(pool: u64) -> Names {
-        Names { pool, layout: LAYOUTS[0] }
+        Names::with_layout(pool, LAYOUTS[0])
     }
 
     pub fn with_layout(pool: u64, layout: Layout) -> Names {
-        Names { pool, layout }
+        Names { pool, layout, cache: Mutex::default() }
     }
 
     /// The string an FName index stands for. `None` for anything that does not
     /// decode to a plausible name — never a guess.
     pub fn get(&self, m: &dyn Memory, index: u32) -> Option<String> {
+        if let Some(s) = self.cache.lock().unwrap().names.get(&index) {
+            return Some(s.clone());
+        }
+        let s = self.decode(m, index)?;
+        self.cache.lock().unwrap().names.insert(index, s.clone());
+        Some(s)
+    }
+
+    fn decode(&self, m: &dyn Memory, index: u32) -> Option<String> {
         let (block, offset) = (index >> 16, (index & 0xFFFF) as u64 * 2);
         if block >= MAX_BLOCKS {
             return None;
@@ -115,6 +141,18 @@ impl Names {
     /// The properties a class declares itself — not those it inherits. A field
     /// whose name does not decode ends the walk: what follows it cannot be trusted.
     pub fn properties(&self, m: &dyn Memory, class: u64) -> Vec<Property> {
+        let key = mem::read_u32(m, class + NAME).map(|n| (class, n));
+        if let Some(p) = key.and_then(|k| self.cache.lock().unwrap().properties.get(&k).cloned()) {
+            return p;
+        }
+        let out = self.read_properties(m, class);
+        if let (Some(k), false) = (key, out.is_empty()) {
+            self.cache.lock().unwrap().properties.insert(k, out.clone());
+        }
+        out
+    }
+
+    fn read_properties(&self, m: &dyn Memory, class: u64) -> Vec<Property> {
         let l = self.layout;
         let mut out = Vec::new();
         let mut field = mem::read_u64(m, class + CHILD_PROPERTIES).unwrap_or(0);
@@ -145,7 +183,15 @@ impl Names {
     /// `StoryHero_BP_C`, `CharlieCharacterHero`, …, `Object`.
     pub fn class_names(&self, m: &dyn Memory, obj: u64) -> Vec<String> {
         let Some(class) = mem::read_u64(m, obj + CLASS).filter(|&p| mem::plausible(p)) else { return Vec::new() };
-        self.lineage(m, class).into_iter().filter_map(|c| self.object(m, c)).collect()
+        let key = mem::read_u32(m, class + NAME).map(|n| (class, n));
+        if let Some(l) = key.and_then(|k| self.cache.lock().unwrap().lineage.get(&k).cloned()) {
+            return l;
+        }
+        let out: Vec<String> = self.lineage(m, class).into_iter().filter_map(|c| self.object(m, c)).collect();
+        if let (Some(k), false) = (key, out.is_empty()) {
+            self.cache.lock().unwrap().lineage.insert(k, out.clone());
+        }
+        out
     }
 
     /// Is the object an instance of the class named `name`, or of one below it?
