@@ -171,6 +171,29 @@ fn doctor(opt: &Options) -> R {
             for (d, x) in near.iter().take(12) {
                 println!("        {:>6.0} m  {:<10} {:<44} {}", d, x.tier.label(), x.label, x.detail);
             }
+            // Every goal, for when one points somewhere unexpected: where, what, and why.
+            let all: String = near
+                .iter()
+                .map(|(d, x)| {
+                    format!(
+                        "{d:>7.0} m  {:<10} {:<40} at {:.0},{:.0},{:.0}  id {:X}  {}  tags {:?}  keys {:?}
+",
+                        x.tier.label(),
+                        x.label,
+                        x.at[0],
+                        x.at[1],
+                        x.at[2],
+                        x.id,
+                        x.detail,
+                        x.tags,
+                        x.keys
+                    )
+                })
+                .collect();
+            let dir = hiumod::paths::data_dir().join("doctor");
+            if std::fs::create_dir_all(&dir).and_then(|_| std::fs::write(dir.join("goals.txt"), all)).is_ok() {
+                println!("        {}", dir.join("goals.txt").display());
+            }
         }
         Err(e) => log!("{}", trf!("FAIL_GUIDE", e = e)),
     }
