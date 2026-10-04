@@ -37,6 +37,11 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   own next goal with its own colour, and on to the next. The Guide page shows each with the goal it
   is at, the Now page lists them under the story followed, and the quest tracker in the game shows
   them in their colours.
+- One way to be guided anywhere: every row that guided now ends in the same Follow toggle, and the
+  row itself only shows. No quest is picked for the guide any more: the auto guide keeps to the main
+  story; a quest picked before is followed instead.
+- The Guide page has two cards, the auto guide and what is followed by hand; its quest, secret and
+  clue toggles are gone, every kind of goal is always shown.
 
 ### Fixed
 

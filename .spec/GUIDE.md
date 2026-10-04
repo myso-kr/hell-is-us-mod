@@ -204,3 +204,22 @@ goal), one route and one ring; fifteen buttons across the panel replaced it. Now
   - The quest tracker in the game: after the quest guided, the quests followed besides, bold and
     ringed in their colours, then the others.
 
+**One way to follow** (asked next: "can every press-a-name-to-be-guided become the Follow button?
+the same thing is there twice now"; then "drop the Guide page's quest/secret/clue toggles, every
+tier always on; split the auto guide and the manual following into separate cards"):
+
+- Every followable row on every page (puzzles, locks and their missing rods, vaults, enemy groups,
+  collectibles, stories, the quest's needs, hand-overs, deadlines, the Now page's lines, choice
+  puzzles) ends in the same Follow toggle (`tw::track_line`, `tw::follow_toggle`): "Follow", or
+  "● Following" in the track's colour; pressed again, let go. The row itself does nothing; asking for
+  a choice puzzle's answer still follows its groove at once (`ensure`).
+- No quest is picked for the guide any more: the auto guide keeps to the main story, and a quest is
+  followed with its Follow button like anything else. Pressing a quest on the Quests page only shows
+  its needs. What the needs, the Clues page, the Now page's story card and the quest tracker are about
+  is the quest in focus, else the main story (`focused_quest`). An older `minimap.txt`'s picked quest
+  is read back as a quest followed, in focus.
+- The Guide page: an "Auto guide" card (its pick in large type, "in focus" when it is, Focus, Next
+  goal, Back to auto, the skipped and their undo, the switches) and a "Followed (n/5)" card (each
+  track in its colour, a quest as "quest -> its goal now", "in focus", Focus, Let go; Let go of all).
+  The tier filter is gone: every tier is shown and guided to (`goal_tiers` is no longer saved).
+
