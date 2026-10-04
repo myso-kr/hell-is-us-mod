@@ -176,6 +176,10 @@ enum Role {
 /// at the engine's pace), short after that, when it only keeps the journal fresh.
 const FIRST: std::time::Duration = std::time::Duration::from_millis(120);
 const LATER: std::time::Duration = std::time::Duration::from_millis(25);
+/// The pause between passes once the journal is put together: a pass started as the last
+/// ended kept a quarter of a core walking objects that seldom change (measured: 26 ms of
+/// every step's 55). A save or a quest taken shows up this much later at most.
+const REST: std::time::Duration = std::time::Duration::from_secs(5);
 
 #[derive(Default)]
 pub struct Quests {
@@ -183,6 +187,8 @@ pub struct Quests {
     /// The pass under way: every object, how far it got, and what it found so far.
     pending: Vec<u64>,
     cursor: usize,
+    /// When the last pass ended: the next waits `REST`.
+    rested: Option<std::time::Instant>,
     found: Vec<u64>,
     by_quest: BTreeMap<u64, Vec<Fact>>,
     secrets: Option<u64>,
@@ -359,6 +365,11 @@ impl Quests {
         if self.cursor >= self.pending.len() {
             if !self.pending.is_empty() {
                 self.finish(m, n);
+                self.pending.clear();
+                self.rested = Some(std::time::Instant::now());
+            }
+            if self.ready() && self.rested.is_some_and(|t| t.elapsed() < REST) {
+                return;
             }
             self.pending = objects();
             self.cursor = 0;

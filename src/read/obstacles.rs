@@ -35,6 +35,9 @@ pub const COMPONENT_TO_WORLD: u64 = 0x1D0;
 
 /// Objects looked at per step.
 const SLICE: usize = 12_000;
+/// The pause between passes: the ground near the hero changes as they travel, not every
+/// step, and a pass started as the last ended cost 16 ms of every step's 55 (measured).
+const REST: std::time::Duration = std::time::Duration::from_secs(3);
 /// Only components within this of the hero (cm) are read.
 const REACH: f64 = 30_000.0;
 
@@ -435,6 +438,8 @@ pub struct Obstacles {
     /// The objects of the pass in progress, and how far through them.
     pending: Vec<u64>,
     cursor: usize,
+    /// When the last pass ended: the next waits `REST`.
+    rested: Option<std::time::Instant>,
     building: Vec<Obstacle>,
     hazards: Vec<Hazard>,
     fields: Vec<Heightfield>,
@@ -585,6 +590,11 @@ impl Obstacles {
                 let wet = water(&std::mem::take(&mut self.hazards), &terrain, &obstacles, hero);
                 obstacles.extend(wet);
                 self.done = Arc::new(Scene { obstacles, terrain });
+                self.pending.clear();
+                self.rested = Some(std::time::Instant::now());
+            }
+            if self.rested.is_some_and(|t| t.elapsed() < REST) {
+                return;
             }
             self.pending = objects.all(m);
             self.cursor = 0;
