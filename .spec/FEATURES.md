@@ -278,6 +278,16 @@ nothing goes there). A set with no right slot reads like the others until its an
 so the list does not give the decoys away. The line guides to the set, or once its answer is told,
 to the right slot. With all four flowers in, it says to go back and pull the tomb's lever.
 
+**Marked in the game's view** (2026-10-05, after play: "the distance alone does not say where"): the
+grooves of a set are 2 to 6 m apart, so the answer line's distance did not tell which. The overlay now
+reads the game's camera (PlayerCameraManager → CameraCachePrivate.POV: location, rotation, horizontal
+field of view; `player::Camera`) with the pose each frame, projects the guide's target onto the game
+window's drawn area, and rings it there with the distance under it (`overlay/marker.rs`, a 96 × 112
+window moved to the spot), when the target is within 60 m and in view. It works for any target; the
+answer line makes the right groove the target. The answer line also counts the right groove from the
+left as the hero faces the wall ("facing it, 3 of 8 from the left"). The ring does not know what is
+in between: farther than 60 m it is not drawn.
+
 Not done: map markers for the sets, a line on the Now page when the player holds the items near the
 puzzle, and the Eye of God's per-statue keeper names (the decoys' keepers are not in the data).
 

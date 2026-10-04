@@ -25,6 +25,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   orbs, each with its sets of slots and how they stand (placed right, not yet, something in a wrong
   slot), the game's riddle, and per set the game's own clue and then the right slot, one step at a
   time. The wrong slots no longer show a stand-in item as their answer.
+- The guide's target is ringed in the game's own view when it is near (within 60 m) and in sight, with
+  its distance: a choice puzzle's answer shows exactly which groove or statue.
 
 ### Fixed
 
