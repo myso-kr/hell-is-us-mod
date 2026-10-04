@@ -1,20 +1,22 @@
-//! Following several places at once: the auto guide's pick and up to `MAX` places the
-//! player chose (a quest goal, a puzzle's groove, a lock, a pin), each with its own route,
-//! colour and ring in the game's view. One is in focus: the compass's distance, the
-//! tracker's "no way through" and the cycle key are about it. The Guide page keeps the
-//! list (.spec/GUIDE.md §"Following several places").
+//! Following several things at once: the auto guide's pick and up to `MAX` chosen by the
+//! player: places (a quest goal, a puzzle's groove, a lock, a pin) and quests, each with its
+//! own route, colour and ring in the game's view. A quest followed goes to its own next goal
+//! as the auto guide does, and on to the next once one is done. One thing is in focus: the
+//! compass's distance, the tracker's "no way through" and the cycle key are about it. The
+//! Guide page keeps the list (.spec/GUIDE.md §7).
 
 use crate::goals::{Gate, Goal, Tier};
 use crate::minimap::{MapState, Point};
-use std::collections::HashMap;
+use crate::quests::Quest;
+use std::collections::{HashMap, HashSet};
 use std::time::{Duration, Instant};
 
-/// At most this many places followed by hand: as many colours as can be told apart on the
-/// maps, and routes worked out in turn.
+/// At most this many followed by hand: as many colours as can be told apart on the maps,
+/// and routes worked out in turn.
 pub const MAX: usize = 5;
 
-/// The places' colours, by `Track::colour`: none a goal tier's (the auto guide's pick keeps
-/// its tier's colour).
+/// Their colours, by `Track::colour`: none a goal tier's (the auto guide's pick keeps its
+/// tier's colour).
 pub const COLOURS: [[u8; 3]; MAX] = [[90, 200, 255], [255, 120, 200], [140, 230, 120], [255, 165, 70], [185, 145, 255]];
 
 /// A goal followed whose goal is gone this long is let go: taken, talked to, done. Not at
@@ -25,19 +27,23 @@ const GONE: Duration = Duration::from_secs(3);
 /// has now.
 const SAME_PLACE: f32 = 200.0;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct Track {
-    /// The goal followed: a live actor's id, a survey place's, a pin's, or the place's own.
+    /// What it is known by: a place's goal (a live actor's id, a survey place's, a pin's, or
+    /// the place's own), or a quest's own id (`quest_id`).
     pub id: u64,
-    /// The survey's world (`Survey::world_of`).
+    /// The survey's world (`Survey::world_of`); a quest's is any.
     pub world: String,
     pub at: Point,
+    /// The place's name, or the quest's.
     pub label: String,
     /// A place that is no goal (a groove, a lock, a vault's door): shown as a goal of its own
     /// and kept until done or let go. A goal is let go with the goal.
     pub place: bool,
     /// Its colour: an index into `COLOURS`.
     pub colour: u8,
+    /// A quest followed, by its journal key: its goal is the one picked for it each frame.
+    pub quest: Option<String>,
 }
 
 impl Track {
@@ -50,48 +56,104 @@ impl Track {
         (h.finish() & !(7 << 61)) | 1 << 61
     }
 
+    /// A quest's own id (bit 60).
+    pub fn quest_id(key: &str) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        ("quest", key).hash(&mut h);
+        (h.finish() & !(15 << 60)) | 1 << 60
+    }
+
+    /// A quest to follow.
+    pub fn quest(key: &str, name: &str) -> Track {
+        Track { id: Track::quest_id(key), label: name.to_string(), quest: Some(key.to_string()), ..Default::default() }
+    }
+
     pub fn rgb(&self) -> [u8; 3] {
         COLOURS[self.colour as usize % MAX]
     }
 }
 
-/// One thing followed, as the maps, the compass and the rings draw it.
+/// One thing followed with a goal to go to now, as the maps, the compass and the rings
+/// draw it.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Followed {
+    /// The goal.
     pub id: u64,
-    /// `None`: the auto guide's pick, in its tier's colour.
+    /// The track (`None`: the auto guide's pick, in its tier's colour).
+    pub track: Option<u64>,
     pub colour: Option<[u8; 3]>,
     pub focus: bool,
 }
 
 impl MapState {
-    /// What is in focus: a place followed, or else the auto guide's pick.
+    fn focus_track(&self) -> Option<&Track> {
+        self.focus.and_then(|f| self.tracks.iter().find(|t| t.id == f))
+    }
+
+    /// The goal a track is at now: a place's own, or the one picked for a quest.
+    pub fn goal_of(&self, t: &Track) -> Option<u64> {
+        match &t.quest {
+            Some(_) => self.resolved.get(&t.id).copied(),
+            None => Some(t.id),
+        }
+    }
+
+    /// The goal in focus: a track's, or else the auto guide's pick.
     pub fn focused(&self) -> Option<u64> {
-        self.focus.filter(|f| self.tracks.iter().any(|t| t.id == *f)).or(self.auto)
+        match self.focus_track() {
+            Some(t) => self.goal_of(t),
+            None => self.auto,
+        }
     }
 
-    /// Everything followed: the auto guide's pick (unless it is a place followed too), then
-    /// the places, oldest first.
+    /// Whether the track `id` is the one in focus (`None`: the auto guide).
+    pub fn in_focus(&self, track: Option<u64>) -> bool {
+        self.focus_track().map(|t| t.id) == track
+    }
+
+    /// Everything followed that has a goal now: the auto guide's pick, then the tracks,
+    /// oldest first; a goal once.
     pub fn followed(&self) -> Vec<Followed> {
-        let focus = self.focused();
-        let auto = self.auto.filter(|a| !self.tracks.iter().any(|t| t.id == *a));
-        auto.map(|id| Followed { id, colour: None, focus: focus == Some(id) })
-            .into_iter()
-            .chain(self.tracks.iter().map(|t| Followed { id: t.id, colour: Some(t.rgb()), focus: focus == Some(t.id) }))
-            .collect()
+        let mut out: Vec<Followed> = Vec::new();
+        let focus = self.focus_track().map(|t| t.id);
+        if let Some(a) = self.auto {
+            out.push(Followed { id: a, track: None, colour: None, focus: focus.is_none() });
+        }
+        for t in &self.tracks {
+            let Some(goal) = self.goal_of(t) else { continue };
+            let f = Followed { id: goal, track: Some(t.id), colour: Some(t.rgb()), focus: focus == Some(t.id) };
+            // A goal followed twice (the auto guide's and a track's): drawn as the track.
+            match out.iter_mut().find(|x| x.id == goal) {
+                Some(x) if x.track.is_none() => *x = Followed { focus: x.focus || f.focus, ..f },
+                Some(_) => {}
+                None => out.push(f),
+            }
+        }
+        out
     }
 
-    pub fn is_followed(&self, id: u64) -> bool {
-        self.auto == Some(id) || self.tracks.iter().any(|t| t.id == id)
+    /// Whether a goal is followed, by anything.
+    pub fn is_followed(&self, goal: u64) -> bool {
+        self.auto == Some(goal) || self.tracks.iter().any(|t| self.goal_of(t) == Some(goal))
     }
 
-    /// Follow `t`; already followed (the same goal, or the same place), bring it into
-    /// focus; already in focus, let it go. The oldest goes past `MAX`.
+    /// The track following a quest, if one does.
+    pub fn quest_track(&self, key: &str) -> Option<&Track> {
+        self.tracks.iter().find(|t| t.quest.as_deref() == Some(key))
+    }
+
+    /// Follow `t`; already followed (the same goal, the same place, the same quest), bring
+    /// it into focus; already in focus, let it go. The oldest goes past `MAX`.
     pub fn follow(&mut self, t: Track) {
-        let same = |x: &Track| x.id == t.id || x.world == t.world && flat(x.at, t.at) < SAME_PLACE;
+        let same = |x: &Track| match (&x.quest, &t.quest) {
+            (Some(a), Some(b)) => a == b,
+            (None, None) => x.id == t.id || x.world == t.world && flat(x.at, t.at) < SAME_PLACE,
+            _ => false,
+        };
         if let Some(i) = self.tracks.iter().position(same) {
             let id = self.tracks[i].id;
-            if self.focused() == Some(id) {
+            if self.focus == Some(id) {
                 self.unfollow(id);
             } else {
                 self.focus = Some(id);
@@ -99,7 +161,8 @@ impl MapState {
             return;
         }
         if self.tracks.len() >= MAX {
-            self.tracks.remove(0);
+            let oldest = self.tracks[0].id;
+            self.unfollow(oldest);
         }
         let free = (0..MAX as u8).find(|c| !self.tracks.iter().any(|x| x.colour == *c)).unwrap_or(0);
         self.focus = Some(t.id);
@@ -110,6 +173,7 @@ impl MapState {
 
     pub fn unfollow(&mut self, id: u64) {
         self.tracks.retain(|t| t.id != id);
+        self.resolved.remove(&id);
         if self.focus == Some(id) {
             self.focus = self.tracks.last().map(|t| t.id);
         }
@@ -118,6 +182,7 @@ impl MapState {
 
     pub fn unfollow_all(&mut self) {
         self.tracks.clear();
+        self.resolved.clear();
         self.focus = None;
         self.dirty = true;
     }
@@ -129,9 +194,31 @@ impl MapState {
             return false;
         }
         let i = all.iter().position(|f| f.focus).map_or(0, |i| (i + 1) % all.len());
-        // The auto guide's pick in focus is no focus at all.
-        self.focus = Some(all[i].id).filter(|id| self.tracks.iter().any(|t| t.id == *id));
+        self.focus = all[i].track;
         true
+    }
+
+    /// Each frame: each quest followed goes to its own next goal, as the auto guide does
+    /// for the story (target.rs `next_goal`); done or failed, it is let go. A quest with
+    /// nothing of it here has no goal for now.
+    pub fn resolve_quests(&mut self, goals: &[Goal], journal: &[Quest], here: Point, blocked: &HashSet<u64>) {
+        use crate::quests::Status;
+        let mut done = Vec::new();
+        for t in self.tracks.iter().filter(|t| t.quest.is_some()) {
+            let Some(q) = journal.iter().find(|q| Some(&q.key) == t.quest.as_ref()) else { continue };
+            if matches!(q.status, Status::Completed | Status::Failed) {
+                done.push(t.id);
+                continue;
+            }
+            let now = self.resolved.get(&t.id).copied();
+            match crate::guide::target::next_goal(goals, here, Some(q), journal, blocked, &self.skipped, now) {
+                Some(g) => self.resolved.insert(t.id, g),
+                None => self.resolved.remove(&t.id),
+            };
+        }
+        for id in done {
+            self.unfollow(id);
+        }
     }
 
     /// Each frame, with the goals of now in `world`: a place followed takes the id of the
@@ -141,7 +228,7 @@ impl MapState {
     pub fn relink(&mut self, goals: &[Goal], world: &str, missing: &mut HashMap<u64, Instant>) {
         let world = crate::survey::Survey::world_of(world);
         let mut gone = Vec::new();
-        for t in self.tracks.iter_mut().filter(|t| t.world == world) {
+        for t in self.tracks.iter_mut().filter(|t| t.quest.is_none() && t.world == world) {
             if goals.iter().any(|g| g.id == t.id) {
                 missing.remove(&t.id);
                 continue;
@@ -208,15 +295,18 @@ impl MapState {
         }
     }
 
-    /// The `track` lines of `minimap.txt`, and which is in focus.
+    /// The `track` and `track_quest` lines of `minimap.txt`, and which is in focus.
     pub fn render_tracks(&self) -> String {
         let mut out = String::new();
         for t in &self.tracks {
             let label = t.label.replace(['\n', '\r'], " ");
-            out += &format!(
-                "track {} {} {} {} {} {} {label}\n",
-                t.world, t.at[0], t.at[1], t.at[2], t.place as u8, t.colour
-            );
+            out += &match &t.quest {
+                Some(key) => format!("track_quest {} {key} {label}\n", t.colour),
+                None => format!(
+                    "track {} {} {} {} {} {} {label}\n",
+                    t.world, t.at[0], t.at[1], t.at[2], t.place as u8, t.colour
+                ),
+            };
         }
         if let Some(i) = self.focus.and_then(|f| self.tracks.iter().position(|t| t.id == f)) {
             out += &format!("track_focus {i}\n");
@@ -242,7 +332,17 @@ impl MapState {
             label: label.join(" "),
             place: *place == "1",
             colour,
+            quest: None,
         });
+    }
+
+    /// A `track_quest` line read back.
+    pub fn parse_quest_track(&mut self, f: &[&str]) {
+        let [colour, key, label @ ..] = f else { return };
+        let Ok(colour) = colour.parse() else { return };
+        if self.tracks.len() < MAX && self.quest_track(key).is_none() {
+            self.tracks.push(Track { colour, ..Track::quest(key, &label.join(" ")) });
+        }
     }
 }
 
@@ -270,7 +370,7 @@ mod tests {
     }
 
     fn track(id: u64, x: f32, place: bool) -> Track {
-        Track { id, world: "W".into(), at: [x, 0.0, 0.0], label: format!("t{id}"), place, colour: 0 }
+        Track { id, world: "W".into(), at: [x, 0.0, 0.0], label: format!("t{id}"), place, ..Default::default() }
     }
 
     #[test]
@@ -321,10 +421,41 @@ mod tests {
     }
 
     #[test]
-    fn tracks_are_kept_by_place_across_runs() {
+    fn a_quest_followed_goes_to_its_own_next_goal_until_done() {
+        use crate::quests::{Kind, Status};
+        let deed = |status| Quest {
+            key: "d".into(),
+            kind: Kind::GoodDeed,
+            name: "Watch".into(),
+            detail: String::new(),
+            status,
+            progress: None,
+            leads: vec![],
+            quest: None,
+            tags: Some("Secrets.Facts.GoldenWatch".into()),
+        };
+        let mut hand_over = goal(4, 3000.0);
+        hand_over.tier = Tier::Secret;
+        hand_over.tags = vec!["Secrets.Facts.GoldenWatchCompleted".into()];
+        let goals = [goal(3, 900.0), hand_over];
+        let mut s = MapState { auto: Some(3), ..MapState::default() };
+        s.follow(Track::quest("d", "Watch"));
+        assert_eq!(s.followed().len(), 1, "no goal for it yet: only the auto guide's");
+        let started = [deed(Status::Started)];
+        s.resolve_quests(&goals, &started, [0.0; 3], &Default::default());
+        assert_eq!(s.focused(), Some(4), "its hand-over, in focus");
+        assert_eq!(s.followed().iter().map(|f| f.id).collect::<Vec<_>>(), [3, 4], "the story's and the deed's");
+        assert!(s.is_followed(4));
+        s.resolve_quests(&goals, &[deed(Status::Completed)], [0.0; 3], &Default::default());
+        assert!(s.tracks.is_empty(), "done: let go");
+    }
+
+    #[test]
+    fn tracks_are_kept_across_runs() {
         let mut s = MapState::default();
         s.follow(Track { label: "Ceramic Flower, groove".into(), ..track(5, 120.0, true) });
         s.follow(track(6, 900.0, false));
+        s.follow(Track::quest("Quest02", "Family Legacy"));
         s.follow(track(5, 120.0, true));
         let text = s.render_tracks();
         let mut back = MapState::default();
@@ -332,15 +463,17 @@ mod tests {
             let f: Vec<&str> = line.split_whitespace().collect();
             match f[..] {
                 ["track", ref rest @ ..] => back.parse_track(rest),
+                ["track_quest", ref rest @ ..] => back.parse_quest_track(rest),
                 ["track_focus", i] => {
                     back.focus = i.parse::<usize>().ok().and_then(|i| back.tracks.get(i)).map(|t| t.id)
                 }
                 _ => {}
             }
         }
-        assert_eq!(back.tracks.len(), 2);
+        assert_eq!(back.tracks.len(), 3);
         assert_eq!(back.tracks[0].label, "Ceramic Flower, groove");
         assert!(back.tracks[0].place && !back.tracks[1].place);
+        assert_eq!(back.quest_track("Quest02").map(|t| t.label.as_str()), Some("Family Legacy"));
         assert_eq!(back.focused(), Some(back.tracks[0].id));
     }
 }

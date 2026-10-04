@@ -413,7 +413,7 @@ impl Panel {
                                 at: m.at,
                                 label: m.title(),
                                 place: false,
-                                colour: 0,
+                                ..Default::default()
                             });
                         }
                         if w(t, |ui| ui.small_button("×")).on_hover_text(tr!("REMOVE_THIS_PIN")).clicked() {

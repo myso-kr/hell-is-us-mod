@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	La distanza della bussola, il tracciamento delle missioni e il 
 TRACK_DROP	Lascia
 TRACK_DROP_ALL	Lascia tutti
 TRACK_HINT	Premi un luogo qui o in un'altra pagina per seguirlo: fino a {max}, ciascuno col suo colore su mappe, bussola e gioco.
+QUEST_FOLLOW	Segui
+QUEST_FOLLOWING	Seguita
+QUEST_FOLLOW_HINT	Segui anche questa missione: il prossimo obiettivo ha colore, percorso e anello propri, poi il successivo. Di nuovo per lasciarla.
+QUEST_NOT_HERE	niente qui
+ALSO_FOLLOWED	Seguite anche
+QUEST_TAG	Missione

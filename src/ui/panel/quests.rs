@@ -39,6 +39,8 @@ impl Panel {
             }
             let followed = crate::quests::followed(&journal, state.quest.as_deref()).map(|q| q.key.clone());
             let mut pick: Option<Option<String>> = None;
+            // A quest to follow besides, or to let go (guide/track.rs).
+            let mut toggle: Option<(String, String)> = None;
             let auto = match journal.iter().find(|q| Some(&q.key) == followed.as_ref()) {
                 Some(q) if state.quest.is_none() => trf!("MAIN_STORY_AUTO_NOW", quest = q.name),
                 _ => tr!("MAIN_STORY_AUTO").to_string(),
@@ -54,12 +56,26 @@ impl Panel {
                 let icon = |ui: &mut egui::Ui| {
                     crate::ui::svg::quest(ui, kind, 16.0).on_hover_text(tag);
                 };
-                // A main quest's clues: a small meter and the count at the line's end.
+                // Followed besides: in its colour. The button follows it, or lets it go.
+                let track = state.quest_track(&q.key).map(|x| x.rgb());
+                // A main quest's clues: a small meter and the count at the line's end; then
+                // the button that follows it besides.
                 let end = |t: &mut Tui| {
                     if let Some((got, all)) = progress {
                         let hover = trf!("CLUES", got = got, all = all).trim_start_matches([' ', '·']).to_string();
                         w(t, |ui| tw::meter(ui, Some(40.0), got, all));
                         w(t, |ui| ui.label(count(got, all)).on_hover_text(hover));
+                    }
+                    let label = match track {
+                        Some([r, g, b]) => RichText::new(format!("● {}", tr!("QUEST_FOLLOWING")))
+                            .color(egui::Color32::from_rgb(r, g, b)),
+                        None => RichText::new(tr!("QUEST_FOLLOW")),
+                    };
+                    if w(t, |ui| ui.selectable_label(track.is_some(), label))
+                        .on_hover_text(tr!("QUEST_FOLLOW_HINT"))
+                        .clicked()
+                    {
+                        toggle = Some((q.key.clone(), q.name.clone()));
                     }
                 };
                 if tw::line(t, Some(on), icon, q.name.as_str(), end) {
@@ -138,6 +154,12 @@ impl Panel {
                             w(t, |ui| tw::pill(ui, format!("{place} {n}"), tw::Tone::Quiet).on_hover_text(hover));
                         }
                     });
+                }
+            }
+            if let Some((key, name)) = toggle {
+                match state.quest_track(&key).map(|x| x.id) {
+                    Some(id) => state.unfollow(id),
+                    None => state.follow(crate::guide::track::Track::quest(&key, &name)),
                 }
             }
             if let Some(p) = pick {

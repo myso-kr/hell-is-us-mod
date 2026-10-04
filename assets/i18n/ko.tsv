@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	나침반의 거리, 퀘스트 추적창, 다음 목표 키가 
 TRACK_DROP	해제
 TRACK_DROP_ALL	모두 해제
 TRACK_HINT	여기나 다른 탭에서 장소를 누르면 함께 추적합니다. 최대 {max}곳까지, 지도·나침반·게임 화면에 저마다의 색으로 표시됩니다.
+QUEST_FOLLOW	추적
+QUEST_FOLLOWING	추적 중
+QUEST_FOLLOW_HINT	이 퀘스트도 함께 추적합니다. 다음 목표가 저마다의 색·경로·고리로 표시되고, 해내면 그다음 목표로 넘어갑니다. 다시 누르면 해제합니다.
+QUEST_NOT_HERE	이 지역엔 없음
+ALSO_FOLLOWED	함께 추적 중
+QUEST_TAG	퀘스트

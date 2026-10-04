@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	Odległość na kompasie, śledzenie zadań i klawisz następne
 TRACK_DROP	Puść
 TRACK_DROP_ALL	Puść wszystkie
 TRACK_HINT	Naciśnij miejsce tutaj lub na innej stronie, aby też je śledzić: do {max}, każde we własnym kolorze na mapach, kompasie i w grze.
+QUEST_FOLLOW	Śledź
+QUEST_FOLLOWING	Śledzone
+QUEST_FOLLOW_HINT	Śledź też to zadanie: jego następny cel ma własny kolor, trasę i pierścień, potem kolejny. Ponownie, by puścić.
+QUEST_NOT_HERE	nic tutaj
+ALSO_FOLLOWED	Śledzone również
+QUEST_TAG	Zadanie

@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	Die Entfernung im Kompass, die Questanzeige und die Taste für 
 TRACK_DROP	Loslassen
 TRACK_DROP_ALL	Alle loslassen
 TRACK_HINT	Einen Ort hier oder auf einer anderen Seite drücken, um ihm ebenfalls zu folgen: bis zu {max}, jeder in eigener Farbe auf den Karten, im Kompass und im Spiel.
+QUEST_FOLLOW	Folgen
+QUEST_FOLLOWING	Verfolgt
+QUEST_FOLLOW_HINT	Auch dieser Quest folgen: ihr nächstes Ziel bekommt eigene Farbe, Route und Ring, danach das nächste. Erneut drücken zum Loslassen.
+QUEST_NOT_HERE	hier nichts davon
+ALSO_FOLLOWED	Ebenfalls verfolgt
+QUEST_TAG	Quest

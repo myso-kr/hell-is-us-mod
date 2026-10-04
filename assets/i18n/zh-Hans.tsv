@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	指南针的距离、任务追踪和下一目标键都以此为
 TRACK_DROP	取消
 TRACK_DROP_ALL	全部取消
 TRACK_HINT	在此处或其他页面点击地点即可一并追踪：最多{max}处，在地图、指南针和游戏中各有颜色。
+QUEST_FOLLOW	追踪
+QUEST_FOLLOWING	追踪中
+QUEST_FOLLOW_HINT	同时追踪此任务：其下一个目标有自己的颜色、路线和光圈，完成后转到下一个。再按一次取消。
+QUEST_NOT_HERE	此区域无
+ALSO_FOLLOWED	同时追踪
+QUEST_TAG	任务

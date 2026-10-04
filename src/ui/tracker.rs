@@ -54,14 +54,18 @@ pub fn draw(
     near: bool,
     stuck: bool,
     needs: &str,
+    besides: &[(String, [u8; 3])],
 ) -> i32 {
     cv.clear();
     let mut list: Vec<&Quest> = Vec::new();
     if let Some(f) = followed {
         list.push(f);
     }
-    let others = journal.iter().filter(|q| q.active() && Some(q.key.as_str()) != followed.map(|f| f.key.as_str()));
-    list.extend(others.take(OTHERS));
+    // The quests followed besides (guide/track.rs) next, then the others.
+    let colour_of = |q: &Quest| besides.iter().find(|(k, _)| *k == q.key).map(|(_, c)| *c);
+    let rest = |q: &&Quest| q.active() && Some(q.key.as_str()) != followed.map(|f| f.key.as_str());
+    list.extend(journal.iter().filter(rest).filter(|q| colour_of(q).is_some()));
+    list.extend(journal.iter().filter(rest).filter(|q| colour_of(q).is_none()).take(OTHERS));
     if list.is_empty() {
         return 0;
     }
@@ -73,9 +77,14 @@ pub fn draw(
         let open = i == 0 && followed.is_some();
         let c = kind_colour(q);
         if !open {
-            // One line: the dot, the name.
-            let h = pen.write(cv, TEXT_X, y, width, &q.name, 12, false, TEXT, 1);
-            cv.disc(PAD as f32 + 4.0, y as f32 + h as f32 / 2.0 + 0.5, 3.0, c);
+            // One line: the dot, the name; followed besides, ringed in its colour and bold.
+            let besides = colour_of(q);
+            let h = pen.write(cv, TEXT_X, y, width, &q.name, 12, besides.is_some(), TEXT, 1);
+            let (dx, dy) = (PAD as f32 + 4.0, y as f32 + h as f32 / 2.0 + 0.5);
+            if let Some([r, g, b]) = besides {
+                cv.disc(dx, dy, 5.0, Rgba(r, g, b, 255));
+            }
+            cv.disc(dx, dy, 3.0, c);
             y += h + 4;
         } else {
             // The followed quest as a header: the dot, the name in the title colour.

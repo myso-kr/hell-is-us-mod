@@ -71,6 +71,9 @@ pub struct MapState {
     pub tracks: Vec<crate::guide::track::Track>,
     /// Which of them is in focus; `None`, the auto guide's pick.
     pub focus: Option<u64>,
+    /// The goal each quest followed goes to now, by its track (track.rs
+    /// `resolve_quests`). Not kept: worked out each frame.
+    pub resolved: std::collections::HashMap<u64, u64>,
     /// Goals the player skipped (done in a way the guide could not see): auto guiding
     /// passes them by this run.
     pub skipped: std::collections::HashSet<u64>,
@@ -137,6 +140,7 @@ impl Default for MapState {
             skipped: Default::default(),
             tracks: Vec::new(),
             focus: None,
+            resolved: Default::default(),
             auto: None,
             north_yaw: 270.0,
             big_radius_m: 250.0,
@@ -332,6 +336,7 @@ impl MapState {
                 ["tracker", v] => s.tracker = v == "true",
                 ["quest", v] => s.quest = Some(v.to_string()),
                 ["track", ref rest @ ..] => s.parse_track(rest),
+                ["track_quest", ref rest @ ..] => s.parse_quest_track(rest),
                 ["track_focus", i] => {
                     s.focus = i.parse::<usize>().ok().and_then(|i| s.tracks.get(i)).map(|t| t.id);
                 }

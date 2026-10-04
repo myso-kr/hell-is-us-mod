@@ -62,16 +62,31 @@ pub fn settle_target(
     if !state.guide_auto || state.held {
         return;
     }
+    state.auto = next_goal(goals, here, followed, journal, blocked, &state.skipped, state.auto);
+}
+
+/// The goal to guide to for `followed` (`None`, the main story), from the hero at `here`,
+/// keeping `now` while it is still wanted: settle_target's choice, and each quest's that
+/// is followed besides (track.rs).
+pub fn next_goal(
+    goals: &[Goal],
+    here: [f32; 3],
+    followed: Option<&Quest>,
+    journal: &[Quest],
+    blocked: &std::collections::HashSet<u64>,
+    skipped: &std::collections::HashSet<u64>,
+    now: Option<u64>,
+) -> Option<u64> {
     let near = |a: &&Goal, b: &&Goal| flat(a.at, here).total_cmp(&flat(b.at, here));
     let wanted_all: Vec<&Goal> =
-        goals.iter().filter(|g| !state.skipped.contains(&g.id) && wanted(g, goals, followed, journal)).collect();
+        goals.iter().filter(|g| !skipped.contains(&g.id) && wanted(g, goals, followed, journal)).collect();
     let open = wanted_all.iter().copied().filter(|g| !blocked.contains(&g.id)).min_by(near);
     let pick = open.or_else(|| {
         let stuck = wanted_all.iter().copied().min_by(near)?;
         let helper = goals
             .iter()
             .filter(|g| {
-                g.id != stuck.id && !blocked.contains(&g.id) && g.gate == Gate::Open && !state.skipped.contains(&g.id)
+                g.id != stuck.id && !blocked.contains(&g.id) && g.gate == Gate::Open && !skipped.contains(&g.id)
             })
             .filter(|g| flat(g.at, stuck.at) <= HELPER)
             .filter(|g| reachable(g, journal))
@@ -80,12 +95,11 @@ pub fn settle_target(
     });
     // Keep the target while it is still what would be picked, or still wanted and not
     // blocked (nearness alone does not make the guide hop between goals).
-    let keep = state.auto.is_some_and(|t| {
-        Some(t) == pick.map(|g| g.id) || wanted_all.iter().any(|g| g.id == t) && !blocked.contains(&t) && open.is_some()
+    let keep = now.filter(|t| {
+        Some(*t) == pick.map(|g| g.id)
+            || wanted_all.iter().any(|g| g.id == *t) && !blocked.contains(t) && open.is_some()
     });
-    if !keep {
-        state.auto = pick.map(|g| g.id);
-    }
+    keep.or(pick.map(|g| g.id))
 }
 
 /// The next goal, by distance, after the current target — among the tiers shown.

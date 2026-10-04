@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	The compass's distance, the quest tracker and the next-goal key
 TRACK_DROP	Let go
 TRACK_DROP_ALL	Let go of all
 TRACK_HINT	Press a place here or on another page to follow it as well: up to {max}, each in its own colour on the maps, the compass and in the game.
+QUEST_FOLLOW	Follow
+QUEST_FOLLOWING	Following
+QUEST_FOLLOW_HINT	Follow this quest as well: its next goal gets its own colour, route and ring, and the next after it once done. Again to let it go.
+QUEST_NOT_HERE	nothing of it here
+ALSO_FOLLOWED	Also followed
+QUEST_TAG	Quest

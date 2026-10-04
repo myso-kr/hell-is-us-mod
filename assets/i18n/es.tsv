@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	La distancia de la brújula, el seguimiento de misiones y la te
 TRACK_DROP	Dejar
 TRACK_DROP_ALL	Dejar todos
 TRACK_HINT	Pulsa un lugar aquí o en otra página para seguirlo también: hasta {max}, cada uno con su color en los mapas, la brújula y el juego.
+QUEST_FOLLOW	Seguir
+QUEST_FOLLOWING	Siguiendo
+QUEST_FOLLOW_HINT	Seguir también esta misión: su siguiente objetivo tiene su propio color, ruta y anillo, y luego el siguiente. Otra vez para dejarla.
+QUEST_NOT_HERE	nada aquí
+ALSO_FOLLOWED	También seguidas
+QUEST_TAG	Misión

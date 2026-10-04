@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	A distância da bússola, o rastreador de missões e a tecla de
 TRACK_DROP	Soltar
 TRACK_DROP_ALL	Soltar todos
 TRACK_HINT	Toque um lugar aqui ou em outra página para segui-lo também: até {max}, cada um com sua cor nos mapas, na bússola e no jogo.
+QUEST_FOLLOW	Seguir
+QUEST_FOLLOWING	Seguindo
+QUEST_FOLLOW_HINT	Seguir também esta missão: o próximo objetivo ganha cor, rota e anel próprios, depois o seguinte. De novo para soltar.
+QUEST_NOT_HERE	nada aqui
+ALSO_FOLLOWED	Também seguidas
+QUEST_TAG	Missão

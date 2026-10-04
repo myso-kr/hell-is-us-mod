@@ -135,8 +135,24 @@ fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], 
     let goal = goals.iter().find(|g| (g.at[0] - x.at[0]).hypot(g.at[1] - x.at[1]) < 200.0);
     let world = crate::survey::Survey::world_of(&x.world).to_string();
     let track = match goal {
-        Some(g) => crate::guide::track::Track { id: g.id, world, at: g.at, label, place: false, colour: 0 },
-        None => crate::guide::track::Track { id: x.id, world, at: x.at, label, place: true, colour: 0 },
+        Some(g) => crate::guide::track::Track {
+            id: g.id,
+            world,
+            at: g.at,
+            label,
+            place: false,
+            colour: 0,
+            ..Default::default()
+        },
+        None => crate::guide::track::Track {
+            id: x.id,
+            world,
+            at: x.at,
+            label,
+            place: true,
+            colour: 0,
+            ..Default::default()
+        },
     };
     state.follow(track);
 }
@@ -149,7 +165,7 @@ fn follow_goal(state: &mut crate::minimap::MapState, g: &crate::goals::Goal, wor
         at: g.at,
         label: g.label.clone(),
         place: false,
-        colour: 0,
+        ..Default::default()
     });
 }
 

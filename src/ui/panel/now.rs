@@ -158,6 +158,32 @@ impl Panel {
                 };
                 note(t, line);
             }
+            // The quests followed besides (guide/track.rs), each in its colour with its next
+            // goal: press one to bring it into focus.
+            let others: Vec<crate::guide::track::Track> = state
+                .tracks
+                .iter()
+                .filter(|x| x.quest.is_some() && x.quest.as_ref() != Some(&q.key))
+                .cloned()
+                .collect();
+            if !others.is_empty() {
+                block(t, |ui| tw::group_heading(ui, tr!("ALSO_FOLLOWED"), others.len()));
+                for x in &others {
+                    let goal = state.goal_of(x).and_then(|id| goals.iter().find(|g| g.id == id));
+                    let line = match (goal, here) {
+                        (Some(g), Some(h)) => format!("{} → {} ({})", x.label, g.label, crate::raster::span(h, g.at)),
+                        _ => format!("{} · {}", x.label, tr!("QUEST_NOT_HERE")),
+                    };
+                    let [r, g, b] = x.rgb();
+                    let on = state.in_focus(Some(x.id));
+                    let icon = |ui: &mut egui::Ui| {
+                        ui.label(RichText::new("●").color(egui::Color32::from_rgb(r, g, b)));
+                    };
+                    if tw::line(t, Some(on), icon, line, |_| {}) {
+                        state.focus = Some(x.id);
+                    }
+                }
+            }
             if w(t, |ui| ui.button(trf!("GO_TO_PAGE", page = tr!("QUESTS")))).clicked() {
                 self.tool = Some(Tool::Quests);
             }

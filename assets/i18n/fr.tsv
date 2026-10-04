@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	La distance de la boussole, le suivi de quête et la touche d'o
 TRACK_DROP	Lâcher
 TRACK_DROP_ALL	Tout lâcher
 TRACK_HINT	Appuyez sur un lieu ici ou sur une autre page pour le suivre aussi : jusqu'à {max}, chacun de sa couleur sur les cartes, la boussole et en jeu.
+QUEST_FOLLOW	Suivre
+QUEST_FOLLOWING	Suivi
+QUEST_FOLLOW_HINT	Suivre aussi cette quête : son prochain objectif a sa couleur, sa route et son anneau, puis le suivant. Encore pour la lâcher.
+QUEST_NOT_HERE	rien ici
+ALSO_FOLLOWED	Suivies aussi
+QUEST_TAG	Quête

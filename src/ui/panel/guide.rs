@@ -97,33 +97,27 @@ impl Panel {
 
             // Everything followed: the auto guide's pick, then the places chosen, each in
             // its colour, with its distance; one in focus.
-            let followed = state.followed();
+            let followed = state.auto.is_some() as usize + state.tracks.len();
             block(t, |ui| {
                 tw::group_heading(
                     ui,
                     &trf!("TRACKING", n = state.tracks.len(), max = crate::guide::track::MAX),
-                    followed.len(),
+                    followed,
                 )
             });
             if state.tracks.is_empty() {
                 note(t, trf!("TRACK_HINT", max = crate::guide::track::MAX));
             }
-            for f in &followed {
-                let Some(g) = all.iter().find(|g| g.id == f.id) else { continue };
+            // The auto guide's line: its pick, skip it, or back to auto.
+            if let Some(g) = state.auto.and_then(|id| all.iter().find(|g| g.id == id)).cloned() {
+                let focus = state.in_focus(None);
                 let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
-                let auto = f.colour.is_none();
                 t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| match f.colour {
-                        Some(c) => dot(ui, c),
-                        None => {
-                            crate::ui::svg::tier(ui, g.tier, 14.0);
-                        }
+                    w(t, |ui| {
+                        crate::ui::svg::tier(ui, g.tier, 14.0);
                     });
-                    let colour = if f.focus { TITLE } else { TEXT };
-                    let mut name = g.label.clone();
-                    if auto {
-                        name = format!("{} · {name}", tr!("GUIDE_AUTO"));
-                    }
+                    let name = format!("{} · {}", tr!("GUIDE_AUTO"), g.label);
+                    let colour = if focus { TITLE } else { TEXT };
                     t.style(tw::grow(tw::row(TIGHT))).add(|t| {
                         block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).truncate()));
                     });
@@ -131,32 +125,71 @@ impl Panel {
                         tw::chip(t, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait);
                     }
                     block(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
-                    if !f.focus
+                    if !focus
                         && w(t, |ui| ui.small_button(tr!("TRACK_FOCUS")))
                             .on_hover_text(tr!("TRACK_FOCUS_HINT"))
                             .clicked()
                     {
-                        state.focus = (!auto).then_some(f.id);
+                        state.focus = None;
                     }
-                    if auto {
-                        if w(t, |ui| ui.small_button(tr!("NEXT_GOAL")))
-                            .on_hover_text(tr!("THIS_GOAL_IS_DONE_OR_OUT"))
+                    if w(t, |ui| ui.small_button(tr!("NEXT_GOAL")))
+                        .on_hover_text(tr!("THIS_GOAL_IS_DONE_OR_OUT"))
+                        .clicked()
+                    {
+                        state.skipped.insert(g.id);
+                        state.auto = None;
+                        state.held = false;
+                    }
+                    if state.held
+                        && w(t, |ui| ui.small_button(tr!("BACK_TO_AUTO")))
+                            .on_hover_text(tr!("PICKED_BY_HAND_KEPT_UNTIL_IT"))
                             .clicked()
-                        {
-                            state.skipped.insert(g.id);
-                            state.auto = None;
-                            state.held = false;
+                    {
+                        state.held = false;
+                        state.auto = None;
+                    }
+                });
+            }
+            // Each track in its colour: a place, or a quest with the goal it is at now (or
+            // none of it in this region).
+            let tracks = state.tracks.clone();
+            for tr in &tracks {
+                let goal = state.goal_of(tr).and_then(|id| all.iter().find(|g| g.id == id));
+                let focus = state.in_focus(Some(tr.id));
+                let far = goal.zip(here).map_or(String::new(), |(g, h)| crate::raster::span(h, g.at));
+                t.style(tw::row(INLINE)).add(|t| {
+                    w(t, |ui| dot(ui, tr.rgb()));
+                    let name = match (&tr.quest, goal) {
+                        (Some(_), Some(g)) => format!("{} → {}", tr.label, g.label),
+                        (Some(_), None) => format!("{} · {}", tr.label, tr!("QUEST_NOT_HERE")),
+                        (None, _) => tr.label.clone(),
+                    };
+                    let colour = if focus {
+                        TITLE
+                    } else if goal.is_some() {
+                        TEXT
+                    } else {
+                        DIM
+                    };
+                    t.style(tw::grow(tw::row(TIGHT))).add(|t| {
+                        if tr.quest.is_some() {
+                            w(t, |ui| ui.label(RichText::new(tr!("QUEST_TAG")).small().color(DIM)));
                         }
-                        if state.held
-                            && w(t, |ui| ui.small_button(tr!("BACK_TO_AUTO")))
-                                .on_hover_text(tr!("PICKED_BY_HAND_KEPT_UNTIL_IT"))
-                                .clicked()
-                        {
-                            state.held = false;
-                            state.auto = None;
-                        }
-                    } else if w(t, |ui| ui.small_button(tr!("TRACK_DROP"))).clicked() {
-                        state.unfollow(f.id);
+                        block(t, |ui| ui.add(egui::Label::new(RichText::new(name).color(colour)).truncate()));
+                    });
+                    if goal.is_some_and(|g| uncertain.contains(&g.id)) {
+                        tw::chip(t, tr!("GUIDE_NO_ROUTE"), tw::Tone::Wait);
+                    }
+                    block(t, |ui| ui.label(RichText::new(far).monospace().size(11.5).color(DIM)));
+                    if !focus
+                        && w(t, |ui| ui.small_button(tr!("TRACK_FOCUS")))
+                            .on_hover_text(tr!("TRACK_FOCUS_HINT"))
+                            .clicked()
+                    {
+                        state.focus = Some(tr.id);
+                    }
+                    if w(t, |ui| ui.small_button(tr!("TRACK_DROP"))).clicked() {
+                        state.unfollow(tr.id);
                     }
                 });
             }

@@ -94,8 +94,9 @@ fn cursor_shown() -> bool {
 }
 
 /// What the tracker last drew: the journal, the followed quest, whether its places are
-/// near, whether the guided goal is blocked, and the needs line.
-type Tracked = (Arc<Vec<Quest>>, Option<String>, bool, bool, String);
+/// near, whether the guided goal is blocked, the needs line, and the quests followed
+/// besides with their colours.
+type Tracked = (Arc<Vec<Quest>>, Option<String>, bool, bool, String, Vec<(String, [u8; 3])>);
 
 /// A ring to draw in the game's view (marker.rs): where on the screen, the hero's
 /// distance, the colour (`None`, the auto guide's) and whether in focus.
@@ -429,6 +430,8 @@ pub fn run(shared: Arc<Shared>) {
                     &journal,
                     &blocked,
                 );
+                // Each quest followed to its own next goal (track.rs).
+                state.resolve_quests(&goals, &journal, p, &blocked);
                 // The cycle key: the focus through what is followed; with one or none, the
                 // auto guide's next goal.
                 if cycle_now && !state.cycle_focus() {
@@ -600,9 +603,14 @@ pub fn run(shared: Arc<Shared>) {
                         let hint = tr!("PUZZLE_NEARBY_THE_ANSWER_IS_IN");
                         line = if line.is_empty() { hint.to_string() } else { format!("{line}\n{hint}") };
                     }
-                    let now = (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone());
+                    // The quests followed besides, in their colours.
+                    let besides: Vec<(String, [u8; 3])> =
+                        state.tracks.iter().filter_map(|x| Some((x.quest.clone()?, x.rgb()))).collect();
+                    let now =
+                        (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone(), besides.clone());
                     if tracked.as_ref() != Some(&now) {
-                        tracker_used = tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck, &line);
+                        tracker_used =
+                            tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck, &line, &besides);
                         tracked = Some(now);
                     }
                     if tracker_used > 0 {

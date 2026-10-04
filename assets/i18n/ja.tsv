@@ -679,3 +679,9 @@ TRACK_FOCUS_HINT	コンパスの距離、クエスト表示、次の目標キー
 TRACK_DROP	解除
 TRACK_DROP_ALL	すべて解除
 TRACK_HINT	ここや他のページで場所を押すと一緒に追跡します。最大{max}か所、地図・コンパス・ゲーム画面にそれぞれの色で表示します。
+QUEST_FOLLOW	追跡
+QUEST_FOLLOWING	追跡中
+QUEST_FOLLOW_HINT	このクエストも一緒に追跡します。次の目標がそれぞれの色・経路・リングで表示され、達成すると次へ進みます。もう一度押すと解除します。
+QUEST_NOT_HERE	この地域にはなし
+ALSO_FOLLOWED	一緒に追跡中
+QUEST_TAG	クエスト
