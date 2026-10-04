@@ -170,39 +170,52 @@ pub fn run(shared: Arc<Shared>) {
         // the maps show the land, the enemies (seen in a fight anyway) and their own pins.
         let consent = crate::settings::Consent(shared.consent.load(Ordering::SeqCst));
         let places = consent.has(crate::settings::Consent::PLACES);
-        let (pose_src, pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines, puzzle_near) =
-            match shared.snap.lock().unwrap().as_ref() {
-                Some(s) => (
-                    s.pose_src,
-                    s.pose,
-                    s.world.clone(),
-                    shown.things(s, places),
-                    s.footprints.clone(),
-                    if places { s.goals.clone() } else { Default::default() },
-                    s.paused,
-                    s.obstacles.clone(),
-                    s.journal.clone(),
-                    s.nav.clone(),
-                    s.needs.clone(),
-                    s.deadlines.clone(),
-                    hud::puzzle_near(s),
-                ),
-                None => (
-                    None,
-                    None,
-                    None,
-                    Default::default(),
-                    Default::default(),
-                    Default::default(),
-                    false,
-                    Default::default(),
-                    Default::default(),
-                    Default::default(),
-                    Default::default(),
-                    Default::default(),
-                    false,
-                ),
-            };
+        let (
+            pose_src,
+            pose,
+            world,
+            things,
+            footprints,
+            goals,
+            paused,
+            obstacles,
+            journal,
+            nav,
+            needs,
+            deadlines,
+            puzzle_near,
+        ) = match shared.snap.lock().unwrap().as_ref() {
+            Some(s) => (
+                s.pose_src,
+                s.pose,
+                s.world.clone(),
+                shown.things(s, places),
+                s.footprints.clone(),
+                if places { s.goals.clone() } else { Default::default() },
+                s.paused,
+                s.obstacles.clone(),
+                s.journal.clone(),
+                s.nav.clone(),
+                s.needs.clone(),
+                s.deadlines.clone(),
+                hud::puzzle_near(s),
+            ),
+            None => (
+                None,
+                None,
+                None,
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                false,
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                Default::default(),
+                false,
+            ),
+        };
         // The pose read now, from where the worker found it: the worker's own reading
         // comes only after its whole step, a second late with the guide's reading.
         let fast = pose_src.and_then(|src| {

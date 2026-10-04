@@ -577,8 +577,10 @@ fn profile(seconds: u64) -> R {
         if warm.is_some_and(|w| std::time::Instant::now() >= w) {
             warm = None;
             if let Some(line) = hiumod::prof::report("warm-up", Duration::ZERO) {
-                println!("{line}
-");
+                println!(
+                    "{line}
+"
+                );
             }
         }
         std::thread::sleep(Duration::from_millis(100).saturating_sub(started.elapsed()));

@@ -161,7 +161,14 @@ impl Chain {
     pub fn pose_source(&self, m: &dyn Memory, a: &Anchors) -> Result<PoseSource, String> {
         let pc = self.controller(m, a)?;
         let pawn = self.hero(m, a)?;
-        Ok(PoseSource { pc, pawn, pawn_off: self.pawn, root: self.root, location: self.location, rotation: self.rotation })
+        Ok(PoseSource {
+            pc,
+            pawn,
+            pawn_off: self.pawn,
+            root: self.root,
+            location: self.location,
+            rotation: self.rotation,
+        })
     }
 }
 
