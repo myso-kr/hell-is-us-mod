@@ -197,6 +197,16 @@ fn doctor(opt: &Options) -> R {
         }
         Err(e) => log!("{}", trf!("FAIL_GUIDE", e = e)),
     }
+    // The choice puzzles (slots.rs) as the survey groups them: each set's slots, and
+    // whether one is right. Answers are not printed.
+    for p in hiumod::slots::group(&a.catalogue(), &Default::default()) {
+        let sets: Vec<String> = p
+            .sets
+            .iter()
+            .map(|s| format!("{}{}", s.slots.len(), if s.answer().is_some() { "" } else { "*" }))
+            .collect();
+        println!("        {} · {}: [{}]", p.world, p.items.join(", "), sets.join(" "));
+    }
 
     let s = match a.session() {
         Ok(s) => s,
