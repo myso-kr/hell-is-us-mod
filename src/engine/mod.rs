@@ -132,6 +132,7 @@ impl Engine {
             originals: Vec::new(),
             notice: None,
             pose: None,
+            pose_src: None,
             world: None,
             things: Vec::new(),
             haze_links: Default::default(),
@@ -165,6 +166,7 @@ impl Engine {
             snap.game = Ok((a.game.pid, a.version.clone()));
             snap.gate = a.gate();
             snap.pose = a.pose().ok();
+            snap.pose_src = a.chain().ok().and_then(|c| c.pose_source(&a.game, &a.anchors).ok());
             snap.paused = a.paused().unwrap_or(false);
             snap.world = a.chain().ok().and_then(|c| c.world(&a.game, &a.anchors).ok());
             // A closed gate pauses the toggles rather than ending them: it closes on

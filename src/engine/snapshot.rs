@@ -20,6 +20,8 @@ pub struct Snapshot {
     pub notice: Option<String>,
     /// Where the hero is (cm) and the camera's yaw (degrees) — the minimap's input.
     pub pose: Option<([f64; 3], f64)>,
+    /// Where the overlay reads the pose itself, every frame (`player::PoseSource`).
+    pub pose_src: Option<crate::player::PoseSource>,
     /// The world the hero is in, by name.
     pub world: Option<String>,
     /// What the minimap marks besides the hero.

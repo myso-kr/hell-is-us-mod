@@ -154,6 +154,47 @@ impl Chain {
         }
         Ok((loc, yaw))
     }
+
+    /// Where `pose` reads, resolved once: the overlay reads the pose from it every frame,
+    /// four small reads, rather than wait for the worker's whole step (a second or more
+    /// with the guide's reading).
+    pub fn pose_source(&self, m: &dyn Memory, a: &Anchors) -> Result<PoseSource, String> {
+        let pc = self.controller(m, a)?;
+        let pawn = self.hero(m, a)?;
+        Ok(PoseSource { pc, pawn, pawn_off: self.pawn, root: self.root, location: self.location, rotation: self.rotation })
+    }
+}
+
+/// The hero's pose, read straight from the addresses `Chain::pose_source` found: valid as
+/// long as the controller still holds that pawn (checked on every read), which the hero
+/// gate vouched for when the source was made.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct PoseSource {
+    pub pc: u64,
+    pub pawn: u64,
+    pawn_off: u64,
+    root: u64,
+    location: u64,
+    rotation: u64,
+}
+
+impl PoseSource {
+    /// The pose now, or `None` once the pawn changed (a load, a cinematic) or a read failed.
+    pub fn read(&self, m: &dyn Memory) -> Option<([f64; 3], f64)> {
+        if mem::read_u64(m, self.pc + self.pawn_off)? != self.pawn {
+            return None;
+        }
+        let root = mem::read_u64(m, self.pawn + self.root).filter(|&p| mem::plausible(p))?;
+        let mut b = [0u8; 24];
+        m.read(root + self.location, &mut b).then_some(())?;
+        let d = |i: usize| f64::from_le_bytes(b[i * 8..i * 8 + 8].try_into().unwrap());
+        let loc = [d(0), d(1), d(2)];
+        let mut r = [0u8; 8];
+        m.read(self.pc + self.rotation + 8, &mut r).then_some(())?;
+        let yaw = f64::from_le_bytes(r);
+        let ok = loc.iter().chain([&yaw]).all(|v| v.is_finite() && v.abs() < 1.0e9);
+        ok.then_some((loc, yaw))
+    }
 }
 
 #[cfg(test)]
@@ -221,6 +262,18 @@ pub mod tests {
         assert_eq!((c.pawn, c.asc, c.sets), (0x2F8, 0x688, 0x1088));
         assert_eq!(c.attribute_sets(&m, &a), Ok(ASC + 0x1088));
         assert_eq!(c.pose(&m, &a), Ok(([100.0, 200.0, 300.0], 90.0)));
+    }
+
+    #[test]
+    fn a_pose_source_reads_until_the_pawn_changes() {
+        let (m, _) = world();
+        let a = anchors(&m);
+        let src = learn(&m, &a).unwrap().pose_source(&m, &a).unwrap();
+        assert_eq!(src.read(&m), Some(([100.0, 200.0, 300.0], 90.0)));
+        m.put(ROOT + 0x128, &[150.0f64, 200.0, 300.0].map(f64::to_le_bytes).concat());
+        assert_eq!(src.read(&m), Some(([150.0, 200.0, 300.0], 90.0)));
+        m.ptr(PC + 0x2F8, 0x2610_0000);
+        assert_eq!(src.read(&m), None);
     }
 
     #[test]

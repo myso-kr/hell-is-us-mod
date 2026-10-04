@@ -117,6 +117,8 @@ pub fn run(shared: Arc<Shared>) {
     // canvas and icons.
     let mut big_scroll = bigmap::Scroll::default();
     let mut glide = glide::Glide::default();
+    // The game opened for reading the pose each frame (player::PoseSource).
+    let mut reader: Option<crate::game::process::Reader> = None;
     let mut big_on = false;
     let (mut hero_at, mut preview_at) = (Instant::now(), Instant::now());
     let mut map_cv = Canvas::new(MAP_PX as usize, MAP_PX as usize);
@@ -154,9 +156,10 @@ pub fn run(shared: Arc<Shared>) {
         let in_game = game != 0 && focus == game;
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
-        let (pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines, puzzle_near) =
+        let (pose_src, pose, world, things, footprints, goals, paused, obstacles, journal, nav, needs, deadlines, puzzle_near) =
             match shared.snap.lock().unwrap().as_ref() {
                 Some(s) => (
+                    s.pose_src,
                     s.pose,
                     s.world.clone(),
                     hud::with_survey(&s.things, s),
@@ -171,6 +174,7 @@ pub fn run(shared: Arc<Shared>) {
                     hud::puzzle_near(s),
                 ),
                 None => (
+                    None,
                     None,
                     None,
                     Vec::new(),
@@ -193,9 +197,19 @@ pub fn run(shared: Arc<Shared>) {
         } else {
             (things.into_iter().filter(|t| t.kind() == crate::actors::Kind::Enemy).collect(), Vec::new())
         };
-        // Between the worker's readings, glided (glide.rs).
-        let here =
-            glide.see(pose.map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32)), Instant::now());
+        // The pose read now, from where the worker found it: the worker's own reading
+        // comes only after its whole step, a second late with the guide's reading.
+        let fast = pose_src.and_then(|src| {
+            if reader.as_ref().map(|r| r.pid) != Some(game) {
+                reader = crate::game::process::Reader::open(game);
+            }
+            src.read(reader.as_ref()?)
+        });
+        let to_f32 = |(p, yaw): ([f64; 3], f64)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32);
+        // Read this frame, drawn as read; else the worker's readings, glided between
+        // (glide.rs). The glide follows the frame's pose either way, to take over smoothly.
+        let glided = glide.see(fast.or(pose).map(to_f32), Instant::now());
+        let here = fast.map(to_f32).or(glided);
 
         let haze_links = shared.snap.lock().unwrap().as_ref().map(|s| s.haze_links.clone()).unwrap_or_default();
         let mut state = shared.map.lock().unwrap();

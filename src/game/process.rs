@@ -64,6 +64,40 @@ impl Memory for Game {
     }
 }
 
+/// The game opened for reading alone, by pid: what the overlay reads the hero's pose with,
+/// on its own thread, without the worker's `Game`.
+pub struct Reader {
+    pub pid: u32,
+    handle: HANDLE,
+}
+
+impl Reader {
+    pub fn open(pid: u32) -> Option<Reader> {
+        let handle = unsafe { OpenProcess(PROCESS_VM_READ, 0, pid) };
+        (!handle.is_null()).then_some(Reader { pid, handle })
+    }
+}
+
+impl Drop for Reader {
+    fn drop(&mut self) {
+        unsafe { CloseHandle(self.handle) };
+    }
+}
+
+impl Memory for Reader {
+    fn read(&self, addr: u64, buf: &mut [u8]) -> bool {
+        let mut n = 0usize;
+        let ok = unsafe {
+            ReadProcessMemory(self.handle, addr as *const c_void, buf.as_mut_ptr().cast(), buf.len(), &mut n)
+        };
+        ok != 0 && n == buf.len()
+    }
+
+    fn write(&self, _: u64, _: &[u8]) -> bool {
+        false
+    }
+}
+
 fn wide(s: &[u16]) -> String {
     String::from_utf16_lossy(&s[..s.iter().position(|&c| c == 0).unwrap_or(s.len())])
 }
