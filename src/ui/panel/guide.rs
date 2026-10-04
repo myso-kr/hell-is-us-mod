@@ -200,7 +200,150 @@ impl Panel {
         });
     }
 
-    /// Every place with something new, nearest first: press to guide there.
+    /// The area's map (`Shared::ops`, drawn by the overlay while this page shows): what is
+    /// followed in its colours with its routes, and every place. Pointing at a place says
+    /// what it is and how far; pressing it follows it (again: lets it go). Beside the map,
+    /// the place pointed at, else how to use it and what the map holds.
+    pub(super) fn ops_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let ctx = t.egui_ctx().clone();
+        let frame = self.shared.ops.lock().unwrap().clone();
+        if let Some((.., view)) = &frame {
+            self.ops_view = Some(*view);
+        }
+        let image = super::map::texture(&ctx, &mut self.ops_tex, "ops-map", frame.map(|(s, px, n, _)| (s, s, px, n)));
+        let view = self.ops_view;
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let mut all: Vec<crate::goals::Goal> = goals.iter().cloned().collect();
+        all.extend(state.place_goals(&goals, &world));
+        card(t, tr!("OPS_MAP"), |t| {
+            let mut pointed: Option<crate::goals::Goal> = None;
+            let mut pressed = false;
+            t.style(tw::row(BLOCK)).add(|t| {
+                w(t, |ui| {
+                    let side = OPS_SHOWN;
+                    let (rect, response) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::click());
+                    match image {
+                        Some((id, px, _)) => {
+                            let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
+                            ui.painter().image(id, rect, uv, egui::Color32::WHITE);
+                            // The place nearest the pointer, within a few pixels of it.
+                            if let (Some(pos), Some(v)) = (response.hover_pos(), view) {
+                                let k = px as f32 / side;
+                                let at = |g: &crate::goals::Goal| {
+                                    let (x, y) = v.project(g.at);
+                                    rect.center() + egui::vec2(x / k, y / k)
+                                };
+                                pointed = all
+                                    .iter()
+                                    .map(|g| (at(g).distance(pos), g))
+                                    .filter(|(d, _)| *d < 9.0)
+                                    .min_by(|a, b| a.0.total_cmp(&b.0))
+                                    .map(|(_, g)| g.clone());
+                                if let Some(g) = &pointed {
+                                    ui.painter().circle_stroke(at(g), 8.0, (1.5, egui::Color32::WHITE));
+                                }
+                                pressed = response.clicked() && pointed.is_some();
+                            }
+                        }
+                        None => {
+                            ui.painter().rect_filled(rect, super::super::theme::R_CONTROL, super::super::theme::GROUND);
+                        }
+                    }
+                });
+                // Beside the map: the place pointed at, or how to use the map.
+                t.style(tw::grow(tw::col(INLINE))).add(|t| match &pointed {
+                    Some(g) => {
+                        w(t, |ui| crate::ui::svg::tier(ui, g.tier, 22.0));
+                        block(t, |ui| ui.label(RichText::new(&g.label).strong().color(TITLE)));
+                        if let Some(h) = here {
+                            note(t, crate::raster::span(h, g.at));
+                        }
+                        if !g.detail.is_empty() {
+                            note(t, g.detail.clone());
+                        }
+                        let colour = state.track_colour(g.id);
+                        note(t, if colour.is_some() { tr!("OPS_PRESS_TO_DROP") } else { tr!("OPS_PRESS_TO_FOLLOW") });
+                    }
+                    None => {
+                        note(t, tr!("OPS_HINT"));
+                        let count = |tier| all.iter().filter(|g| g.tier == tier).count();
+                        for tier in crate::goals::Tier::ALL {
+                            t.style(tw::row(INLINE)).add(|t| {
+                                w(t, |ui| crate::ui::svg::tier(ui, tier, 14.0));
+                                block(t, |ui| ui.label(RichText::new(tier.label()).color(TEXT)));
+                                w(t, |ui| ui.label(RichText::new(count(tier).to_string()).monospace().color(DIM)));
+                            });
+                        }
+                        let radius = trf!("OPS_RADIUS", m = state.big_radius_m as u32);
+                        note(t, radius);
+                    }
+                });
+            });
+            if pressed {
+                if let Some(g) = &pointed {
+                    follow_goal(state, g, &world);
+                }
+            }
+        });
+    }
+
+    /// The journey: how far was walked this run and in each region all told, and what was
+    /// followed and reached, newest first.
+    pub(super) fn journey_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
+        // This run's: from how far the trail ran when the panel first saw the world.
+        for w in state.trails.keys() {
+            let walked = state.walked(w);
+            self.walked_from.entry(w.clone()).or_insert(walked);
+        }
+        let this_run: f32 =
+            state.trails.keys().map(|w| state.walked(w) - self.walked_from.get(w).copied().unwrap_or(0.0)).sum();
+        let mut regions: Vec<(String, f32)> =
+            state.trails.keys().map(|w| (w.clone(), state.walked(w))).filter(|(_, d)| *d > 0.0).collect();
+        regions.sort_by(|a, b| b.1.total_cmp(&a.1));
+        let most = regions.first().map_or(1.0, |r| r.1.max(1.0));
+        card(t, tr!("JOURNEY"), |t| {
+            t.style(tw::row(BLOCK)).add(|t| {
+                // Left: how far, this run and by region.
+                t.style(tw::grow(tw::col(INLINE))).add(|t| {
+                    let km = |cm: f32| format!("{:.1} km", cm / 100_000.0);
+                    block(t, |ui| {
+                        ui.label(RichText::new(km(this_run)).size(22.0).strong().color(TITLE));
+                    });
+                    note(t, tr!("JOURNEY_THIS_RUN"));
+                    for (region, d) in regions.iter().take(5) {
+                        t.style(tw::row(INLINE)).add(|t| {
+                            let name = crate::i18n::place(crate::survey::Survey::world_of(region));
+                            let colour = if *region == world { TITLE } else { TEXT };
+                            block(t, |ui| ui.label(RichText::new(name).color(colour)));
+                            w_meter(t, (*d / most * 100.0) as u32);
+                            w(t, |ui| ui.label(RichText::new(km(*d)).monospace().small().color(DIM)));
+                        });
+                    }
+                });
+                // Right: what was followed and reached, newest first.
+                t.style(tw::grow(tw::col(INLINE))).add(|t| {
+                    block(t, |ui| ui.label(RichText::new(tr!("JOURNEY_DONE")).strong().color(TEXT)));
+                    if state.done.is_empty() {
+                        note(t, tr!("JOURNEY_NONE"));
+                    }
+                    let now = std::time::SystemTime::now();
+                    for (label, when) in state.done.iter().rev().take(6) {
+                        let secs = now.duration_since(*when).map_or(0, |d| d.as_secs());
+                        t.style(tw::row(INLINE)).add(|t| {
+                            w(t, |ui| ui.label(RichText::new("✓").color(super::super::theme::OK)));
+                            block(t, |ui| ui.add(egui::Label::new(RichText::new(label).color(TEXT)).truncate()));
+                            w(t, |ui| ui.label(RichText::new(super::now::ago(secs)).small().color(DIM)));
+                        });
+                    }
+                });
+            });
+        });
+    }
+
+    /// Every place with something new, nearest first, in two columns: press to follow it.
     pub(super) fn goals_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
         let world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
@@ -232,17 +375,34 @@ impl Panel {
                         if let Some(tier) = tier {
                             tw::group_heading(ui, tier.label(), list.len());
                         }
-                        for g in list {
-                            let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
-                            if place_row(ui, g, &far, state.is_followed(g.id)).clicked() {
-                                follow_goal(state, g, &world);
+                        // Two columns (the card is two wide): the nearer half down the left,
+                        // the rest down the right.
+                        let half = list.len().div_ceil(2);
+                        ui.columns(2, |cols| {
+                            for (k, part) in list.chunks(half.max(1)).enumerate() {
+                                let ui = &mut cols[k];
+                                ui.spacing_mut().item_spacing.y = 2.0;
+                                for g in part {
+                                    let far = here.map_or(String::new(), |h| crate::raster::span(h, g.at));
+                                    if place_row(ui, g, &far, state.is_followed(g.id)).clicked() {
+                                        follow_goal(state, g, &world);
+                                    }
+                                }
                             }
-                        }
+                        });
                     }
                 });
             });
         });
     }
+}
+
+/// How large the area's map shows (px): the overlay draws it at `OPS_PX` (400).
+const OPS_SHOWN: f32 = 360.0;
+
+/// A small meter of `percent`, as the journey's region lines have.
+fn w_meter(t: &mut Tui, percent: u32) {
+    w(t, |ui| tw::meter(ui, Some(72.0), percent.min(100) as usize, 100));
 }
 
 /// A followed place's colour, as a dot.

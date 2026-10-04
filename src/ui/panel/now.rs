@@ -379,7 +379,7 @@ fn ledger(s: &Snapshot) -> Vec<crate::ledger::Region> {
 }
 
 /// "12 min ago", "3 h ago", "2 days ago".
-fn ago(secs: u64) -> String {
+pub(super) fn ago(secs: u64) -> String {
     match secs {
         0..3600 => trf!("MINUTES_AGO", count = (secs / 60).max(1)),
         3600..86400 => trf!("HOURS_AGO", count = secs / 3600),

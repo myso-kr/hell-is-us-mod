@@ -689,3 +689,22 @@ TRACK_TOGGLE_HINT	Segui: colore, percorso e anello propri su mappe, bussola e gi
 GUIDE_AUTO_CARD	Guida automatica
 TRACK_IN_FOCUS	a fuoco
 QUESTS_FOLLOW_NOTE	Premi una missione per vedere cosa serve; Segui per esserne guidato, anche più insieme.
+MAP_PREVIEW	Anteprima
+MAP_PRESETS	Preimpostazioni
+PRESET_EXPLORE	Esplora
+PRESET_EXPLORE_HINT	Minimappa ampia (120 m) con tutti i livelli e la bussola: per orientarsi.
+PRESET_COMBAT	Combattimento
+PRESET_COMBAT_HINT	Da vicino (60 m), terreno tenue e icone grandi: i nemici risaltano.
+PRESET_MINIMAL	Minimo
+PRESET_MINIMAL_HINT	Solo contorni e icone, senza tracciamento missioni: il minimo sopra il gioco.
+PRESET_PHOTO	Foto
+PRESET_PHOTO_HINT	Niente mappa, bussola o tracciamento sul gioco: per gli screenshot.
+OPS_MAP	Mappa dell'area
+OPS_HINT	Indica un luogo per vedere cos'è; premilo per seguirlo.
+OPS_PRESS_TO_FOLLOW	Premi per seguirlo.
+OPS_PRESS_TO_DROP	Seguito: premi per lasciarlo.
+OPS_RADIUS	{m} m intorno a te, come la mappa grande
+JOURNEY	Viaggio
+JOURNEY_THIS_RUN	percorsi da quando è aperto il pannello; per regione, in tutto:
+JOURNEY_DONE	Raggiunti
+JOURNEY_NONE	Ancora nulla di seguito raggiunto in questa sessione.

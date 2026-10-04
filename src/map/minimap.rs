@@ -74,6 +74,9 @@ pub struct MapState {
     /// The goal each quest followed goes to now, by its track (track.rs
     /// `resolve_quests`). Not kept: worked out each frame.
     pub resolved: std::collections::HashMap<u64, u64>,
+    /// What was followed and ended by itself (a goal reached, a set done, a quest done),
+    /// newest last, with when: the Guide page's journey. Not kept across runs.
+    pub done: Vec<(String, std::time::SystemTime)>,
     /// Goals the player skipped (done in a way the guide could not see): auto guiding
     /// passes them by this run.
     pub skipped: std::collections::HashSet<u64>,
@@ -141,6 +144,7 @@ impl Default for MapState {
             tracks: Vec::new(),
             focus: None,
             resolved: Default::default(),
+            done: Vec::new(),
             auto: None,
             north_yaw: 270.0,
             big_radius_m: 250.0,
@@ -417,6 +421,12 @@ impl MapState {
 pub const ICON_PX: std::ops::RangeInclusive<u8> = 10..=32;
 
 impl MapState {
+    /// How far the trail in `world` runs (cm): what was walked there, breaks left out.
+    pub fn walked(&self, world: &str) -> f32 {
+        let Some(trail) = self.trails.get(world) else { return 0.0 };
+        trail.windows(2).filter_map(|w| Some((w[0]?, w[1]?))).map(|(a, b)| (a[0] - b[0]).hypot(a[1] - b[1])).sum()
+    }
+
     /// Whether a thing of this sort is drawn: its kind on, and the sort not hidden.
     pub fn shows(&self, sub: Sub) -> bool {
         self.layers & sub.kind().bit() != 0 && !self.hidden.contains(&sub)

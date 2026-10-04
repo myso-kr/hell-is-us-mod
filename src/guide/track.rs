@@ -231,6 +231,18 @@ impl MapState {
         self.dirty = true;
     }
 
+    /// Let go of a track that ended by itself (reached, done), noting it for the journey.
+    fn ended(&mut self, id: u64) {
+        if let Some(t) = self.tracks.iter().find(|t| t.id == id) {
+            let label = t.shown();
+            self.done.push((label, std::time::SystemTime::now()));
+            if self.done.len() > 20 {
+                self.done.remove(0);
+            }
+        }
+        self.unfollow(id);
+    }
+
     pub fn unfollow_all(&mut self) {
         self.tracks.clear();
         self.resolved.clear();
@@ -275,7 +287,7 @@ impl MapState {
             };
         }
         for id in done {
-            self.unfollow(id);
+            self.ended(id);
         }
     }
 
@@ -311,7 +323,7 @@ impl MapState {
         }
         for id in gone {
             missing.remove(&id);
-            self.unfollow(id);
+            self.ended(id);
         }
     }
 
@@ -349,7 +361,7 @@ impl MapState {
             .map(|t| t.id)
             .collect();
         for id in done {
-            self.unfollow(id);
+            self.ended(id);
         }
     }
 
@@ -476,6 +488,7 @@ mod tests {
         assert_eq!(s.place_goals(&[], "W_Root_WP").len(), 1);
         s.done_at("W", [9050.0, 0.0, 0.0]);
         assert!(s.tracks.is_empty(), "its groove's set done: let go");
+        assert_eq!(s.done.len(), 2, "both noted for the journey");
     }
 
     #[test]

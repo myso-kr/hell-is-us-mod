@@ -689,3 +689,22 @@ TRACK_TOGGLE_HINT	Folgen: eigene Farbe, Route und Ring auf den Karten, im Kompas
 GUIDE_AUTO_CARD	Automatische Führung
 TRACK_IN_FOCUS	im Fokus
 QUESTS_FOLLOW_NOTE	Eine Quest drücken zeigt, was sie braucht; „Folgen“ führt hin, auch mehrere zugleich.
+MAP_PREVIEW	Vorschau
+MAP_PRESETS	Voreinstellungen
+PRESET_EXPLORE	Erkunden
+PRESET_EXPLORE_HINT	Weite Minikarte (120 m) mit allen Ebenen und Kompass: zum Orientieren.
+PRESET_COMBAT	Kampf
+PRESET_COMBAT_HINT	Nah (60 m), Boden blass, Symbole groß: Gegner fallen auf.
+PRESET_MINIMAL	Minimal
+PRESET_MINIMAL_HINT	Nur Umrisse und Symbole, keine Questanzeige: verdeckt am wenigsten.
+PRESET_PHOTO	Fotos
+PRESET_PHOTO_HINT	Keine Karte, kein Kompass, keine Anzeige über dem Spiel: für Screenshots.
+OPS_MAP	Gebietskarte
+OPS_HINT	Auf einen Ort zeigen zeigt, was er ist; drücken folgt ihm.
+OPS_PRESS_TO_FOLLOW	Drücken zum Folgen.
+OPS_PRESS_TO_DROP	Verfolgt: drücken zum Loslassen.
+OPS_RADIUS	{m} m um dich, wie die große Karte
+JOURNEY	Reise
+JOURNEY_THIS_RUN	gelaufen seit dem Start des Panels; nach Region, insgesamt:
+JOURNEY_DONE	Erreicht
+JOURNEY_NONE	In dieser Sitzung noch nichts Verfolgtes erreicht.

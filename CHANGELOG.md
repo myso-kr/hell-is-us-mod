@@ -28,6 +28,13 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - The guide's target is ringed in the game's own view when it is near (within 60 m) and in sight, with
   its distance: a choice puzzle's answer shows exactly which groove or statue.
 
+- The Guide page's area map: north up round the hero as wide as the big map's radius, with what
+  is followed in its colours and their routes. Pointing at a place says what it is and how far;
+  pressing it follows it, or lets it go. Beside it, the journey: how far was walked this run and in
+  each region, and what was followed and reached.
+- The Map page's presets (Explore, Fight, Minimal, Photos) set the display, radius, layers and
+  icons in one press, under both maps' previews side by side.
+
 - Follow up to five places at once besides the auto guide: every Guide button across the panel adds
   its place (press again to focus it, again to let it go), each with its own colour, route, compass
   mark and ring in the game's view. The Guide page lists them all, with Focus and Let go; the

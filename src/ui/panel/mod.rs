@@ -308,6 +308,11 @@ pub struct Panel {
     /// The Map page's previews as textures, likewise: the minimap's, the big map's.
     preview_tex: Option<(u64, egui::TextureHandle)>,
     preview_big_tex: Option<(u64, egui::TextureHandle)>,
+    /// The Guide page's map (`Shared::ops`), as a texture, and the view it was drawn with.
+    ops_tex: Option<(u64, egui::TextureHandle)>,
+    ops_view: Option<crate::minimap::View>,
+    /// How far the trail ran in each world when the panel started: the journey's "this run".
+    walked_from: std::collections::HashMap<String, f32>,
     /// The clues page: the word searched for, and the entry opened (its story unit).
     clue_query: String,
     clue_open: Option<String>,
@@ -425,6 +430,9 @@ impl Panel {
             hero_tex: None,
             preview_tex: None,
             preview_big_tex: None,
+            ops_tex: None,
+            ops_view: None,
+            walked_from: Default::default(),
             places_grouped: false,
             achievements_grouped: false,
             clue_query: String::new(),
@@ -773,6 +781,7 @@ impl Panel {
         }
         // The overlay draws the Map page's preview only while that page shows.
         self.shared.preview_wanted.store(self.tool == Some(Tool::Map), std::sync::atomic::Ordering::SeqCst);
+        self.shared.ops_wanted.store(self.tool == Some(Tool::Guide), std::sync::atomic::Ordering::SeqCst);
         match self.tab {
             _ if self.tool == Some(Tool::Debug) => block(t, |ui| self.debug_tab(ui, snap)),
             _ if self.tool == Some(Tool::Saves) => {

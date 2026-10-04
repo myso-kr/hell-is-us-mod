@@ -689,3 +689,22 @@ TRACK_TOGGLE_HINT	Suivre : sa couleur, sa route et son anneau sur les cartes, la
 GUIDE_AUTO_CARD	Guidage automatique
 TRACK_IN_FOCUS	ciblé
 QUESTS_FOLLOW_NOTE	Appuyez sur une quête pour voir ce qu'il lui faut ; Suivre pour y être guidé, plusieurs à la fois.
+MAP_PREVIEW	Aperçu
+MAP_PRESETS	Préréglages
+PRESET_EXPLORE	Explorer
+PRESET_EXPLORE_HINT	Minicarte large (120 m) avec toutes les couches et la boussole : pour s'orienter.
+PRESET_COMBAT	Combat
+PRESET_COMBAT_HINT	De près (60 m), le sol pâle et les icônes grandes : les ennemis ressortent.
+PRESET_MINIMAL	Minimal
+PRESET_MINIMAL_HINT	Contours et icônes seulement, sans suivi de quête : le moins possible sur le jeu.
+PRESET_PHOTO	Photos
+PRESET_PHOTO_HINT	Ni carte, ni boussole, ni suivi sur le jeu : pour les captures d'écran.
+OPS_MAP	Carte de la zone
+OPS_HINT	Pointez un lieu pour voir ce que c'est ; appuyez pour le suivre.
+OPS_PRESS_TO_FOLLOW	Appuyez pour le suivre.
+OPS_PRESS_TO_DROP	Suivi : appuyez pour le lâcher.
+OPS_RADIUS	{m} m autour de vous, comme la grande carte
+JOURNEY	Parcours
+JOURNEY_THIS_RUN	parcourus depuis le lancement du panneau ; par région, au total :
+JOURNEY_DONE	Atteints
+JOURNEY_NONE	Rien de suivi n'a encore été atteint cette fois.

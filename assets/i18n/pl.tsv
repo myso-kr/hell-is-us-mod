@@ -689,3 +689,22 @@ TRACK_TOGGLE_HINT	Śledź: własny kolor, trasa i pierścień na mapach, kompasi
 GUIDE_AUTO_CARD	Prowadzenie automatyczne
 TRACK_IN_FOCUS	w skupieniu
 QUESTS_FOLLOW_NOTE	Naciśnij zadanie, by zobaczyć, czego wymaga; Śledź, by cię prowadziło, kilka naraz.
+MAP_PREVIEW	Podgląd
+MAP_PRESETS	Ustawienia
+PRESET_EXPLORE	Eksploracja
+PRESET_EXPLORE_HINT	Szeroka minimapa (120 m) ze wszystkimi warstwami i kompasem: do szukania drogi.
+PRESET_COMBAT	Walka
+PRESET_COMBAT_HINT	Z bliska (60 m), podłoże blade, ikony duże: wrogowie się wyróżniają.
+PRESET_MINIMAL	Minimum
+PRESET_MINIMAL_HINT	Tylko kontury i ikony, bez śledzenia zadań: najmniej na ekranie gry.
+PRESET_PHOTO	Zdjęcia
+PRESET_PHOTO_HINT	Bez mapy, kompasu i śledzenia na grze: do zrzutów ekranu.
+OPS_MAP	Mapa okolicy
+OPS_HINT	Wskaż miejsce, by zobaczyć, czym jest; naciśnij, by je śledzić.
+OPS_PRESS_TO_FOLLOW	Naciśnij, by śledzić.
+OPS_PRESS_TO_DROP	Śledzone: naciśnij, by puścić.
+OPS_RADIUS	{m} m wokół ciebie, jak duża mapa
+JOURNEY	Podróż
+JOURNEY_THIS_RUN	przebyte od uruchomienia panelu; według regionów, łącznie:
+JOURNEY_DONE	Osiągnięte
+JOURNEY_NONE	W tej sesji nie osiągnięto jeszcze nic śledzonego.

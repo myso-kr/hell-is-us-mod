@@ -689,3 +689,22 @@ TRACK_TOGGLE_HINT	Follow it: its own colour, route and ring on the maps, the com
 GUIDE_AUTO_CARD	Auto guide
 TRACK_IN_FOCUS	in focus
 QUESTS_FOLLOW_NOTE	Press a quest to see what it needs; Follow to be guided to it, several at once.
+MAP_PREVIEW	Preview
+MAP_PRESETS	Presets
+PRESET_EXPLORE	Explore
+PRESET_EXPLORE_HINT	A wide minimap (120 m) with every layer and the compass: for finding your way.
+PRESET_COMBAT	Fight
+PRESET_COMBAT_HINT	Close in (60 m), the ground faint and the icons large: enemies stand out.
+PRESET_MINIMAL	Minimal
+PRESET_MINIMAL_HINT	Outlines and icons only, no quest tracker: the least over the game.
+PRESET_PHOTO	Photos
+PRESET_PHOTO_HINT	No map, compass or tracker over the game: for screenshots.
+OPS_MAP	Area map
+OPS_HINT	Point at a place to see what it is; press it to follow it.
+OPS_PRESS_TO_FOLLOW	Press to follow it.
+OPS_PRESS_TO_DROP	Followed: press to let it go.
+OPS_RADIUS	{m} m around you, as the big map
+JOURNEY	Journey
+JOURNEY_THIS_RUN	walked since the panel started; by region, all told:
+JOURNEY_DONE	Reached
+JOURNEY_NONE	Nothing followed was reached yet this run.

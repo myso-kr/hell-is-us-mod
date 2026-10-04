@@ -689,3 +689,22 @@ TRACK_TOGGLE_HINT	Takip et: haritada, pusulada ve oyunda kendi rengi, rotası ve
 GUIDE_AUTO_CARD	Otomatik rehber
 TRACK_IN_FOCUS	odakta
 QUESTS_FOLLOW_NOTE	Neye ihtiyaç duyduğunu görmek için göreve bas; rehberlik için Takip et, birden çok aynı anda.
+MAP_PREVIEW	Önizleme
+MAP_PRESETS	Hazır ayarlar
+PRESET_EXPLORE	Keşif
+PRESET_EXPLORE_HINT	Geniş mini harita (120 m), tüm katmanlar ve pusula: yol bulmak için.
+PRESET_COMBAT	Dövüş
+PRESET_COMBAT_HINT	Yakın (60 m), zemin soluk, simgeler büyük: düşmanlar öne çıkar.
+PRESET_MINIMAL	En az
+PRESET_MINIMAL_HINT	Yalnızca dış hatlar ve simgeler, görev takibi yok: oyunun üstünde en az şey.
+PRESET_PHOTO	Fotoğraf
+PRESET_PHOTO_HINT	Oyunun üstünde harita, pusula ya da takip yok: ekran görüntüsü için.
+OPS_MAP	Bölge haritası
+OPS_HINT	Ne olduğunu görmek için bir yerin üzerine gelin; takip etmek için basın.
+OPS_PRESS_TO_FOLLOW	Takip etmek için basın.
+OPS_PRESS_TO_DROP	Takipte: bırakmak için basın.
+OPS_RADIUS	Çevrende {m} m, büyük harita gibi
+JOURNEY	Yolculuk
+JOURNEY_THIS_RUN	panel açıldığından beri yürünen; bölgelere göre toplam:
+JOURNEY_DONE	Ulaşılanlar
+JOURNEY_NONE	Bu oturumda henüz takip edilen bir şeye ulaşılmadı.

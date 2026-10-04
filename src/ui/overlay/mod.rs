@@ -53,6 +53,9 @@ const FRAME_BIG: Duration = Duration::from_millis(30);
 const HERO_PX: usize = 176;
 const HERO_RADIUS_M: f32 = 120.0;
 const HERO_EVERY: Duration = Duration::from_secs(1);
+/// The Guide page's map (`Shared::ops`): its side (px), and how often it is drawn.
+const OPS_PX: usize = 400;
+const OPS_EVERY: Duration = Duration::from_millis(500);
 /// The Map page's preview: redrawn this often while the page shows, so a setting moved
 /// is seen at once.
 const PREVIEW_EVERY: Duration = Duration::from_millis(200);
@@ -134,7 +137,10 @@ pub fn run(shared: Arc<Shared>) {
     // What the maps show, kept between frames (hud::Shown, hud::Pinned).
     let (mut shown, mut pinned) = (hud::Shown::default(), hud::Pinned::default());
     let mut big_on = false;
-    let (mut hero_at, mut preview_at) = (Instant::now(), Instant::now());
+    let (mut hero_at, mut preview_at, mut ops_at) = (Instant::now(), Instant::now(), Instant::now());
+    // The routes as last worked out, for the Guide page's map (drawn while the panel, not
+    // the game, has the focus: the routes are worked out only in play).
+    let mut last_drawn: Vec<crate::raster::Drawn> = Vec::new();
     let mut map_cv = Canvas::new(MAP_PX as usize, MAP_PX as usize);
     let mut compass_cv = Canvas::new(COMPASS_W as usize, COMPASS_H as usize);
     // Without icons the map still works, with dots.
@@ -314,6 +320,46 @@ pub fn run(shared: Arc<Shared>) {
             }
         }
 
+        // The Guide page's map, while it shows: north up round the hero, as wide as the big
+        // map's radius, with what is followed in its colours and their routes.
+        if ops_at.elapsed() >= OPS_EVERY
+            && shared.visible.load(Ordering::SeqCst)
+            && shared.ops_wanted.load(Ordering::SeqCst)
+        {
+            ops_at = Instant::now();
+            if let (Some((p, yaw)), Some(world)) = (here, world.as_deref()) {
+                let view = View {
+                    center: p,
+                    yaw_deg: yaw,
+                    heading_up: false,
+                    scale: (OPS_PX as f32 / 2.0 - 14.0) / (state.big_radius_m * 100.0),
+                    north_deg: state.north_yaw,
+                    outline: false,
+                    full: false,
+                };
+                let relief = baking.relief(&state, p, &obstacles);
+                let goals = pinned.get(&goals, &state, world);
+                let mut cv = Canvas::new(OPS_PX, OPS_PX);
+                let dots = std::mem::replace(&mut state.dots, false);
+                draw_map(
+                    &mut cv,
+                    &state,
+                    world,
+                    &view,
+                    &things,
+                    icons.as_ref(),
+                    &footprints,
+                    &goals,
+                    &last_drawn,
+                    relief.as_deref(),
+                );
+                state.dots = dots;
+                let mut ops = shared.ops.lock().unwrap();
+                let n = ops.as_ref().map_or(0, |o| o.2) + 1;
+                *ops = Some((OPS_PX, cv.px, n, view));
+            }
+        }
+
         // The Map page's preview: the map the settings make now, the big map's when that
         // is the display (its opacity too), else the minimap's.
         if preview_at.elapsed() >= PREVIEW_EVERY
@@ -458,6 +504,7 @@ pub fn run(shared: Arc<Shared>) {
                     drawn.push(crate::raster::Drawn { id: f.id, path, colour: f.colour, focus: f.focus });
                 }
                 *shared.route_uncertain.lock().unwrap() = uncertain;
+                last_drawn = drawn.clone();
 
                 let relief = baking.relief(&state, p, &obstacles);
 

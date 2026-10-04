@@ -369,3 +369,15 @@ this screen.
 own now (`map_card(which)`), and so are the Guide page's map layers and pins (`marks_card(which)`):
 the columns even out (minimap | legend, keys | big map, terrain, opacity).
 
+**Col-span pages** (2026-10-05): the Guide and Map pages read as empty next to the Play pages
+(they are mostly settings). Both moved from masonry to `tw::spans`. What is *seen* is two columns
+wide, what is *done* is one: Guide = area map (2) | auto guide + followed (1, `tw::stack`),
+places in two columns (2) | layers (1), journey (2) | pins (1). Map = previews and presets (3),
+then minimap | big map | terrain + opacity, then legend (2) | keys (1). `tw::stack` puts several
+cards in one cell: rows `auto … 1fr`, so the last card fills the rest and no gap opens between
+them. The area map is drawn by the overlay (`Shared::ops`, 400 px, every 0.5 s, only while the
+Guide page shows) with the routes as last worked out; the panel keeps the `View` it was drawn
+with, so a pointer over the image projects back onto the places. The journey's "this run" is the
+trail's length less what it was when the panel first saw each world; its list is
+`MapState::done`, the follows that ended by themselves (not kept across runs).
+

@@ -8,7 +8,83 @@ const MINI_PREVIEW: f32 = 180.0;
 
 /// A preview frame the overlay made, as a texture kept in `slot` (made once, then set
 /// each new frame): its id and size.
-fn texture(
+/// A preset: a name, what it is for (the hover), how it sets the maps, and whether they
+/// are set so now.
+struct Preset {
+    name: &'static str,
+    hint: &'static str,
+    apply: fn(&mut crate::minimap::MapState),
+    is: fn(&crate::minimap::MapState) -> bool,
+}
+
+/// The Map page's presets: exploring (a wide minimap, every layer), a fight (close in, the
+/// ground faint, icons large), the least (outlines, icons only) and photos (nothing over the
+/// game). The rest of the settings are left as they are.
+const PRESETS: [Preset; 4] = [
+    Preset {
+        name: "PRESET_EXPLORE",
+        hint: "PRESET_EXPLORE_HINT",
+        apply: |s| {
+            (s.display, s.radius_m, s.mini_outline, s.opacity, s.icon_px) =
+                (crate::minimap::Display::Mini, 120.0, false, [100, 100, 100], 16);
+            s.compass = true;
+        },
+        is: |s| {
+            s.display == crate::minimap::Display::Mini
+                && s.radius_m == 120.0
+                && !s.mini_outline
+                && s.opacity == [100, 100, 100]
+                && s.icon_px == 16
+                && s.compass
+        },
+    },
+    Preset {
+        name: "PRESET_COMBAT",
+        hint: "PRESET_COMBAT_HINT",
+        apply: |s| {
+            (s.display, s.radius_m, s.mini_outline, s.opacity, s.icon_px) =
+                (crate::minimap::Display::Mini, 60.0, false, [40, 80, 100], 20);
+            s.compass = true;
+        },
+        is: |s| {
+            s.display == crate::minimap::Display::Mini
+                && s.radius_m == 60.0
+                && !s.mini_outline
+                && s.opacity == [40, 80, 100]
+                && s.icon_px == 20
+                && s.compass
+        },
+    },
+    Preset {
+        name: "PRESET_MINIMAL",
+        hint: "PRESET_MINIMAL_HINT",
+        apply: |s| {
+            (s.display, s.radius_m, s.mini_outline, s.opacity, s.icon_px) =
+                (crate::minimap::Display::Mini, 80.0, true, [0, 35, 100], 14);
+            s.tracker = false;
+        },
+        is: |s| {
+            s.display == crate::minimap::Display::Mini
+                && s.radius_m == 80.0
+                && s.mini_outline
+                && s.opacity == [0, 35, 100]
+                && s.icon_px == 14
+                && !s.tracker
+        },
+    },
+    Preset {
+        name: "PRESET_PHOTO",
+        hint: "PRESET_PHOTO_HINT",
+        apply: |s| {
+            s.display = crate::minimap::Display::Off;
+            s.compass = false;
+            s.tracker = false;
+        },
+        is: |s| s.display == crate::minimap::Display::Off && !s.compass && !s.tracker,
+    },
+];
+
+pub(super) fn texture(
     ctx: &egui::Context,
     slot: &mut Option<(u64, egui::TextureHandle)>,
     name: &str,
@@ -56,6 +132,65 @@ impl Panel {
         let big = self.shared.preview_big.lock().unwrap().clone();
         let big = texture(ctx, &mut self.preview_big_tex, "map-preview-big", big);
         (mini, big)
+    }
+
+    /// Both maps as they draw now, side by side (the overlay renders them while this page
+    /// shows), and the presets that set several of the settings below at once.
+    pub(super) fn preview_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
+        let (mini, big) = self.previews(&t.egui_ctx().clone());
+        card(t, tr!("MAP_PREVIEW"), |t| {
+            w(t, |ui| {
+                ui.horizontal_top(|ui| {
+                    let side = MINI_PREVIEW;
+                    ui.vertical(|ui| {
+                        ui.label(RichText::new(tr!("MINIMAP")).small().color(DIM));
+                        match mini {
+                            Some((id, _, _)) => {
+                                ui.add(egui::Image::new((id, egui::vec2(side, side))));
+                            }
+                            None => waiting(ui, egui::vec2(side, side)),
+                        }
+                    });
+                    ui.add_space(super::super::theme::BLOCK);
+                    ui.vertical(|ui| {
+                        ui.label(RichText::new(tr!("BIG_MAP")).small().color(DIM));
+                        // As it covers the game window: the window's shape, as tall as the
+                        // minimap's preview.
+                        let height = side;
+                        let width = ui.available_width();
+                        match big {
+                            Some((id, w, h)) => {
+                                let width = (height * w as f32 / h as f32).min(width);
+                                let size = egui::vec2(width, width * h as f32 / w as f32);
+                                let (r, _) = ui.allocate_exact_size(size, egui::Sense::hover());
+                                // The game is behind it in play: a dark ground stands in for it.
+                                ui.painter().rect_filled(
+                                    r,
+                                    super::super::theme::R_CONTROL,
+                                    super::super::theme::GROUND,
+                                );
+                                let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
+                                ui.painter().image(id, r, uv, Color32::WHITE);
+                            }
+                            None => waiting(ui, egui::vec2(width.min(height * 16.0 / 9.0), height)),
+                        }
+                    });
+                });
+            });
+            // The presets: one press sets the display, the radius, the layers and the icons.
+            t.style(tw::wrap(INLINE)).add(|t| {
+                w(t, |ui| ui.label(RichText::new(tr!("MAP_PRESETS")).color(DIM)));
+                for p in PRESETS {
+                    let on = (p.is)(state);
+                    if w(t, |ui| ui.selectable_label(on, crate::i18n::text(p.name)))
+                        .on_hover_text(crate::i18n::text(p.hint))
+                        .clicked()
+                    {
+                        (p.apply)(state);
+                    }
+                }
+            });
+        });
     }
 
     /// What each line and area on the maps is, as drawn with the settings now.
@@ -111,20 +246,21 @@ impl Panel {
             // Where to go: the guide, the places, and the pins the player drops to go back to.
             // The auto guide in the first column and what is followed in the last, whatever
             // their heights: following and letting go does not move the page about.
-            Some(Tool::Guide) => tw::masonry_pinned(
-                t,
-                "guide",
-                cols,
-                5,
-                |i| [Some(0), Some(usize::MAX), None, None, None][i],
-                |t, i| match i {
-                    0 => self.auto_card(t, guard, snap),
-                    1 => self.tracks_card(t, guard, snap),
-                    2 => self.goals_card(t, guard, snap),
-                    3 => self.marks_card(t, guard, snap, 0),
-                    _ => self.marks_card(t, guard, snap, 1),
-                },
-            ),
+            // What is seen two columns wide (the area's map, the places, the journey), what
+            // is done beside it (the auto guide and what is followed, the layers, the pins).
+            Some(Tool::Guide) => tw::spans(t, cols, &[2, 1, 2, 1, 2, 1], |t, i| match i {
+                0 => self.ops_card(t, guard, snap),
+                1 => {
+                    tw::stack(t, 2, |t| {
+                        self.auto_card(t, guard, snap);
+                        self.tracks_card(t, guard, snap);
+                    });
+                }
+                2 => self.goals_card(t, guard, snap),
+                3 => self.marks_card(t, guard, snap, 0),
+                4 => self.journey_card(t, guard, snap),
+                _ => self.marks_card(t, guard, snap, 1),
+            }),
             // What is known: the quests' clues, a clue looked up, and who still has more to tell.
             // Who has more to tell is where they are: with "where hidden things are".
             // The quest's clues two columns wide, the search beside; who has more to tell
@@ -175,15 +311,21 @@ impl Panel {
                     _ => self.secrets_card(t, snap),
                 })
             }
-            // How the maps look: nothing else.
-            // Each card on its own: the columns even out.
-            _ => tw::masonry(t, "map", cols, 6, |t, i| match i {
-                0 => self.map_card(t, guard, 0),
-                1 => self.legend_card(t, guard),
+            // How the maps look: both previews across the top with the presets, then the
+            // minimap's, the big map's and the terrain's settings side by side, the legend
+            // two columns wide with the keys beside it.
+            _ => tw::spans(t, cols, &[3, 1, 1, 1, 2, 1], |t, i| match i {
+                0 => self.preview_card(t, guard),
+                1 => self.map_card(t, guard, 0),
                 2 => self.map_card(t, guard, 2),
-                3 => self.keys_card(t, guard),
-                4 => self.map_card(t, guard, 1),
-                _ => self.map_card(t, guard, 3),
+                3 => {
+                    tw::stack(t, 2, |t| {
+                        self.map_card(t, guard, 1);
+                        self.map_card(t, guard, 3);
+                    });
+                }
+                4 => self.legend_card(t, guard),
+                _ => self.keys_card(t, guard),
             }),
         }
         if *guard != before {
@@ -195,18 +337,8 @@ impl Panel {
     /// map (2), the layers' opacity (3). Each a card of its own so the page's columns can
     /// even out (as one column of four, they made one column three times the others).
     pub(super) fn map_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, which: usize) {
-        let (mini, big) = if which == 0 || which == 2 { self.previews(&t.egui_ctx().clone()) } else { (None, None) };
         if which == 0 {
             card(t, tr!("MINIMAP"), |t| {
-                // As it draws now (the overlay renders it while this page shows).
-                w(t, |ui| {
-                    ui.vertical_centered(|ui| match mini {
-                        Some((id, _, _)) => {
-                            ui.add(egui::Image::new((id, egui::vec2(MINI_PREVIEW, MINI_PREVIEW))));
-                        }
-                        None => waiting(ui, egui::vec2(MINI_PREVIEW, MINI_PREVIEW)),
-                    })
-                });
                 field(t, tr!("DISPLAY"), |t| {
                     for d in crate::minimap::Display::ALL {
                         w(t, |ui| ui.selectable_value(&mut state.display, d, d.label()));
@@ -276,21 +408,6 @@ impl Panel {
 
         if which == 2 {
             card(t, tr!("BIG_MAP"), |t| {
-                // As it covers the game window now: as wide as the card, the window's shape.
-                w(t, |ui| {
-                    let width = ui.available_width();
-                    match big {
-                        Some((id, w, h)) => {
-                            let size = egui::vec2(width, width * h as f32 / w as f32);
-                            let (r, _) = ui.allocate_exact_size(size, egui::Sense::hover());
-                            // The game is behind it in play: a dark ground stands in for it.
-                            ui.painter().rect_filled(r, super::super::theme::R_CONTROL, super::super::theme::GROUND);
-                            let uv = egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0));
-                            ui.painter().image(id, r, uv, Color32::WHITE);
-                        }
-                        None => waiting(ui, egui::vec2(width, width * 0.42)),
-                    }
-                });
                 field(t, tr!("RADIUS"), |t| {
                     tw::slider(t, &mut state.big_radius_m, 50.0..=crate::minimap::RADIUS_MAX, 25.0, " m")
                 });

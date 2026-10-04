@@ -290,6 +290,22 @@ pub fn span<T>(tui: &mut Tui, n: u16, body: impl FnOnce(&mut Tui) -> T) -> T {
     .add(body)
 }
 
+/// Cards stacked in one grid cell: each as tall as its content, the last one taking the
+/// rest of the cell's height (so the stack ends level with its row's other cards, with no
+/// gap opening between the cards). `rows` is how many cards `body` adds.
+pub fn stack(tui: &mut Tui, rows: usize, body: impl FnOnce(&mut Tui)) {
+    use taffy::prelude::{auto, fr};
+    let mut template = vec![auto(); rows.saturating_sub(1)];
+    template.push(fr(1.0_f32));
+    tui.style(Style {
+        grid_template_rows: template,
+        align_items: Some(AlignItems::Stretch),
+        align_content: Some(taffy::AlignContent::Start),
+        ..col(GAP)
+    })
+    .add(body);
+}
+
 /// `col-span-full`: `style` as a grid item across every column.
 pub fn span_all(style: Style) -> Style {
     use taffy::prelude::line;

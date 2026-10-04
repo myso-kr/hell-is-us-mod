@@ -52,6 +52,8 @@ pub enum Request {
 
 /// A square frame the overlay made for the panel: (side, premultiplied pixels, counter).
 pub type Square = Option<(usize, Vec<u32>, u64)>;
+/// The Guide page's map: (side, pixels, counter, the view it was drawn with).
+pub type Ops = Option<(usize, Vec<u32>, u64, crate::minimap::View)>;
 /// A frame of any shape: (width, height, premultiplied pixels, counter).
 pub type Frame = Option<(usize, usize, Vec<u32>, u64)>;
 
@@ -100,6 +102,12 @@ pub struct Shared {
     /// overlay: the big map as it covers the game window now, made small for the same
     /// page — (width, height, pixels, counter).
     pub preview_big: Mutex<Frame>,
+    /// panel: the Guide page is showing, so the overlay draws `ops`.
+    pub ops_wanted: AtomicBool,
+    /// overlay: the Guide page's map: north up round the hero, as wide as the big map's
+    /// radius, with what is followed and its routes — (side, pixels, counter, the view it
+    /// was drawn with, for the panel to tell where a press is).
+    pub ops: Mutex<Ops>,
     /// hotkey: where the panel is — the player's place for it, kept across runs.
     pub pos: Mutex<Option<(i32, i32)>>,
     /// tray: its hidden window, once it exists; 0 after it is gone.
