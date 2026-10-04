@@ -132,6 +132,15 @@ impl Names {
         self.get(m, mem::read_u32(m, obj + NAME)?)
     }
 
+    /// The name an object carries with its number, as the editor writes it: FName `Foo`
+    /// with number 3 is `Foo_2` (number 0, none). `object` leaves the number out, so the
+    /// placements `Foo_1` and `Foo_2` of one blueprint read alike there.
+    pub fn object_full(&self, m: &dyn Memory, obj: u64) -> Option<String> {
+        let base = self.object(m, obj)?;
+        let number = mem::read_u32(m, obj + NAME + 4).unwrap_or(0);
+        Some(if number == 0 { base } else { format!("{base}_{}", number - 1) })
+    }
+
     /// The name of an object's class: `ATR_Loot`, `CharacterMovementComponent`.
     pub fn class(&self, m: &dyn Memory, obj: u64) -> Option<String> {
         let class = mem::read_u64(m, obj + CLASS).filter(|&p| mem::plausible(p))?;
@@ -505,6 +514,19 @@ mod tests {
         m.ptr(obj + CLASS, class);
         m.put(class + NAME, &(1u32 << 16).to_le_bytes());
         assert_eq!(n.class(&m, obj).as_deref(), Some("ATR_Loot_C"));
+    }
+
+    #[test]
+    fn a_full_name_carries_the_number() {
+        let m = image();
+        let n = Names::new(BASE + POOL_RVA);
+        let obj = 0x5000_0000u64;
+        m.put(obj, &[0; 0x20]);
+        m.put(obj + NAME, &(1u32 << 16).to_le_bytes());
+        assert_eq!(n.object_full(&m, obj).as_deref(), Some("ATR_Loot_C"));
+        m.put(obj + NAME + 4, &3u32.to_le_bytes());
+        assert_eq!(n.object(&m, obj).as_deref(), Some("ATR_Loot_C"));
+        assert_eq!(n.object_full(&m, obj).as_deref(), Some("ATR_Loot_C_2"));
     }
 
     #[test]

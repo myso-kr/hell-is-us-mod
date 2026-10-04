@@ -54,6 +54,8 @@ struct Guide {
     save: u64,
     /// What stands in the way: collision shapes, collected a slice per step.
     obstacles: Obstacles,
+    /// Where each NPC's conversation was last seen loaded, by flow (`Survey::goals`).
+    met: HashMap<String, String>,
 }
 
 impl Guide {
@@ -349,7 +351,13 @@ impl Attached {
                 saved: &g.saved,
                 talked: &g.goals.done_npcs,
             };
-            goals.extend(survey.goals(crate::survey::Survey::world_of(&world), &known, &g.goals.loaded, &g.fact_keys));
+            goals.extend(survey.goals(
+                crate::survey::Survey::world_of(&world),
+                &known,
+                &g.goals.loaded,
+                &g.fact_keys,
+                &mut g.met,
+            ));
         }
         Ok((goals, k))
     }

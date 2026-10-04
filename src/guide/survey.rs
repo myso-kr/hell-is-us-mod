@@ -36,6 +36,9 @@ pub struct Entry {
     /// Its save GUID, as the survey gives it — what tells taken from not.
     pub guid: Option<String>,
     pub npc: bool,
+    /// An NPC's conversation flow: one person, whichever of its placements the story has
+    /// put them at (Victor Gaz in the tunnel where he is met, then at the forge in Jova).
+    pub flow: Option<String>,
 }
 
 /// What is left at a place, against what the hero knows and holds.
@@ -337,6 +340,7 @@ impl Survey {
                 e.add_payload(&a["payload"]);
                 if let Some(flow) = a["flow"].as_str() {
                     e.npc = true;
+                    e.flow = Some(flow.to_string());
                     for p in flow_payloads(flow) {
                         e.add_payload(&p);
                     }
@@ -369,16 +373,28 @@ impl Survey {
 
     /// Goals in `world` that are not loaded (`loaded` names what is), with something
     /// still left. `quests` names a fact's main quest key, where known.
+    ///
+    /// A person is where their conversation was last seen loaded (`met`, by flow, kept
+    /// by the caller): their other placements are where the story had them before or
+    /// will later, and were pins to the wrong place (Victor Gaz's first meeting in the
+    /// tunnel, long after he moved to the forge).
     pub fn goals(
         &self,
         world: &str,
         k: &Known,
         loaded: &HashSet<String>,
         quests: &HashMap<String, String>,
+        met: &mut HashMap<String, String>,
     ) -> Vec<Goal> {
         let Some(list) = self.worlds.get(world) else { return Vec::new() };
+        for e in list.iter().filter(|e| loaded.contains(&e.name)) {
+            if let Some(f) = &e.flow {
+                met.insert(f.clone(), e.name.clone());
+            }
+        }
         list.iter()
             .filter(|e| !loaded.contains(&e.name))
+            .filter(|e| e.flow.as_ref().and_then(|f| met.get(f)).is_none_or(|at| *at == e.name))
             .filter_map(|e| {
                 let left = e.left(k);
                 if left.is_empty() {
@@ -681,6 +697,35 @@ mod tests {
             tags: tags.iter().map(|s| s.to_string()).collect(),
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn a_person_is_where_their_conversation_was_last_loaded() {
+        let talk = |name: &str, x: f32| Entry {
+            name: name.into(),
+            at: [x, 0.0, 0.0],
+            npc: true,
+            flow: Some("VictorGaz_ConvoRoot_FA".into()),
+            ..entry(&["Key_Item_DA"], &[], &[])
+        };
+        let survey = Survey {
+            worlds: HashMap::from([("W".to_string(), vec![talk("Tunnel_BP_2", 9000.0), talk("Forge_BP_2", 10.0)])]),
+            doors: Vec::new(),
+            puzzles: Vec::new(),
+        };
+        let none = HashSet::new();
+        let k = Known { facts: &none, tags: &none, held: &none, saved: &none, talked: &none };
+        let mut met = HashMap::new();
+        let at = |loaded: &[&str], met: &mut HashMap<String, String>| -> Vec<f32> {
+            let loaded: HashSet<String> = loaded.iter().map(|s| s.to_string()).collect();
+            survey.goals("W", &k, &loaded, &HashMap::new(), met).iter().map(|g| g.at[0]).collect()
+        };
+        // Not met yet: either placement may be where they are.
+        assert_eq!(at(&[], &mut met), [9000.0, 10.0]);
+        // Met at the forge: the live goal is the forge's; the tunnel is not shown.
+        assert_eq!(at(&["Forge_BP_2"], &mut met), Vec::<f32>::new());
+        // Gone out of reach again: the forge, where they were last seen.
+        assert_eq!(at(&[], &mut met), [10.0]);
     }
 
     #[test]

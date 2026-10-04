@@ -164,6 +164,16 @@ struct Payload {
     npc: bool,
 }
 
+/// An actor's name as the survey has it: see `refresh`.
+fn live_name(n: &Names, m: &dyn Memory, actor: u64) -> Option<String> {
+    let base = n.object(m, actor)?;
+    if base.contains("_UAID_") {
+        Some(base)
+    } else {
+        n.object_full(m, actor)
+    }
+}
+
 fn talked_path() -> std::path::PathBuf {
     crate::paths::data_dir().join("talked.txt")
 }
@@ -747,7 +757,10 @@ impl Goals {
                 if !npc && !interactable {
                     continue;
                 }
-                let name = self.names.remove(&actor).or_else(|| n.object(m, actor)).unwrap_or_default();
+                // Named as the survey names it (survey.rs `runtime_name`): a placed actor
+                // with its number (`Convo_Victor_Crafting_BP_2`; without it a loaded one went
+                // unrecognised and was shown twice), a World Partition one (`_UAID_`) without.
+                let name = self.names.remove(&actor).or_else(|| live_name(n, m, actor)).unwrap_or_default();
                 loaded.insert(name.clone());
                 names.insert(actor, name);
                 if npc {
