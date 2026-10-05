@@ -97,6 +97,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- The game view's route no longer flashes as the camera turns: its window covers the game's client
+  area, made once and never moved, instead of a window the band's size made again as it grew and
+  moved as it went; only the area drawn last and now is cleared and drawn.
 - A chain whose first thing is in another region (after Act 1, a key in Senedra Forest) guides to
   this region's exit as "To {region}: {it}". Its place, in that region's coordinates a kilometre
   down, was routed here and pulled the guide to the deepest floor — back to the forge's crypt. A

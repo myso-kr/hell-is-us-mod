@@ -29,8 +29,6 @@ const STEP: f32 = 50.0;
 const LIFT: f32 = 15.0;
 /// The last stretch before a point is not tested: the floor under it would hide it.
 const NEAR_END: f32 = 120.0;
-/// The window grows and shrinks in steps this big (px), not every frame.
-const BUCKET: i32 = 128;
 /// The layer's own pace: the camera turns between the overlay's frames (50 ms), and a band on the
 /// floor that lags the view by that much jerks.
 const PAINT_EVERY: Duration = Duration::from_millis(16);
@@ -92,6 +90,8 @@ pub struct ScreenRoute {
     /// The band's coverage per pixel (outline, core) and its core's colour: kept between
     /// frames, the canvas's size.
     cover: Vec<(u8, u8, [u8; 3])>,
+    /// Where the canvas was drawn last (client px): what the next frame clears.
+    drawn: Option<(i32, i32, i32, i32)>,
     /// Whether a point (on a 25 cm grid) is seen from the camera at `seen_eye`, as of `seen_at`.
     seen: HashMap<[i32; 3], bool>,
     seen_eye: [f32; 3],
@@ -107,6 +107,7 @@ impl Default for ScreenRoute {
             icons: Default::default(),
             icons_px: 0,
             cover: Vec::new(),
+            drawn: None,
             seen: HashMap::new(),
             seen_eye: [0.0; 3],
             seen_at: None,
@@ -348,16 +349,24 @@ impl ScreenRoute {
             self.hide();
             return;
         }
-        let (bw, bh) = (((x1 - x0) / BUCKET + 1) * BUCKET, ((y1 - y0) / BUCKET + 1) * BUCKET);
-        let (bw, bh) = (bw.min(w), bh.min(h));
-        if self.window.as_ref().is_none_or(|win| win.w != bw || win.h != bh) {
-            self.window = Layered::new_composed("hiumod-route", "Hell Is Us Route", bw, bh);
-            self.canvas = Canvas::new(bw as usize, bh as usize);
+        // One window over the whole client area, made once and never moved: a window the band's
+        // size, made again as it grew past a step and moved as it went, flashed as the camera
+        // turned (seen in play) — between a move and its picture, or a new window's first frame.
+        if self.window.as_ref().is_none_or(|win| win.w != w || win.h != h) {
+            self.window = Layered::new_composed("hiumod-route", "Hell Is Us Route", w, h);
+            self.canvas = Canvas::new(w as usize, h as usize);
+            self.drawn = None;
         }
         let Some(win) = self.window.as_mut() else { return };
-        self.canvas.clear();
-        let (ox, oy) = (x0 as f32, y0 as f32);
-        paint_band(&mut self.canvas, &mut self.cover, &segs, (ox, oy), colour);
+        // cleared where it was drawn last, drawn where it is now
+        if let Some(r) = self.drawn.take() {
+            clear_rect(&mut self.canvas, r);
+        }
+        let rect = (x0, y0, x1, y1);
+        clear_rect(&mut self.canvas, rect);
+        self.drawn = Some(rect);
+        let (ox, oy) = (0.0, 0.0);
+        paint_band(&mut self.canvas, &mut self.cover, &segs, rect, colour);
         // the far first, so the near sit on top
         for (p, sub, a, size) in marks.iter().rev() {
             let icons = match self.icons.entry(*size) {
@@ -370,7 +379,7 @@ impl ScreenRoute {
             let icon = icons.get(*sub);
             self.canvas.blit_alpha(p.0 - ox, p.1 - oy, icon.size, &icon.px, (a * 255.0) as u32);
         }
-        win.present(&self.canvas, left + x0, top + y0);
+        win.present(&self.canvas, left, top);
     }
 }
 
@@ -378,15 +387,29 @@ impl ScreenRoute {
 /// the piece's line: covered where it is within the half width there, the outline a little
 /// wider, every edge and joint smooth and round. Where pieces overlap the most covering wins,
 /// so joints are not drawn twice.
-fn paint_band(cv: &mut Canvas, cover: &mut Vec<(u8, u8, [u8; 3])>, segs: &[Seg], o: (f32, f32), colour: [u8; 3]) {
-    let (w, h) = (cv.w, cv.h);
+fn paint_band(
+    cv: &mut Canvas,
+    cover: &mut Vec<(u8, u8, [u8; 3])>,
+    segs: &[Seg],
+    rect: (i32, i32, i32, i32),
+    colour: [u8; 3],
+) {
+    // the rectangle of the canvas drawn in (px): the band's bounds
+    let (rx0, ry0) = (rect.0.max(0) as usize, rect.1.max(0) as usize);
+    let (rx1, ry1) = ((rect.2.max(0) as usize).min(cv.w), (rect.3.max(0) as usize).min(cv.h));
+    if rx1 <= rx0 || ry1 <= ry0 {
+        return;
+    }
+    let rw = rx1 - rx0;
     cover.clear();
-    cover.resize(w * h, (0, 0, [0; 3]));
+    cover.resize(rw * (ry1 - ry0), (0, 0, [0; 3]));
     for g in segs {
-        let (ax, ay, bx, by) = (g.a.0 - o.0, g.a.1 - o.1, g.b.0 - o.0, g.b.1 - o.1);
+        let (ax, ay, bx, by) = (g.a.0, g.a.1, g.b.0, g.b.1);
         let m = g.wa.max(g.wb) + OUTLINE_PX + 1.0;
-        let (px0, px1) = (((ax.min(bx) - m).floor().max(0.0)) as usize, ((ax.max(bx) + m).ceil() as usize).min(w));
-        let (py0, py1) = (((ay.min(by) - m).floor().max(0.0)) as usize, ((ay.max(by) + m).ceil() as usize).min(h));
+        let px0 = (((ax.min(bx) - m).floor().max(0.0)) as usize).max(rx0);
+        let px1 = ((ax.max(bx) + m).ceil().max(0.0) as usize).min(rx1);
+        let py0 = (((ay.min(by) - m).floor().max(0.0)) as usize).max(ry0);
+        let py1 = ((ay.max(by) + m).ceil().max(0.0) as usize).min(ry1);
         let (dx, dy) = (bx - ax, by - ay);
         let l2 = dx * dx + dy * dy;
         for y in py0..py1 {
@@ -415,7 +438,7 @@ fn paint_band(cv: &mut Canvas, cover: &mut Vec<(u8, u8, [u8; 3])>, segs: &[Seg],
                 }
                 let core = ((hw + 0.5 - d).clamp(0.0, 1.0) * alpha * 255.0) as u8;
                 let edge = ((hw + OUTLINE_PX + 0.5 - d).clamp(0.0, 1.0) * alpha * 0.55 * 255.0) as u8;
-                let c = &mut cover[y * w + x];
+                let c = &mut cover[(y - ry0) * rw + (x - rx0)];
                 c.0 = c.0.max(edge);
                 if core > c.1 {
                     c.1 = core;
@@ -424,9 +447,9 @@ fn paint_band(cv: &mut Canvas, cover: &mut Vec<(u8, u8, [u8; 3])>, segs: &[Seg],
             }
         }
     }
-    for y in 0..h {
-        for x in 0..w {
-            let (edge, core, rgb) = cover[y * w + x];
+    for y in ry0..ry1 {
+        for x in rx0..rx1 {
+            let (edge, core, rgb) = cover[(y - ry0) * rw + (x - rx0)];
             if edge > 0 {
                 cv.blend(x as i32, y as i32, crate::map::canvas::Rgba(0, 0, 0, 255), edge as f32 / 255.0);
             }
@@ -438,6 +461,16 @@ fn paint_band(cv: &mut Canvas, cover: &mut Vec<(u8, u8, [u8; 3])>, segs: &[Seg],
                     core as f32 / 255.0,
                 );
             }
+        }
+    }
+}
+
+/// Clear the rectangle `r` (px) of `cv`.
+fn clear_rect(cv: &mut Canvas, r: (i32, i32, i32, i32)) {
+    let (x0, x1) = (r.0.max(0) as usize, (r.2.max(0) as usize).min(cv.w));
+    for y in (r.1.max(0) as usize)..(r.3.max(0) as usize).min(cv.h) {
+        if x1 > x0 {
+            cv.px[y * cv.w + x0..y * cv.w + x1].fill(0);
         }
     }
 }
@@ -525,8 +558,17 @@ mod tests {
         let mut cv = Canvas::new(60, 30);
         let mut cover = Vec::new();
         // a piece along y = 15 from x 10 to 50, 4 px each side, seen, near (no fade to speak of)
-        let g = Seg { a: (10.0, 15.0), b: (50.0, 15.0), wa: 4.0, wb: 4.0, sa: 500.0, sb: 510.0, seen: true, kind: Piece::Band };
-        paint_band(&mut cv, &mut cover, &[g], (0.0, 0.0), [200, 100, 50]);
+        let g = Seg {
+            a: (10.0, 15.0),
+            b: (50.0, 15.0),
+            wa: 4.0,
+            wb: 4.0,
+            sa: 500.0,
+            sb: 510.0,
+            seen: true,
+            kind: Piece::Band,
+        };
+        paint_band(&mut cv, &mut cover, &[g], (0, 0, 60, 30), [200, 100, 50]);
         let alpha = |x: usize, y: usize| cv.px[y * 60 + x] >> 24;
         assert!(alpha(30, 15) > 150, "inside");
         let rim = alpha(30, 19);
