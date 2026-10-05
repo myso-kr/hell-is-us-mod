@@ -23,6 +23,7 @@ mod glide;
 mod hud;
 mod marker;
 mod route;
+mod screenroute;
 mod trace;
 
 use super::banner;
@@ -188,6 +189,9 @@ pub fn run(shared: Arc<Shared>) {
     // The target marked in the game's view (marker.rs).
     let mut marker_windows: Vec<Option<Layered>> = Vec::new();
     let mut marker_cv = Canvas::new(marker::W as usize, marker::H as usize);
+    // The route in focus on the game's view (screenroute.rs), at most this often.
+    let mut screen_route = screenroute::ScreenRoute::default();
+    let mut screen_route_at = Instant::now();
     let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
     let mut pen = Pen::new(tracker::W, tracker::H);
     let mut tracked: Option<Tracked> = None;
@@ -865,6 +869,22 @@ pub fn run(shared: Arc<Shared>) {
                         None => w.hide(),
                     }
                 }
+                // The route in focus laid on the floor in the game's view, hidden where the
+                // world hides it.
+                if screen_route_at.elapsed() >= Duration::from_millis(33) {
+                    screen_route_at = Instant::now();
+                    let route = shared.route3d.lock().unwrap().clone();
+                    match (cam.as_ref(), client) {
+                        (Some(cam), Some(c))
+                            if state.route && route.len() > 1 && consent.has(crate::settings::Consent::GUIDE) =>
+                        {
+                            let colour =
+                                followed.iter().find(|f| f.focus).and_then(|f| f.colour).unwrap_or([224, 177, 78]);
+                            screen_route.draw(cam, c, &route, &obstacles, colour);
+                        }
+                        _ => screen_route.hide(),
+                    }
+                }
 
                 if state.compass {
                     let pins = hud::compass_pins(&goals, &state, world, p, &drawn);
@@ -1032,6 +1052,7 @@ pub fn run(shared: Arc<Shared>) {
                     for w in marker_windows.iter().flatten() {
                         w.keep_on_top(panel);
                     }
+                    screen_route.keep_on_top(panel);
                 }
             }
             _ => {

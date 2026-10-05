@@ -412,3 +412,22 @@ ground and the underground at once:
 
 Drag turns, a right drag moves, the wheel zooms, a click picks the nearest place (its class, round and
 depth). Story round filters the places.
+
+## 17. The route on the game's view, hidden where the world hides it (2026-10-05)
+
+The user: the route over the game should be hidden where meshes hide it, as a game's own pathfinding
+line looks, and the 3D map should show the route in 3D (§16). The overlay cannot read the game's depth
+buffer, but it has the world's shape the routes use: the obstacles (convex outlines over height
+ranges, from the static meshes' collision) and the landscape. `overlay/screenroute.rs` samples the
+route in focus (`Shared::route3d`, with its heights) every 50 cm up to 80 m ahead and casts a line from
+the game's camera to each point, short of the point's own floor: hidden when it crosses an obstacle's
+prism (Cyrus–Beck clipping of the line against the outline, then its heights there against the
+obstacle's range) or, with neither end under the landscape, dips under it (underground the landscape is
+overhead everywhere, and walls and floors are obstacles). What is seen is laid on the floor as a 70 cm
+band in perspective, a brighter chevron every 3 m, fading ahead, in the route's colour. It is drawn
+into a click-through window over the band's bounds (in 128 px steps, not the whole screen), at most 30
+times a second, with the guide's consent and the route shown. Tests: a line through a box is clipped
+to it; a wall hides what is behind it but not what is seen over it.
+
+Limits: occlusion is as good as the obstacles: thin or skipped meshes (foliage, small props) do not
+hide the band, and moving doors are where the last pass of the objects saw them.
