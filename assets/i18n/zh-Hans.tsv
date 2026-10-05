@@ -827,3 +827,4 @@ SORT_INSPECT	可查看
 SORT_TIMELOOP	时间循环
 FULLSCREEN_HIDES_OVERLAYS	游戏正以独占全屏运行，地图和指南针无法显示在其上。请将游戏切换为无边框窗口。
 CTX_DOOR	这扇门（{door}）需要先完成：{steps}
+GRAPH_GO_TO_REGION	前往{region}：{what}

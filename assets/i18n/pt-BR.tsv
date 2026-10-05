@@ -827,3 +827,4 @@ SORT_INSPECT	Para examinar
 SORT_TIMELOOP	Loop temporal
 FULLSCREEN_HIDES_OVERLAYS	O jogo está em tela cheia exclusiva: os mapas e a bússola não podem aparecer por cima. Coloque o jogo em janela sem bordas.
 CTX_DOOR	Esta porta ({door}) abre depois de: {steps}
+GRAPH_GO_TO_REGION	Para {region}: {what}

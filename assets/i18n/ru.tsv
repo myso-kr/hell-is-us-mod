@@ -827,3 +827,4 @@ SORT_INSPECT	Осмотреть
 SORT_TIMELOOP	Временная петля
 FULLSCREEN_HIDES_OVERLAYS	Игра запущена в эксклюзивном полноэкранном режиме: карты и компас не могут отображаться поверх. Переключите игру в окно без рамки.
 CTX_DOOR	Эта дверь ({door}) откроется после: {steps}
+GRAPH_GO_TO_REGION	В {region}: {what}

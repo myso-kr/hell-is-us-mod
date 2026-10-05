@@ -84,6 +84,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- A chain whose first thing is in another region (after Act 1, a key in Senedra Forest) guides to
+  this region's exit as "To {region}: {it}". Its place, in that region's coordinates a kilometre
+  down, was routed here and pulled the guide to the deepest floor — back to the forge's crypt. A
+  goal 50 m above or below every floor that can be walked to now has no route at all.
+- The route in the game view and on the 3D map follows the floor: a point every 50 cm at the
+  navmesh's (or the ground's) height, not a straight line between corners that sank into stairs.
 - Routes take an elevator between its floors (graph.rs `lifts`, navmesh.rs `lifts`): the
   navmesh has no way between them, so a floor reached by one (the forge's crypt, 85 m down) had
   no route, and one was drawn straight up through the air instead.

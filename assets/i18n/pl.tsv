@@ -827,3 +827,4 @@ SORT_INSPECT	Do obejrzenia
 SORT_TIMELOOP	Pętla czasu
 FULLSCREEN_HIDES_OVERLAYS	Gra działa w trybie wyłącznego pełnego ekranu: mapy i kompas nie mogą się nad nią pojawić. Ustaw grę na okno bez ramki.
 CTX_DOOR	Te drzwi ({door}) otworzą się po: {steps}
+GRAPH_GO_TO_REGION	Do {region}: {what}

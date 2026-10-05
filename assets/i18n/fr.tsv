@@ -827,3 +827,4 @@ SORT_INSPECT	À examiner
 SORT_TIMELOOP	Boucle temporelle
 FULLSCREEN_HIDES_OVERLAYS	Le jeu est en plein écran exclusif : les cartes et la boussole ne peuvent pas s’afficher par-dessus. Passez le jeu en fenêtre sans bordure.
 CTX_DOOR	Cette porte ({door}) s’ouvre après : {steps}
+GRAPH_GO_TO_REGION	Vers {region} : {what}

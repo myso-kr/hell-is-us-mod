@@ -827,3 +827,4 @@ SORT_INSPECT	살펴볼 것
 SORT_TIMELOOP	타임 루프
 FULLSCREEN_HIDES_OVERLAYS	게임이 전용 전체화면으로 실행 중이라 지도와 나침반이 위에 보이지 않습니다. 게임 화면 모드를 테두리 없는 창(창 모드 전체화면)으로 바꿔 주세요.
 CTX_DOOR	이 문({door})은 다음을 먼저 해야 열립니다: {steps}
+GRAPH_GO_TO_REGION	{region}(으)로 이동: {what}

@@ -827,3 +827,4 @@ SORT_INSPECT	Para examinar
 SORT_TIMELOOP	Bucle temporal
 FULLSCREEN_HIDES_OVERLAYS	El juego está en pantalla completa exclusiva: los mapas y la brújula no pueden mostrarse encima. Pon el juego en ventana sin bordes.
 CTX_DOOR	Esta puerta ({door}) se abre tras: {steps}
+GRAPH_GO_TO_REGION	A {region}: {what}

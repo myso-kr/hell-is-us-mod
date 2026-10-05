@@ -1189,7 +1189,15 @@ impl Graph {
     /// chain is made a goal of its quest, so the guide goes there instead (a goal already
     /// there takes the quest on). A chain that ends in what no place gives (the story's
     /// scripts) leaves the goal as it is. Returns the chains, for the trace.
-    pub fn gate(&self, goals: &mut Vec<crate::goals::Goal>, world: &str, s: &State) -> Vec<(u64, Vec<String>)> {
+    /// `exit`: where the hero leaves `world` for another region (the APC's door, else a save
+    /// point): a chain whose first thing is in another region sends the hero there.
+    pub fn gate(
+        &self,
+        goals: &mut Vec<crate::goals::Goal>,
+        world: &str,
+        s: &State,
+        exit: Option<[f32; 3]>,
+    ) -> Vec<(u64, Vec<String>)> {
         use crate::goals::{Gate, Goal};
         let mut firsts: Vec<(usize, Goal, String)> = Vec::new();
         let mut chains = Vec::new();
@@ -1217,6 +1225,17 @@ impl Graph {
             }
         }
         for (first, of, text) in firsts {
+            // In another region: its place is in that region's coordinates, not this one's —
+            // routed here, it was pulled to the deepest floor (a crypt) as the nearest to a point
+            // a kilometre down (seen in play). The way there is this region's exit.
+            if self.nodes[first].world != world {
+                let Some(exit) = exit else { continue };
+                let step = self.away(goals, first, &of, &text, exit);
+                if let Some(g) = goals.iter_mut().find(|g| g.id == of.id) {
+                    g.first = Some(step);
+                }
+                continue;
+            }
             let step = self.step(goals, first, &of, &text);
             if let Some(g) = goals.iter_mut().find(|g| g.id == of.id) {
                 g.first = Some(step);
@@ -1227,6 +1246,40 @@ impl Graph {
 }
 
 impl Graph {
+    /// The first thing of a chain, in another region, made a goal at this region's exit: "To
+    /// {region}: {it}".
+    fn away(
+        &self,
+        goals: &mut Vec<crate::goals::Goal>,
+        first: usize,
+        of: &crate::goals::Goal,
+        text: &str,
+        exit: [f32; 3],
+    ) -> u64 {
+        use crate::goals::{Gate, Goal};
+        let n = &self.nodes[first];
+        let id = step_id(n) ^ 0x5a5a_0000;
+        if goals.iter().any(|g| g.id == id) {
+            return id;
+        }
+        let region = crate::i18n::place(crate::survey::Survey::world_of(&n.world));
+        goals.push(Goal {
+            tier: of.tier,
+            id,
+            label: trf!("GRAPH_GO_TO_REGION", region = region, what = label(n)),
+            detail: trf!("GRAPH_STEP_FOR", chain = text),
+            at: exit,
+            quests: of.quests.clone(),
+            tags: of.tags.clone(),
+            keys: of.keys.clone(),
+            gate: Gate::Open,
+            named: true,
+            reveals: of.reveals,
+            first: None,
+        });
+        id
+    }
+
     /// The first thing of a chain made a goal of `of`'s quest (or a goal already there
     /// taking its quest on).
     fn step(&self, goals: &mut Vec<crate::goals::Goal>, first: usize, of: &crate::goals::Goal, text: &str) -> u64 {

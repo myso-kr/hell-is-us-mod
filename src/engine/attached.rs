@@ -524,7 +524,14 @@ impl Attached {
                 }
                 None => {
                     if steps {
-                        crate::prof::timed("graph.gate", || graph.gate(&mut goals, w, &state));
+                        // The way out to another region: the APC's door, else a save point.
+                        let exits = survey.exits(w);
+                        let exit = exits
+                            .iter()
+                            .find(|(s, _)| *s == crate::actors::Sub::Apc)
+                            .or_else(|| exits.first())
+                            .map(|(_, at)| *at);
+                        crate::prof::timed("graph.gate", || graph.gate(&mut goals, w, &state, exit));
                         // Under deadly water now: held back, the drain's chain guided to instead.
                         crate::prof::timed("graph.flood", || graph.flood(&mut goals, w, &done.pools, &state));
                     }
