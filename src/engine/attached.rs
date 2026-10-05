@@ -13,9 +13,14 @@ const ABSENT_NEAR: f32 = 4000.0;
 const ABSENT_HEIGHT: f32 = 1000.0;
 const ABSENT_AFTER: Duration = Duration::from_secs(6);
 
-/// A navmesh made with ways through opened doors: the mesh it was made from, the doors,
-/// and the result.
-type Bridged = (Arc<crate::navmesh::NavMesh>, Vec<[f32; 3]>, Arc<crate::navmesh::NavMesh>);
+/// The navmesh as routes use it: made from `from`, through the doors `opened`, one way
+/// through the shut one-sided doors `one_way`.
+struct Bridged {
+    from: Arc<crate::navmesh::NavMesh>,
+    opened: Vec<([f32; 3], Option<[f32; 3]>)>,
+    one_way: Vec<[[f32; 3]; 2]>,
+    mesh: Arc<crate::navmesh::NavMesh>,
+}
 
 pub struct Attached {
     pub game: Game,
@@ -48,9 +53,11 @@ struct Guide {
     quests: crate::quests::Quests,
     /// The game's navmesh, read a little at a time.
     nav: crate::navmesh::Nav,
-    /// Where the doors of the hero's world it has opened stand (graph.rs `opened`), and
-    /// the navmesh with a way through each, for the mesh it was made from.
-    opened: Vec<[f32; 3]>,
+    /// The doors of the hero's world it can pass (graph.rs `passable`), and the navmesh
+    /// with a way through each, for the mesh it was made from.
+    opened: Vec<([f32; 3], Option<[f32; 3]>)>,
+    /// The shut one-sided doors of the hero's world and the side each opens from.
+    one_way: Vec<[[f32; 3]; 2]>,
     bridged: Option<Bridged>,
     /// The survey of every world (Mods\survey), read once; and what the hero knows and
     /// holds by name, to judge it with — renewed with the knowledge.
@@ -427,7 +434,8 @@ impl Attached {
                 graph.flood(&mut goals, w, &pools, &state);
             }
             g.logic_puzzles = graph.logic_puzzles(w, &state);
-            g.opened = graph.opened(w, &state);
+            g.opened = graph.passable(w, &state);
+            g.one_way = graph.one_way(w, &state);
             g.doors = if steps { graph.door_steps(&goals, w, &state) } else { Vec::new() };
         }
         Ok((goals, k))
@@ -690,21 +698,23 @@ impl Attached {
             .collect()
     }
 
-    /// The navmesh as last read, with a way through each door opened (shared; made anew
-    /// only when the mesh or the opened doors change).
+    /// The navmesh as last read, with a way through each door opened and one way only
+    /// through each one-sided door still shut (shared; made anew only when the mesh or the
+    /// doors change).
     pub fn nav(&self) -> Arc<crate::navmesh::NavMesh> {
         let mut g = self.guide.borrow_mut();
         let base = g.nav.done.clone();
-        if g.opened.is_empty() {
+        if g.opened.is_empty() && g.one_way.is_empty() {
             return base;
         }
-        if let Some((from, doors, mesh)) = &g.bridged {
-            if Arc::ptr_eq(from, &base) && *doors == g.opened {
-                return mesh.clone();
+        if let Some(b) = &g.bridged {
+            if Arc::ptr_eq(&b.from, &base) && b.opened == g.opened && b.one_way == g.one_way {
+                return b.mesh.clone();
             }
         }
-        let mesh = Arc::new(base.bridged(&g.opened));
-        g.bridged = Some((base, g.opened.clone(), mesh.clone()));
+        let mesh = Arc::new(base.bridged(&g.opened).one_way(&g.one_way));
+        g.bridged =
+            Some(Bridged { from: base, opened: g.opened.clone(), one_way: g.one_way.clone(), mesh: mesh.clone() });
         mesh
     }
 

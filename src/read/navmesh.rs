@@ -35,6 +35,11 @@ const POLY: usize = 32;
 const EXTERNAL: u16 = 0x8000;
 /// Two border edges are one portal when their heights differ by less than this (cm).
 const STEP: f32 = 60.0;
+/// A goal this near a floor that can be walked to (cm across), this far above it at most
+/// or this far below, is reached from that floor (`floor_under`).
+const SNAP: f32 = 300.0;
+const SNAP_BELOW: f32 = 800.0;
+const SNAP_ABOVE: f32 = 150.0;
 /// The lookup grid's cell (cm).
 const BUCKET: f32 = 1000.0;
 /// A point finds its poly within this far from above (cm), and this far up or down.
@@ -124,6 +129,19 @@ fn flat(a: [f32; 3], b: [f32; 3]) -> f32 {
     (a[0] - b[0]).hypot(a[1] - b[1])
 }
 
+/// How far `p` is from the outline of a poly, across (cm).
+fn outline_distance(corners: &[[f32; 3]], p: [f32; 3]) -> f32 {
+    (0..corners.len())
+        .map(|k| {
+            let (a, b) = (corners[k], corners[(k + 1) % corners.len()]);
+            let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
+            let len = dx * dx + dy * dy;
+            let t = if len > 0.0 { (((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len).clamp(0.0, 1.0) } else { 0.0 };
+            (p[0] - (a[0] + t * dx)).hypot(p[1] - (a[1] + t * dy))
+        })
+        .fold(f32::INFINITY, f32::min)
+}
+
 fn dist(a: [f32; 3], b: [f32; 3]) -> f32 {
     ((a[0] - b[0]).powi(2) + (a[1] - b[1]).powi(2) + (a[2] - b[2]).powi(2)).sqrt()
 }
@@ -140,7 +158,12 @@ impl NavMesh {
         let mut mesh = NavMesh::default();
         // Border edges waiting for a partner: (poly, a, b).
         let mut border: Vec<(u32, [f32; 3], [f32; 3])> = Vec::new();
+        // The same tile comes from more than one chunk (every one, twice or more): once.
+        let mut seen = std::collections::HashSet::new();
         for raw in tiles {
+            if raw.len() >= 0x10 && !seen.insert((u16_at(raw, 2), &raw[8..16])) {
+                continue;
+            }
             let Some(t) = parse(raw) else { continue };
             let base = mesh.polys.len() as u32;
             for (corners, _) in &t.polys {
@@ -355,12 +378,33 @@ impl NavMesh {
                     .min_by(|&i, &j| score(self.polys[i].centre).total_cmp(&score(self.polys[j].centre)))?;
                 let pn = self.polys[near].centre;
                 let (mut path, mut heights) = self.walk(s, near as u32, pa, pn)?;
+                // Within reach from a floor it can walk to: the goal is reached, not through
+                // something. A lever on a wall, a mechanism up high, an item on a shelf: the
+                // goal's point is not on the floor, or on a scrap of navmesh of its own.
+                let reached = self.floor_under(b, &reach);
                 path.points.push([b[0], b[1]]);
-                path.through.push(true);
+                path.through.push(!reached);
                 heights.push(b[2]);
                 Some((path, heights))
             }
         }
+    }
+
+    /// Whether a floor of `reach` lies within `SNAP` across of `b`, at most `SNAP_BELOW`
+    /// below it or `SNAP_ABOVE` above it: the goal can be reached from there.
+    fn floor_under(&self, b: [f32; 3], reach: &[bool]) -> bool {
+        let (cx, cy) = cell(b[0], b[1]);
+        (cy - 1..=cy + 1).any(|y| {
+            (cx - 1..=cx + 1).any(|x| {
+                self.grid.get(&(x, y)).into_iter().flatten().any(|&i| {
+                    let p = &self.polys[i as usize];
+                    let dz = b[2] - p.centre[2];
+                    reach[i as usize]
+                        && (-SNAP_ABOVE..=SNAP_BELOW).contains(&dz)
+                        && outline_distance(&p.corners, b) <= SNAP
+                })
+            })
+        })
     }
 
     /// Whether `t` can be walked to from `s`.
@@ -535,22 +579,26 @@ const BRIDGE: f32 = 300.0;
 const BRIDGE_UPDOWN: f32 = 200.0;
 
 impl NavMesh {
-    /// The mesh with a way through each of `doors` (where opened doors stand). The navmesh
-    /// is the game's baked one: a door closed when it was baked is a wall in it for good,
-    /// and a route would keep going round after the door is opened. Near each door, the
-    /// polys fall in groups joined among themselves; the group nearest the door is joined
-    /// to each other group through the door's point. Where the two sides were joined
-    /// already, nothing changes.
-    pub fn bridged(&self, doors: &[[f32; 3]]) -> NavMesh {
+    /// The mesh with a way through each of `doors`: where a door the hero can pass stands,
+    /// and for a one-sided door still shut, the side it opens from. The navmesh is the
+    /// game's baked one, and every door is closed in it: a wall for good, opened or not
+    /// (ROUTES.md §9). Near each door, the polys fall in groups joined among themselves;
+    /// the group nearest the door is joined to each other group through the door's point —
+    /// for a one-sided door, not from its locked side to its open side. Where the two sides
+    /// were joined already, nothing changes.
+    pub fn bridged(&self, doors: &[([f32; 3], Option<[f32; 3]>)]) -> NavMesh {
         let mut out = self.clone();
-        for &d in doors {
+        for &(d, from) in doors {
+            // Which side of a one-sided door a point is: < 0 its locked side.
+            let side =
+                |p: [f32; 3]| from.map_or(0.0, |o| (p[0] - d[0]) * (o[0] - d[0]) + (p[1] - d[1]) * (o[1] - d[1]));
             let (cx, cy) = cell(d[0], d[1]);
             let mut near: Vec<u32> = Vec::new();
             for y in cy - 1..=cy + 1 {
                 for x in cx - 1..=cx + 1 {
                     for &i in out.grid.get(&(x, y)).into_iter().flatten() {
                         let p = &out.polys[i as usize];
-                        let close = p.corners.iter().chain([&p.centre]).any(|c| flat(*c, d) <= BRIDGE);
+                        let close = outline_distance(&p.corners, d) <= BRIDGE;
                         if close && (p.centre[2] - d[2]).abs() <= BRIDGE_UPDOWN && !near.contains(&i) {
                             near.push(i);
                         }
@@ -592,6 +640,9 @@ impl NavMesh {
             let (_, hub) = ends[0];
             for &(_, other) in &ends[1..] {
                 for (a, b) in [(hub, other), (other, hub)] {
+                    if side(out.polys[a as usize].centre) < 0.0 && side(out.polys[b as usize].centre) > 0.0 {
+                        continue;
+                    }
                     let z = out.polys[a as usize].centre[2];
                     let gate = [d[0], d[1], z];
                     out.polys[a as usize].links.push((b, [gate, gate]));
@@ -599,6 +650,47 @@ impl NavMesh {
             }
         }
         out
+    }
+}
+
+/// How near a shut one-sided door a portal must be to be the way through it (cm, across;
+/// and up or down).
+const ONE_WAY_NEAR: f32 = 200.0;
+
+impl NavMesh {
+    /// The mesh with each of `doors` (where a shut one-sided door stands, and the side it
+    /// opens from) passable one way only: from the side it opens from. A portal near the
+    /// door from a poly on its locked side to one on its open side is dropped, so a route
+    /// from the locked side goes round, or ends short where there is no way round.
+    pub fn one_way(mut self, doors: &[[[f32; 3]; 2]]) -> NavMesh {
+        let centres: Vec<[f32; 3]> = self.polys.iter().map(|p| p.centre).collect();
+        for &[at, from] in doors {
+            // Which side of the door a point is: > 0 the side it opens from.
+            let side = |p: [f32; 3]| (p[0] - at[0]) * (from[0] - at[0]) + (p[1] - at[1]) * (from[1] - at[1]);
+            let (cx, cy) = cell(at[0], at[1]);
+            let mut near: Vec<u32> = Vec::new();
+            for y in cy - 1..=cy + 1 {
+                for x in cx - 1..=cx + 1 {
+                    near.extend(self.grid.get(&(x, y)).into_iter().flatten().copied());
+                }
+            }
+            near.sort_unstable();
+            near.dedup();
+            for u in near {
+                let cu = self.polys[u as usize].centre;
+                if side(cu) >= 0.0 {
+                    continue;
+                }
+                self.polys[u as usize].links.retain(|&(v, [e0, e1])| {
+                    let mid = [(e0[0] + e1[0]) / 2.0, (e0[1] + e1[1]) / 2.0, (e0[2] + e1[2]) / 2.0];
+                    let through = flat(mid, at) <= ONE_WAY_NEAR
+                        && (mid[2] - at[2]).abs() <= ONE_WAY_NEAR
+                        && side(centres[v as usize]) > 0.0;
+                    !through
+                });
+            }
+        }
+        self
     }
 }
 
@@ -706,25 +798,49 @@ mod tests {
         // Two rooms, 0..100 and 140..240 along Recast x, a closed door's gap between.
         let v = [
             [0.0, 0.0, 0.0],
-            [100.0, 0.0, 0.0],
-            [100.0, 0.0, 100.0],
-            [0.0, 0.0, 100.0],
-            [140.0, 0.0, 0.0],
-            [240.0, 0.0, 0.0],
-            [240.0, 0.0, 100.0],
-            [140.0, 0.0, 100.0],
+            [1000.0, 0.0, 0.0],
+            [1000.0, 0.0, 1000.0],
+            [0.0, 0.0, 1000.0],
+            [1400.0, 0.0, 0.0],
+            [2400.0, 0.0, 0.0],
+            [2400.0, 0.0, 1000.0],
+            [1400.0, 0.0, 1000.0],
         ];
         let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0, 0, 0, 0]), (&[4, 5, 6, 7], &[0, 0, 0, 0])])]);
-        let (a, b) = ([-50.0, -50.0, 0.0], [-190.0, -50.0, 0.0]);
+        let (a, b) = ([-500.0, -500.0, 0.0], [-1900.0, -500.0, 0.0]);
         // Shut: the way stops short and is marked as through something.
         assert!(mesh.route(a, b).is_some_and(|(p, _)| p.uncertain()));
         // Opened (the door in the gap, Unreal (−120, −50)): walked through.
-        let open = mesh.bridged(&[[-120.0, -50.0, 0.0]]);
+        let open = mesh.bridged(&[([-1200.0, -500.0, 0.0], None)]);
         let (path, _) = open.route(a, b).expect("joined");
         assert!(!path.uncertain());
-        assert!(path.points.iter().any(|q| (q[0] + 120.0).abs() < 1.0));
+        assert!(path.points.iter().any(|q| (q[0] + 1200.0).abs() < 10.0));
         // A door where the sides are joined already changes nothing.
-        assert_eq!(open.bridged(&[[-120.0, -50.0, 0.0]]).polys[0].links.len(), open.polys[0].links.len());
+        assert_eq!(open.bridged(&[([-1200.0, -500.0, 0.0], None)]).polys[0].links.len(), open.polys[0].links.len());
+        // Shut and one-sided, opening from the far room (Unreal x < −120): one way.
+        let one = mesh.bridged(&[([-1200.0, -500.0, 0.0], Some([-1700.0, -500.0, 0.0]))]);
+        assert!(one.route(b, a).is_some_and(|(p, _)| !p.uncertain()), "from the side it opens from");
+        assert!(one.route(a, b).is_some_and(|(p, _)| p.uncertain()), "not from its locked side");
+    }
+
+    #[test]
+    fn a_shut_one_sided_door_lets_through_from_its_open_side_only() {
+        // Two rooms joined across Recast x = 100; the door there, opening from x > 100
+        // (Unreal x < −100).
+        let v = [
+            [0.0, 0.0, 0.0],
+            [1000.0, 0.0, 0.0],
+            [1000.0, 0.0, 1000.0],
+            [0.0, 0.0, 1000.0],
+            [2000.0, 0.0, 0.0],
+            [2000.0, 0.0, 1000.0],
+        ];
+        let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0, 2, 0, 0]), (&[1, 4, 5, 2], &[0, 0, 0, 1])])]);
+        let door = [[-1000.0, -500.0, 0.0], [-1500.0, -500.0, 0.0]];
+        let shut = mesh.one_way(&[door]);
+        let (locked, open) = ([-500.0, -500.0, 0.0], [-1500.0, -500.0, 0.0]);
+        assert!(shut.route(open, locked).is_some_and(|(p, _)| !p.uncertain()), "from the side it opens from");
+        assert!(shut.route(locked, open).is_some_and(|(p, _)| p.uncertain()), "not from the locked side");
     }
 
     #[test]

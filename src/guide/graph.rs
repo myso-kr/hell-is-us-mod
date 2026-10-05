@@ -628,18 +628,43 @@ pub struct DoorStep {
     pub goal: crate::goals::Goal,
     /// The chain, first thing first ("the owl key → the door").
     pub chain: String,
+    /// A one-sided door: the side it opens from. From the other side its step is not one
+    /// to take up (the overlay).
+    pub opens_from: Option<[f32; 3]>,
 }
 
 impl Graph {
-    /// Where the doors and gates of `world` the hero has opened stand: ways the game's
-    /// baked navmesh does not know (navmesh.rs `bridged`).
-    pub fn opened(&self, world: &str, s: &State) -> Vec<[f32; 3]> {
+    /// The doors and gates of `world` the hero can pass: where each stands, and for a
+    /// one-sided door still shut the side it opens from (navmesh.rs `bridged`). The game's
+    /// navmesh has every door closed, so these are ways it does not know: one opened, one
+    /// that opens with nothing more than a press (or whose needs are met now), and a
+    /// one-sided door from the side it opens from. A door that needs something not had
+    /// yet (a key, a lever, a puzzle) is a wall until it does.
+    pub fn passable(&self, world: &str, s: &State) -> Vec<([f32; 3], Option<[f32; 3]>)> {
         (0..self.nodes.len())
-            .filter(|&i| {
+            .filter_map(|i| {
                 let n = &self.nodes[i];
-                n.world == world && (n.class.contains("Door") || n.class.contains("Gate")) && self.used(i, s)
+                if n.world != world || !(n.class.contains("Door") || n.class.contains("Gate")) {
+                    return None;
+                }
+                if self.used(i, s) {
+                    return Some((n.at, None));
+                }
+                if let Some(from) = n.opens_from {
+                    return Some((n.at, Some(from)));
+                }
+                // Openable now: its chain is itself.
+                (!n.scripted && self.chain(i, s).is_some_and(|c| c == [i])).then_some((n.at, None))
             })
-            .map(|i| self.nodes[i].at)
+            .collect()
+    }
+
+    /// The one-sided doors of `world` still shut: where each stands and the side it opens
+    /// from (navmesh.rs `one_way`).
+    pub fn one_way(&self, world: &str, s: &State) -> Vec<[[f32; 3]; 2]> {
+        (0..self.nodes.len())
+            .filter(|&i| self.nodes[i].world == world && !self.used(i, s))
+            .filter_map(|i| Some([self.nodes[i].at, self.nodes[i].opens_from?]))
             .collect()
     }
 }
@@ -689,7 +714,7 @@ impl Graph {
                     reveals: Default::default(),
                 },
             };
-            out.push(DoorStep { at: n.at, label: label(n), goal, chain: text });
+            out.push(DoorStep { at: n.at, label: label(n), goal, chain: text, opens_from: n.opens_from });
         }
         out
     }
@@ -1160,7 +1185,9 @@ mod tests {
         let used: HashSet<String> = ["d1".to_string()].into();
         let s = State { used: &used, known: &none, held: &none };
         assert!(g.door_steps(&[], "W", &s).is_empty());
-        assert_eq!(g.opened("W", &s), [[0.0, 0.0, 0.0]]);
+        assert_eq!(g.passable("W", &s), [([0.0, 0.0, 0.0], None)]);
+        let s = State { used: &none, known: &none, held: &none };
+        assert_eq!(g.passable("W", &s), [([0.0, 0.0, 0.0], Some([-150.0, 0.0, 100.0]))], "shut: one way");
     }
 
     #[test]

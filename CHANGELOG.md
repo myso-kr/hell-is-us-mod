@@ -37,7 +37,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
-- After a door is opened, routes go through it: the game's navmesh was baked with it closed.
+- Routes no longer read as blocked behind every door. The game's navmesh has every door closed, so
+  "blocked" meant behind any door at all, and a way round through an ordinary door was never found.
+  Doors that open with a press (or whose needs are met), opened doors, and one-sided doors from the
+  side they open from are now passable; only a door that needs something not had yet blocks. A goal
+  on a wall or up high is reached from the floor below it. A one-sided door is never routed through
+  from its locked side. `hiumod doctor nav` writes the loaded navmesh for looking into.
 - The auto guide no longer flickers between two goals: a goal found blocked is remembered after its
   route is dropped. When every way from where the hero stands reads as blocked (a porch inside a
   building's rough hull), the spot is distrusted instead of guiding down to a key underground.

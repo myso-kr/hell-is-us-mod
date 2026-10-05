@@ -215,3 +215,44 @@ group nearest the door is joined to each other one through the door's point (a o
 Where the sides were joined already, nothing is added. `Attached::nav` makes the bridged mesh only
 when the mesh or the opened doors change. Test: `an_opened_door_joins_the_two_sides`. A fresh route
 that no longer goes through something replaces the old one at once (`pathfind::better`).
+
+## 9. What "blocked" meant, audited (2026-10-05)
+
+The user: at a one-sided door there was surely a way round, but the guide only said the way was
+blocked; audit what counts as blocked over the whole data and put it right.
+
+A route is "through something" (`Path::uncertain`) when the navmesh cannot join the hero's poly to
+the goal's: it walks to the nearest reachable poly and draws the last leg as through. So "blocked"
+is exactly navmesh connectivity. `hiumod doctor nav` writes every loaded tile
+(`Mods\doctor\navtiles.bin`, each tile's length and its raw Detour data) to look into offline. At the
+Lymbic Forge (LakeCynon, 28 chunk actors):
+
+| Measured | Finding |
+|---|---|
+| Tiles | 3624 records of 1794 tiles: every tile comes from two or more chunks (1310 groups byte-identical). Harmless to joining, double the work; now read once each. |
+| Off-mesh links (ladders, drops) | none in any tile: not a cause. |
+| Tile borders | every border edge finds a partner; the refusals are other floors. Not a cause. |
+| Components | 1679 pieces (1124 a single poly). The hero's corridor: 82 polys. |
+| Between the pieces | gaps of 1.3–1.5 m, each at a door: the navmesh is baked with **every door closed**, ordinary two-way doors included. |
+
+So "blocked" meant "behind any door the save does not have as used". The corridor's three ways out
+were a two-way door with no condition (the way round the user meant) and two one-sided doors. Joining
+the pieces through doors, as below, took what can be walked to from the hero from 82 polys to 1627, and
+the spokes gear became reachable the way round.
+
+The rule now (`Graph::passable`, `NavMesh::bridged`):
+
+- A door or gate is passable when used, or when nothing more than a press opens it (its chain is
+  itself: no condition, or its needs met now).
+- A one-sided door still shut is passable one way, from the side it opens from (`opens_from`); a
+  portal the bake left through it from the locked side is dropped (`one_way`).
+- A door that needs something not had yet (a key, a lever, a puzzle) stays a wall: that is what
+  "blocked" means now, and what the barrier steps (GRAPH.md §9) go to.
+- Polys near a door are found by their outline (a big floor poly's corners can all be far from the
+  door it touches).
+- A goal within 3 m across of a floor that can be walked to, at most 8 m above it or 1.5 m below, is
+  reached from there (`floor_under`): a lever on a wall, a mechanism up high, a receiver on a scrap of
+  navmesh of its own (two such at the forge read as blocked before).
+
+What stays blocked at the forge with every door open is real: the large gear and the W wrath rod under
+the unsolved flood (4.9 m down), the W fear rod 12 m down (the lift).

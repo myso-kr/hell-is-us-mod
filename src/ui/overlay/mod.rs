@@ -268,6 +268,8 @@ pub fn run(shared: Arc<Shared>) {
     let mut door_seen = Instant::now() - Duration::from_secs(60);
     // The step the guide took up for a barrier on its way, kept among the goals until done.
     let mut door_step: Option<crate::goals::Goal> = None;
+    // The one-sided door last noted as seen from its locked side (once in the trace).
+    let mut one_way_noted: Option<u64> = None;
     let mut missing = std::collections::HashMap::new();
     let mut baking = bake::Baking::default();
     let mut saved = Instant::now();
@@ -686,6 +688,29 @@ pub fn run(shared: Arc<Shared>) {
                             // would take turns.
                             through = barrier_on(&path, &doors)
                                 .filter(|d| d.goal.id != f.id && !blocked_seen.contains_key(&d.goal.id))
+                                .filter(|d| {
+                                    // A one-sided door from its locked side: not the way.
+                                    let locked = d.opens_from.is_some_and(|o| {
+                                        (p[0] - d.at[0]) * (o[0] - d.at[0]) + (p[1] - d.at[1]) * (o[1] - d.at[1]) < 0.0
+                                    });
+                                    // Blocked for real, not a closed spot: the rule for those
+                                    // stays off while it is seen.
+                                    if locked {
+                                        door_seen = Instant::now();
+                                    }
+                                    if locked && one_way_noted != Some(d.goal.id) {
+                                        one_way_noted = Some(d.goal.id);
+                                        tracer.note_event(
+                                            &format!(
+                                                "{} opens from the other side only: not guided through it from here",
+                                                d.label
+                                            ),
+                                            world,
+                                            p,
+                                        );
+                                    }
+                                    !locked
+                                })
                                 .cloned();
                         }
                     }

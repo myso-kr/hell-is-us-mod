@@ -593,6 +593,27 @@ fn probe(args: &[String]) -> R {
             log!("{}", trf!("OF_PLACES_NOW_HOLD", kept = kept.len(), all = text.lines().count(), v = v));
             save("scan.txt", &kept.join("\n"))
         }
+        Some("nav") => {
+            // Every loaded navmesh tile as the game has it, for looking into offline: each
+            // tile's length (u32 LE) and its raw Detour data (navmesh.rs, ROUTES.md §9).
+            let actors: Vec<u64> = objects
+                .all(m)
+                .into_iter()
+                .filter(|&o| n.class(m, o).as_deref() == Some("NavigationDataChunkActor"))
+                .collect();
+            let tiles = hiumod::navmesh::read_tiles(m, n, &hiumod::navmesh::chunks_of(m, &actors));
+            let mut bytes = Vec::new();
+            for t in &tiles {
+                bytes.extend((t.len() as u32).to_le_bytes());
+                bytes.extend(t);
+            }
+            let path = dir.join("navtiles.bin");
+            std::fs::write(&path, &bytes).map_err(|e| format!("{}: {e}", path.display()))?;
+            let mesh = hiumod::navmesh::NavMesh::from_tiles(&tiles);
+            log!("{} chunk actors, {} tiles, {} polys, border {:?}", actors.len(), tiles.len(), mesh.len(), mesh.stats);
+            log!("{}", trf!("WRITTEN_TO", path = path.display()));
+            Ok(())
+        }
         Some("scan") => {
             let what = arg(1).ok_or("scan what? e.g. `doctor scan items 3`")?;
             let v: f64 = arg(2).and_then(|s| s.parse().ok()).ok_or("scan <target> <value>")?;
