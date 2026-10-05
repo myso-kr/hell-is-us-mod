@@ -696,7 +696,9 @@ pub fn run(shared: Arc<Shared>) {
                         let r = routes.entry(f.id).or_default();
                         r.follow(Some(g), p, trail, &obstacles, &nav, !f.focus);
                         if f.focus {
-                            *shared.route3d.lock().unwrap() = (r.drawn3d(p), f.colour.unwrap_or(g.tier.rgb()));
+                            // laid over the floor's bumps, not straight between corners
+                            let draped = route::drape(&r.drawn3d(p), &nav, &obstacles);
+                            *shared.route3d.lock().unwrap() = (draped, f.colour.unwrap_or(g.tier.rgb()));
                         }
                         r.drawn(p)
                     } else {

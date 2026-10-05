@@ -26,7 +26,7 @@ const MARKS_NEAR: f32 = 5000.0;
 const MARKS_MAX: usize = 40;
 const STEP: f32 = 50.0;
 /// Over the floor it lies on (cm): clear of it, not floating.
-const LIFT: f32 = 8.0;
+const LIFT: f32 = 15.0;
 /// The last stretch before a point is not tested: the floor under it would hide it.
 const NEAR_END: f32 = 120.0;
 /// The window grows and shrinks in steps this big (px), not every frame.

@@ -142,3 +142,47 @@ impl Route {
         path.smooth()
     }
 }
+
+/// How far apart the points of a draped route are (cm).
+const DRAPE_STEP: f32 = 50.0;
+/// The ground above the navmesh by less than this (cm) is the floor (`drape`).
+const DRAPE_GROUND: f32 = 100.0;
+
+/// `pts` laid over the floor: a point every `DRAPE_STEP`, each at the height of the floor under
+/// it — the navmesh's poly there, or the ground's where the ground stands a little above it (the
+/// navmesh's polys are coarse, the landscape's bumps are not). Between the route's corners the
+/// height was a straight line, and the band drawn on it sank into stairs and slopes (seen in
+/// play). Off the navmesh and the ground, the straight line stays.
+pub fn drape(pts: &[[f32; 3]], nav: &crate::navmesh::NavMesh, scene: &Scene) -> Vec<[f32; 3]> {
+    let floor = |q: [f32; 3]| {
+        let mut z = nav.floor_at(q).unwrap_or(q[2]);
+        if let Some(g) = scene.terrain.height(q[0], q[1]) {
+            if g > z && g - z < DRAPE_GROUND {
+                z = g;
+            }
+        }
+        [q[0], q[1], z]
+    };
+    let mut out = Vec::with_capacity(pts.len() * 4);
+    for (k, w) in pts.windows(2).enumerate() {
+        let (a, b) = (w[0], w[1]);
+        let len = (b[0] - a[0]).hypot(b[1] - a[1]);
+        let n = (len / DRAPE_STEP).ceil().max(1.0) as usize;
+        // the hero's own point stays where the hero stands
+        let from = if k == 0 { 1 } else { 0 };
+        if k == 0 {
+            out.push(a);
+        }
+        for i in from..n {
+            let t = i as f32 / n as f32;
+            out.push(floor([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]));
+        }
+    }
+    if let Some(&last) = pts.last() {
+        out.push(last);
+    }
+    if pts.len() == 1 {
+        out.truncate(1);
+    }
+    out
+}

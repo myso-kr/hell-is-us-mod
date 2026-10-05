@@ -43,6 +43,8 @@ const STEP: f32 = 60.0;
 const SNAP: f32 = 300.0;
 const SNAP_BELOW: f32 = 250.0;
 const SNAP_ABOVE: f32 = 150.0;
+/// A goal this far above or below every floor that can be walked to (cm) has no route.
+const FAR_UPDOWN: f32 = 5000.0;
 /// The lookup grid's cell (cm).
 const BUCKET: f32 = 1000.0;
 /// A point finds its poly within this far from above (cm), and this far up or down.
@@ -327,6 +329,26 @@ impl NavMesh {
 
     /// The poly a point (Unreal cm; z at the feet) stands on: the one under it nearest
     /// in height, else the nearest one around — and the point on it.
+    /// The height of the floor right under (or over) `p`, within `UPDOWN`: the poly that holds
+    /// it, nearest in height. None where no poly holds it (off the navmesh).
+    pub fn floor_at(&self, p: [f32; 3]) -> Option<f32> {
+        let (cx, cy) = cell(p[0], p[1]);
+        let mut best: Option<(f32, f32)> = None;
+        for y in cy - 1..=cy + 1 {
+            for x in cx - 1..=cx + 1 {
+                for &i in self.grid.get(&(x, y)).into_iter().flatten() {
+                    if let Some(z) = self.height_in(i, p[0], p[1]) {
+                        let d = (z - p[2]).abs();
+                        if d <= UPDOWN && best.is_none_or(|(b, _)| d < b) {
+                            best = Some((d, z));
+                        }
+                    }
+                }
+            }
+        }
+        best.map(|(_, z)| z)
+    }
+
     pub fn locate(&self, p: [f32; 3]) -> Option<(u32, [f32; 3])> {
         let (cx, cy) = cell(p[0], p[1]);
         let mut best: Option<(f32, u32, [f32; 3])> = None;
@@ -380,6 +402,11 @@ impl NavMesh {
                     .filter(|&i| reach[i])
                     .min_by(|&i, &j| score(self.polys[i].centre).total_cmp(&score(self.polys[j].centre)))?;
                 let pn = self.polys[near].centre;
+                // The nearest floor that can be walked to, and still far above or below the
+                // goal: not a way there (another level, a region's coordinates) — none.
+                if (pn[2] - b[2]).abs() > FAR_UPDOWN {
+                    return None;
+                }
                 let (mut path, mut heights) = self.walk(s, near as u32, pa, pn)?;
                 // Within reach from a floor it can walk to: the goal is reached, not through
                 // something. A lever on a wall, a mechanism up high, an item on a shelf: the
@@ -843,6 +870,17 @@ mod tests {
             "{:?}",
             path.points
         );
+    }
+
+    #[test]
+    fn the_floor_is_found_under_a_point_on_a_ramp() {
+        // A ramp along Recast x: height 0 at x 0, 200 at x 1000.
+        let v = [[0.0, 0.0, 0.0], [1000.0, 200.0, 0.0], [1000.0, 200.0, 1000.0], [0.0, 0.0, 1000.0]];
+        let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0, 0, 0, 0])])]);
+        // Halfway up (Unreal x −500): 100 cm, whatever height it is asked from (within reach).
+        let z = mesh.floor_at([-500.0, -500.0, 0.0]).expect("on the ramp");
+        assert!((z - 100.0).abs() < 5.0, "{z}");
+        assert_eq!(mesh.floor_at([-5000.0, -500.0, 0.0]), None, "off the navmesh");
     }
 
     #[test]
