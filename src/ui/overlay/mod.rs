@@ -101,9 +101,9 @@ fn barrier_on<'a>(
 /// How near a route's blocked leg a barrier must stand to be what blocks it (cm).
 const BARRIER_NEAR: f32 = 500.0;
 
-/// How far the hero moves (cm), or how long it is, before a goal found blocked is tried
-/// again.
-const BLOCKED_MOVED: f32 = 6000.0;
+/// How much nearer to a goal found blocked the hero comes (cm), or how long it is, before it
+/// is tried again.
+const BLOCKED_MOVED: f32 = 3000.0;
 const BLOCKED_FOR: Duration = Duration::from_secs(180);
 /// This many different goals found blocked within `ENCLOSED_WITHIN` from within
 /// `ENCLOSED_NEAR` (cm) of one spot: the spot reads as closed, and blocked goals are not
@@ -255,7 +255,9 @@ pub fn run(shared: Arc<Shared>) {
     // route is dropped. A route is kept only for what is followed, so without this a
     // blocked goal let go of looked open again the next frame, was picked again, found
     // blocked again — the guide flickering between two goals. Tried again once the hero
-    // has moved on (`BLOCKED_MOVED`) or after `BLOCKED_FOR`: a door may have opened.
+    // has come `BLOCKED_MOVED` nearer to it, or after `BLOCKED_FOR`: a door may have opened.
+    // Nearer, not just elsewhere: with a speed cheat the hero went 60 m anywhere in seconds,
+    // and the guide flickered all the same (seen in play).
     let mut blocked_seen: std::collections::HashMap<u64, ([f32; 3], Instant)> = Default::default();
     // What the guide works with, written out (trace.rs).
     let mut tracer = trace::Trace::default();
@@ -654,8 +656,12 @@ pub fn run(shared: Arc<Shared>) {
                 if Instant::now() < distrust_until {
                     blocked_seen.clear();
                 }
-                blocked_seen.retain(|_, (at, when)| {
-                    (at[0] - p[0]).hypot(at[1] - p[1]) < BLOCKED_MOVED && when.elapsed() < BLOCKED_FOR
+                blocked_seen.retain(|id, (at, when)| {
+                    // how much nearer to the goal than where it was found blocked
+                    let nearer = goals.iter().find(|g| g.id == *id).map_or(0.0, |g| {
+                        (g.at[0] - at[0]).hypot(g.at[1] - at[1]) - (g.at[0] - p[0]).hypot(g.at[1] - p[1])
+                    });
+                    nearer < BLOCKED_MOVED && when.elapsed() < BLOCKED_FOR
                 });
                 let blocked: std::collections::HashSet<u64> = blocked_seen.keys().copied().collect();
                 settle_target(&mut state, &goals, p, crate::quests::followed(&journal, None), &journal, &blocked);

@@ -237,7 +237,11 @@ impl Panel {
                     guide_to(state, &goals, &x);
                 }
             }
-            let mut near: Vec<&crate::goals::Goal> = goals.iter().collect();
+            // What can be done here now: not a marker that pays out only when something else
+            // is done there first (a lever after a gear is placed) — shown here, it looked like
+            // a place to go, and nothing was there (seen in play).
+            let mut near: Vec<&crate::goals::Goal> =
+                goals.iter().filter(|g| g.gate != crate::goals::Gate::Conditional).collect();
             near.sort_by(|a, b| a.tier.cmp(&b.tier).then(dist(a.at).total_cmp(&dist(b.at))));
             for g in near.iter().take(3) {
                 any = true;

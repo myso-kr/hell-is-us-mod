@@ -81,6 +81,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- "What can be done here now" no longer lists markers that pay out only when something else is
+  done first (a drain step after a gear is placed and a lever pulled): named after the region and
+  standing by a sign, one looked like the place to go.
+- A goal whose route was found blocked is tried again once the hero has come 30 m nearer to it,
+  not once the hero has gone 60 m anywhere: with a speed cheat the auto guide flickered between it
+  and another goal every few seconds.
 - Switching off the enemy-time or frail-enemy cheat no longer writes an enemy's old value to
   memory that a dead enemy left: records are tied to the actor's class (and, for frail, the
   Health attribute found again each tick), dropped when the enemy is gone, and checked again
