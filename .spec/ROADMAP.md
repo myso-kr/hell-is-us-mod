@@ -43,6 +43,22 @@ clue board, shard budget, Haze links. Its §4 lists the research some of them ne
 
 - **Done when:** each built one is confirmed in play and documented in FEATURES.md.
 
+### 4.1 Filming mode (proposed by the user, 2026-10-06)
+
+The hero and the camera driven along a route for recording: the route from the navmesh (the
+guide's) or from points placed on the 3D map, smoothed; the hero moved along it at 60 Hz with the
+teleport write (root location and ComponentToWorld, velocity), the camera turned with the
+controller's `ControlRotation` (along the way, or at a point). The ghost and god cheats keep a fight
+from breaking the shot; streamer mode hides the overlays from the recording.
+
+- **First, a probe in play:** whether 60 Hz writes move the hero without stutter or the movement
+  component fighting back; whether writing `CharacterMovement.Velocity` with the position makes the
+  animation walk instead of slide; whether `ControlRotation` turns the third-person camera, and
+  whether the camera rig overrides distance and FOV.
+- **Then:** a "filming" card in the cheats group: route from the guide or the 3D map's points,
+  speed, look ahead / at a point, loop, start and stop keys, routes kept by name.
+- Input simulation (keys and mouse) is not the way: it takes the cursor and focus, and is not exact.
+
 ## 5. Routes indoors
 
 Routes are 2D. The navmesh handles most places; the obstacle-grid fallback can be wrong in two-storey

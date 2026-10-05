@@ -345,34 +345,56 @@ impl Path {
     }
 }
 
-/// Corner cuts (Chaikin's): each leg loses a quarter at either end, at most `SMOOTH_CUT` (cm), so
-/// a corner by a doorway is rounded without crossing into the wall; twice, for a smooth bend.
+/// Corner cuts (Chaikin's), twice, for a smooth bend. A walked route comes from the funnel
+/// (navmesh.rs `funnel`), which turns exactly at the corners of the walls (the navmesh is
+/// already that far from them, by the agent's radius): a cut moves the line into the bend, so
+/// each corner is cut only as far as keeps the line within `SMOOTH_CLEAR` (cm) of it — long cuts
+/// on gentle bends, short ones on sharp corners — and never more than a quarter of a leg.
 const SMOOTH_PASSES: usize = 2;
-const SMOOTH_CUT: f32 = 120.0;
+const SMOOTH_CLEAR: f32 = 25.0;
+/// The longest cut (cm), however gentle the bend.
+const SMOOTH_MAX: f32 = 400.0;
+
+/// How far along each leg from the corner `v` (between `a` and `b`) to cut, so the line across
+/// the cut passes within `SMOOTH_CLEAR` of the corner: a cut of d either side lies d·cos(θ/2) from
+/// it, θ the angle at the corner.
+fn cut_at(a: [f32; 3], v: [f32; 3], b: [f32; 3]) -> f32 {
+    let u = [a[0] - v[0], a[1] - v[1], a[2] - v[2]];
+    let w = [b[0] - v[0], b[1] - v[1], b[2] - v[2]];
+    let (lu, lw) = ((u[0] * u[0] + u[1] * u[1] + u[2] * u[2]).sqrt(), (w[0] * w[0] + w[1] * w[1] + w[2] * w[2]).sqrt());
+    if lu < 1e-3 || lw < 1e-3 {
+        return 0.0;
+    }
+    let cos = ((u[0] * w[0] + u[1] * w[1] + u[2] * w[2]) / (lu * lw)).clamp(-1.0, 1.0);
+    // cos(θ/2) from cos θ
+    let half = ((1.0 + cos) / 2.0).sqrt().max(1e-3);
+    (SMOOTH_CLEAR / half).min(SMOOTH_MAX).min(0.25 * lu).min(0.25 * lw)
+}
 
 fn cut_corners(pts: &[[f32; 3]], through: &[bool]) -> (Vec<[f32; 3]>, Vec<bool>) {
     let n = pts.len();
     if n < 3 {
         return (pts.to_vec(), through.to_vec());
     }
+    // the cut at each inner corner (the ends stay where they are: the hero and the goal)
+    let cuts: Vec<f32> =
+        (0..n).map(|k| if k == 0 || k == n - 1 { 0.0 } else { cut_at(pts[k - 1], pts[k], pts[k + 1]) }).collect();
     let mut out = vec![pts[0]];
     let mut flags = Vec::new();
     for k in 0..n - 1 {
         let (a, b) = (pts[k], pts[k + 1]);
         let d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
         let len = (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt().max(f32::EPSILON);
-        let f = (0.25 * len).min(SMOOTH_CUT) / len;
         let at = |t: f32| [a[0] + d[0] * t, a[1] + d[1] * t, a[2] + d[2] * t];
         let leg = through.get(k).copied().unwrap_or(false);
-        // the ends stay where they are: the hero and the goal
         if k > 0 {
-            out.push(at(f));
+            out.push(at(cuts[k] / len));
             // the piece across the corner from the leg before
             let before = through.get(k - 1).copied().unwrap_or(false);
             flags.push(before || leg);
         }
         if k < n - 2 {
-            out.push(at(1.0 - f));
+            out.push(at(1.0 - cuts[k + 1] / len));
             flags.push(leg);
         } else {
             out.push(b);
@@ -539,11 +561,22 @@ mod smooth_tests {
         assert_eq!(s.through.len(), s.points.len() - 1);
         assert!(s.points.len() > 3, "the corner is cut into pieces");
         assert!(!s.points.contains(&[1000.0, 0.0]), "the corner itself is gone");
-        // no cut further than SMOOTH_CUT from the corner
-        assert!(s.points.iter().all(|q| (q[0] - 1000.0).abs().max(q[1].abs()) >= 0.0));
-        assert!(s.points.iter().all(|q| q[0] >= 1000.0 - SMOOTH_CUT || q[1].abs() < 1.0));
+        // the line keeps near the corner it rounds: no point further inside the bend (here,
+        // the square below and left of the corner) than the clearance, two passes over
+        let inside = |q: &[f32; 2]| (1000.0 - q[0]).min(q[1]).max(0.0);
+        assert!(s.points.iter().all(|q| inside(q) <= 2.0 * SMOOTH_CLEAR), "{:?}", s.points);
         assert!(*s.through.last().unwrap(), "the last leg keeps its flag");
         assert!(!s.through[0], "the first leg keeps its own");
+    }
+
+    #[test]
+    fn a_gentle_bend_is_cut_longer_than_a_sharp_corner() {
+        let v = [0.0, 0.0, 0.0];
+        let sharp = cut_at([-1000.0, 0.0, 0.0], v, [0.0, 1000.0, 0.0]);
+        let gentle = cut_at([-1000.0, 0.0, 0.0], v, [1000.0, 200.0, 0.0]);
+        assert!(gentle > 3.0 * sharp, "sharp {sharp}, gentle {gentle}");
+        // a right angle: the cut's line passes SMOOTH_CLEAR from the corner
+        assert!((sharp * std::f32::consts::FRAC_1_SQRT_2 - SMOOTH_CLEAR).abs() < 0.5);
     }
 }
 

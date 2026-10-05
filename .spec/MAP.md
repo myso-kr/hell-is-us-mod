@@ -501,7 +501,7 @@ above or below the window); the scissor alone cuts it to what shows.
 The route was drawn as the path's polyline: hard corners on the 2D maps, and on the 3D map a quad
 per leg, which overlapped or gapped at each bend ("square plates joined"). `Path::smooth` (and
 `pathfind::smooth3` for the 3D route) cut each corner twice (Chaikin), a quarter of the leg at each
-end but at most 1.2 m, so a corner by a doorway rounds without crossing into the wall; the ends (the
+end but at most 1.2 m (since 2026-10-06: by the corner's angle, see 16.7); the ends (the
 hero and the goal) stay, and a leg's "through" flag passes to its pieces. `Route::drawn` and
 `drawn3d` return the smoothed way, so every map and the game view draw the same curve. The 3D
 ribbon is one strip: each point's side is the mean of its legs', lengthened through a bend (at most
@@ -529,3 +529,15 @@ and draws. The rays are cached on a 25 cm grid while the camera stays within 25 
 The Map page's settings card uses `tw::tabs`: a tab bar (the open tab on a tinted top with an
 accent underline and bright text, the others dim, a rule under the row), exposed to UI Automation
 as selectable items.
+
+### 16.7 Rounding a funnelled route (2026-10-06)
+
+The research report took the navmesh route for a line through the polygons' centres. It is not:
+`NavMesh::walk` already pulls the string through the corridor's portals (`funnel`), and a 3D
+nearest polygon (`locate`, by height) already starts and ends it. What the funnel gives turns
+exactly at the walls' corners — the navmesh stands off the walls by the agent's radius, and no
+more — so the corner cuts of 16.5, up to 1.2 m along each leg, put the line up to 0.85 m into the
+bend at a right angle: into the wall's corner. `pathfind::cut_at` now cuts each corner as far as
+keeps the line across the cut within `SMOOTH_CLEAR` (25 cm) of it — d·cos(θ/2) ≤ 25 cm, θ the
+angle at the corner — at most 4 m and a quarter of either leg: long cuts round a gentle bend, a
+right angle is cut 35 cm.

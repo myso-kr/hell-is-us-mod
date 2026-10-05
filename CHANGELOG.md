@@ -28,7 +28,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   from the camera is worked out again only when the camera moves 25 cm or after 120 ms.
 - The Map page's settings card has real tabs: the open one lit with an underline, the rest dim.
 - Routes are drawn with round bends on the minimap, the big map, the 3D map and in the game view
-  (corners cut twice, at most 1.2 m, so a bend by a doorway does not cross the wall); the 3D map's
+  (corners cut twice, each only as far as keeps the line within 25 cm of the corner, so a bend
+  by a doorway does not cross the wall); the 3D map's
   ribbon is one strip with mitred joins, not a chain of plates.
 - The game view's icons shrink and fade with distance as the compass's pins do, and the game
   view's 3D layer shows and hides with the maps (game in front, no menu, the map key not off).
