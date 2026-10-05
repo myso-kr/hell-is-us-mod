@@ -12,7 +12,7 @@ use crate::relief::Relief;
 
 use super::canvas::over;
 pub use super::canvas::*;
-use super::compass::floor_arrow;
+use super::compass::floor_badge;
 pub use super::compass::*;
 
 const BACKGROUND: Rgba = Rgba(16, 18, 22, 170);
@@ -832,7 +832,7 @@ pub fn draw_above(
             Some(icons) => {
                 let i = icons.get(t.sub);
                 cv.blit_alpha(cx + p.0, cy + p.1, i.size, &i.px, alpha);
-                floor_arrow(cv, cx + p.0 + i.size as f32 / 2.0, cy + p.1 - i.size as f32 / 2.0 + 3.0, dz);
+                floor_badge(cv, cx + p.0, cy + p.1, i.size as f32 / 2.0, dz);
             }
             None => {
                 let size = if *k == Kind::Enemy { 4.5 } else { 3.5 };
@@ -844,7 +844,7 @@ pub fn draw_above(
                     Rgba(OUTLINE.0, OUTLINE.1, OUTLINE.2, (OUTLINE.3 as u32 * alpha / 255) as u8),
                 );
                 cv.disc(cx + p.0, cy + p.1, size, Rgba(c.0, c.1, c.2, (c.3 as u32 * alpha / 255) as u8));
-                floor_arrow(cv, cx + p.0 + size + 2.0, cy + p.1 - size, dz);
+                floor_badge(cv, cx + p.0, cy + p.1, size + 1.2, dz);
             }
         }
     }
@@ -934,7 +934,7 @@ pub fn draw_above(
             let fade = |c: Rgba| Rgba(c.0, c.1, c.2, (c.3 as u32 * a / 255) as u8);
             cv.polygon(&[(x, y - s - 1.5), (x + s + 1.5, y), (x, y + s + 1.5), (x - s - 1.5, y)], fade(OUTLINE));
             cv.polygon(&[(x, y - s), (x + s, y), (x, y + s), (x - s, y)], fade(colour));
-            floor_arrow(cv, x + s + 3.0, y - s + 1.0, dz);
+            floor_badge(cv, x, y, s + 1.5, dz);
         } else if target {
             let (ux, uy) = (p.0 / d, p.1 / d);
             let tip = (cx + ux * (r - 1.0), cy + uy * (r - 1.0));

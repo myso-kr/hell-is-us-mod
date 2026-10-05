@@ -734,3 +734,4 @@ DEBUG_STATUS	Durum
 MEMORY_NOW	Bellek
 MEMORY_PEAK	Bellek zirvesi
 MEMORY_ALSO_LOGGED	Bellek dakikada bir günlüğe de yazılır.
+TRACK_FOLLOWING_HINT	Takip ediliyor: bırakmak için basın.

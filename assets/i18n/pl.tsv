@@ -734,3 +734,4 @@ DEBUG_STATUS	Stan
 MEMORY_NOW	Pamięć
 MEMORY_PEAK	Szczyt pamięci
 MEMORY_ALSO_LOGGED	Pamięć jest też zapisywana w logu co minutę.
+TRACK_FOLLOWING_HINT	Śledzone: naciśnij, by puścić.

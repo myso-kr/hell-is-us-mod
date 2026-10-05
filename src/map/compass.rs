@@ -249,16 +249,23 @@ pub fn floor_alpha(dz_m: f32) -> u32 {
     (255.0 - 170.0 * t) as u32
 }
 
-/// A small arrow at (x, y) when `dz_m` is another floor: up in sky blue, down in amber.
-pub(crate) fn floor_arrow(cv: &mut Canvas, x: f32, y: f32, dz_m: f32) {
+/// When `dz_m` is another floor, a badge on the bottom-right of a mark centred at
+/// (x, y) and `half` across from its centre: a disc in sky blue (up) or amber (down) on a
+/// dark rim, a white chevron in it. A badge sits on the mark, as an app's count does on
+/// its icon, so it reads as the mark's and does not stray onto a neighbour.
+pub(crate) fn floor_badge(cv: &mut Canvas, x: f32, y: f32, half: f32, dz_m: f32) {
     if dz_m.abs() < FLOOR_DZ {
         return;
     }
     let up = dz_m > 0.0;
-    let c = if up { Rgba(120, 200, 255, 240) } else { Rgba(255, 180, 80, 240) };
-    let (tip, base) = if up { (y - 4.0, y + 3.0) } else { (y + 4.0, y - 3.0) };
-    cv.triangle([(x, tip + 1.0), (x - 4.5, base + 1.0), (x + 4.5, base + 1.0)], Rgba(0, 0, 0, 170));
-    cv.triangle([(x, tip), (x - 3.5, base), (x + 3.5, base)], c);
+    let fill = if up { Rgba(70, 160, 235, 245) } else { Rgba(230, 140, 40, 245) };
+    let r = (half * 0.42).clamp(4.0, 6.5);
+    let (bx, by) = (x + half * 0.72, y + half * 0.72);
+    cv.disc(bx, by, r + 1.3, Rgba(14, 17, 22, 230));
+    cv.disc(bx, by, r, fill);
+    let (w, h) = (r * 0.6, r * 0.42);
+    let (tip, base) = if up { (by - h, by + h) } else { (by + h, by - h) };
+    cv.triangle([(bx, tip), (bx - w, base), (bx + w, base)], Rgba(255, 255, 255, 250));
 }
 
 /// `85m`, `1.2km`.

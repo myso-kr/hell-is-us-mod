@@ -734,3 +734,4 @@ DEBUG_STATUS	Status
 MEMORY_NOW	Speicher
 MEMORY_PEAK	Speicherspitze
 MEMORY_ALSO_LOGGED	Der Speicher wird auch einmal pro Minute ins Protokoll geschrieben.
+TRACK_FOLLOWING_HINT	Wird verfolgt: drücken zum Loslassen.

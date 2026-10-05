@@ -734,3 +734,4 @@ DEBUG_STATUS	Status
 MEMORY_NOW	Memory
 MEMORY_PEAK	Memory peak
 MEMORY_ALSO_LOGGED	The memory is also written to the log once a minute.
+TRACK_FOLLOWING_HINT	Followed now: press to let it go.

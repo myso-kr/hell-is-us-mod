@@ -734,3 +734,4 @@ DEBUG_STATUS	상태
 MEMORY_NOW	메모리
 MEMORY_PEAK	메모리 최대
 MEMORY_ALSO_LOGGED	메모리는 1분마다 로그에도 기록됩니다.
+TRACK_FOLLOWING_HINT	추적 중입니다. 누르면 해제합니다.

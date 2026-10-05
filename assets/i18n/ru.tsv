@@ -734,3 +734,4 @@ DEBUG_STATUS	Состояние
 MEMORY_NOW	Память
 MEMORY_PEAK	Пик памяти
 MEMORY_ALSO_LOGGED	Память также записывается в журнал раз в минуту.
+TRACK_FOLLOWING_HINT	Отслеживается: нажмите, чтобы снять.

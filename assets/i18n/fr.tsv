@@ -734,3 +734,4 @@ DEBUG_STATUS	État
 MEMORY_NOW	Mémoire
 MEMORY_PEAK	Pic mémoire
 MEMORY_ALSO_LOGGED	La mémoire est aussi notée dans le journal chaque minute.
+TRACK_FOLLOWING_HINT	Suivi : appuyez pour le lâcher.

@@ -418,17 +418,28 @@ pub fn track_line(
 /// How wide the Follow toggle is, the same on every line.
 const TOGGLE_W: f32 = 78.0;
 
-/// The Follow toggle: "Follow", or "● Following" in the track's colour. Whether pressed.
+/// The Follow toggle, its two states plain at a glance: "Follow" on a control's ground
+/// when not followed; "● Let go" on the track's colour, deepened, when followed (what a
+/// press does next, as the button's word). Whether pressed.
 pub fn follow_toggle(tui: &mut Tui, colour: Option<[u8; 3]>) -> bool {
     w(tui, |ui| {
-        let label = match colour {
+        let size = [TOGGLE_W, ui.spacing().interact_size.y];
+        let button = match colour {
             Some([r, g, b]) => {
-                RichText::new(format!("● {}", tr!("QUEST_FOLLOWING"))).color(egui::Color32::from_rgb(r, g, b))
+                // The colour deepened, so white reads on every track's colour.
+                let deep = |c: u8| (c as f32 * 0.55) as u8;
+                egui::Button::new(
+                    RichText::new(format!("● {}", tr!("TRACK_DROP"))).color(egui::Color32::WHITE).strong(),
+                )
+                .fill(egui::Color32::from_rgb(deep(r), deep(g), deep(b)))
+                .stroke(egui::Stroke::new(1.0, egui::Color32::from_rgb(r, g, b)))
             }
-            None => RichText::new(tr!("QUEST_FOLLOW")),
+            None => egui::Button::new(RichText::new(tr!("QUEST_FOLLOW")).color(super::theme::TEXT))
+                .fill(super::theme::CONTROL)
+                .stroke(egui::Stroke::new(1.0, super::theme::EDGE)),
         };
-        let button = egui::Button::selectable(colour.is_some(), label);
-        ui.add_sized([TOGGLE_W, ui.spacing().interact_size.y], button).on_hover_text(tr!("TRACK_TOGGLE_HINT")).clicked()
+        let hint = if colour.is_some() { tr!("TRACK_FOLLOWING_HINT") } else { tr!("TRACK_TOGGLE_HINT") };
+        ui.add_sized(size, button).on_hover_text(hint).clicked()
     })
 }
 

@@ -734,3 +734,4 @@ DEBUG_STATUS	状態
 MEMORY_NOW	メモリ
 MEMORY_PEAK	メモリ最大
 MEMORY_ALSO_LOGGED	メモリは1分ごとにログにも記録されます。
+TRACK_FOLLOWING_HINT	追跡中です。押すと解除します。

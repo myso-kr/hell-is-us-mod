@@ -734,3 +734,4 @@ DEBUG_STATUS	Stato
 MEMORY_NOW	Memoria
 MEMORY_PEAK	Picco di memoria
 MEMORY_ALSO_LOGGED	La memoria viene scritta anche nel log ogni minuto.
+TRACK_FOLLOWING_HINT	Seguito ora: premi per lasciarlo.
