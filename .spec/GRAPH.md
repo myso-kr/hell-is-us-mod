@@ -78,7 +78,17 @@ it must be at — is on the Puzzles page's "Order and position puzzles" card, be
 
 An object brought to a place (`IsAnotherSceneComponentAtLocationCondition`, 14) is that object used.
 
-## 5. Next
+## 5. What the worlds give (2026-10-05)
+
+`--grep` (the survey tool; several names at once, `a|b`) finds what refers to an item or a fact in
+any package's bytes. The keystones and the Arcas Spire elevator key are given by no place: each
+world's `CharlieWorldSettings` has `FirstEnterWorldPayloadData` (on first entering: Senedra gives
+`Quest.Facts.Act01Started`) and `BossFightRoomCompletedPayload` (the boss fight won: Senedra's gives
+the Keystone of Terror, the elevator key, `Quest.Facts.TerrorKeystoneGathered`). The survey writes
+them as the world's `gives` {enter, boss (with where the fight's room is)}; the graph has a node for
+each. `doctor graph` after: 2481 nodes, 2417 reachable, 64 stuck, 12 things no place gives.
+
+## 6. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items

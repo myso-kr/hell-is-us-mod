@@ -101,6 +101,25 @@ if (opts.ContainsKey("tables"))
 }
 
 var survey = new Survey(provider);
+// --grep <text> [--in <path prefix>]: the packages whose bytes hold `text` (a name in
+// their name table): what refers to an item or a fact, wherever it is.
+if (opts.TryGetValue("grep", out var grepFor))
+{
+    var prefix = opts.GetValueOrDefault("in", "HellIsUs/Content/");
+    // Several at once, `|` between them: each package read once.
+    var needles = grepFor.Split('|').Select(n => (n, System.Text.Encoding.ASCII.GetBytes(n))).ToList();
+    foreach (var p in provider.Files.Keys.Where(p => p.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && (p.EndsWith(".uasset") || p.EndsWith(".umap"))).OrderBy(p => p))
+    {
+        try
+        {
+            if (!provider.TrySaveAsset(p, out var bytes)) continue;
+            foreach (var (n, b) in needles)
+                if (bytes.AsSpan().IndexOf(b) >= 0) Console.WriteLine($"{n}	{p}");
+        }
+        catch { }
+    }
+    return;
+}
 if (opts.TryGetValue("refs", out var refsOf))
 {
     foreach (var w in worlds)
@@ -128,7 +147,12 @@ foreach (var w in worlds)
         catch (Exception e) { Console.Error.WriteLine($"  {map}: {e.Message}"); }
     }
     var file = Path.Combine(outDir, $"{w}.json");
-    File.WriteAllText(file, new JObject { ["world"] = w, ["actors"] = new JArray(actors) }.ToString(Formatting.Indented));
+    var record = new JObject { ["world"] = w, ["actors"] = new JArray(actors) };
+    // What the world itself gives (CharlieWorldSettings): on first entering it, and on
+    // winning its boss fight — the keystones, the keys and the facts no place gives.
+    try { if (survey.WorldGives(w) is { } gives) record["gives"] = gives; }
+    catch (Exception e) { Console.Error.WriteLine($"  {w} settings: {e.Message}"); }
+    File.WriteAllText(file, record.ToString(Formatting.Indented));
     Console.Error.WriteLine($"{w}: {actors.Count} actors in {(DateTime.Now - started).TotalSeconds:F0} s → {file}");
 }
 // The conversations NPCs run, with what their nodes hand out.
@@ -570,6 +594,33 @@ class Survey(DefaultFileProvider provider)
             done[path] = new JObject { ["payloads"] = payloads, ["subgraphs"] = new JArray(subs.Distinct()) };
         }
         return done;
+    }
+
+    /// The world settings' payloads: `enter` (FirstEnterWorldPayloadData) and `boss`
+    /// (BossFightRoomCompletedPayload, with where the fight's room is).
+    public JObject? WorldGives(string world)
+    {
+        var root = Maps(world).FirstOrDefault(m => m.EndsWith($"{world}_Root_WP.umap", StringComparison.OrdinalIgnoreCase));
+        if (root == null) return null;
+        var exports = provider.LoadPackage(root).GetExports().ToList();
+        var settings = exports.FirstOrDefault(e => (e.Class?.Name ?? "").EndsWith("WorldSettings"));
+        if (settings == null) return null;
+        var p = Props(settings);
+        var gives = new JObject();
+        var enter = Payload(p["FirstEnterWorldPayloadData"]);
+        if (!Empty(enter)) gives["enter"] = enter;
+        var boss = Payload(p["BossFightRoomCompletedPayload"]);
+        if (!Empty(boss))
+        {
+            if (Resolve(exports, p["BossFightRoomTeleportPlayerLocation"]) is { } spot
+                && Resolve(exports, Props(spot)["RootComponent"]) is { } rc)
+            {
+                var at = World(exports, rc, 0);
+                boss["at"] = new JArray(Math.Round(at.T.X), Math.Round(at.T.Y), Math.Round(at.T.Z));
+            }
+            gives["boss"] = boss;
+        }
+        return gives.Count > 0 ? gives : null;
     }
 
     /// Every export whose properties name `want`: what points at an actor (`--refs`).

@@ -163,6 +163,29 @@ impl Graph {
                 continue;
             };
             let Some(world) = v["world"].as_str() else { continue };
+            // What the world itself gives: on first entering it, and its boss fight won.
+            for (kind, class) in [("enter", "WorldFirstEntered"), ("boss", "BossFightWon")] {
+                let p = &v["gives"][kind];
+                if p.is_null() {
+                    continue;
+                }
+                let at =
+                    p["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
+                let at = at.filter(|x| x.len() == 3).map_or([0.0; 3], |x| [x[0], x[1], x[2]]);
+                let mut gives_tags = strs(&p["tags"]);
+                gives_tags.extend(strs(&p["facts"]));
+                let name = format!("{world}:{kind}");
+                g.by_name.insert((world.to_string(), name.clone()), g.nodes.len());
+                g.nodes.push(Node {
+                    world: world.to_string(),
+                    name,
+                    class: class.to_string(),
+                    at,
+                    gives_items: strs(&p["items"]),
+                    gives_tags,
+                    ..Default::default()
+                });
+            }
             for a in v["actors"].as_array().into_iter().flatten() {
                 g.add(world, a);
                 if let (Some(flow), Some(last)) = (a["flow"].as_str(), g.nodes.last_mut()) {
