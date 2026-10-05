@@ -815,3 +815,5 @@ MAP3D_BELOW	地下 {m} m
 MAP3D_HINT	ドラッグ: 回転 · 右ドラッグ: 移動 · ホイール: 拡大 · クリック: 場所
 MAP3D_LOADING	地域を読み込み中…
 MAP3D_MISSING	この地域の地図データがまだありません。`hiumod doctor map3d` を一度実行してください（数分）。
+MAP3D_NORTH	北を上に
+MAP3D_ME	自分を追う

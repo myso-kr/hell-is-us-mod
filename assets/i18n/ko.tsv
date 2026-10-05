@@ -815,3 +815,5 @@ MAP3D_BELOW	지면 아래 {m} m
 MAP3D_HINT	드래그: 회전 · 우클릭 드래그: 이동 · 휠: 확대 · 클릭: 장소 선택
 MAP3D_LOADING	지역을 불러오는 중…
 MAP3D_MISSING	이 지역의 지도 데이터가 아직 없습니다. `hiumod doctor map3d`를 한 번 실행하세요(몇 분 걸림).
+MAP3D_NORTH	북쪽을 위로
+MAP3D_ME	내 위치 따라가기

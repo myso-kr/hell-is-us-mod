@@ -815,3 +815,5 @@ MAP3D_BELOW	{m} m sottoterra
 MAP3D_HINT	Trascina: ruota · trascina col destro: sposta · rotella: zoom · clic: luogo
 MAP3D_LOADING	Caricamento della regione…
 MAP3D_MISSING	Mancano i dati della mappa di questa regione: esegui `hiumod doctor map3d` una volta (qualche minuto).
+MAP3D_NORTH	Nord in alto
+MAP3D_ME	Seguimi

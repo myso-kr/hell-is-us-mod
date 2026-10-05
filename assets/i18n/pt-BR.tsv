@@ -815,3 +815,5 @@ MAP3D_BELOW	{m} m abaixo do solo
 MAP3D_HINT	Arrastar: girar · arrastar com direito: mover · roda: zoom · clique: lugar
 MAP3D_LOADING	Carregando a região…
 MAP3D_MISSING	Faltam os dados de mapa desta região: execute `hiumod doctor map3d` uma vez (alguns minutos).
+MAP3D_NORTH	Norte para cima
+MAP3D_ME	Seguir-me

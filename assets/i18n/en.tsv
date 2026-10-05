@@ -815,3 +815,5 @@ MAP3D_BELOW	{m} m below ground
 MAP3D_HINT	Drag: turn · right drag: move · wheel: zoom · click: a place
 MAP3D_LOADING	Loading the region…
 MAP3D_MISSING	This region's map data is not extracted yet: run `hiumod doctor map3d` once (a few minutes).
+MAP3D_NORTH	North up
+MAP3D_ME	Follow me

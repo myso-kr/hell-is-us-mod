@@ -11,7 +11,7 @@
 //! violet deep down.
 
 use crate::graph::Graph;
-use eframe::egui::{self, Color32};
+use eframe::egui::{self, Color32, RichText};
 use eframe::{egui_glow, glow};
 use glow::HasContext;
 use std::sync::{Arc, Mutex};
@@ -319,6 +319,8 @@ pub struct Map3d {
     pub keep: f32,
     pub round: i32,
     picked: Option<usize>,
+    /// The view keeps the hero in its middle (a right drag lets go).
+    follow: bool,
 }
 
 impl Default for Map3d {
@@ -339,6 +341,7 @@ impl Default for Map3d {
             keep: 1.0,
             round: i32::MAX,
             picked: None,
+            follow: true,
         }
     }
 }
@@ -384,19 +387,22 @@ impl Map3d {
         self.scene.as_ref()
     }
 
-    /// The view: a rect of the panel the scene is drawn into, orbited by dragging, panned by
-    /// dragging with the right button, zoomed by the wheel; a click picks the nearest place.
-    pub fn view(&mut self, ui: &mut egui::Ui, height: f32, hero: Option<[f32; 3]>, route: &[[f32; 3]]) {
+    /// The view, as a map app's: the scene fills the rect, and its controls float over it — the
+    /// layers top left, the compass top right, zoom and "where am I" bottom right, the story
+    /// round along the bottom, the picked place's card. The hero is a dot with a cone the way
+    /// they face and a pulse, the route's end a pin. Drag turns, a right drag moves, the wheel
+    /// zooms; following, the view keeps the hero in its middle.
+    pub fn view(&mut self, ui: &mut egui::Ui, height: f32, hero: Option<([f32; 3], f32)>, route: &[[f32; 3]]) {
         let size = egui::vec2(ui.available_width(), height);
         let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click_and_drag());
         let Some(scene) = self.scene.clone() else {
-            ui.painter().rect_filled(rect, 6.0, Color32::from_rgb(10, 16, 18));
+            ui.painter().rect_filled(rect, 10.0, Color32::from_rgb(10, 16, 18));
             return;
         };
         if resp.dragged_by(egui::PointerButton::Primary) {
             let d = resp.drag_delta();
             self.yaw -= d.x * 0.006;
-            self.pitch = (self.pitch + d.y * 0.006).clamp(-1.4, 1.48);
+            self.pitch = (self.pitch + d.y * 0.006).clamp(0.08, 1.48);
         }
         if resp.dragged_by(egui::PointerButton::Secondary) {
             let d = resp.drag_delta() * self.dist / rect.height();
@@ -404,17 +410,26 @@ impl Map3d {
             self.target[0] -= d.x * c;
             self.target[2] += d.x * s;
             self.target[1] += d.y;
+            self.follow = false;
         }
         if resp.hovered() {
             let scroll = ui.input(|i| i.smooth_scroll_delta.y);
             self.dist = (self.dist * (1.0 - scroll * 0.0015)).clamp(20.0, scene.extent * 3.0);
+        }
+        let hero_at = hero.map(|(h, yaw)| (scene.to_scene(h), yaw));
+        if self.follow {
+            if let Some((h, _)) = hero_at {
+                // eased, so the view glides after the hero rather than jumps
+                for (t, h) in self.target.iter_mut().zip(h) {
+                    *t += (h - *t) * 0.2;
+                }
+            }
         }
         let aspect = rect.width() / rect.height().max(1.0);
         let eye = self.eye();
         let view = look_at(eye, self.target);
         let proj = perspective(50f32.to_radians(), aspect, 1.0, scene.extent * 8.0);
         let vp = mul(&proj, &view);
-        let hero_at = hero.map(|h| scene.to_scene(h));
         let route: Vec<[f32; 3]> = route.iter().map(|&q| scene.to_scene(q)).collect();
         if resp.clicked() {
             if let Some(pos) = resp.interact_pointer_pos() {
@@ -422,7 +437,7 @@ impl Map3d {
                     .nodes
                     .iter()
                     .enumerate()
-                    .filter(|(_, n)| n.round <= self.round)
+                    .filter(|(_, n)| n.round >= 0 && n.round <= self.round)
                     .filter_map(|(i, n)| project(&vp, n.at, rect).map(|p| (i, p.distance(pos))))
                     .filter(|(_, d)| *d < 14.0)
                     .min_by(|a, b| a.1.total_cmp(&b.1))
@@ -438,11 +453,12 @@ impl Map3d {
             hole: if self.hole { self.hole_m } else { 0.0 },
             keep: self.keep,
             round: self.round,
-            hero: hero_at,
+            hero: None,
             picked: self.picked,
             route: ribbon(&route),
         };
         let gpu = self.gpu.clone();
+        let drawn = scene.clone();
         let cb = egui_glow::CallbackFn::new(move |info, painter| {
             let gl = painter.gl();
             let mut g = gpu.lock().unwrap();
@@ -450,52 +466,185 @@ impl Map3d {
                 *g = Gpu::new(gl);
             }
             if let Some(g) = g.as_mut() {
-                g.draw(gl, &scene, &frame, &info);
+                g.draw(gl, &drawn, &frame, &info);
             }
         });
-        ui.painter().add(egui::PaintCallback { rect, callback: Arc::new(cb) });
-        // the picked place's line, over the view
-        if let Some(n) = self.picked.and_then(|i| self.scene.as_ref()?.nodes.get(i)) {
-            let text = format!(
-                "{}  ·  {}  ·  {}",
-                n.label,
-                if n.round < 0 { tr!("MAP3D_NEVER").to_string() } else { trf!("MAP3D_ROUND", round = n.round) },
-                if n.below > 3.0 { trf!("MAP3D_BELOW", m = format!("{:.0}", n.below)) } else { String::new() }
-            );
-            ui.painter().text(
-                rect.left_bottom() + egui::vec2(10.0, -10.0),
-                egui::Align2::LEFT_BOTTOM,
-                text,
-                egui::FontId::monospace(12.0),
-                Color32::from_rgb(255, 214, 140),
-            );
+        let painter = ui.painter_at(rect);
+        painter.add(egui::PaintCallback { rect, callback: Arc::new(cb) });
+
+        // markers over the scene: the route's end, the picked place, the hero
+        let time = ui.input(|i| i.time) as f32;
+        if let Some(end) = route.last().and_then(|&q| project(&vp, q, rect)) {
+            pin(&painter, end, Color32::from_rgb(239, 107, 107));
         }
+        if let Some(p) = self.picked.and_then(|i| scene.nodes.get(i)).and_then(|n| project(&vp, n.at, rect)) {
+            painter.circle_stroke(p, 9.0, egui::Stroke::new(2.0, Color32::from_rgb(255, 210, 122)));
+        }
+        if let Some((h, yaw)) = hero_at {
+            if let Some(c) = project(&vp, h, rect) {
+                // the way the hero faces, on the screen: a point a few metres ahead projected
+                let (s, co) = yaw.to_radians().sin_cos();
+                let ahead = [h[0] + s * 8.0, h[1], h[2] - co * 8.0];
+                let dir = project(&vp, ahead, rect).map(|a| (a - c).normalized()).unwrap_or(egui::vec2(0.0, -1.0));
+                let blue = Color32::from_rgb(66, 133, 244);
+                let cone = [c, c + dir.rot90() * 14.0 + dir * 30.0, c - dir.rot90() * 14.0 + dir * 30.0];
+                painter.add(egui::Shape::convex_polygon(
+                    cone.to_vec(),
+                    Color32::from_rgba_unmultiplied(66, 133, 244, 70),
+                    egui::Stroke::NONE,
+                ));
+                let pulse = (time * 1.4).fract();
+                painter.circle_stroke(
+                    c,
+                    8.0 + pulse * 18.0,
+                    egui::Stroke::new(
+                        2.0,
+                        Color32::from_rgba_unmultiplied(66, 133, 244, ((1.0 - pulse) * 160.0) as u8),
+                    ),
+                );
+                painter.circle_filled(c, 8.0, Color32::WHITE);
+                painter.circle_filled(c, 6.0, blue);
+            }
+        }
+
+        // the floating controls
+        let glass = egui::Frame::new()
+            .fill(Color32::from_rgba_unmultiplied(16, 24, 28, 225))
+            .corner_radius(12)
+            .stroke(egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 22)))
+            .inner_margin(egui::Margin::symmetric(8, 6));
+        let pad = 12.0;
+        // top left: the layers
+        let tl = egui::Rect::from_min_size(rect.min + egui::vec2(pad, pad), egui::vec2(rect.width() * 0.6, 120.0));
+        ui.scope_builder(egui::UiBuilder::new().max_rect(tl), |ui| {
+            ui.horizontal(|ui| {
+                glass.show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.toggle_value(&mut self.xray, tr!("MAP3D_XRAY"));
+                        ui.toggle_value(&mut self.hole, tr!("MAP3D_HOLE"));
+                        ui.label(RichText::new(tr!("MAP3D_KEEP")).small());
+                        ui.add(egui::Slider::new(&mut self.keep, 0.0..=1.0).show_value(false));
+                    });
+                });
+            });
+            // the picked place's card, under the layers
+            if let Some(n) = self.picked.and_then(|i| scene.nodes.get(i)) {
+                ui.add_space(6.0);
+                glass.show(ui, |ui| {
+                    ui.set_max_width(320.0);
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new(&n.label).strong().size(13.0));
+                        if ui.small_button("×").clicked() {
+                            self.picked = None;
+                        }
+                    });
+                    let round =
+                        if n.round < 0 { tr!("MAP3D_NEVER").to_string() } else { trf!("MAP3D_ROUND", round = n.round) };
+                    let below = if n.below > 3.0 {
+                        format!(" · {}", trf!("MAP3D_BELOW", m = format!("{:.0}", n.below)))
+                    } else {
+                        String::new()
+                    };
+                    ui.label(RichText::new(format!("{round}{below}")).small().color(Color32::from_rgb(160, 175, 170)));
+                });
+            }
+        });
+        // top right: the compass, north up on a click
+        let compass = egui::Rect::from_center_size(
+            rect.right_top() + egui::vec2(-pad - 22.0, pad + 22.0),
+            egui::vec2(44.0, 44.0),
+        );
+        let cr = ui.interact(compass, ui.id().with("map3d-compass"), egui::Sense::click());
+        painter.circle_filled(compass.center(), 22.0, Color32::from_rgba_unmultiplied(16, 24, 28, 225));
+        painter.circle_stroke(
+            compass.center(),
+            22.0,
+            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 22)),
+        );
+        let north = egui::vec2(-self.yaw.sin(), -self.yaw.cos());
+        let (c, side) = (compass.center(), north.rot90() * 6.0);
+        painter.add(egui::Shape::convex_polygon(
+            vec![c + north * 15.0, c + side, c - side],
+            Color32::from_rgb(239, 107, 107),
+            egui::Stroke::NONE,
+        ));
+        painter.add(egui::Shape::convex_polygon(
+            vec![c - north * 15.0, c - side, c + side],
+            Color32::from_rgb(220, 226, 223),
+            egui::Stroke::NONE,
+        ));
+        if cr.on_hover_text(tr!("MAP3D_NORTH")).clicked() {
+            self.yaw = 0.0;
+        }
+        // bottom right: zoom, and back to the hero (following)
+        let br = egui::Rect::from_min_max(
+            rect.right_bottom() - egui::vec2(pad + 44.0, pad + 150.0),
+            rect.right_bottom() - egui::vec2(pad, pad),
+        );
+        ui.scope_builder(egui::UiBuilder::new().max_rect(br), |ui| {
+            ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
+                glass.show(ui, |ui| {
+                    let me = ui.add(
+                        egui::Button::new(RichText::new("◎").size(18.0))
+                            .selected(self.follow)
+                            .min_size(egui::vec2(28.0, 28.0)),
+                    );
+                    if me.on_hover_text(tr!("MAP3D_ME")).clicked() {
+                        self.follow = true;
+                    }
+                });
+                ui.add_space(6.0);
+                glass.show(ui, |ui| {
+                    ui.vertical(|ui| {
+                        if ui
+                            .add(egui::Button::new(RichText::new("+").size(18.0)).min_size(egui::vec2(28.0, 28.0)))
+                            .clicked()
+                        {
+                            self.dist = (self.dist * 0.75).max(20.0);
+                        }
+                        if ui
+                            .add(egui::Button::new(RichText::new("−").size(18.0)).min_size(egui::vec2(28.0, 28.0)))
+                            .clicked()
+                        {
+                            self.dist = (self.dist * 1.33).min(scene.extent * 3.0);
+                        }
+                    });
+                });
+            });
+        });
+        // bottom middle: the story round
+        let max = scene.nodes.iter().map(|n| n.round).max().unwrap_or(0);
+        let bw = (rect.width() * 0.5).clamp(260.0, 520.0);
+        let bm = egui::Rect::from_min_size(
+            egui::pos2(rect.center().x - bw / 2.0, rect.bottom() - pad - 40.0),
+            egui::vec2(bw, 40.0),
+        );
+        ui.scope_builder(egui::UiBuilder::new().max_rect(bm), |ui| {
+            glass.show(ui, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(RichText::new(tr!("MAP3D_ROUNDS")).small());
+                    let mut r = self.round.min(max);
+                    ui.spacing_mut().slider_width = (bw - 170.0).max(80.0);
+                    if ui.add(egui::Slider::new(&mut r, 0..=max.max(0))).changed() {
+                        self.round = if r >= max { i32::MAX } else { r };
+                    }
+                });
+            });
+        });
+        // the hint, faint, bottom left
+        painter.text(
+            rect.left_bottom() + egui::vec2(pad, -pad),
+            egui::Align2::LEFT_BOTTOM,
+            tr!("MAP3D_HINT"),
+            egui::FontId::proportional(11.0),
+            Color32::from_rgba_unmultiplied(200, 210, 206, 110),
+        );
     }
 
     fn eye(&self) -> [f32; 3] {
         let (sp, cp) = self.pitch.sin_cos();
         let (sy, cy) = self.yaw.sin_cos();
         [self.target[0] + self.dist * cp * sy, self.target[1] + self.dist * sp, self.target[2] + self.dist * cp * cy]
-    }
-
-    /// The controls above the view.
-    pub fn controls(&mut self, ui: &mut egui::Ui, max_round: i32) {
-        ui.horizontal_wrapped(|ui| {
-            ui.checkbox(&mut self.xray, tr!("MAP3D_XRAY"));
-            ui.checkbox(&mut self.hole, tr!("MAP3D_HOLE"));
-            ui.add_enabled(self.hole, egui::Slider::new(&mut self.hole_m, 10.0..=250.0).suffix(" m"));
-            ui.label(tr!("MAP3D_KEEP"));
-            ui.add(egui::Slider::new(&mut self.keep, 0.0..=1.0).show_value(false));
-            ui.label(tr!("MAP3D_ROUNDS"));
-            let mut r = self.round.min(max_round);
-            if ui.add(egui::Slider::new(&mut r, 0..=max_round.max(0))).changed() {
-                self.round = if r >= max_round { i32::MAX } else { r };
-            }
-        });
-    }
-
-    pub fn max_round(&self) -> i32 {
-        self.scene.as_ref().map_or(0, |s| s.nodes.iter().map(|n| n.round).max().unwrap_or(0))
     }
 }
 
@@ -533,6 +682,18 @@ fn ribbon(pts: &[[f32; 3]]) -> Vec<f32> {
         }
     }
     out
+}
+
+/// A map pin standing on `at`: a teardrop with a white dot.
+fn pin(painter: &egui::Painter, at: egui::Pos2, colour: Color32) {
+    let head = at - egui::vec2(0.0, 22.0);
+    painter.add(egui::Shape::convex_polygon(
+        vec![at, head + egui::vec2(-8.0, 3.0), head + egui::vec2(8.0, 3.0)],
+        colour,
+        egui::Stroke::NONE,
+    ));
+    painter.circle_filled(head, 10.0, colour);
+    painter.circle_filled(head, 4.0, Color32::WHITE);
 }
 
 fn project(vp: &[f32; 16], p: [f32; 3], rect: egui::Rect) -> Option<egui::Pos2> {
@@ -641,7 +802,7 @@ void main(){
 const FLAT_VS: &str = r#"
 layout(location=0) in vec3 aPos; layout(location=1) in vec3 aCol;
 uniform mat4 uVP; uniform float uSize; out vec3 vC;
-void main(){ vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); gl_PointSize = uSize * 900.0 / max(gl_Position.w, 1.0); }
+void main(){ vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); gl_PointSize = clamp(uSize * 900.0 / max(gl_Position.w, 1.0), 3.0, 14.0); }
 "#;
 
 const FLAT_FS: &str = r#"
@@ -932,7 +1093,7 @@ impl super::Panel {
             .and_then(|s| s.world.clone())
             .map(|w| crate::survey::Survey::world_of(&w).to_string())
             .unwrap_or_default();
-        let hero = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let hero = snap.and_then(|s| s.pose).map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
         let route = self.shared.route3d.lock().unwrap().clone();
         self.map3d.want(&world);
         card(t, &format!("{} · {}", tr!("MAP3D"), if world.is_empty() { "—" } else { world.as_str() }), |t| {
@@ -943,11 +1104,8 @@ impl super::Panel {
             if self.map3d.loading() && self.map3d.scene().is_none() {
                 note(t, tr!("MAP3D_LOADING"));
             }
-            let max = self.map3d.max_round();
-            tw::block(t, |ui| self.map3d.controls(ui, max));
-            note(t, tr!("MAP3D_HINT"));
             tw::block(t, |ui| {
-                let height = (ui.ctx().content_rect().height() - 330.0).max(320.0);
+                let height = (ui.ctx().content_rect().height() - 230.0).max(360.0);
                 self.map3d.view(ui, height, hero, &route);
                 ui.ctx().request_repaint_after(std::time::Duration::from_millis(33));
             });

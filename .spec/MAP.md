@@ -431,3 +431,14 @@ to it; a wall hides what is behind it but not what is seen over it.
 
 Limits: occlusion is as good as the obstacles: thin or skipped meshes (foliage, small props) do not
 hide the band, and moving doors are where the last pass of the objects saw them.
+
+### 16.1 Map-app controls over the view (2026-10-05)
+
+The user: the hero's position, and the controls inside the 3D canvas as in Naver or Google Maps. The
+view now fills the card and its controls float over it in glass panels: the layers (X-ray, keyhole,
+ground) top left with the picked place's card under them, a compass top right (it turns with the view;
+a click puts north up), zoom and "follow me" bottom right, the story round along the bottom, the hint
+faint bottom left. The hero is a blue dot with a white rim, a cone the way they face (the pose's yaw,
+projected) and a pulse; the route's end is a pin. Following (on by default, a right drag lets go,
+"follow me" takes it back), the view eases after the hero. Places are drawn 3–14 px whatever the
+distance, as a map's icons are.

@@ -815,3 +815,5 @@ MAP3D_BELOW	{m} m pod ziemią
 MAP3D_HINT	Przeciągnij: obrót · prawym: przesuń · kółko: zoom · klik: miejsce
 MAP3D_LOADING	Wczytywanie regionu…
 MAP3D_MISSING	Brak danych mapy tego regionu: uruchom raz `hiumod doctor map3d` (kilka minut).
+MAP3D_NORTH	Północ u góry
+MAP3D_ME	Śledź mnie

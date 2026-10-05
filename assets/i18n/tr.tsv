@@ -815,3 +815,5 @@ MAP3D_BELOW	yerin {m} m altında
 MAP3D_HINT	Sürükle: döndür · sağ sürükle: kaydır · tekerlek: yakınlaş · tıkla: yer
 MAP3D_LOADING	Bölge yükleniyor…
 MAP3D_MISSING	Bu bölgenin harita verisi yok: bir kez `hiumod doctor map3d` çalıştırın (birkaç dakika).
+MAP3D_NORTH	Kuzey yukarı
+MAP3D_ME	Beni takip et
