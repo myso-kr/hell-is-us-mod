@@ -70,6 +70,13 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- Switching off the enemy-time or frail-enemy cheat no longer writes an enemy's old value to
+  memory that a dead enemy left: records are tied to the actor's class (and, for frail, the
+  Health attribute found again each tick), dropped when the enemy is gone, and checked again
+  before anything is put back.
+- The ghost cheat's originals are kept on disk (`Mods\ghost.txt`): a killed panel's next run puts
+  the hero back on its own side.
+- The record of NPCs talked to no longer grows with every NPC ever seen.
 - The 3D map's view no longer shifts as the Map page scrolls it partly out of the window.
 - Routes no longer read as blocked behind every door. The game's navmesh has every door closed, so
   "blocked" meant behind any door at all, and a way round through an ordinary door was never found.

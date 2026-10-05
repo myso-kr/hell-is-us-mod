@@ -7,6 +7,13 @@
 //! still in play when the cheat stops. A killed panel leaves enemies as they were
 //! last written until they respawn; nothing here outlives them.
 //!
+//! An enemy's record is tied to the actor it was taken from — its address and its class —
+//! and, for the frail cheat, to the Health attribute it found there. A record whose enemy
+//! is gone is dropped each tick, and nothing is written to an address unless that same
+//! enemy (and attribute) is still there: a dead enemy's memory may hold something else by
+//! then. The ghost's originals (one hero) are also kept on disk (`ghost.txt`), so a killed
+//! panel's next run puts the hero back on its own side.
+//!
 //! - Enemy time: each enemy's `CustomTimeDilation` (the hero's own speed-up, turned on
 //!   the enemies).
 //! - Frail enemies: each enemy's `HealthAttributeSet.Health` held at 1 — one blow kills.
@@ -71,6 +78,33 @@ fn weapon_xp(m: &dyn Memory, item: u64) -> Option<(u32, u32)> {
     sane.then_some((total, within))
 }
 
+/// `ghost.txt` in the mod's data folder: the hero (address, hex) and its TeamID and Faction
+/// before the ghost cheat, while it is on.
+fn ghost_path() -> std::path::PathBuf {
+    crate::paths::data_dir().join("ghost.txt")
+}
+
+fn save_ghost(record: Option<(u64, u8, u8)>) {
+    match record {
+        Some((h, t, f)) => {
+            let _ = std::fs::write(ghost_path(), format!("{h:x} {t} {f}\n"));
+        }
+        None => {
+            let _ = std::fs::remove_file(ghost_path());
+        }
+    }
+}
+
+fn load_ghost() -> Option<(u64, u8, u8)> {
+    parse_ghost(&std::fs::read_to_string(ghost_path()).ok()?)
+}
+
+fn parse_ghost(text: &str) -> Option<(u64, u8, u8)> {
+    let mut w = text.split_whitespace();
+    let h = u64::from_str_radix(w.next()?, 16).ok()?;
+    Some((h, w.next()?.parse().ok()?, w.next()?.parse().ok()?))
+}
+
 /// A stack held by `Stock` never drops below this.
 const STOCK_FLOOR: u32 = 2;
 /// Frail enemies are held at this much health.
@@ -78,10 +112,10 @@ const FRAIL: f32 = 1.0;
 
 #[derive(Default)]
 pub struct Extras {
-    /// Enemy → its time dilation before the cheat.
-    time: HashMap<u64, f32>,
-    /// Enemy → (its Health attribute's address, BaseValue, CurrentValue before).
-    frail: HashMap<u64, (u64, f32, f32)>,
+    /// Enemy → (its class, its time dilation before the cheat).
+    time: HashMap<u64, (u64, f32)>,
+    /// Enemy → (its class, its Health attribute's address, BaseValue, CurrentValue before).
+    frail: HashMap<u64, (u64, u64, f32, f32)>,
     /// Inventory stack → the least it is held at.
     stock: HashMap<u64, u32>,
     /// Weapon item → its total experience as last seen (after any bonus).
@@ -181,18 +215,27 @@ impl Extras {
         let (m, n) = (a.memory(), a.names());
         let mut errors = Vec::new();
         let wants = |f: fn(&Effect) -> bool| active.iter().find(|t| t.effects().iter().any(f));
-        let enemies = || a.enemies();
+        let alive = a.enemies();
+        let class_of = |e: u64| mem::read_u64(m, e + CLASS);
+        // The gone are forgotten: there is nothing of them to put back, and their memory
+        // may be another object's by now.
+        self.time.retain(|e, (c, _)| alive.contains(e) && class_of(*e) == Some(*c));
+        self.frail.retain(|e, (c, ..)| alive.contains(e) && class_of(*e) == Some(*c));
+        // The ghost let go of with a record left (a killed panel's): put back now.
+        if self.team.is_some() && wants(|e| matches!(e, Effect::Ghost)).is_none() {
+            self.release_ghost(a);
+        }
 
         if let Some(t) = wants(|e| matches!(e, Effect::EnemyTime)) {
-            for e in enemies() {
+            for &e in &alive {
                 let Some(p) = n.field(m, e, "CustomTimeDilation") else { continue };
                 let at = e + p.offset as u64;
                 if let std::collections::hash_map::Entry::Vacant(v) = self.time.entry(e) {
-                    match mem::read_f32(m, at) {
-                        Some(orig) => {
-                            v.insert(orig);
+                    match (class_of(e), mem::read_f32(m, at)) {
+                        (Some(c), Some(orig)) => {
+                            v.insert((c, orig));
                         }
-                        None => continue,
+                        _ => continue,
                     }
                 }
                 if !m.write(at, &t.value.to_le_bytes()) {
@@ -202,16 +245,14 @@ impl Extras {
         }
 
         if wants(|e| matches!(e, Effect::EnemyFrail)).is_some() {
-            for e in enemies() {
-                let at = match self.frail.get(&e) {
-                    Some(&(at, ..)) => at,
-                    None => {
-                        let Some(at) = health_of(m, n, e) else { continue };
-                        let Some((b, c)) = pair(m, at) else { continue };
-                        self.frail.insert(e, (at, b, c));
-                        at
-                    }
-                };
+            for &e in &alive {
+                // Found again every tick: the attribute written is the one this enemy has
+                // now, never an address kept from an enemy that was here before.
+                let Some(at) = health_of(m, n, e) else { continue };
+                if self.frail.get(&e).is_none_or(|&(_, was, ..)| was != at) {
+                    let (Some(c), Some((b, cur))) = (class_of(e), pair(m, at)) else { continue };
+                    self.frail.insert(e, (c, at, b, cur));
+                }
                 if pair(m, at).is_some_and(|(_, c)| c > FRAIL) && !put_pair(m, at, FRAIL, FRAIL) {
                     errors.push("frail enemies: write failed".into());
                 }
@@ -246,12 +287,13 @@ impl Extras {
         }
 
         if wants(|e| matches!(e, Effect::Ghost)).is_some() {
-            match (a.hero(), a.enemies().first().copied()) {
+            match (a.hero(), alive.first().copied()) {
                 (Ok(hero), enemy) => {
                     if let Some((t, f)) = team_at(m, n, hero) {
                         if self.team.is_none_or(|(h, ..)| h != hero) {
                             if let (Some(ot), Some(of)) = (byte(m, t), byte(m, f)) {
                                 self.team = Some((hero, ot, of));
+                                save_ghost(self.team);
                             }
                         }
                         // The enemies' team as they hold it; 2 on 24045435 when none is near.
@@ -330,9 +372,11 @@ impl Extras {
         let (m, n) = (a.memory(), a.names());
         let kept = |f: fn(&Effect) -> bool| keep.iter().any(|t| t.effects().iter().any(f));
         let alive: Vec<u64> = a.enemies();
+        // Still that enemy: listed, and of the class it was recorded with.
+        let same = |e: u64, class: u64| alive.contains(&e) && mem::read_u64(m, e + CLASS) == Some(class);
         if !kept(|e| matches!(e, Effect::EnemyTime)) {
-            for (e, orig) in self.time.drain() {
-                if alive.contains(&e) {
+            for (e, (class, orig)) in self.time.drain() {
+                if same(e, class) {
                     if let Some(p) = n.field(m, e, "CustomTimeDilation") {
                         m.write(e + p.offset as u64, &orig.to_le_bytes());
                     }
@@ -340,8 +384,9 @@ impl Extras {
             }
         }
         if !kept(|e| matches!(e, Effect::EnemyFrail)) {
-            for (e, (at, b, c)) in self.frail.drain() {
-                if alive.contains(&e) {
+            for (e, (class, at, b, c)) in self.frail.drain() {
+                // and the Health attribute is still the one the record was taken from
+                if same(e, class) && health_of(m, n, e) == Some(at) {
                     put_pair(m, at, b, c);
                 }
             }
@@ -354,14 +399,7 @@ impl Extras {
         }
         let hero = a.hero().ok();
         if !kept(|e| matches!(e, Effect::Ghost)) {
-            if let Some((h, t, f)) = self.team.take() {
-                if Some(h) == hero {
-                    if let Some((ta, fa)) = team_at(m, n, h) {
-                        m.write(ta, &[t]);
-                        m.write(fa, &[f]);
-                    }
-                }
-            }
+            self.release_ghost(a);
         }
         if !kept(|e| matches!(e, Effect::Untouchable)) {
             if let Some((h, bits)) = self.overlaps.take() {
@@ -376,6 +414,22 @@ impl Extras {
         }
     }
 
+    /// The ghost's originals back on the hero they were taken from, and the record (in
+    /// memory and on disk) gone. Another hero (a new game, another level's pawn) is not
+    /// written: its team is its own.
+    fn release_ghost(&mut self, a: &dyn Reach) {
+        let (m, n) = (a.memory(), a.names());
+        if let Some((h, t, f)) = self.team.take() {
+            if a.hero().ok() == Some(h) {
+                if let Some((ta, fa)) = team_at(m, n, h) {
+                    m.write(ta, &[t]);
+                    m.write(fa, &[f]);
+                }
+            }
+        }
+        save_ghost(None);
+    }
+
     /// The game went away: every target with it.
     pub fn forget(&mut self) {
         self.time.clear();
@@ -383,7 +437,13 @@ impl Extras {
         self.stock.clear();
         self.weapon_xp.clear();
         self.team = None;
+        save_ghost(None);
         self.overlaps = None;
+    }
+
+    /// Start from a record a killed panel left (the ghost's originals).
+    pub fn new() -> Extras {
+        Extras { team: load_ghost(), ..Default::default() }
     }
 
     /// Write every stack of a class to `v`, each up to its own maximum. How many.
@@ -409,6 +469,13 @@ impl Extras {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_ghost_record_reads_back() {
+        assert_eq!(parse_ghost("1f2e3d4c 1 1\n"), Some((0x1f2e3d4c, 1, 1)));
+        assert_eq!(parse_ghost("nonsense"), None);
+        assert_eq!(parse_ghost("12 300 1"), None, "not a byte");
+    }
     use std::cell::RefCell;
 
     /// Plain bytes from address 0x1000.

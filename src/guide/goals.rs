@@ -821,6 +821,10 @@ impl Goals {
     /// Every place that still holds something new, and what kind, against `k`.
     pub fn evaluate(&mut self, m: &dyn Memory, k: &Knowledge, location: u64) -> Vec<Goal> {
         let mut out = Vec::new();
+        // What was heard of an actor no longer in play goes with it: the map grew by every
+        // NPC ever seen. One seen again starts over, which only waits for its next talk.
+        let payloads = &self.payloads;
+        self.heard.retain(|a, _| payloads.contains_key(a));
         if !self.talked_loaded {
             self.talked_loaded = true;
             self.talked = load_talked();

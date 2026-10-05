@@ -99,3 +99,22 @@ A closed-off target can trap the hero. At first the card said to save a position
 its own (`Engine::before`; the first of a run of teleports, so going back is to where it started), and
 the card's header shows "Back to last position" from a teleport until it is pressed
 (`Request::GoBack`; the slot is emptied either way).
+
+## Targets that come and go (2026-10-06)
+
+A code review found the enemy cheats' originals kept by address alone: switching enemy time or
+frail enemies off wrote each recorded value back to any address still in the enemy list, and frail
+wrote to the Health attribute's address recorded when the enemy was first seen. An enemy that died
+and whose memory went to another object (another enemy, or anything else) would have been written
+over. Now (`cheat/extras.rs`):
+
+- each record carries the actor's class; a record whose actor is no longer listed, or whose class
+  changed, is dropped every tick — there is nothing of a gone enemy to put back;
+- frail finds the Health attribute again every tick and takes a new original when it is not the
+  recorded one;
+- release writes only when the actor is listed, of the recorded class, and (frail) still has the
+  recorded attribute.
+
+The ghost cheat's originals (one hero: address, TeamID, Faction) are kept in `ghost.txt` in the
+data folder while it is on. The next run reads it: with the ghost off, the same hero gets its team
+and faction back; another hero (another game) is left alone; the file is removed either way.

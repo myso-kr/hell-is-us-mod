@@ -89,7 +89,7 @@ impl Engine {
             attached: None,
             checked: None,
             originals: Originals::load(&hold::default_path())?,
-            extras: Extras::default(),
+            extras: Extras::new(),
             slots: Default::default(),
             before: None,
             active: Vec::new(),
