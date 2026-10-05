@@ -48,6 +48,11 @@ struct Guide {
     saves_read: Option<Instant>,
     knowledge: Option<Knowledge>,
     knowledge_read: Option<Instant>,
+    /// What the graph's answers that depend on the knowledge alone (what is known, the logic
+    /// puzzles, the doors passable and one-way) were worked out for: the world and the
+    /// knowledge's reading. They are kept until either changes, not worked out every step.
+    graph_for: Option<(String, Option<Instant>)>,
+    known_all: HashSet<String>,
     goals: Goals,
     /// The quest journal, rebuilt a slice at a time.
     quests: crate::quests::Quests,
@@ -423,22 +428,30 @@ impl Attached {
             // something not done yet gives way to the first thing of its chain.
             let graph =
                 g.graph.get_or_insert_with(|| crate::graph::Graph::load(&crate::paths::data_dir().join("survey")));
-            let mut known: HashSet<String> = g.known_facts.union(&g.known_tags).cloned().collect();
-            // Standing in a region, it is reached, whatever the APC knows (graph.rs: regions
-            // are gated by their travel fact).
-            known.insert(format!("WMA_{}_Travel_BifrostTransitionFact_DA", crate::survey::Survey::world_of(w)));
-            let state = crate::graph::State { used: &g.saved, known: &known, held: &g.held };
+            let key = (w.to_string(), g.knowledge_read);
+            let fresh = g.graph_for.as_ref() != Some(&key);
+            if fresh {
+                let mut known: HashSet<String> = g.known_facts.union(&g.known_tags).cloned().collect();
+                // Standing in a region, it is reached, whatever the APC knows (graph.rs:
+                // regions are gated by their travel fact).
+                known.insert(format!("WMA_{}_Travel_BifrostTransitionFact_DA", crate::survey::Survey::world_of(w)));
+                g.known_all = known;
+            }
+            let state = crate::graph::State { used: &g.saved, known: &g.known_all, held: &g.held };
             // Only when the player asked for it (Settings: what must come first).
             let steps = crate::settings::live(crate::settings::Consent::STEPS);
             if steps {
                 graph.gate(&mut goals, w, &state);
                 // Under deadly water now: held back, the drain's chain guided to instead.
-                let pools = g.obstacles.done.pools.clone();
-                graph.flood(&mut goals, w, &pools, &state);
+                let done = g.obstacles.done.clone();
+                graph.flood(&mut goals, w, &done.pools, &state);
             }
-            g.logic_puzzles = graph.logic_puzzles(w, &state);
-            g.opened = graph.passable(w, &state);
-            g.one_way = graph.one_way(w, &state);
+            if fresh {
+                g.logic_puzzles = graph.logic_puzzles(w, &state);
+                g.opened = graph.passable(w, &state);
+                g.one_way = graph.one_way(w, &state);
+                g.graph_for = Some(key);
+            }
             g.doors = if steps { graph.door_steps(&goals, w, &state) } else { Vec::new() };
         }
         Ok((goals, k))

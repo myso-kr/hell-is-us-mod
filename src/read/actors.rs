@@ -399,7 +399,14 @@ struct Tracked {
     done: Option<Done>,
     /// A Hollow Walker's `HazeRecords` (the Hazes that keep it alive): the field's offset.
     records: Option<u32>,
+    /// Where it was last read: what does not walk about is read again only every
+    /// `STILL_EVERY` steps (`positions`).
+    last: Option<[f32; 3]>,
 }
+
+/// Things that stay where they are (items, loot, doors, save points…) are read every this many
+/// steps, not every step: each read is three reads of the game's memory, for hundreds of them.
+const STILL_EVERY: u32 = 10;
 
 /// A Haze and a Hollow Walker it keeps alive: where each is (cm).
 pub type HazeLink = ([f32; 3], [f32; 3]);
@@ -475,6 +482,8 @@ pub struct Scanner {
     done: HashMap<u64, (u64, Option<Done>)>,
     tracked: Vec<Tracked>,
     scanned: Option<Instant>,
+    /// Steps of `positions`, for `STILL_EVERY`.
+    tick: u32,
 }
 
 /// A `TArray` of object pointers, read in one go; empty if it does not look like one.
@@ -562,7 +571,7 @@ impl Scanner {
                 } else {
                     None
                 };
-                tracked.push(Tracked { actor, class, root: rc, sub, done, records });
+                tracked.push(Tracked { actor, class, root: rc, sub, done, records, last: None });
             }
         }
         let alive: std::collections::HashSet<u64> = tracked.iter().map(|t| t.actor).collect();
@@ -593,11 +602,21 @@ impl Scanner {
         let mut out = Vec::with_capacity(self.tracked.len());
         // Where each live actor is, for the Haze links after.
         let mut at: HashMap<u64, [f32; 3]> = HashMap::new();
-        self.tracked.retain(|t| {
+        self.tick = self.tick.wrapping_add(1);
+        let all = self.tick % STILL_EVERY == 0;
+        self.tracked.retain_mut(|t| {
+            // what does not move, as last read, between its reads
+            let moves = matches!(t.sub.kind(), Kind::Enemy | Kind::Npc);
+            if let (false, false, Some(p)) = (all, moves, t.last) {
+                out.push(Thing { sub: t.sub, at: p });
+                at.insert(t.actor, p);
+                return true;
+            }
             if mem::read_u64(m, t.actor + CLASS) != Some(t.class) {
                 return false;
             }
             if t.done.is_some_and(|d| d.spent(m)) {
+                t.last = None;
                 return true; // still tracked — a door can close again — but not shown
             }
             let mut b = [0u8; 24];
@@ -609,6 +628,7 @@ impl Scanner {
             if p.iter().all(|v| v.is_finite()) {
                 out.push(Thing { sub: t.sub, at: p });
                 at.insert(t.actor, p);
+                t.last = Some(p);
             }
             true
         });

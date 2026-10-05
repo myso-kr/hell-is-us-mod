@@ -80,6 +80,10 @@ struct Cache {
     names: HashMap<u32, String>,
     properties: HashMap<(u64, u32), Vec<Property>>,
     lineage: HashMap<(u64, u32), Vec<String>>,
+    /// A property found by name through a class's lineage (`find`), by the class as above:
+    /// a lookup the worker makes dozens of times a step, each a walk of the lineage that
+    /// cloned every class's properties.
+    found: HashMap<(u64, u32, String), Property>,
 }
 
 impl Names {
@@ -210,7 +214,17 @@ impl Names {
 
     /// A property by name, declared by the class or inherited.
     pub fn find(&self, m: &dyn Memory, class: u64, name: &str) -> Option<Property> {
-        self.lineage(m, class).into_iter().find_map(|c| self.properties(m, c).into_iter().find(|p| p.name == name))
+        let key = mem::read_u32(m, class + NAME).map(|n| (class, n, name.to_string()));
+        if let Some(p) = key.as_ref().and_then(|k| self.cache.lock().unwrap().found.get(k).cloned()) {
+            return Some(p);
+        }
+        let out =
+            self.lineage(m, class).into_iter().find_map(|c| self.properties(m, c).into_iter().find(|p| p.name == name));
+        // Not found is not kept: the class may be read half loaded.
+        if let (Some(k), Some(p)) = (key, out.as_ref()) {
+            self.cache.lock().unwrap().found.insert(k, p.clone());
+        }
+        out
     }
 
     /// A property of an object, by name: where it is in the object.

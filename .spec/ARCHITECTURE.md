@@ -190,3 +190,42 @@ them on the debug page. One cost was cut regardless: the lists derived from the 
 hand-overs, deadlines, collections, stories, the journal) were rebuilt every engine step (10 Hz); they
 are now rebuilt once a second and shared with the snapshot by `Arc`, so the panel and the overlay copy
 a pointer per frame instead of the lists.
+
+## Performance (2026-10-06)
+
+Each thread logs where its time goes every 30 s (`prof::span` / `prof::report`): `worker time`,
+`overlay time`, `panel time` in `Mods\hiumod.log`. The user saw lag whenever the panel or a tab
+opened; measured in play, before and after:
+
+| | before | after |
+|---|---|---|
+| worker step, mean / worst | 46.8 / 2179 ms | 21.5 / 117 ms |
+| obstacles · goals · hold · survey · things | 11.4 · 29.2 · 7.5 · 6.4 · 6.3 ms | 3.9 · 12.7 · 2.9 · 3.4 · 4.2 ms |
+| panel frames, idle | ~58 a second | ~12 a second |
+| 3D map scene drawn | every frame | when the camera or a layer changes |
+
+The panel:
+
+- Repaint requests of different periods do not line up, so their rates add: the 3D map asked
+  every 33 ms, the backdrop every 66 ms, each snapshot (~9 a second) at once, and the panel drew
+  ~58 frames a second, each drawing the 3D scene twice (the X-ray pass). The 3D map now asks only
+  while its camera glides after the hero; a snapshot asks for a frame within `SNAPSHOT_FRAME`
+  (250 ms), so snapshots coming faster share one; the backdrop drifts at 10 frames a second.
+- The 3D map draws its scene into a frame buffer of its own (`map3d::Cached`: colour and
+  depth-stencil renderbuffers the view's size) only when what its pixels depend on changes
+  (`Frame::key`: camera, layers, round, route, picked place); every other frame copies it into the
+  window (`glBlitFramebuffer`, cut by the scissor). The icons and controls are egui's, over it.
+
+The worker (analysed span by span; the step's 100 ms period overran):
+
+- `obstacles`: after the 3 s rest, a pass starts only when the hero has gone 60 m from where the
+  last started, or 12 s after it ended; a single mesh out of reach is left before its mesh is read.
+- `Names::find` keeps what it found by (class, class name, field): every `field`, dozens a step,
+  walked the lineage and cloned each class's properties.
+- The graph's answers that depend on the knowledge alone (`known`, logic puzzles, passable and
+  one-way doors) are kept until the world or the knowledge's reading (every 2 s) changes; the
+  pools are shared, not cloned.
+- `Survey::goals` counts the names the survey has twice once per call (`shared_names`), not once
+  per entry (it was O(n²) over the world's entries, twice).
+- `Scanner::positions` reads what does not walk about (all but enemies and people) every 10th step
+  and keeps its last place between.

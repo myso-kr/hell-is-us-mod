@@ -161,8 +161,27 @@ fn item(path: &str) -> (String, Option<String>) {
 /// World Partition actors) is told apart by where it stands — within `SAME_PLACE`, or
 /// `SAME_PERSON` for someone who walks about.
 pub fn is_loaded(e: &Entry, list: &[Entry], loaded: &HashMap<String, Vec<[f32; 3]>>) -> bool {
+    let shared = list.iter().filter(|x| x.name == e.name).count() >= 2;
+    loaded_as(e, shared, loaded)
+}
+
+/// The names `list` has more than once: `is_loaded` for a whole list without counting each
+/// name again for every entry.
+pub fn shared_names(list: &[Entry]) -> std::collections::HashSet<&str> {
+    let mut seen = std::collections::HashSet::new();
+    let mut twice = std::collections::HashSet::new();
+    for e in list {
+        if !seen.insert(e.name.as_str()) {
+            twice.insert(e.name.as_str());
+        }
+    }
+    twice
+}
+
+/// `is_loaded`, told whether `e`'s name is one the survey has more than once.
+pub fn loaded_as(e: &Entry, shared: bool, loaded: &HashMap<String, Vec<[f32; 3]>>) -> bool {
     let Some(places) = loaded.get(&e.name) else { return false };
-    if list.iter().filter(|x| x.name == e.name).count() < 2 {
+    if !shared {
         return true;
     }
     let reach = if e.npc { SAME_PERSON } else { SAME_PLACE };
@@ -455,6 +474,10 @@ impl Survey {
         empty: &HashSet<u64>,
     ) -> Vec<Goal> {
         let Some(list) = self.worlds.get(world) else { return Vec::new() };
+        let shared = shared_names(list);
+        let is_loaded = |e: &Entry, _: &[Entry], loaded: &HashMap<String, Vec<[f32; 3]>>| {
+            loaded_as(e, shared.contains(e.name.as_str()), loaded)
+        };
         let here = |e: &&Entry| is_loaded(e, list, loaded);
         for e in list.iter().filter(here) {
             if let Some(f) = &e.flow {

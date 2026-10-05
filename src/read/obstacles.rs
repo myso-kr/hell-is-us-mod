@@ -39,6 +39,11 @@ const SLICE: usize = 12_000;
 /// The pause between passes: the ground near the hero changes as they travel, not every
 /// step, and a pass started as the last ended cost 16 ms of every step's 55 (measured).
 const REST: std::time::Duration = std::time::Duration::from_secs(3);
+/// After `REST`, a pass starts only when the hero has gone this far (cm) from where the last
+/// started — a fifth of `REACH`, well inside what it read — or `STALE` after it ended: a hero
+/// standing still keeps the same ground, and a pass cost 11 ms of every step's 47 (measured).
+const MOVED: f64 = 6_000.0;
+const STALE: std::time::Duration = std::time::Duration::from_secs(12);
 /// Only components within this of the hero (cm) are read.
 const REACH: f64 = 30_000.0;
 
@@ -472,6 +477,8 @@ pub struct Obstacles {
     cursor: usize,
     /// When the last pass ended: the next waits `REST`.
     rested: Option<std::time::Instant>,
+    /// Where the hero stood when the last pass started.
+    started_at: Option<[f64; 3]>,
     building: Vec<Obstacle>,
     hazards: Vec<Hazard>,
     fields: Vec<Heightfield>,
@@ -571,6 +578,10 @@ impl Obstacles {
             _ => {}
         }
         let near = |p: [f64; 3]| (p[0] - hero[0]).hypot(p[1] - hero[1]) <= REACH;
+        // a single mesh out of reach: nothing to read of it (instances are tested one by one)
+        if matches!(f.kind, Kind::Plain) && !near(c2w.t) {
+            return;
+        }
         let Some(mesh) = mem::read_u64(m, comp + f.mesh).filter(|&p| mem::plausible(p)) else { return };
         if !self.blocks(m, n, comp, &f) {
             return;
@@ -630,6 +641,7 @@ impl Obstacles {
             self.hazards.clear();
             self.fields.clear();
             self.rested = None;
+            self.started_at = None;
             self.done = Arc::new(scene_cache::load(world).unwrap_or_default());
             self.from_cache = true;
         }
@@ -656,6 +668,11 @@ impl Obstacles {
             if self.rested.is_some_and(|t| t.elapsed() < REST) {
                 return;
             }
+            let moved = self.started_at.is_none_or(|a| (a[0] - hero[0]).hypot(a[1] - hero[1]) > MOVED);
+            if !moved && self.rested.is_some_and(|t| t.elapsed() < STALE) {
+                return;
+            }
+            self.started_at = Some(hero);
             // In address order, so neighbours' class pointers come from one page read.
             self.pending = objects.all(m);
             self.pending.sort_unstable();
