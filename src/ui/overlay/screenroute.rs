@@ -44,12 +44,14 @@ pub struct ScreenRoute {
     window: Option<Layered>,
     canvas: Canvas,
     index: Option<Indexed>,
-    icons: Option<crate::icons::Icons>,
+    /// The maps' icons, rasterised at each size a distance gives them (px → set).
+    icons: std::collections::HashMap<usize, crate::icons::Icons>,
+    icons_px: u8,
 }
 
 impl Default for ScreenRoute {
     fn default() -> Self {
-        ScreenRoute { window: None, canvas: Canvas::new(1, 1), index: None, icons: None }
+        ScreenRoute { window: None, canvas: Canvas::new(1, 1), index: None, icons: Default::default(), icons_px: 0 }
     }
 }
 
@@ -80,9 +82,10 @@ impl ScreenRoute {
         things: &[crate::actors::Thing],
         icon_px: u8,
     ) {
-        // the maps' icons at the maps' size (MapState::icon_px), made again when it changes
-        if self.icons.as_ref().is_none_or(|i| i.0.first().map(|i| i.size) != Some(icon_px as usize)) {
-            self.icons = crate::icons::Icons::new(icon_px as usize).ok();
+        // the icons are made again when the maps' size (MapState::icon_px) changes
+        if self.icons_px != icon_px {
+            self.icons.clear();
+            self.icons_px = icon_px;
         }
         if !self.index.as_ref().is_some_and(|i| Arc::ptr_eq(&i.scene, scene)) {
             let boxes = scene.obstacles.iter().map(bounds).collect();
@@ -125,7 +128,7 @@ impl ScreenRoute {
             .filter(|(d, _)| *d < MARKS_NEAR && *d > 150.0)
             .collect();
         near.sort_by(|a, b| a.0.total_cmp(&b.0));
-        let mut marks: Vec<((f32, f32), crate::actors::Sub, f32)> = Vec::new();
+        let mut marks: Vec<((f32, f32), crate::actors::Sub, f32, usize)> = Vec::new();
         for (d, t) in near {
             if marks.len() >= MARKS_MAX {
                 break;
@@ -144,7 +147,11 @@ impl ScreenRoute {
             {
                 continue;
             }
-            marks.push(((p.0, p.1), t.sub, 1.0 - (d / MARKS_NEAR) * 0.55));
+            // as the compass draws its pins (compass::pin_look): a little large near, smaller
+            // and fainter far, on a log scale over 10–200 m; sizes in steps of 2 px
+            let (scale, alpha) = crate::map::compass::pin_look(d / 100.0, false);
+            let size = (((icon_px as f32 * scale) / 2.0).round() as usize * 2).max(8);
+            marks.push(((p.0, p.1), t.sub, alpha, size));
         }
         if quads.is_empty() && marks.is_empty() {
             self.hide();
@@ -152,8 +159,8 @@ impl ScreenRoute {
         }
         // the window over the band's and the icons' bounds, on the client area, in buckets
         let (mut x0, mut y0, mut x1, mut y1) = (f32::MAX, f32::MAX, f32::MIN, f32::MIN);
-        let half = icon_px as f32 / 2.0 + 2.0;
-        for (p, _, _) in &marks {
+        for (p, _, _, size) in &marks {
+            let half = *size as f32 / 2.0 + 2.0;
             x0 = x0.min(p.0 - half);
             y0 = y0.min(p.1 - half);
             x1 = x1.max(p.0 + half);
@@ -192,11 +199,17 @@ impl ScreenRoute {
             };
             self.canvas.polygon(&pts, c);
         }
-        if let Some(icons) = self.icons.as_ref() {
-            for (p, sub, a) in &marks {
-                let icon = icons.get(*sub);
-                self.canvas.blit_alpha(p.0 - ox, p.1 - oy, icon.size, &icon.px, (a * 255.0) as u32);
-            }
+        // the far first, so the near sit on top
+        for (p, sub, a, size) in marks.iter().rev() {
+            let icons = match self.icons.entry(*size) {
+                std::collections::hash_map::Entry::Occupied(e) => e.into_mut(),
+                std::collections::hash_map::Entry::Vacant(e) => match crate::icons::Icons::new(*size) {
+                    Ok(i) => e.insert(i),
+                    Err(_) => continue,
+                },
+            };
+            let icon = icons.get(*sub);
+            self.canvas.blit_alpha(p.0 - ox, p.1 - oy, icon.size, &icon.px, (a * 255.0) as u32);
         }
         win.present(&self.canvas, left + x0, top + y0);
     }

@@ -888,7 +888,10 @@ pub fn run(shared: Arc<Shared>) {
                             Vec::new()
                         };
                     match (cam.as_ref(), client) {
-                        (Some(cam), Some(c)) if route.len() > 1 || !marks.is_empty() => {
+                        // shown when the maps are (the map key's "off" hides it with them)
+                        (Some(cam), Some(c))
+                            if state.display != Display::Off && (route.len() > 1 || !marks.is_empty()) =>
+                        {
                             screen_route.draw(cam, c, route, &obstacles, route_colour, p, &marks, state.icon_px);
                         }
                         _ => screen_route.hide(),
@@ -1067,6 +1070,7 @@ pub fn run(shared: Arc<Shared>) {
             _ => {
                 map_window.hide();
                 compass_window.hide();
+                screen_route.hide();
                 for w in marker_windows.iter_mut().flatten() {
                     w.hide();
                 }
