@@ -22,6 +22,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - Settings asks eight questions, not four: the maps, the guide, hidden places, what must come first,
   answers, missable warnings, panels over the game and cheats. Answers given before carry over. What
   the settings leave out of the guide is counted on the Guide page's auto card.
+- The requirement graph knows the story's order: what each conversation says once its conditions
+  hold, which regions the APC can reach, what beating a group of enemies gives. Places of a later act
+  no longer read as doable from the start.
 - The auto guide follows the requirement graph: the quest's objectives in turn, each by what must
   come first for it, not the nearest place along any chain. A puzzle worked through levers or
   statues is marked among them on their floor, where its ring can be seen.

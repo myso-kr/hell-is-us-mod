@@ -199,7 +199,44 @@ are doable in round 0 (Quest05: 294 of 307), because nothing the graph knows gat
 steps (StoryUnits) that do are not nodes yet. The rounds order places by their puzzles and keys, not
 by the story. This is the first thing to add (§12).
 
-## 12. Next
+## 13. The story order (2026-10-05)
+
+The user: remove the graph's gaps entirely. The audit (§11) showed the story order missing. What the
+game's data holds instead of a list of steps:
+
+- **Conversations are gated.** A conversation (`ConvoRoot`, its `ConvoIntro` beside it, `TopicFlowAsset`s
+  under it) reaches each payload through condition nodes: `HasFact` / `DoesNotHaveFact` / `HasTagFact` on
+  their `Passed`/`Failed` pins, and `ConditionSubGraph`s (`ConditionFlowAsset`, read back from its finish
+  through `LogicalAND`/`LogicalOR`). The survey tool now writes, for each payload and sub-graph, what must
+  hold on the way to it (`gated`, `gated_subgraphs` in flows.json; up to four ways each). A topic's
+  `QuestionSelector` names its subject, not a gate: topics open on `Conversation.TopicsUnlock.<who>.<what>`
+  tags, and talking one through sets `<tag>.Spoken`. The graph makes a node per thing said (`Say`), needing
+  what holds on its way; before, a person gave all of every branch from the first round.
+- **Regions are gated.** The APC goes to a region once `WMA_<world>_Travel_BifrostTransitionFact` is known
+  (a base fact of the region's travel identity, given by conversations and notes). Every node of a region
+  needs it, where anything gives it; the region the hero stands in always counts as reached (live).
+- **Fights give.** A spawner's `GuaranteedDropSpawnerPayload` is given when its enemies are beaten, and it
+  wakes on `ActivationRequiredTags` and sleeps on `ActivationBlockedTags` (Marastan's market cleared,
+  Auriga's protocol waves). The survey now records spawners with either.
+- **Bosses wait for their quest.** A world's boss-fight payload that gives a main quest's facts needs that
+  quest begun (Senedra's boss gives Quest03's keystone).
+- **Listeners mostly wait.** A quest listener names every tag its blueprint uses; one that something else
+  gives, it waits for (Jova's grieving father waits for `Act01Complete`), only the rest are its outcome.
+- **Loops that are positions.** A device that needs the state of the receiver it sets off (an elevator's
+  call lever) does not need it first: the five elevator loops are gone.
+- **What only the code gives** is a node of its own (`CodeGives`), listed by `doctor graph`: two lore
+  topics and two of Auriga's secret waves.
+
+Result: 2996 nodes, all reachable, 0 cycles, 6398 edges (1061 before), Datapad facts with a giver
+854/887 (755). The order reads Senedra 0 → Acasa 2 → Vyssa 4 → Plains of Mist 5 → Lake Cynon 14 →
+Jeljin, Lethe Propaganda, Talju 17 → Lethe Library 18 → Marastan 19 → Auriga 20; Act 1's quests
+(Quest01 0–18, Quest02 5–16), Act 2's from 16 (Quest03 16–22, Quest04 16–21, Quest05 16–26). Test:
+`the_story_order_comes_from_what_is_said_and_where_one_can_travel`.
+
+Open: a choice slot's items (the Eye of God takes any keystone) are not yet needed (needing any of
+them left 1627 nodes stuck; being looked into); Plains of Mist opens early through a letter in Vyssa.
+
+## 14. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items
