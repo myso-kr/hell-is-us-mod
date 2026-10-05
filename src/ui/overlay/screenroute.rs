@@ -41,8 +41,21 @@ const VSYNC_EARLY: Duration = Duration::from_millis(5);
 const SEEN_MOVED: f32 = 25.0;
 const SEEN_FOR: Duration = Duration::from_millis(120);
 
-/// A piece of the band on the screen: its corners, its opacity, whether a chevron.
-type Quad = ([(f32, f32); 4], f32, bool);
+/// A piece of a band on the screen: its corners, its opacity, what it is.
+type Quad = ([(f32, f32); 4], f32, Piece);
+
+/// What a band's piece is: the route's, one of its chevrons, or the shortcut's (a dash).
+#[derive(Clone, Copy, PartialEq)]
+enum Piece {
+    Band,
+    Chevron,
+    Shortcut,
+}
+
+/// The shortcut: its colour (the maps'), its width against the route's, its dashes (cm).
+const SHORTCUT: [u8; 3] = [90, 215, 235];
+const SHORTCUT_WIDTH: f32 = 0.7;
+const DASH: f32 = 150.0;
 /// A sample's band edges on the screen (left, right) and whether it is seen.
 type Edge = ((f32, f32), (f32, f32), bool);
 
@@ -87,6 +100,8 @@ pub struct Job {
     pub pid: u32,
     pub client: (i32, i32, i32, i32),
     pub route: Vec<[f32; 3]>,
+    /// The route's shortcut down, beside it (route.rs `Shortcut`).
+    pub shortcut: Vec<[f32; 3]>,
     pub scene: Arc<Scene>,
     pub colour: [u8; 3],
     pub hero: [f32; 3],
@@ -135,7 +150,17 @@ fn paint(job: Arc<Mutex<Option<Arc<Job>>>>, panel: Arc<AtomicIsize>) {
                     reader = crate::game::process::Reader::open(j.pid);
                 }
                 match reader.as_ref().and_then(|r| j.src.camera(r)) {
-                    Some(cam) => layer.draw(&cam, j.client, &j.route, &j.scene, j.colour, j.hero, &j.things, j.icon_px),
+                    Some(cam) => layer.draw(
+                        &cam,
+                        j.client,
+                        &j.route,
+                        &j.shortcut,
+                        &j.scene,
+                        j.colour,
+                        j.hero,
+                        &j.things,
+                        j.icon_px,
+                    ),
                     None => layer.hide(),
                 }
             }
@@ -180,6 +205,7 @@ impl ScreenRoute {
         cam: &crate::player::Camera,
         client: (i32, i32, i32, i32),
         route: &[[f32; 3]],
+        shortcut: &[[f32; 3]],
         scene: &Arc<Scene>,
         colour: [u8; 3],
         hero: [f32; 3],
@@ -210,30 +236,48 @@ impl ScreenRoute {
             let key = [(at[0] / 25.0).round() as i32, (at[1] / 25.0).round() as i32, (at[2] / 25.0).round() as i32];
             *cache.entry(key).or_insert_with(|| visible(eye, at, scene, &index.boxes))
         };
-        let samples = resample(route, STEP, AHEAD);
-        // each sample: seen?, and its band's two edges on the screen
-        let mut quads: Vec<Quad> = Vec::new();
-        let mut prev: Option<Edge> = None;
-        for (k, s) in samples.iter().enumerate() {
-            let (p, dir, along) = (s.0, s.1, s.2);
-            let side = [-dir[1] * HALF, dir[0] * HALF];
-            let at = [p[0], p[1], p[2] + LIFT];
-            let seen = seen_from(at);
-            let l = marker::project(cam, [at[0] + side[0], at[1] + side[1], at[2]], w as f32, h as f32);
-            let r = marker::project(cam, [at[0] - side[0], at[1] - side[1], at[2]], w as f32, h as f32);
-            let cur = match (l, r) {
-                (Some(l), Some(r)) => Some(((l.0, l.1), (r.0, r.1), seen)),
-                _ => None,
-            };
-            if let (Some((pl, pr, ps)), Some((cl, cr, cs))) = (prev, cur) {
-                if ps && cs && k > 0 && along > FROM {
-                    // fading out ahead, a brighter chevron every 3 m
-                    let fade = 1.0 - (along / AHEAD).clamp(0.0, 1.0) * 0.7;
-                    let chevron = (along / 300.0).fract() < 0.2;
-                    quads.push(([pl, pr, cr, cl], fade * if chevron { 0.85 } else { 0.5 }, chevron));
+        // a band over a way: each sample seen or not, its two edges on the screen
+        let mut band = |way: &[[f32; 3]], half: f32, dashed: bool| -> Vec<Quad> {
+            let samples = resample(way, STEP, AHEAD);
+            let mut quads: Vec<Quad> = Vec::new();
+            let mut prev: Option<Edge> = None;
+            for (k, s) in samples.iter().enumerate() {
+                let (p, dir, along) = (s.0, s.1, s.2);
+                let side = [-dir[1] * half, dir[0] * half];
+                let at = [p[0], p[1], p[2] + LIFT];
+                let seen = seen_from(at);
+                let l = marker::project(cam, [at[0] + side[0], at[1] + side[1], at[2]], w as f32, h as f32);
+                let r = marker::project(cam, [at[0] - side[0], at[1] - side[1], at[2]], w as f32, h as f32);
+                let cur = match (l, r) {
+                    (Some(l), Some(r)) => Some(((l.0, l.1), (r.0, r.1), seen)),
+                    _ => None,
+                };
+                if let (Some((pl, pr, ps)), Some((cl, cr, cs))) = (prev, cur) {
+                    if ps && cs && k > 0 && along > FROM {
+                        let fade = 1.0 - (along / AHEAD).clamp(0.0, 1.0) * 0.7;
+                        if dashed {
+                            // dashes, every other `DASH`
+                            if (along / DASH).fract() < 0.5 {
+                                quads.push(([pl, pr, cr, cl], fade * 0.6, Piece::Shortcut));
+                            }
+                        } else {
+                            // fading out ahead, a brighter chevron every 3 m
+                            let chevron = (along / 300.0).fract() < 0.2;
+                            let (a, piece) = if chevron { (0.85, Piece::Chevron) } else { (0.5, Piece::Band) };
+                            quads.push(([pl, pr, cr, cl], fade * a, piece));
+                        }
+                    }
                 }
+                prev = cur;
             }
-            prev = cur;
+            quads
+        };
+        let mut quads = band(route, HALF, false);
+        if shortcut.len() > 1 {
+            // under the route's band where they share the way
+            let mut cut = band(shortcut, HALF * SHORTCUT_WIDTH, true);
+            cut.append(&mut quads);
+            quads = cut;
         }
         // the maps' icons over what is near and seen, the nearest first
         let mut near: Vec<(f32, &crate::actors::Thing)> = things
@@ -305,14 +349,15 @@ impl ScreenRoute {
         let Some(win) = self.window.as_mut() else { return };
         self.canvas.clear();
         let (ox, oy) = (x0 as f32, y0 as f32);
-        for (q, a, chevron) in &quads {
+        for (q, a, piece) in &quads {
             let pts: Vec<(f32, f32)> = q.iter().map(|p| (p.0 - ox, p.1 - oy)).collect();
             let alpha = (a * 255.0) as u8;
-            let c = if *chevron {
-                crate::map::canvas::Rgba(255, 244, 214, alpha)
-            } else {
-                crate::map::canvas::Rgba(colour[0], colour[1], colour[2], alpha)
+            let [r, g, b] = match piece {
+                Piece::Chevron => [255, 244, 214],
+                Piece::Band => colour,
+                Piece::Shortcut => SHORTCUT,
             };
+            let c = crate::map::canvas::Rgba(r, g, b, alpha);
             self.canvas.polygon(&pts, c);
         }
         // the far first, so the near sit on top

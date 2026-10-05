@@ -281,4 +281,6 @@ round, or no way at all, to the route. Asked for by the user as a shortcut drawn
 - **Shown** (overlay `route.rs`): beside the route, when the route is blocked or the shortcut is
   a fifth and 20 m shorter; a goal reached only by it is not blocked. The maps draw it dashed in
   cyan, each drop a ↓ with its height, cyan, amber or red by the harm; the quest tracker tells a
-  drop within 30 m. Not yet on the 3D map and in the game view.
+  drop within 30 m. The 3D map draws it as a dashed cyan ribbon under the route with each drop's
+  ↓ and height; the game view as a narrower dashed cyan band beside the route's. A drop's own
+  segment is not draped over a floor (`route::drape` leaves near-vertical legs as they are).

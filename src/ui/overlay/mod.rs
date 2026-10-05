@@ -702,6 +702,19 @@ pub fn run(shared: Arc<Shared>) {
                             // laid over the floor's bumps, not straight between corners
                             let draped = route::drape(&r.drawn3d(p), &nav, &obstacles);
                             *shared.route3d.lock().unwrap() = (draped, f.colour.unwrap_or(g.tier.rgb()));
+                            *shared.shortcut3d.lock().unwrap() = r
+                                .shortcut()
+                                .map(|c| {
+                                    let mut pts = c.pts.clone();
+                                    if let Some(first) = pts.first_mut() {
+                                        *first = [p[0], p[1], p[2] - 90.0];
+                                    }
+                                    (
+                                        route::drape(&crate::pathfind::smooth3(&pts), &nav, &obstacles),
+                                        c.drops.iter().map(|d| (d.top, d.height())).collect(),
+                                    )
+                                })
+                                .unwrap_or_default();
                         }
                         cut = r.shortcut().cloned();
                         r.drawn(p)
@@ -944,6 +957,11 @@ pub fn run(shared: Arc<Shared>) {
                                 pid,
                                 client: c,
                                 route,
+                                shortcut: if state.route && state.screen_route {
+                                    shared.shortcut3d.lock().unwrap().0.clone()
+                                } else {
+                                    Vec::new()
+                                },
                                 scene: obstacles.clone(),
                                 colour: route_colour,
                                 hero: p,

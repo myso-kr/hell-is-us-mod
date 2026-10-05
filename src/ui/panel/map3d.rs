@@ -418,6 +418,7 @@ impl Map3d {
     /// round along the bottom, the picked place's card. The hero is a dot with a cone the way
     /// they face and a pulse, the route's end a pin. Drag turns, a right drag moves, the wheel
     /// zooms; following, the view keeps the hero in its middle.
+    #[allow(clippy::too_many_arguments)]
     pub fn view(
         &mut self,
         ui: &mut egui::Ui,
@@ -426,6 +427,7 @@ impl Map3d {
         route: &[[f32; 3]],
         colour: [u8; 3],
         state: &crate::minimap::MapState,
+        shortcut: &crate::ui::Shortcut3d,
     ) {
         let _t = crate::prof::span("map3d.view");
         let size = egui::vec2(ui.available_width(), height);
@@ -474,6 +476,7 @@ impl Map3d {
         let proj = perspective(50f32.to_radians(), aspect, 1.0, scene.extent * 8.0);
         let vp = mul(&proj, &view);
         let route: Vec<[f32; 3]> = route.iter().map(|&q| scene.to_scene(q)).collect();
+        let cut: Vec<[f32; 3]> = shortcut.0.iter().map(|&q| scene.to_scene(q)).collect();
         if resp.clicked() {
             if let Some(pos) = resp.interact_pointer_pos() {
                 self.picked = scene
@@ -499,6 +502,7 @@ impl Map3d {
             hero: None,
             picked: self.picked,
             route: ribbon(&route, colour),
+            shortcut: dashed(&ribbon(&cut, SHORTCUT_RGB), &cut),
         };
         let gpu = self.gpu.clone();
         let drawn = scene.clone();
@@ -563,6 +567,31 @@ impl Map3d {
             }
         }
         // markers over the scene: the route's end, the picked place, the hero
+        // the shortcut's drops: ↓ and how far, coloured by what the fall does
+        for &(top, h) in &shortcut.1 {
+            if let Some(q) = project(&vp, scene.to_scene(top), rect) {
+                let c = if h <= crate::navmesh::DROP_HURTS {
+                    Color32::from_rgb(90, 215, 235)
+                } else if h <= crate::navmesh::DROP_HURTS_MORE {
+                    Color32::from_rgb(240, 170, 60)
+                } else {
+                    Color32::from_rgb(235, 80, 70)
+                };
+                painter.circle_filled(q, 7.0, OUTLINE);
+                painter.add(egui::Shape::convex_polygon(
+                    vec![q + egui::vec2(0.0, 4.5), q + egui::vec2(-4.5, -2.5), q + egui::vec2(4.5, -2.5)],
+                    c,
+                    egui::Stroke::NONE,
+                ));
+                painter.text(
+                    q + egui::vec2(10.0, 0.0),
+                    egui::Align2::LEFT_CENTER,
+                    format!("{:.0}m", h / 100.0),
+                    egui::FontId::proportional(11.0),
+                    c,
+                );
+            }
+        }
         let [cr, cg, cb] = colour;
         if let Some((end, at)) = route.last().and_then(|&q| project(&vp, q, rect).map(|e| (e, q))) {
             let (alpha, dz) = fade(at, true);
@@ -741,6 +770,8 @@ struct Frame {
     picked: Option<usize>,
     /// The route as a ribbon: x, y, z, r, g, b per vertex, in triangles.
     route: Vec<f32>,
+    /// Its shortcut down, a dashed ribbon of its own colour (route.rs `Shortcut`).
+    shortcut: Vec<f32>,
 }
 
 /// The route as a flat band 2.4 m wide, 0.6 m over the floor it runs on, in the goal's colour as
@@ -785,6 +816,25 @@ fn ribbon(pts: &[[f32; 3]], colour: [u8; 3]) -> Vec<f32> {
         for q in [v(l0), v(r0), v(r1), v(l0), v(r1), v(l1)] {
             out.extend(q);
         }
+    }
+    out
+}
+
+/// The shortcut's colour (the maps'), as the shader takes it.
+const SHORTCUT_RGB: [u8; 3] = [90, 215, 235];
+
+/// A ribbon (`ribbon` over `pts`) with every other stretch of `DASH_M` along the way left out:
+/// six vertices of six floats a leg.
+fn dashed(ribbon: &[f32], pts: &[[f32; 3]]) -> Vec<f32> {
+    const DASH_M: f32 = 1.5;
+    let mut out = Vec::with_capacity(ribbon.len() / 2);
+    let mut along = 0.0;
+    for (k, w) in pts.windows(2).enumerate() {
+        let len = ((w[1][0] - w[0][0]).powi(2) + (w[1][2] - w[0][2]).powi(2)).sqrt();
+        if (along / DASH_M) as i64 % 2 == 0 {
+            out.extend_from_slice(&ribbon[k * 36..(k + 1) * 36]);
+        }
+        along += len;
     }
     out
 }
@@ -1041,6 +1091,9 @@ impl Frame {
             v.to_bits().hash(&mut h);
         }
         (self.xray, self.round, self.picked).hash(&mut h);
+        for v in &self.shortcut {
+            v.to_bits().hash(&mut h);
+        }
         self.hero.map(|p| p.map(f32::to_bits)).hash(&mut h);
         self.route.len().hash(&mut h);
         for v in &self.route {
@@ -1347,12 +1400,15 @@ impl Gpu {
                 gl.depth_func(glow::LEQUAL);
             }
             gl.disable(glow::STENCIL_TEST);
-            // the route: solid where seen, faint where the ground or floors hide it
-            if !f.route.is_empty() {
-                let (a, b) = Self::upload(gl, &f.route, &[3, 3]);
+            // the shortcut, then the route over it: solid where seen, faint where hidden
+            for ribbon in [&f.shortcut, &f.route] {
+                if ribbon.is_empty() {
+                    continue;
+                }
+                let (a, b) = Self::upload(gl, ribbon, &[3, 3]);
                 gl.uniform_1_i32(u("uRound").as_ref(), 0);
                 gl.bind_vertex_array(Some(a));
-                let n = (f.route.len() / 6) as i32;
+                let n = (ribbon.len() / 6) as i32;
                 gl.uniform_1_f32(u("uAlpha").as_ref(), 0.95);
                 gl.draw_arrays(glow::TRIANGLES, 0, n);
                 gl.depth_func(glow::GREATER);
@@ -1413,6 +1469,7 @@ impl super::Panel {
             .unwrap_or_default();
         let hero = snap.and_then(|s| s.pose).map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
         let (route, colour) = self.shared.route3d.lock().unwrap().clone();
+        let shortcut = self.shared.shortcut3d.lock().unwrap().clone();
         self.map3d.want(&world);
         card(t, &format!("{} · {}", tr!("MAP3D"), if world.is_empty() { "—" } else { world.as_str() }), |t| {
             if self.map3d.missing() {
@@ -1424,7 +1481,7 @@ impl super::Panel {
             }
             tw::block(t, |ui| {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
-                self.map3d.view(ui, height, hero, &route, colour, state);
+                self.map3d.view(ui, height, hero, &route, colour, state, &shortcut);
             });
         });
     }

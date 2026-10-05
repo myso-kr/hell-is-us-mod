@@ -208,6 +208,13 @@ pub fn drape(pts: &[[f32; 3]], nav: &crate::navmesh::NavMesh, scene: &Scene) -> 
     for (k, w) in pts.windows(2).enumerate() {
         let (a, b) = (w[0], w[1]);
         let len = (b[0] - a[0]).hypot(b[1] - a[1]);
+        // straight down (a drop) or up (an elevator): through the air, as it is
+        if (b[2] - a[2]).abs() > DRAPE_GROUND && len < 3.0 * (b[2] - a[2]).abs() {
+            if k == 0 {
+                out.push(a);
+            }
+            continue;
+        }
         let n = (len / DRAPE_STEP).ceil().max(1.0) as usize;
         // the hero's own point stays where the hero stands
         let from = if k == 0 { 1 } else { 0 };

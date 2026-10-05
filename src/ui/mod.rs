@@ -42,6 +42,9 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+/// A shortcut down in 3D: its points (cm), and its drops' tops with their heights.
+pub type Shortcut3d = (Vec<[f32; 3]>, Vec<([f32; 3], f32)>);
+
 /// The panel draws a new snapshot at most this often.
 const SNAPSHOT_FRAME: Duration = Duration::from_millis(250);
 
@@ -119,6 +122,9 @@ pub struct Shared {
     pub previous: Mutex<Option<crate::session::Session>>,
     /// overlay: the route in focus in 3D (cm), from the hero's feet: the 3D map draws it.
     pub route3d: Mutex<(Vec<[f32; 3]>, [u8; 3])>,
+    /// overlay: the route in focus's shortcut down (route.rs `Shortcut`), draped, and its drops'
+    /// tops with their heights (cm): the 3D map and the game view draw it beside the route.
+    pub shortcut3d: Mutex<Shortcut3d>,
     /// overlay: the goals left out of the guide by the consent: (hidden places, answers).
     pub withheld: Mutex<(usize, usize)>,
     /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
