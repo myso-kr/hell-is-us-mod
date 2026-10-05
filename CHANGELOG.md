@@ -23,6 +23,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Changed
 
+- The game view's route is half as wide (14 cm on the floor, 18 px at most) and quieter, and
+  the stretch the hero's body stands in front of, seen from the camera, is no longer drawn over
+  the hero's back.
 - The route looks cleaner, as games and map apps draw theirs: on the 3D map a bright core with a
   dark outline and smooth edges, a still chevron every 3 m, just over the floor (0.15 m and a
   depth offset, not 0.6 m afloat), dotted where hidden; in the game view drawn by each pixel's

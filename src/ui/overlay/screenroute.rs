@@ -18,7 +18,7 @@ use std::time::{Duration, Instant};
 
 /// How far ahead of the hero the band goes (cm), its width, how often it is sampled.
 const AHEAD: f32 = 8000.0;
-const HALF: f32 = 14.0;
+const HALF: f32 = 7.0;
 /// The band starts this far along (cm): under the camera it would fill the view.
 const FROM: f32 = 400.0;
 /// Icons over things this near the hero (cm), at most this many, this big (px).
@@ -66,9 +66,9 @@ const SHORTCUT_WIDTH: f32 = 0.7;
 const DASH: f32 = 150.0;
 /// A band is drawn this wide at most and at least (half, px) — a floor decal narrows with
 /// distance; under the camera it would fill the view — with a dark outline this wide (px).
-const HALF_MAX_PX: f32 = 36.0;
+const HALF_MAX_PX: f32 = 18.0;
 const HALF_MIN_PX: f32 = 1.6;
-const OUTLINE_PX: f32 = 1.6;
+const OUTLINE_PX: f32 = 1.2;
 /// What the world hides of a band is drawn faint and dotted, not cut: the tests are rays
 /// against an approximation, and a hard cut flickered as they changed their mind.
 const HIDDEN_ALPHA: f32 = 0.35;
@@ -270,7 +270,9 @@ impl ScreenRoute {
                     marker::project(cam, at, w as f32, h as f32),
                     marker::project(cam, side, w as f32, h as f32),
                 ) {
-                    (Some(c), Some(e)) => {
+                    // behind the hero's body, seen from the camera: not drawn at all (it was drawn
+                    // over the hero's back)
+                    (Some(c), Some(e)) if !behind_hero(eye, at, hero) => {
                         let wpx = (e.0 - c.0).hypot(e.1 - c.1).clamp(HALF_MIN_PX, HALF_MAX_PX);
                         Some(((c.0, c.1), wpx, along, seen_from(at)))
                     }
@@ -425,9 +427,9 @@ fn paint_band(
                 // fading out ahead; a brighter chevron every 3 m on the route
                 let fade = 1.0 - (along / AHEAD).clamp(0.0, 1.0) * 0.7;
                 let (rgb, mut alpha, mut dash) = match g.kind {
-                    Piece::Band if (along / 300.0).fract() < 0.18 => ([255, 244, 214], 0.9 * fade, None),
-                    Piece::Band => (colour, 0.75 * fade, None),
-                    Piece::Shortcut => (SHORTCUT, 0.7 * fade, Some(DASH)),
+                    Piece::Band if (along / 300.0).fract() < 0.18 => ([255, 244, 214], 0.75 * fade, None),
+                    Piece::Band => (colour, 0.6 * fade, None),
+                    Piece::Shortcut => (SHORTCUT, 0.55 * fade, Some(DASH)),
                 };
                 if !g.seen {
                     alpha *= HIDDEN_ALPHA;
@@ -463,6 +465,29 @@ fn paint_band(
             }
         }
     }
+}
+
+/// The hero's body as the overlay knows it: a standing cylinder around the actor's place (its
+/// middle), this wide (radius) and tall (cm) — the game's depth is not to be had from outside.
+const HERO_RADIUS: f32 = 45.0;
+const HERO_HALF_HEIGHT: f32 = 95.0;
+
+/// Whether the hero's body stands between the camera at `eye` and `p`: the line between passes
+/// within `HERO_RADIUS` of the hero's axis, at a height of the body.
+fn behind_hero(eye: [f32; 3], p: [f32; 3], hero: [f32; 3]) -> bool {
+    let d = [p[0] - eye[0], p[1] - eye[1]];
+    let l2 = d[0] * d[0] + d[1] * d[1];
+    if l2 < 1.0 {
+        return false;
+    }
+    let t = (((hero[0] - eye[0]) * d[0] + (hero[1] - eye[1]) * d[1]) / l2).clamp(0.0, 1.0);
+    // the hero beyond the point, or the point under the camera: nothing of the body between
+    if t >= 1.0 || t <= 0.0 {
+        return false;
+    }
+    let near = [eye[0] + d[0] * t - hero[0], eye[1] + d[1] * t - hero[1]];
+    let z = eye[2] + (p[2] - eye[2]) * t;
+    near[0].hypot(near[1]) < HERO_RADIUS && (hero[2] - HERO_HALF_HEIGHT..=hero[2] + HERO_HALF_HEIGHT).contains(&z)
 }
 
 /// Clear the rectangle `r` (px) of `cv`.
@@ -552,6 +577,15 @@ fn visible(eye: [f32; 3], p: [f32; 3], scene: &Scene, boxes: &[[f32; 4]]) -> boo
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_hero_hides_the_floor_just_ahead_from_a_camera_behind() {
+        // The hero at the origin (middle 95 up), the camera 4 m behind and 2 m up.
+        let (hero, eye) = ([0.0, 0.0, 95.0], [-400.0, 0.0, 200.0]);
+        assert!(behind_hero(eye, [150.0, 0.0, 0.0], hero), "the floor 1.5 m ahead is behind the body");
+        assert!(!behind_hero(eye, [150.0, 300.0, 0.0], hero), "off to the side it is not");
+        assert!(!behind_hero(eye, [-200.0, 0.0, 0.0], hero), "between the camera and the hero it is not");
+    }
 
     #[test]
     fn a_band_is_solid_inside_smooth_at_its_edge_and_empty_outside() {
