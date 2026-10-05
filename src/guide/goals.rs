@@ -78,6 +78,19 @@ pub struct Goal {
     /// not it is the trigger's class in words, and a mystery's, good deed's or timeloop's
     /// title may name it better, by its tags (`name_by_secrets`).
     pub named: bool,
+    /// What guiding there gives away, beyond the way: a place the player agreed to keep
+    /// hidden, or a puzzle's answer (the Settings page's questions; `Consent`).
+    pub reveals: Reveal,
+}
+
+/// What a goal gives away if guided to (`Goal::reveals`): nothing beyond the story's way, a
+/// hidden thing's place (needs `Consent::PLACES`), or a puzzle's answer (`Consent::ANSWERS`).
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Reveal {
+    #[default]
+    Nothing,
+    Places,
+    Answers,
 }
 
 /// Name the goals the game's text left unnamed after the good deed, mystery or timeloop
@@ -890,6 +903,8 @@ impl Goals {
                 tags,
                 keys: p.keys.clone(),
                 gate: p.gate,
+                // A story goal shows the way; a secret's or a clue's place is a hidden thing's.
+                reveals: if tier == Tier::Quest { Reveal::Nothing } else { Reveal::Places },
             });
         }
         out
@@ -925,6 +940,7 @@ mod tests {
             keys: Vec::new(),
             gate: Gate::Open,
             named,
+            reveals: Reveal::Nothing,
         };
         let mut goals = [goal("Acasa Hermit Tomb · opened", false), goal("Hermit's Key", true)];
         name_by_secrets(&mut goals, &secrets);
@@ -947,6 +963,7 @@ mod tests {
             keys: Vec::new(),
             gate: Gate::Open,
             named: false,
+            reveals: Default::default(),
         };
         let places = |k: &str| match k {
             "ArcasSpire" => Some("아르카스 첨탑".to_string()),
@@ -996,6 +1013,7 @@ mod tests {
             keys: Vec::new(),
             gate: Gate::Open,
             named: false,
+            reveals: Default::default(),
         }];
         name_by_secrets(&mut goals, &secrets);
         assert!(goals[0].label.starts_with("이웃을 사랑하라 · "), "{}", goals[0].label);
@@ -1018,6 +1036,7 @@ mod tests {
             keys: Vec::new(),
             gate: Gate::Open,
             named: false,
+            reveals: Default::default(),
         }];
         name_by_secrets(&mut goals, &secrets);
         assert!(goals[0].label.starts_with("어둠 속의 빛"), "{}", goals[0].label);

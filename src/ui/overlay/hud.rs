@@ -130,6 +130,7 @@ pub fn with_pins(goals: &[Goal], state: &MapState, world: &str) -> Vec<Goal> {
         keys: vec![],
         gate: Gate::Open,
         named: true,
+        reveals: Default::default(),
     };
     for m in state.markers.get(world).into_iter().flatten() {
         goals.push(place(m.id(world), m.title(), tr!("MAP_PIN"), m.at));

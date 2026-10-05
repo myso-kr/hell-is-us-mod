@@ -113,6 +113,15 @@ impl Panel {
                 }
             });
 
+            // What the settings leave out of the guide, and that what comes first is off.
+            let (places, answers) = *self.shared.withheld.lock().unwrap();
+            if places + answers > 0 {
+                note(t, trf!("GUIDE_WITHHELD", places = places, answers = answers));
+            }
+            if !self.grants(crate::settings::Consent::STEPS) {
+                note(t, tr!("GUIDE_STEPS_OFF"));
+            }
+
             // Its actions: focus it, skip it, back to auto; what was skipped with its undo.
             t.style(tw::wrap(INLINE)).add(|t| {
                 if let Some(g) = &target {

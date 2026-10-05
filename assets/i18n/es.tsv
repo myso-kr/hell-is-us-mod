@@ -781,3 +781,21 @@ LOGIC_PUZZLES_HINT	De los datos del juego: qué dispositivos, en qué orden, a q
 GRAPH_STORY	el avance de la historia
 GRAPH_TRADE	intercambiar {item}
 GRAPH_FIGHT	ganar el combate
+CONSENT_GUIDE	¿No sabes adónde ir ahora?
+CONSENT_GUIDE_WHAT	La historia te pide deducir el siguiente lugar con pistas y muchos pierden el hilo. Activado, una guía señala el siguiente lugar con una ruta, un anillo en pantalla y la brújula, y en la página Guía puedes seguir cualquier lugar.
+CONSENT_GUIDE_COST	Ya no averiguas tú solo adónde va la historia.
+CONSENT_GUIDE_YES	Sí, guíame
+CONSENT_STEPS	¿Atascado ante una puerta cerrada, sin saber qué va primero?
+CONSENT_STEPS_WHAT	Muchos lugares se abren tras una cadena: un engranaje, una palanca, un desagüe, una llave. Activado, la guía va primero al inicio de la cadena, aplaza lo inundado y dice qué va primero.
+CONSENT_STEPS_COST	Te dice cómo se abre un lugar antes de que lo descubras.
+CONSENT_STEPS_YES	Sí, muestra qué va primero
+CONSENT_MISSABLES	¿Un aviso antes de perder algo para siempre?
+CONSENT_MISSABLES_WHAT	Siete logros se pierden si la historia avanza antes: gente muere o se va. Activado, un aviso alerta cuando el próximo paso termina una buena acción y las misiones muestran sus plazos.
+CONSENT_MISSABLES_COST	Un aviso te adelanta adónde va la historia.
+CONSENT_MISSABLES_YES	Sí, avísame
+CONSENT_HUD	¿Te parece bien información sobre la pantalla del juego?
+CONSENT_HUD_WHAT	El seguimiento de misiones a la derecha, con líneas de lo cercano (lo que queda, quien quiere un objeto, un Haze en combate), y un aviso bajo la brújula. Donde el juego muestra lo suyo, se apartan.
+CONSENT_HUD_COST	Más en pantalla, menos de la imagen propia del juego.
+CONSENT_HUD_YES	Sí, muéstralo sobre el juego
+GUIDE_WITHHELD	Omitidos por tus ajustes: {places} lugares ocultos, {answers} que revelan una respuesta. Se pueden activar en Ajustes.
+GUIDE_STEPS_OFF	"Qué va primero" está desactivado: la guía va directa al objetivo, sin tener en cuenta puertas ni agua.

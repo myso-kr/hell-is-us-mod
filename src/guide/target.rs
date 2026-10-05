@@ -130,6 +130,7 @@ mod tests {
             keys: vec![],
             gate: Gate::Open,
             named: true,
+            reveals: Default::default(),
         }
     }
 

@@ -140,7 +140,19 @@ in Acasa), not the way in: as a gate every world waited on itself.
 So the guide keeps the game's own journal for the story's order (which quest, which step: read
 live) and the graph for what a step needs first.
 
-## 9. Next
+## 9. Barriers on the way (2026-10-05)
+
+The user: an item has to be fetched to open a puzzle or key door, but the guide points past the door
+to what lies behind it, not to the item. Behind-door edges are not in the data (§1), so the route
+tells: a route of the auto guide that goes through something (`Path::through`) is matched against the
+barriers of the world the graph knows are still shut (`Graph::door_steps`: doors, key locks, Lymbic
+locks, panels, gates, placements, keypads, dials), the nearest within 5 m of its first blocked leg
+(`barrier_on`). The guide then takes up that barrier's chain's first step (the goal there, or one
+made for it), holds it, and traces "the way to X runs through Y: first ...". It lets go when the
+barrier opens or the step is no longer first. A step whose own way is blocked is not taken up (else
+the two take turns), and while a barrier is seen the closed-spot rule (GUIDE.md) stays off.
+
+## 10. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items

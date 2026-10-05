@@ -51,6 +51,8 @@ struct Guide {
     graph: Option<crate::graph::Graph>,
     /// The order and position puzzles of the hero's world (graph.rs), as of the last step.
     logic_puzzles: Vec<crate::graph::LogicPuzzle>,
+    /// The shut barriers of the hero's world and their chains' first steps (graph.rs).
+    doors: Vec<crate::graph::DoorStep>,
     /// The game's spawner and vault tables (Mods\survey), read once.
     tables: Option<crate::tables::Tables>,
     /// `gamedata::generation` when those two were read: new files read again.
@@ -408,11 +410,16 @@ impl Attached {
                 g.graph.get_or_insert_with(|| crate::graph::Graph::load(&crate::paths::data_dir().join("survey")));
             let known: HashSet<String> = g.known_facts.union(&g.known_tags).cloned().collect();
             let state = crate::graph::State { used: &g.saved, known: &known, held: &g.held };
-            graph.gate(&mut goals, w, &state);
-            // Under deadly water now: held back, the drain's chain guided to instead.
-            let pools = g.obstacles.done.pools.clone();
-            graph.flood(&mut goals, w, &pools, &state);
+            // Only when the player asked for it (Settings: what must come first).
+            let steps = crate::settings::live(crate::settings::Consent::STEPS);
+            if steps {
+                graph.gate(&mut goals, w, &state);
+                // Under deadly water now: held back, the drain's chain guided to instead.
+                let pools = g.obstacles.done.pools.clone();
+                graph.flood(&mut goals, w, &pools, &state);
+            }
             g.logic_puzzles = graph.logic_puzzles(w, &state);
+            g.doors = if steps { graph.door_steps(&goals, w, &state) } else { Vec::new() };
         }
         Ok((goals, k))
     }
@@ -445,6 +452,11 @@ impl Attached {
             *out.entry(name).or_insert(0) += count;
         }
         out
+    }
+
+    /// The shut barriers of the hero's world, with what opens each first (the guide).
+    pub fn doors(&self) -> Vec<crate::graph::DoorStep> {
+        self.guide.borrow().doors.clone()
     }
 
     /// The order and position puzzles of the hero's world (the Puzzles page).

@@ -627,19 +627,19 @@ CONSENT_NOT_CHOSEN	Not answered yet: until you do, the mod adds nothing to the g
 CONSENT_ALL_ON	Yes to all
 CONSENT_ALL_OFF	No help, thanks
 CONSENT_MAP	Do you get lost often?
-CONSENT_MAP_WHAT	Many players circle the first areas and are never sure what they missed. With this on: the minimap and big map, the compass, the route, your trail, pins and the quest tracker (the Map and Guide pages).
+CONSENT_MAP_WHAT	Many players walk in circles in the first regions. On, you get a minimap and a big map, a compass, your trail and pins (the Map page).
 CONSENT_MAP_COST	In return there is a map the game leaves out on purpose, and less of the tension of finding your own way.
 CONSENT_PLACES	Does what you missed bother you?
 CONSENT_PLACES_WHAT	Players tell of finding an item hours later, or not knowing where the person was who wanted it. With this on: items, puzzles, people and doors on the maps, the places to go, and where the collectibles left and people with more to tell are.
 CONSENT_PLACES_COST	It does the looking around for you. Off, the maps keep the land, the enemies and your own pins, and Collect shows counts only.
 CONSENT_ANSWERS	When you are stuck, would you like the answer?
-CONSENT_ANSWERS_WHAT	Vault codes and dial puzzles hold players up for a long time, and seven achievements can be missed for good when a story beat passes. With this on: the Puzzles page (answers, vault codes, Lymbic locks), the deadlines of missable good deeds and the keystone order.
+CONSENT_ANSWERS_WHAT	Safe codes and dial puzzles hold many up for long. On, the Puzzles page shows the answers (codes, Lymbic locks, order and position puzzles) and the keystones' order, and the guide may go where an answer shows (which groove).
 CONSENT_ANSWERS_COST	Answers still stay covered until you press for one, but deadlines and orders tell ahead where the story goes.
 CONSENT_CHEATS	Are the fights or the grind wearing you down?
 CONSENT_CHEATS_WHAT	Some players tire of the same five Hollow Walker types and the fights again and again. With this on: the cheat groups in the sidebar (god mode, speed, resources and more), and the ones you keep turn back on next time.
 CONSENT_CHEATS_COST	They change the game’s values, so its difficulty and balance change. Achievements are not blocked. Turned off later, every cheat on goes back to its original value.
 CONSENT_NEEDED	Allow it on the Settings page to open this.
-CONSENT_MAP_YES	Yes, turn on the map and navigation
+CONSENT_MAP_YES	Yes, turn the map on
 CONSENT_PLACES_YES	Yes, show me where things are
 CONSENT_ANSWERS_YES	Yes, let me see answers
 CONSENT_CHEATS_YES	Yes, I’ll use cheats
@@ -781,3 +781,21 @@ LOGIC_PUZZLES_HINT	From the game's own data: which devices, in what order, to wh
 GRAPH_STORY	the story going on
 GRAPH_TRADE	trade {item}
 GRAPH_FIGHT	win the fight
+CONSENT_GUIDE	Not sure where to go next?
+CONSENT_GUIDE_WHAT	The story asks you to piece the next place together from clues, and many lose the thread. On, a guide points to the story's next place with a route, a ring in the game's view and the compass, and the Guide page lets you follow any place.
+CONSENT_GUIDE_COST	You no longer work out where the story goes next yourself.
+CONSENT_GUIDE_YES	Yes, guide me
+CONSENT_STEPS	Stuck at a locked door, not sure what comes first?
+CONSENT_STEPS_WHAT	Many places open only after a chain: a gear for a slot, a lever, a drain, a key. On, the guide goes to the first thing of the chain (the gear before the door it opens), holds back what is under water, and says what comes first.
+CONSENT_STEPS_COST	It tells you how a place opens before you work it out.
+CONSENT_STEPS_YES	Yes, show what comes first
+CONSENT_MISSABLES	Want a warning before something is missed for good?
+CONSENT_MISSABLES_WHAT	Seven achievements are missed if the story moves on first: people die or leave. On, a banner warns when the next story beat ends a good deed, and the quests show their deadlines.
+CONSENT_MISSABLES_COST	A warning tells you, ahead, where the story goes.
+CONSENT_MISSABLES_YES	Yes, warn me
+CONSENT_HUD	Is information over the game screen all right?
+CONSENT_HUD_WHAT	The quest tracker at the right, with lines on what is near (what is left, someone who wants an item, a Haze in a fight), and a banner under the compass. Where the game shows its own, they stay out of the way.
+CONSENT_HUD_COST	More on the screen, less of the game's own picture.
+CONSENT_HUD_YES	Yes, show it over the game
+GUIDE_WITHHELD	Left out by your settings: {places} hidden places, {answers} giving an answer away. They can be turned on in Settings.
+GUIDE_STEPS_OFF	What must come first is off: the guide goes straight to the goal, past locked doors and water.

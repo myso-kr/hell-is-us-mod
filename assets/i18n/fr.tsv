@@ -781,3 +781,21 @@ LOGIC_PUZZLES_HINT	Des données du jeu : quels dispositifs, dans quel ordre, dan
 GRAPH_STORY	la suite de l'histoire
 GRAPH_TRADE	échanger {item}
 GRAPH_FIGHT	gagner le combat
+CONSENT_GUIDE	Vous ne savez pas où aller ensuite ?
+CONSENT_GUIDE_WHAT	L'histoire vous fait déduire le prochain lieu à partir d'indices, et beaucoup perdent le fil. Activé, un guide indique le prochain lieu avec un itinéraire, un anneau à l'écran et la boussole ; la page Guide permet de suivre n'importe quel lieu.
+CONSENT_GUIDE_COST	Vous ne trouvez plus vous-même où va l'histoire.
+CONSENT_GUIDE_YES	Oui, guidez-moi
+CONSENT_STEPS	Bloqué devant une porte fermée, sans savoir quoi faire d'abord ?
+CONSENT_STEPS_WHAT	Beaucoup de lieux ne s'ouvrent qu'après une chaîne : un engrenage, un levier, une vidange, une clé. Activé, le guide va d'abord au début de la chaîne, met de côté ce qui est sous l'eau et dit quoi faire d'abord.
+CONSENT_STEPS_COST	Il vous dit comment un lieu s'ouvre avant que vous ne le trouviez.
+CONSENT_STEPS_YES	Oui, montrez ce qui vient d'abord
+CONSENT_MISSABLES	Un avertissement avant de manquer quelque chose pour de bon ?
+CONSENT_MISSABLES_WHAT	Sept succès sont manqués si l'histoire avance d'abord : des gens meurent ou partent. Activé, une bannière prévient quand la prochaine étape met fin à une bonne action, et les quêtes montrent leurs échéances.
+CONSENT_MISSABLES_COST	Un avertissement vous dit à l'avance où va l'histoire.
+CONSENT_MISSABLES_YES	Oui, prévenez-moi
+CONSENT_HUD	Des informations par-dessus l'écran du jeu, ça vous va ?
+CONSENT_HUD_WHAT	Le suivi de quêtes à droite, avec des lignes sur les environs (ce qui reste, qui veut un objet, un Haze en combat), et une bannière sous la boussole. Là où le jeu affiche les siens, ils s'écartent.
+CONSENT_HUD_COST	Plus d'éléments à l'écran, moins de l'image du jeu.
+CONSENT_HUD_YES	Oui, affichez-le sur le jeu
+GUIDE_WITHHELD	Écartés par vos réglages : {places} lieux cachés, {answers} révélant une réponse. Activables dans les Réglages.
+GUIDE_STEPS_OFF	"Ce qui vient d'abord" est désactivé : le guide va droit au but, sans tenir compte des portes ni de l'eau.

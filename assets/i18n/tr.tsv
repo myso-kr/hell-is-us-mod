@@ -781,3 +781,21 @@ LOGIC_PUZZLES_HINT	Oyunun verisinden: hangi cihazlar, hangi sırayla, hangi konu
 GRAPH_STORY	hikâyenin ilerlemesi
 GRAPH_TRADE	{item} takası
 GRAPH_FIGHT	dövüşü kazan
+CONSENT_GUIDE	Sırada nereye gideceğini bilmiyor musun?
+CONSENT_GUIDE_WHAT	Hikâye bir sonraki yeri ipuçlarından çıkarmanı ister, çoğu ipin ucunu kaçırır. Açıkken rehber sonraki yeri rota, ekrandaki halka ve pusulayla gösterir; Rehber sayfasında istediğin yeri takip edebilirsin.
+CONSENT_GUIDE_COST	Hikâyenin nereye gittiğini artık kendin bulmazsın.
+CONSENT_GUIDE_YES	Evet, bana yol göster
+CONSENT_STEPS	Kilitli bir kapının önünde, önce ne yapılacağını bilemiyor musun?
+CONSENT_STEPS_WHAT	Birçok yer ancak bir zincirden sonra açılır: dişli, kol, tahliye, anahtar. Açıkken rehber önce zincirin başına götürür, su altındakini erteler ve önce ne yapılacağını söyler.
+CONSENT_STEPS_COST	Bir yerin nasıl açıldığını sen bulmadan söyler.
+CONSENT_STEPS_YES	Evet, önce ne yapılacağını göster
+CONSENT_MISSABLES	Bir şey sonsuza dek kaçmadan uyarı ister misin?
+CONSENT_MISSABLES_WHAT	Hikâye önce ilerlerse yedi başarım kaçar: insanlar ölür ya da gider. Açıkken bir afiş, sonraki adım bir iyiliği bitirecekse uyarır ve görevler son tarihlerini gösterir.
+CONSENT_MISSABLES_COST	Uyarı, hikâyenin nereye gittiğini önceden söyler.
+CONSENT_MISSABLES_YES	Evet, uyar beni
+CONSENT_HUD	Oyun ekranının üstünde bilgi olması uygun mu?
+CONSENT_HUD_WHAT	Sağda görev takibi, yakındakilerle ilgili satırlarla (kalanlar, eşya isteyen biri, dövüşte bir Haze) ve pusulanın altında bir afiş. Oyunun kendi gösterdiği yerlerden uzak dururlar.
+CONSENT_HUD_COST	Ekranda daha çok şey, oyunun kendi görüntüsünden daha az.
+CONSENT_HUD_YES	Evet, oyunun üstünde göster
+GUIDE_WITHHELD	Ayarların gizledi: {places} gizli yer, cevabı ele veren {answers} yer. Ayarlar'dan açılabilir.
+GUIDE_STEPS_OFF	"Önce ne yapılacak" kapalı: rehber kapıları ve suyu dikkate almadan doğrudan hedefe götürür.

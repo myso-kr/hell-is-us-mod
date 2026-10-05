@@ -10,17 +10,29 @@ use egui_taffy::{Tui, TuiBuilderLogic};
 
 /// Each consent as a question to the player (JOURNEY.md §1, what players run into): its
 /// bit, the question, the context and what turns on, what it costs the game, the answer.
-const KINDS: [Ask; 4] = [
+/// In the order a player meets them: finding the way, then what to find, then help with
+/// what blocks, then what is shown over the game, then the cheats.
+const KINDS: [Ask; 8] = [
     (Consent::MAP, "CONSENT_MAP", "CONSENT_MAP_WHAT", "CONSENT_MAP_COST", "CONSENT_MAP_YES"),
+    (Consent::GUIDE, "CONSENT_GUIDE", "CONSENT_GUIDE_WHAT", "CONSENT_GUIDE_COST", "CONSENT_GUIDE_YES"),
     (Consent::PLACES, "CONSENT_PLACES", "CONSENT_PLACES_WHAT", "CONSENT_PLACES_COST", "CONSENT_PLACES_YES"),
+    (Consent::STEPS, "CONSENT_STEPS", "CONSENT_STEPS_WHAT", "CONSENT_STEPS_COST", "CONSENT_STEPS_YES"),
     (Consent::ANSWERS, "CONSENT_ANSWERS", "CONSENT_ANSWERS_WHAT", "CONSENT_ANSWERS_COST", "CONSENT_ANSWERS_YES"),
+    (
+        Consent::MISSABLES,
+        "CONSENT_MISSABLES",
+        "CONSENT_MISSABLES_WHAT",
+        "CONSENT_MISSABLES_COST",
+        "CONSENT_MISSABLES_YES",
+    ),
+    (Consent::HUD, "CONSENT_HUD", "CONSENT_HUD_WHAT", "CONSENT_HUD_COST", "CONSENT_HUD_YES"),
     (Consent::CHEATS, "CONSENT_CHEATS", "CONSENT_CHEATS_WHAT", "CONSENT_CHEATS_COST", "CONSENT_CHEATS_YES"),
 ];
 
 type Ask = (u8, &'static str, &'static str, &'static str, &'static str);
 
 impl Panel {
-    /// The page, as a survey: why it asks across the top, then the four questions in a
+    /// The page, as a survey: why it asks across the top, then the eight questions in a
     /// grid of cards all as wide and as tall as each other (`grid-cols-2 auto-rows-fr
     /// items-stretch`), not the masonry of the other pages.
     pub(super) fn settings_tab(&mut self, t: &mut Tui) {

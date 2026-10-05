@@ -29,15 +29,43 @@ pub fn path() -> PathBuf {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Consent(pub u8);
 
+/// The consent now, for the worker (which builds the guide's goals and does not see the
+/// panel): set by the panel whenever it changes.
+pub static LIVE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+
+/// Whether the consent now grants `bit`.
+pub fn live(bit: u8) -> bool {
+    LIVE.load(std::sync::atomic::Ordering::Relaxed) & bit != 0
+}
+
 impl Consent {
+    /// The maps: minimap, big map, compass, trail, pins.
     pub const MAP: u8 = 1;
+    /// Where hidden things are: on the maps, in the lists, guided to.
     pub const PLACES: u8 = 2;
+    /// Puzzles' answers, and guiding that would give one away (a slot, an order).
     pub const ANSWERS: u8 = 4;
     pub const CHEATS: u8 = 8;
-    pub const ALL: u8 = 15;
+    /// The guide: the story's next place, routes, rings, the Guide page.
+    pub const GUIDE: u8 = 16;
+    /// What must come first: the guide goes to the key, the lever, the drain first.
+    pub const STEPS: u8 = 32;
+    /// A warning before something is missed for good: the banner, the deadlines.
+    pub const MISSABLES: u8 = 64;
+    /// Panels over the game: the tracker, its context lines, the banner.
+    pub const HUD: u8 = 128;
+    pub const ALL: u8 = 255;
     /// Their names in settings.txt.
-    const NAMES: [(u8, &'static str); 4] =
-        [(Self::MAP, "map"), (Self::PLACES, "places"), (Self::ANSWERS, "answers"), (Self::CHEATS, "cheats")];
+    const NAMES: [(u8, &'static str); 8] = [
+        (Self::MAP, "map"),
+        (Self::PLACES, "places"),
+        (Self::ANSWERS, "answers"),
+        (Self::CHEATS, "cheats"),
+        (Self::GUIDE, "guide"),
+        (Self::STEPS, "steps"),
+        (Self::MISSABLES, "missables"),
+        (Self::HUD, "hud"),
+    ];
 
     pub fn has(self, bit: u8) -> bool {
         self.0 & bit != 0
@@ -84,7 +112,19 @@ pub fn parse(text: &str) -> Settings {
             ["keep", v] => s.keep = v == "true",
             ["motion", v] => s.motion = v == "true",
             ["consent", ref granted @ ..] => {
-                let bits = Consent::NAMES.iter().filter(|(_, n)| granted.contains(n)).fold(0, |b, (bit, _)| b | bit);
+                let mut bits =
+                    Consent::NAMES.iter().filter(|(_, n)| granted.contains(n)).fold(0, |b, (bit, _)| b | bit);
+                // Written before there were eight (no `v2`): what was the map's goes on as the
+                // guide's and the HUD's, the answers' as the steps' and the missables'.
+                if !granted.contains(&"v2") {
+                    let had = bits;
+                    if had & Consent::MAP != 0 {
+                        bits |= Consent::GUIDE | Consent::HUD;
+                    }
+                    if had & Consent::ANSWERS != 0 {
+                        bits |= Consent::STEPS | Consent::MISSABLES;
+                    }
+                }
                 s.consent = Some(Consent(bits));
             }
             ["tab", t] => s.tab = Some(t.to_string()),
@@ -109,7 +149,8 @@ pub fn parse(text: &str) -> Settings {
 pub fn render(s: &Settings) -> String {
     let mut out = format!("keep {}\nmotion {}\n", s.keep, s.motion);
     if let Some(c) = s.consent {
-        let names: Vec<&str> = Consent::NAMES.iter().filter(|(b, _)| c.has(*b)).map(|(_, n)| *n).collect();
+        let mut names: Vec<&str> = vec!["v2"];
+        names.extend(Consent::NAMES.iter().filter(|(b, _)| c.has(*b)).map(|(_, n)| *n));
         out += &format!("consent {}\n", names.join(" ")).replace(" \n", "\n");
     }
     if let Some(t) = &s.tab {

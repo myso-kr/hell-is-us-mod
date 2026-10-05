@@ -781,3 +781,21 @@ LOGIC_PUZZLES_HINT	Z danych gry: które urządzenia, w jakiej kolejności, w jak
 GRAPH_STORY	postęp fabuły
 GRAPH_TRADE	wymiana: {item}
 GRAPH_FIGHT	wygrać walkę
+CONSENT_GUIDE	Nie wiesz, dokąd iść dalej?
+CONSENT_GUIDE_WHAT	Fabuła każe wywnioskować kolejne miejsce ze wskazówek i wielu gubi wątek. Włączone: przewodnik wskazuje następne miejsce trasą, pierścieniem na ekranie i kompasem, a na stronie Przewodnik możesz śledzić dowolne miejsce.
+CONSENT_GUIDE_COST	Nie odkrywasz już sam, dokąd prowadzi fabuła.
+CONSENT_GUIDE_YES	Tak, prowadź mnie
+CONSENT_STEPS	Utknąłeś przed zamkniętymi drzwiami, nie wiesz, co najpierw?
+CONSENT_STEPS_WHAT	Wiele miejsc otwiera się dopiero po łańcuchu: zębatka, dźwignia, odpływ, klucz. Włączone: przewodnik prowadzi najpierw do początku łańcucha, odkłada zalane i mówi, co najpierw.
+CONSENT_STEPS_COST	Mówi, jak otworzyć miejsce, zanim sam to odkryjesz.
+CONSENT_STEPS_YES	Tak, pokaż, co najpierw
+CONSENT_MISSABLES	Ostrzeżenie, zanim coś przepadnie na dobre?
+CONSENT_MISSABLES_WHAT	Siedem osiągnięć przepada, jeśli fabuła pójdzie dalej: ludzie giną lub odchodzą. Włączone: baner ostrzega, gdy kolejny krok kończy dobry uczynek, a zadania pokazują terminy.
+CONSENT_MISSABLES_COST	Ostrzeżenie zdradza z góry, dokąd idzie fabuła.
+CONSENT_MISSABLES_YES	Tak, ostrzegaj
+CONSENT_HUD	Czy informacje na ekranie gry są w porządku?
+CONSENT_HUD_WHAT	Śledzenie zadań po prawej z liniami o otoczeniu (co zostało, kto chce przedmiot, Haze w walce) i baner pod kompasem. Tam, gdzie gra pokazuje swoje, ustępują.
+CONSENT_HUD_COST	Więcej na ekranie, mniej obrazu samej gry.
+CONSENT_HUD_YES	Tak, pokaż nad grą
+GUIDE_WITHHELD	Pominięte przez ustawienia: {places} ukrytych miejsc, {answers} zdradzających odpowiedź. Można włączyć w Ustawieniach.
+GUIDE_STEPS_OFF	"Co najpierw" jest wyłączone: przewodnik idzie prosto do celu, pomijając drzwi i wodę.

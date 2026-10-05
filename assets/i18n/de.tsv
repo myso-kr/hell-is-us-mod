@@ -781,3 +781,21 @@ LOGIC_PUZZLES_HINT	Aus den Spieldaten: welche Geräte, in welcher Reihenfolge, i
 GRAPH_STORY	der Fortgang der Geschichte
 GRAPH_TRADE	{item} tauschen
 GRAPH_FIGHT	den Kampf gewinnen
+CONSENT_GUIDE	Weißt du nicht, wohin als Nächstes?
+CONSENT_GUIDE_WHAT	Die Geschichte lässt dich den nächsten Ort aus Hinweisen erschließen, und viele verlieren den Faden. An zeigt ein Führer den nächsten Ort der Geschichte mit Route, Ring im Spielbild und Kompass; auf der Führungsseite kannst du jedem Ort folgen.
+CONSENT_GUIDE_COST	Du findest nicht mehr selbst heraus, wohin die Geschichte führt.
+CONSENT_GUIDE_YES	Ja, führe mich
+CONSENT_STEPS	Vor einer verschlossenen Tür, unsicher, was zuerst kommt?
+CONSENT_STEPS_WHAT	Viele Orte öffnen sich erst nach einer Kette: ein Zahnrad, ein Hebel, ein Abfluss, ein Schlüssel. An führt dich zuerst zum Anfang der Kette, stellt Überflutetes zurück und sagt, was zuerst kommt.
+CONSENT_STEPS_COST	Es verrät, wie ein Ort sich öffnet, bevor du es herausfindest.
+CONSENT_STEPS_YES	Ja, zeig, was zuerst kommt
+CONSENT_MISSABLES	Eine Warnung, bevor etwas endgültig verpasst ist?
+CONSENT_MISSABLES_WHAT	Sieben Erfolge sind verpasst, wenn die Geschichte zuerst weitergeht: Menschen sterben oder gehen. An warnt ein Banner, wenn der nächste Schritt eine gute Tat beendet, und die Quests zeigen ihre Fristen.
+CONSENT_MISSABLES_COST	Eine Warnung verrät vorab, wohin die Geschichte geht.
+CONSENT_MISSABLES_YES	Ja, warne mich
+CONSENT_HUD	Sind Infos über dem Spielbild in Ordnung?
+CONSENT_HUD_WHAT	Die Questanzeige rechts mit Zeilen zur Umgebung (was übrig ist, wer ein Gegenstand möchte, ein Haze im Kampf) und ein Banner unter dem Kompass. Wo das Spiel eigenes zeigt, halten sie Abstand.
+CONSENT_HUD_COST	Mehr auf dem Bildschirm, weniger vom Bild des Spiels.
+CONSENT_HUD_YES	Ja, über dem Spiel zeigen
+GUIDE_WITHHELD	Durch deine Einstellungen ausgelassen: {places} verborgene Orte, {answers} verraten eine Lösung. In den Einstellungen einschaltbar.
+GUIDE_STEPS_OFF	"Was zuerst kommt" ist aus: die Führung geht direkt zum Ziel, an Türen und Wasser vorbei.

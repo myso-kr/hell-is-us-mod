@@ -19,6 +19,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   and the guide's state every few seconds), and the Debug page's Guide trace card.
 - What must come first, step 1: holding every item a key door or a slot takes makes it a goal, and
   what gives an item a placement still takes says so.
+- Settings asks eight questions, not four: the maps, the guide, hidden places, what must come first,
+  answers, missable warnings, panels over the game and cheats. Answers given before carry over. What
+  the settings leave out of the guide is counted on the Guide page's auto card.
+- When the guide's route runs through a shut door, lock or slot, it goes to what opens it first.
 
 ### Changed
 

@@ -610,6 +610,64 @@ impl Graph {
     }
 }
 
+/// A door, lock, panel or slot of a world that is still shut, and the first thing to do to
+/// open it (a goal, made if need be): what the guide goes to when a route runs through it.
+#[derive(Clone, Debug, PartialEq)]
+pub struct DoorStep {
+    pub at: [f32; 3],
+    pub label: String,
+    /// Its chain's first step as a goal (the goal there, or one made for it), for the guide
+    /// to take up when a route runs through the barrier.
+    pub goal: crate::goals::Goal,
+    /// The chain, first thing first ("the owl key → the door").
+    pub chain: String,
+}
+
+/// What a class's name says stands in the way until used.
+const BARRIERS: [&str; 8] = ["Door", "KeyLocked", "LymbicLock", "Panel", "Gate", "Placement", "Keypad", "DialPuzzle"];
+
+impl Graph {
+    /// The barriers of `world` not opened yet whose opening needs something first, each with
+    /// the goal of its chain's first step (added to `goals` when there is none there).
+    pub fn door_steps(&self, goals: &[crate::goals::Goal], world: &str, s: &State) -> Vec<DoorStep> {
+        let mut out = Vec::new();
+        for i in 0..self.nodes.len() {
+            let n = &self.nodes[i];
+            if n.world != world || self.used(i, s) || !BARRIERS.iter().any(|b| n.class.contains(b)) {
+                continue;
+            }
+            // What opens it, first thing first; nothing needed: the barrier itself, to open.
+            let Some(chain) = self.chain(i, s) else { continue };
+            let first = *chain.last().unwrap();
+            if self.nodes[first].scripted {
+                continue;
+            }
+            let text = chain.iter().rev().map(|&k| label(&self.nodes[k])).collect::<Vec<_>>().join(" → ");
+            let f = &self.nodes[first];
+            // The goal there, or one made for the step (not put in the goals: only taken up
+            // when a route runs through the barrier).
+            let goal = match goals.iter().find(|g| (g.at[0] - f.at[0]).hypot(g.at[1] - f.at[1]) <= NEAR) {
+                Some(g) => g.clone(),
+                None => crate::goals::Goal {
+                    tier: crate::goals::Tier::Quest,
+                    id: step_id(f),
+                    label: label(f),
+                    detail: trf!("GRAPH_STEP_FOR", chain = text),
+                    at: f.at,
+                    quests: vec![],
+                    tags: vec![],
+                    keys: vec![],
+                    gate: crate::goals::Gate::Open,
+                    named: true,
+                    reveals: Default::default(),
+                },
+            };
+            out.push(DoorStep { at: n.at, label: label(n), goal, chain: text });
+        }
+        out
+    }
+}
+
 /// An order or position puzzle of a world (the Puzzles page): where, what kind, solved,
 /// and its answer (shown on asking).
 #[derive(Clone, Debug, PartialEq)]
@@ -813,6 +871,9 @@ impl Graph {
                 keys: of.keys.clone(),
                 gate: Gate::Open,
                 named: true,
+                // An order or position puzzle's device gives its answer away; else what the
+                // goal it is for gives away.
+                reveals: if self.puzzle_kind(first).is_some() { crate::goals::Reveal::Answers } else { of.reveals },
             }),
         }
     }
@@ -1028,6 +1089,7 @@ mod tests {
             keys: vec!["Q2".into()],
             gate: Gate::Open,
             named: true,
+            reveals: Default::default(),
         }];
         let pool = crate::obstacles::Pool {
             hull: vec![[4000.0, -1000.0], [6000.0, -1000.0], [6000.0, 1000.0], [4000.0, 1000.0]],

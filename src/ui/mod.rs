@@ -108,6 +108,8 @@ pub struct Shared {
     /// panel: where the last session left off (session.rs), read once at start: the
     /// overlay's "previously" banner.
     pub previous: Mutex<Option<crate::session::Session>>,
+    /// overlay: the goals left out of the guide by the consent: (hidden places, answers).
+    pub withheld: Mutex<(usize, usize)>,
     /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
     pub trace: Mutex<String>,
     /// panel: the Guide page is showing, so the overlay draws `ops`.

@@ -380,6 +380,7 @@ impl Panel {
         // The splash first (splash.rs): the hotkey thread leaves the window be till it goes.
         shared.splash.store(true, Ordering::SeqCst);
         shared.consent.store(saved.consent.map_or(0, |c| c.0), Ordering::SeqCst);
+        crate::settings::LIVE.store(saved.consent.map_or(0, |c| c.0), Ordering::SeqCst);
         // A slider takes its saved value if it is still in range, else its default.
         let value = CHEATS
             .iter()
@@ -517,7 +518,8 @@ impl Panel {
     fn allowed(&self, tool: Tool) -> bool {
         use crate::settings::Consent;
         match tool {
-            Tool::Map | Tool::Guide => self.grants(Consent::MAP),
+            Tool::Map => self.grants(Consent::MAP),
+            Tool::Guide => self.grants(Consent::GUIDE),
             Tool::Puzzles => self.grants(Consent::ANSWERS),
             _ => true,
         }
@@ -536,6 +538,7 @@ impl Panel {
         }
         self.consent = Some(c);
         self.shared.consent.store(c.0, Ordering::SeqCst);
+        crate::settings::LIVE.store(c.0, Ordering::SeqCst);
     }
 
     /// Turn last time's cheats back on — the first time the gate is open.

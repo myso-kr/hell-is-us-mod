@@ -51,6 +51,55 @@ const COMPASS_H: i32 = 60;
 /// right edge's middle): the tracker ends above it.
 const NOTICE_HALF: f32 = 200.0;
 /// How long the banner shows, and a key item's note.
+/// The goals the player agreed to be guided to, and how many were left out: (hidden
+/// places, puzzles' answers). Without the guide, none.
+fn by_consent(
+    goals: &Arc<Vec<crate::goals::Goal>>,
+    consent: crate::settings::Consent,
+) -> (Arc<Vec<crate::goals::Goal>>, (usize, usize)) {
+    use crate::goals::Reveal;
+    use crate::settings::Consent;
+    if !consent.has(Consent::GUIDE) && !consent.has(Consent::MAP) {
+        return (Default::default(), (0, 0));
+    }
+    let ok = |r: Reveal| match r {
+        Reveal::Nothing => true,
+        Reveal::Places => consent.has(Consent::PLACES),
+        Reveal::Answers => consent.has(Consent::ANSWERS),
+    };
+    if goals.iter().all(|g| ok(g.reveals)) {
+        return (goals.clone(), (0, 0));
+    }
+    let places = goals.iter().filter(|g| g.reveals == Reveal::Places && !ok(g.reveals)).count();
+    let answers = goals.iter().filter(|g| g.reveals == Reveal::Answers && !ok(g.reveals)).count();
+    (Arc::new(goals.iter().filter(|g| ok(g.reveals)).cloned().collect()), (places, answers))
+}
+
+/// The barrier a route runs through: the first leg that goes through something, and a shut
+/// barrier the graph knows within `BARRIER_NEAR` of it.
+fn barrier_on<'a>(
+    path: &crate::pathfind::Path,
+    doors: &'a [crate::graph::DoorStep],
+) -> Option<&'a crate::graph::DoorStep> {
+    let k = path.through.iter().position(|&t| t)?;
+    let (a, b) = (*path.points.get(k)?, *path.points.get(k + 1)?);
+    let near = |p: [f32; 3]| {
+        let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
+        let len = dx * dx + dy * dy;
+        let t = if len > 0.0 { (((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len).clamp(0.0, 1.0) } else { 0.0 };
+        (p[0] - (a[0] + t * dx)).hypot(p[1] - (a[1] + t * dy))
+    };
+    doors
+        .iter()
+        .map(|d| (near(d.at), d))
+        .filter(|(m, _)| *m <= BARRIER_NEAR)
+        .min_by(|x, y| x.0.total_cmp(&y.0))
+        .map(|(_, d)| d)
+}
+
+/// How near a route's blocked leg a barrier must stand to be what blocks it (cm).
+const BARRIER_NEAR: f32 = 500.0;
+
 /// How far the hero moves (cm), or how long it is, before a goal found blocked is tried
 /// again.
 const BLOCKED_MOVED: f32 = 6000.0;
@@ -214,6 +263,11 @@ pub fn run(shared: Arc<Shared>) {
     // guide went through six goals in a second down to a key 25 m underground.
     let mut lately_blocked: std::collections::VecDeque<(Instant, u64, [f32; 3])> = Default::default();
     let mut distrust_until = Instant::now();
+    // When a route was last found to run through a known barrier: then blocked goals are
+    // that barrier's, not a closed spot's.
+    let mut door_seen = Instant::now() - Duration::from_secs(60);
+    // The step the guide took up for a barrier on its way, kept among the goals until done.
+    let mut door_step: Option<crate::goals::Goal> = None;
     let mut missing = std::collections::HashMap::new();
     let mut baking = bake::Baking::default();
     let mut saved = Instant::now();
@@ -265,7 +319,13 @@ pub fn run(shared: Arc<Shared>) {
                 s.world.clone(),
                 shown.things(s, places),
                 s.footprints.clone(),
-                if places { s.goals.clone() } else { Default::default() },
+                {
+                    // What each goal gives away, against what the player agreed to; what is
+                    // left out is counted for the guide's card (`Shared::withheld`).
+                    let (kept, withheld) = by_consent(&s.goals, consent);
+                    *shared.withheld.lock().unwrap() = withheld;
+                    kept
+                },
                 s.paused,
                 s.obstacles.clone(),
                 s.journal.clone(),
@@ -518,7 +578,24 @@ pub fn run(shared: Arc<Shared>) {
                         state.done_at(world, right.groove);
                     }
                 }
-                let goals = pinned.get(&goals, &state, world);
+                let mut goals = pinned.get(&goals, &state, world);
+                // A barrier's step taken up: among the goals while its barrier still waits on
+                // it; once done (its barrier opened, or its step no longer first), let go.
+                let doors_now = shared.snap.lock().unwrap().as_ref().map(|s| s.doors.clone()).unwrap_or_default();
+                if let Some(step) = &door_step {
+                    let still = doors_now.iter().any(|d| d.goal.id == step.id);
+                    if !still || state.auto != Some(step.id) {
+                        if state.auto == Some(step.id) {
+                            state.auto = None;
+                            state.held = false;
+                        }
+                        door_step = None;
+                    } else if !goals.iter().any(|g| g.id == step.id) {
+                        let mut g = (*goals).clone();
+                        g.push(step.clone());
+                        goals = Arc::new(g);
+                    }
+                }
 
                 // What can only be reached through something, by any route, remembered.
                 for r in routes.values_mut() {
@@ -537,7 +614,7 @@ pub fn run(shared: Arc<Shared>) {
                     .filter(|(_, _, at)| (at[0] - p[0]).hypot(at[1] - p[1]) < ENCLOSED_NEAR)
                     .map(|(_, id, _)| *id)
                     .collect();
-                if here_blocked.len() >= ENCLOSED_GOALS {
+                if here_blocked.len() >= ENCLOSED_GOALS && door_seen.elapsed() > Duration::from_secs(10) {
                     tracer.note_event(
                         &format!(
                             "every way from here goes through something ({} goals in {} s): the hero's spot \
@@ -577,11 +654,15 @@ pub fn run(shared: Arc<Shared>) {
                 }
 
                 // A route to each thing followed, when due (the one in focus more often).
-                let followed = state.followed();
+                // No guide asked for: nothing followed, no route, no ring.
+                let followed = if consent.has(crate::settings::Consent::GUIDE) { state.followed() } else { Vec::new() };
                 routes.retain(|id, _| followed.iter().any(|f| f.id == *id));
                 let mut drawn: Vec<crate::raster::Drawn> = Vec::new();
                 let mut uncertain = std::collections::HashSet::new();
                 let mut notes: Vec<trace::RouteNote> = Vec::new();
+                // The barrier the auto guide's route runs through, if one the graph knows.
+                let doors = shared.snap.lock().unwrap().as_ref().map(|s| s.doors.clone()).unwrap_or_default();
+                let mut through: Option<crate::graph::DoorStep> = None;
                 for f in &followed {
                     let Some(g) = goals.iter().find(|g| g.id == f.id) else { continue };
                     let path = if state.route {
@@ -600,6 +681,13 @@ pub fn run(shared: Arc<Shared>) {
                     };
                     if path.uncertain() {
                         uncertain.insert(f.id);
+                        if f.track.is_none() && through.is_none() {
+                            // Not when the step's own way is blocked too: then the two
+                            // would take turns.
+                            through = barrier_on(&path, &doors)
+                                .filter(|d| d.goal.id != f.id && !blocked_seen.contains_key(&d.goal.id))
+                                .cloned();
+                        }
                     }
                     if let Some(end) = path.points.last() {
                         let short = (end[0] - g.at[0]).hypot(end[1] - g.at[1]) / 100.0;
@@ -609,6 +697,25 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 *shared.route_uncertain.lock().unwrap() = uncertain;
                 last_drawn = drawn.clone();
+                // Through a shut barrier: to what opens it first, held until it is done.
+                if let Some(d) = through {
+                    door_seen = Instant::now();
+                    if state.auto != Some(d.goal.id) {
+                        let was = state
+                            .auto
+                            .and_then(|a| goals.iter().find(|g| g.id == a))
+                            .map(|g| g.label.clone())
+                            .unwrap_or_default();
+                        tracer.note_event(
+                            &format!("the way to {was} runs through {}: first {}", d.label, d.chain),
+                            world,
+                            p,
+                        );
+                        state.auto = Some(d.goal.id);
+                        state.held = true;
+                        door_step = Some(d.goal.clone());
+                    }
+                }
                 let story = crate::quests::followed(&journal, None);
                 if let Some(t) = tracer.observe(&state, &goals, p, world, story, &journal, &blocked, &notes) {
                     *shared.trace.lock().unwrap() = t;
@@ -739,7 +846,9 @@ pub fn run(shared: Arc<Shared>) {
                 } else {
                     compass_window.hide();
                 }
-                if let (Some(w), Some(pen), true) = (tracker_window.as_mut(), pen.as_mut(), state.tracker) {
+                if let (Some(w), Some(pen), true) =
+                    (tracker_window.as_mut(), pen.as_mut(), state.tracker && consent.has(crate::settings::Consent::HUD))
+                {
                     let followed = crate::quests::followed(&journal, state.focused_quest());
                     // Whether any place that moves the followed quest along is loaded.
                     let near = followed.is_none_or(|q| goals.iter().any(|g| g.serves(q)));
@@ -819,7 +928,12 @@ pub fn run(shared: Arc<Shared>) {
                 // The banner under the compass: a good deed the next story beat ends (when
                 // the alert is new, for a while), else where the last session left off (on
                 // the first frames in play).
-                let alert = crate::missables::alert(&deadlines).unwrap_or_default();
+                // A good deed about to be missed: only when asked for (Settings: missables).
+                let alert = if consent.has(crate::settings::Consent::MISSABLES) {
+                    crate::missables::alert(&deadlines).unwrap_or_default()
+                } else {
+                    String::new()
+                };
                 if alert != alerted {
                     alerted = alert.clone();
                     if !alert.is_empty() {
@@ -849,7 +963,9 @@ pub fn run(shared: Arc<Shared>) {
                     }
                 }
                 match (banner_window.as_mut(), banner_pen.as_mut(), &banner_shown) {
-                    (Some(w), Some(bp), Some((title, body))) if Instant::now() < banner_until => {
+                    (Some(w), Some(bp), Some((title, body)))
+                        if Instant::now() < banner_until && consent.has(crate::settings::Consent::HUD) =>
+                    {
                         if banner_used == 0 {
                             let colour = if *title == tr!("BANNER_PREVIOUSLY") {
                                 crate::raster::Rgba(0x5A, 0x9C, 0xE6, 255)
