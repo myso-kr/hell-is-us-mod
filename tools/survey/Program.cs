@@ -72,6 +72,15 @@ if (opts.TryGetValue("ls", out var ls))
     foreach (var p in provider.Files.Keys.Where(p => re.IsMatch(p)).OrderBy(p => p)) Console.WriteLine(p);
     return;
 }
+// --raw <package path> --out <file>: the package's bytes as the game has them (to look into
+// what the reader does not parse, e.g. navmesh chunks).
+if (opts.TryGetValue("raw", out var rawPath))
+{
+    if (!provider.TrySaveAsset(rawPath, out var rawBytes)) { Console.Error.WriteLine($"{rawPath}: not found"); return; }
+    File.WriteAllBytes(Need("out"), rawBytes);
+    Console.Error.WriteLine($"{rawPath}: {rawBytes.Length} bytes");
+    return;
+}
 if (opts.TryGetValue("dump", out var dumpPath))
 {
     Console.WriteLine(JsonConvert.SerializeObject(provider.LoadPackage(dumpPath).GetExports(), Formatting.Indented));

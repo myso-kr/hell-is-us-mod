@@ -370,3 +370,18 @@ buildings and Auriga none (interiors). Interiors need the buildings' meshes or t
 The prototype (an artifact, Acasa Marshes): the terrain as a shaded mesh, the graph's nodes where they
 stand (a stalk down to the ground for those above or below it), its edges as arcs, and a story-round
 scrubber that lights what can be done by then.
+
+### 15.1 Underground: the navmesh from the cooked maps
+
+The user asked whether the underground can be had too, and to show it as an ant farm. Interiors are
+not landscape, but the walkable floor is in the cooked maps: the `NavigationDataChunkActor`s'
+`RecastNavMeshDataChunk`s (Lake Cynon: two packages). The survey tool's reader does not parse them,
+so `survey --raw <package> --out <file>` writes a package's bytes, and the tiles are found in them:
+the header is written field by field (u16 version 7, i32 tile x, i32 y, u16 layer, u16 polys, u16
+verts, …, then bmin/bmax as six doubles ending 8 bytes before the vertices, which start 87 bytes after
+the header), and the vertices (three doubles, Recast space) and polys (32 bytes) are as the live tiles
+have them (ROUTES.md §6). Rebuilt into the live layout, they read with `navmesh.rs` as they are. Lake
+Cynon: 1663 tiles, 29930 polys, 93 % of the tiles a live read of the same place found, byte for byte;
+Acasa Marshes: 10965 tile records. Each floor poly is then on the ground, under it (more than 3 m below
+the landscape) or indoors with no landscape. The prototype's ant-farm view thins the ground, shows the
+floors under it, and cuts away everything above a chosen height.
