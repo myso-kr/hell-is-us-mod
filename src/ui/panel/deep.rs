@@ -494,7 +494,7 @@ impl Panel {
                     crate::ui::svg::sort(ui, crate::actors::Sub::Puzzle, 18.0);
                 };
                 let on = (!p.solved).then(|| state.track_colour(p.id));
-                if tw::track_line(t, on, icon, head, |t| reveal(t, &mut self.revealed, p.id, tr!("SHOW_ANSWER"))) {
+                if tw::track_line(t, on, icon, head, |t| hint(t, &mut self.hints, p.id)) {
                     let x = crate::survey::Need {
                         world: p.world.clone(),
                         id: p.id,
@@ -505,8 +505,21 @@ impl Panel {
                     };
                     guide_to(state, &goals, &x);
                 }
-                if self.revealed.contains(&p.id) {
-                    for step in &p.answer {
+                // In three steps, for those who want a nudge, not the answer: where the devices
+                // are, then the first set right, then all of them.
+                let level = self.hints.get(&p.id).copied().unwrap_or(0);
+                if level > 0 && !p.answer.is_empty() {
+                    note(t, trf!("HINT_DEVICES", n = p.answer.len()));
+                }
+                for (i, step) in p.answer.iter().enumerate() {
+                    if level == 0 {
+                        break;
+                    }
+                    if level == 1 || (level == 2 && i > 0) {
+                        text(t, RichText::new(format!("    {}", step.place)).color(DIM));
+                        continue;
+                    }
+                    {
                         match step.face {
                             // drawn as the game shows it, beside its line
                             Some(f) => {
@@ -896,6 +909,24 @@ impl Panel {
 
 /// The one button a list line may carry: show what it hides (an answer, a code), or
 /// hide it again.
+/// A puzzle's hints, a step at a time: a hint, a further one, the answer, and shut again.
+fn hint(t: &mut Tui, hints: &mut std::collections::HashMap<u64, u8>, id: u64) {
+    let level = hints.get(&id).copied().unwrap_or(0);
+    let label = match level {
+        0 => tr!("HINT_FIRST"),
+        1 => tr!("HINT_NEXT"),
+        2 => tr!("SHOW_ANSWER"),
+        _ => tr!("HIDE"),
+    };
+    if w(t, |ui| ui.small_button(label)).clicked() {
+        if level >= 3 {
+            hints.remove(&id);
+        } else {
+            hints.insert(id, level + 1);
+        }
+    }
+}
+
 fn reveal(t: &mut Tui, revealed: &mut std::collections::HashSet<u64>, id: u64, show: &str) {
     let open = revealed.contains(&id);
     if w(t, |ui| ui.small_button(if open { tr!("HIDE") } else { show })).clicked() {

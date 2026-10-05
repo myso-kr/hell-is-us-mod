@@ -849,3 +849,6 @@ HIGH_CONTRAST	Contraste élevé : fond opaque derrière le texte
 REDUCED_MOTION	Réduire les animations (fond fixe)
 ACCESSIBILITY_NOTE	Les couleurs s’appliquent à la mini-carte, la grande carte, la carte 3D et la vue du jeu.
 OVERLAY_SCALE	Taille des surcouches
+HINT_FIRST	Indice
+HINT_NEXT	Autre indice
+HINT_DEVICES	{n} mécanismes à régler, ici :

@@ -849,3 +849,6 @@ HIGH_CONTRAST	Alto contrasto: sfondo opaco dietro il testo
 REDUCED_MOTION	Riduci il movimento (sfondo fermo)
 ACCESSIBILITY_NOTE	I colori valgono per minimappa, mappa grande, mappa 3D e vista di gioco.
 OVERLAY_SCALE	Dimensione overlay
+HINT_FIRST	Indizio
+HINT_NEXT	Altro indizio
+HINT_DEVICES	{n} meccanismi da regolare, qui:

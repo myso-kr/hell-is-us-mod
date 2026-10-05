@@ -330,6 +330,9 @@ pub struct Panel {
     clue_open: Option<String>,
     /// Puzzle answers and vault codes asked for, by id (not kept between runs).
     revealed: std::collections::HashSet<u64>,
+    /// How far a logic puzzle's hints are opened (deep.rs `hint`): 0 shut, 1 where its devices
+    /// are, 2 the first step too, 3 the whole answer.
+    hints: std::collections::HashMap<u64, u8>,
     /// The quest whose needs the Quests page shows (pressed there; else the one in focus).
     shown_quest: Option<String>,
     /// How far each choice puzzle's set has been told (slots.rs): 1 its clue, 2 its answer.
@@ -457,6 +460,7 @@ impl Panel {
             clue_query: String::new(),
             clue_open: None,
             revealed: Default::default(),
+            hints: Default::default(),
             shown_quest: None,
             slot_hints: Default::default(),
             show_placements: false,

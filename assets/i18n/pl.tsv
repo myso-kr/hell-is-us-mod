@@ -849,3 +849,6 @@ HIGH_CONTRAST	Wysoki kontrast: nieprzezroczyste tło pod tekstem
 REDUCED_MOTION	Ogranicz ruch (bez animowanego tła)
 ACCESSIBILITY_NOTE	Kolory dotyczą minimapy, dużej mapy, mapy 3D i widoku gry.
 OVERLAY_SCALE	Rozmiar nakładek
+HINT_FIRST	Wskazówka
+HINT_NEXT	Kolejna wskazówka
+HINT_DEVICES	{n} mechanizmów do ustawienia, tutaj:

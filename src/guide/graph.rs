@@ -844,10 +844,12 @@ impl Graph {
 }
 
 /// A compass word for the way from `from` to `to` (north is −Y in Hell Is Us).
-/// One step of a puzzle's answer: its line, and how the device looks set right, where the
+/// One step of a puzzle's answer: where, its line, and how the device looks set right, where the
 /// game shows that by a picture rather than a number (ui/svg.rs `face`).
 #[derive(Clone, Debug, PartialEq)]
 pub struct AnswerStep {
+    /// Only where its device is ("2. NE 12m"): the first hint.
+    pub place: String,
     pub text: String,
     pub face: Option<Face>,
 }
@@ -962,16 +964,21 @@ impl Graph {
                     let class = device.map_or("", |d| d.class.as_str());
                     match (l.solution.get(k), face(&n.class, class, n.at, at, l.solution.get(k).copied())) {
                         // as the game shows it: a sconce lit or not, a plinth's glyph
-                        (_, Some(f)) => {
-                            AnswerStep { text: format!("{}. {place}: {}", k + 1, f.label()), face: Some(f) }
-                        }
+                        (_, Some(f)) => AnswerStep {
+                            place: format!("{}. {place}", k + 1),
+                            text: format!("{}. {place}: {}", k + 1, f.label()),
+                            face: Some(f),
+                        },
                         (Some(p), None) => AnswerStep {
+                            place: format!("{}. {place}", k + 1),
                             text: trf!("GRAPH_ANSWER_POSITION", k = k + 1, place = place, p = p),
                             face: None,
                         },
-                        (None, None) => {
-                            AnswerStep { text: trf!("GRAPH_ANSWER_STEP", k = k + 1, place = place), face: None }
-                        }
+                        (None, None) => AnswerStep {
+                            place: format!("{}. {place}", k + 1),
+                            text: trf!("GRAPH_ANSWER_STEP", k = k + 1, place = place),
+                            face: None,
+                        },
                     }
                 })
                 .collect(),

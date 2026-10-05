@@ -849,3 +849,6 @@ HIGH_CONTRAST	Alto contraste: fondo opaco tras el texto
 REDUCED_MOTION	Reducir movimiento (sin fondo animado)
 ACCESSIBILITY_NOTE	Los colores se aplican al minimapa, mapa grande, mapa 3D y vista del juego.
 OVERLAY_SCALE	Tamaño de superposición
+HINT_FIRST	Pista
+HINT_NEXT	Otra pista
+HINT_DEVICES	{n} mecanismos que ajustar, aquí:
