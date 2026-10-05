@@ -26,7 +26,7 @@ fn reachable(g: &Goal, journal: &[Quest]) -> bool {
 /// Whether `g` is what auto guiding wants: a reachable place that moves the followed
 /// quest along — or, following the main story with none of its places loaded, any
 /// reachable quest goal.
-fn wanted(g: &Goal, goals: &[Goal], followed: Option<&Quest>, journal: &[Quest]) -> bool {
+pub(crate) fn wanted(g: &Goal, goals: &[Goal], followed: Option<&Quest>, journal: &[Quest]) -> bool {
     if !reachable(g, journal) {
         return false;
     }

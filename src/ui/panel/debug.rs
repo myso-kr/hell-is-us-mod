@@ -110,6 +110,73 @@ impl Panel {
         );
     }
 
+    /// What the guide works with (the overlay's trace, also in `Mods\doctor\guide.jsonl`):
+    /// the auto guide's target, where it comes from and its route, the nearest goals with
+    /// why each is picked or not, and the last events.
+    pub(super) fn debug_guide(&mut self, t: &mut Tui) {
+        let text = self.shared.trace.lock().unwrap().clone();
+        let v: serde_json::Value = serde_json::from_str(&text).unwrap_or_default();
+        let s = |v: &serde_json::Value| match v {
+            serde_json::Value::String(x) => x.clone(),
+            serde_json::Value::Null => "-".into(),
+            x => x.to_string(),
+        };
+        card(t, tr!("DEBUG_GUIDE"), |t| {
+            if v.is_null() {
+                note(t, tr!("DEBUG_GUIDE_EMPTY"));
+                return;
+            }
+            let a = &v["auto"];
+            let head = if a.is_null() {
+                trf!("DEBUG_GUIDE_NO_TARGET", world = s(&v["world"]))
+            } else {
+                format!(
+                    "{} · {} · {}m · {}m · {}",
+                    s(&a["label"]),
+                    s(&a["source"]),
+                    s(&a["distance_m"]),
+                    s(&a["height_m"]),
+                    if a["blocked"] == true { tr!("DEBUG_BLOCKED") } else { "" }
+                )
+            };
+            block(t, |ui| ui.label(RichText::new(head).strong()));
+            if !a["route"].is_null() {
+                note(t, format!("route: {}", a["route"]));
+            }
+            block(t, |ui| {
+                ui.columns(2, |cols| {
+                    egui::Grid::new("guide-near").num_columns(5).striped(true).spacing([8.0, 2.0]).show(
+                        &mut cols[0],
+                        |ui| {
+                            for g in v["nearest"].as_array().into_iter().flatten() {
+                                ui.add(egui::Label::new(s(&g["label"])).truncate());
+                                ui.label(RichText::new(s(&g["source"])).small().color(DIM));
+                                ui.label(
+                                    RichText::new(format!("{}m {}m", s(&g["distance_m"]), s(&g["height_m"])))
+                                        .monospace()
+                                        .small(),
+                                );
+                                let flags: Vec<&str> =
+                                    [("wanted", "W"), ("blocked", "B"), ("skipped", "S"), ("followed", "F")]
+                                        .iter()
+                                        .filter(|(k, _)| g[*k] == true)
+                                        .map(|(_, f)| *f)
+                                        .collect();
+                                ui.label(RichText::new(flags.join("")).monospace().small().color(DIM));
+                                ui.end_row();
+                            }
+                        },
+                    );
+                    let ui = &mut cols[1];
+                    for e in v["events"].as_array().into_iter().flatten().take(14) {
+                        ui.add(egui::Label::new(RichText::new(s(e)).small().monospace()).wrap());
+                    }
+                });
+            });
+            note(t, tr!("DEBUG_GUIDE_HINT"));
+        });
+    }
+
     /// A place to record what each cheat did in play, two columns of cheats.
     pub(super) fn debug_marks(&mut self, t: &mut Tui) {
         let mut changed = false;

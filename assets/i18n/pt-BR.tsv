@@ -735,3 +735,28 @@ MEMORY_NOW	Memória
 MEMORY_PEAK	Pico de memória
 MEMORY_ALSO_LOGGED	A memória também é registrada no log a cada minuto.
 TRACK_FOLLOWING_HINT	Seguido agora: toque para soltar.
+CTX_HAZE	Um Haze mantém {n} Walkers vivos: mate-o primeiro ({m} m)
+CTX_HANDOVER	{who} quer {what}, que você tem ({m} m)
+CTX_SECRET_NEAR	Alguém perto sabe um segredo ({m} m)
+CTX_APC	De APC, ainda a fazer: {list}
+CTX_APC_NOTHING	APC: nenhum objetivo restante em outras regiões
+CTX_ITEMS	itens
+CTX_PUZZLES	quebra-cabeças
+CTX_GROUPS	grupos inimigos
+CTX_GOALS	objetivos
+CTX_LEDGER	Em {m} m: {list}
+CTX_LEDGER_CLEAR	Em {m} m: nada restante
+CTX_ROD_NOT_YET	{name}: ainda não completa nenhuma fechadura
+CTX_ROD_OPENS_HERE	{name}: {n} fechadura(s) para abrir, a mais próxima a {m} m
+CTX_ROD_OPENS_AWAY	{name}: {n} fechadura(s) para abrir, em outras regiões
+BANNER_BEFORE_YOU_GO_ON	Antes de continuar
+BANNER_PREVIOUSLY	Anteriormente
+BANNER_PREVIOUSLY_BODY	{ago}, em {place}, seguindo {quest}
+DEBUG_GUIDE	Rastro do guia
+DEBUG_GUIDE_EMPTY	Nada ainda: a sobreposição grava durante o jogo.
+DEBUG_GUIDE_NO_TARGET	Sem alvo do guia automático ({world})
+DEBUG_BLOCKED	bloqueado
+DEBUG_GUIDE_HINT	W desejado · B bloqueado · S pulado · F seguido. Tudo em Mods\doctor\guide.jsonl.
+REQ_PUT_HERE	Colocar aqui: {items}
+REQ_PUT_HELD	Você tem o que vai aqui.
+REQ_NEEDED_FOR	necessário para {place}

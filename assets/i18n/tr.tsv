@@ -735,3 +735,28 @@ MEMORY_NOW	Bellek
 MEMORY_PEAK	Bellek zirvesi
 MEMORY_ALSO_LOGGED	Bellek dakikada bir günlüğe de yazılır.
 TRACK_FOLLOWING_HINT	Takip ediliyor: bırakmak için basın.
+CTX_HAZE	Bir Haze {n} Walker'ı hayatta tutuyor: önce onu öldür ({m} m)
+CTX_HANDOVER	{who}, sende olan {what} istiyor ({m} m)
+CTX_SECRET_NEAR	Yakında bir sır bilen biri var ({m} m)
+CTX_APC	APC ile, yapılacaklar: {list}
+CTX_APC_NOTHING	APC: diğer bölgelerde görev hedefi kalmadı
+CTX_ITEMS	eşya
+CTX_PUZZLES	bulmaca
+CTX_GROUPS	düşman grubu
+CTX_GOALS	hedef
+CTX_LEDGER	{m} m içinde: {list}
+CTX_LEDGER_CLEAR	{m} m içinde: bir şey kalmadı
+CTX_ROD_NOT_YET	{name}: henüz tamamladığı bir kilit yok
+CTX_ROD_OPENS_HERE	{name}: açılabilen {n} kilit, en yakını {m} m
+CTX_ROD_OPENS_AWAY	{name}: açılabilen {n} kilit, diğer bölgelerde
+BANNER_BEFORE_YOU_GO_ON	Devam etmeden önce
+BANNER_PREVIOUSLY	Önceki bölümde
+BANNER_PREVIOUSLY_BODY	{ago}, {place} bölgesinde, {quest} peşindeydin
+DEBUG_GUIDE	Rehber izi
+DEBUG_GUIDE_EMPTY	Henüz yok: kaplama oyun sırasında yazar.
+DEBUG_GUIDE_NO_TARGET	Otomatik rehber hedefi yok ({world})
+DEBUG_BLOCKED	engelli
+DEBUG_GUIDE_HINT	W gerekli · B engelli · S atlandı · F takipte. Tümü Mods\doctor\guide.jsonl içinde.
+REQ_PUT_HERE	Buraya koy: {items}
+REQ_PUT_HELD	Buraya gideni taşıyorsun.
+REQ_NEEDED_FOR	{place} için gerekli

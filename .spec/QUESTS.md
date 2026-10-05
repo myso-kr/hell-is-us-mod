@@ -243,3 +243,22 @@ required NPCs, items and clues.
   latest SaveDate updates live even without saving — facts 541 → 542, tags 132 → 134, date
   unchanged. The mod reads it every 2 s, so progress shows within seconds. Quest completion was
   confirmed to show immediately in game.
+
+## The game's HUD, and where the overlays go (2026-10-05)
+
+Read from the game's own widgets (`UI/HUD/*`, CanvasPanelSlot anchors and offsets on a 1080-tall
+layout, scaled by the window's height), not guessed from screenshots:
+
+| Game HUD | Where |
+|---|---|
+| `HUD_PlayerStatus_SUMG` (weapon, health, stamina, Lymbic) | top left, x 94, y 46, about 750 wide |
+| `HUD_NotificationLog_SUMG` | left edge, middle, 500 tall |
+| `HUD_SecretStarted…`, `HUD_CombatItemPickUp…` notices | right edge, middle, 100 in |
+| `HUD_InteractInput_SUMG` | centre |
+| `CombatHud_SUMG` wheels (Lymbic, drone, items) | bottom left (138, 480) and bottom right (138) |
+| `MainSubtitles_UMG` (and quick chats) | bottom centre, 90 up |
+| The compass, when raised | top centre, briefly |
+
+So the tracker (with its context lines, context.rs) stays in the top-right column under the
+minimap and ends `NOTICE_HALF` (200, scaled) above the screen's middle; the banner (banner.rs) is
+under the compass strip at the top centre, for 15 s.

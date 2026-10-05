@@ -4,6 +4,15 @@
 
 use super::*;
 
+/// A survey place the hero stays within `ABSENT_NEAR` (cm across) and `ABSENT_HEIGHT`
+/// (cm up or down) of for `ABSENT_AFTER` with nothing of its name loaded there is empty
+/// now: the world streams in what is that close well before then. Someone the story
+/// moves on (Father Jaffer's talk by Lake Cynon, measured) is placed in the level all the
+/// same, and was guided to with no one there.
+const ABSENT_NEAR: f32 = 4000.0;
+const ABSENT_HEIGHT: f32 = 1000.0;
+const ABSENT_AFTER: Duration = Duration::from_secs(6);
+
 pub struct Attached {
     pub game: Game,
     pub anchors: Anchors,
@@ -56,6 +65,11 @@ struct Guide {
     obstacles: Obstacles,
     /// Where each NPC's conversation was last seen loaded, by flow (`Survey::goals`).
     met: HashMap<String, String>,
+    /// The survey's places found empty (`ABSENT_*`), by id, in `empty_world`; and since
+    /// when the hero has been near each not loaded.
+    empty: HashSet<u64>,
+    near_since: HashMap<u64, Instant>,
+    empty_world: String,
     /// What each choice puzzle's slot was last seen to hold (slots.rs).
     slots_seen: crate::slots::Seen,
 }
@@ -317,7 +331,7 @@ impl Attached {
         {
             let _t = crate::prof::span("goals.refresh");
             let g = &mut *g;
-            g.goals.refresh(m, n, hero, chain.root, actors, g.quests.flows());
+            g.goals.refresh(m, n, hero, chain.root, chain.location, actors, g.quests.flows());
         }
         if let Ok((p, _)) = chain.pose(m, &self.anchors) {
             let _t = crate::prof::span("obstacles");
@@ -355,13 +369,35 @@ impl Attached {
                 saved: &g.saved,
                 talked: &g.goals.done_npcs,
             };
-            goals.extend(survey.goals(
-                crate::survey::Survey::world_of(&world),
-                &known,
-                &g.goals.loaded,
-                &g.fact_keys,
-                &mut g.met,
-            ));
+            let w = crate::survey::Survey::world_of(&world);
+            if g.empty_world != w {
+                g.empty.clear();
+                g.near_since.clear();
+                g.empty_world = w.to_string();
+            }
+            if let (Ok((p, _)), Some(list)) = (chain.pose(m, &self.anchors), survey.worlds.get(w)) {
+                let p = [p[0] as f32, p[1] as f32, p[2] as f32];
+                for e in list {
+                    let id = e.id();
+                    let near = (e.at[0] - p[0]).hypot(e.at[1] - p[1]) <= ABSENT_NEAR
+                        && (e.at[2] - p[2]).abs() <= ABSENT_HEIGHT;
+                    if !near || crate::survey::is_loaded(e, list, &g.goals.loaded) {
+                        g.near_since.remove(&id);
+                        if near {
+                            g.empty.remove(&id);
+                        }
+                        continue;
+                    }
+                    if g.near_since.entry(id).or_insert_with(Instant::now).elapsed() >= ABSENT_AFTER {
+                        g.empty.insert(id);
+                    }
+                }
+            }
+            goals.extend(survey.goals(w, &known, &g.goals.loaded, &g.fact_keys, &mut g.met, &g.empty));
+            // What must come first (requires.rs): the place to put items held, and what
+            // gives an item a placement still takes.
+            goals.extend(crate::requires::placement_goals(survey, w, &g.saved, &g.held));
+            crate::requires::mark_givers(&mut goals, survey, w, &g.saved, &g.held);
         }
         Ok((goals, k))
     }

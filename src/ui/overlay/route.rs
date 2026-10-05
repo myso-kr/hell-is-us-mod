@@ -32,9 +32,17 @@ pub struct Route {
     pending: Option<std::thread::JoinHandle<(Path, u64)>>,
     /// Goals whose last route had to go through something.
     pub blocked: HashSet<u64>,
+    /// What each route worked out since last asked said of its goal: blocked or not
+    /// (`verdicts`), for the overlay to remember past this route.
+    seen: Vec<(u64, bool)>,
 }
 
 impl Route {
+    /// What the routes worked out since last asked: each goal, and whether it was blocked.
+    pub fn verdicts(&mut self) -> Vec<(u64, bool)> {
+        std::mem::take(&mut self.seen)
+    }
+
     /// Keep the route to `goal` current from the hero at `p`; `None` drops it (but
     /// not what is known to be blocked). `trail` is where the hero has walked — cheap
     /// ground for the grid.
@@ -64,6 +72,7 @@ impl Route {
                 } else {
                     self.blocked.remove(&id);
                 }
+                self.seen.push((id, path.uncertain()));
                 // Same goal: keep the way being followed unless this one is clearly
                 // better, so the compass does not swing.
                 if id == g.id

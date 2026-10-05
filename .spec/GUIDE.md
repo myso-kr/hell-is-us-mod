@@ -241,3 +241,34 @@ the class tree in memory, build 24045435). Neither was on the maps nor anywhere 
 The NPCs' kind is split as the game names them: `Convo_…` (a conversation: the story's people,
 the forge, trades), `Quickchat_Secret_…` (tells a secret), `Quickchat_Quest_…` (a quest's), and the
 rest (a line or two). Loot has one class only (`Base_EnemyLootContainer_BP_C`): no finer sort.
+
+## 9. Tracing the guide, and what must come first (2026-10-05)
+
+**The trace** (`src/ui/overlay/trace.rs`): `Mods\doctor\guide.jsonl`, a JSON record a line with
+its time and kind — `event` (the auto target changing: from, to, why; the guide's own decisions)
+and `state` every 5 s (the target with its source, distance, height, blocked, route; the twelve
+nearest goals with wanted/blocked/skipped/followed; the tracks). Capped at 2000 lines, the last
+1000 kept. The Debug page shows the last state. Every guide fault below was found from it.
+
+**Blocked, remembered.** A route is kept only for what is followed, and the goal's "blocked" lived
+in the route: dropping a blocked goal forgot it, it was picked again — the guide flickered. Now
+kept apart (`blocked_seen`) until the hero moves 60 m or 3 min pass. And when 3 different goals
+read as blocked within 5 s from one spot (10 m), the spot is what reads as closed (a porch inside a
+building's convex hull, measured by Lake Cynon: six goals in a second down to a key 25 m
+underground): blocked is not believed for 20 s and the auto target is picked again.
+
+**Survey names.** World Partition names are `…_UAID_<16 hex>_<number>`; the number was dropped on
+both sides, so different actors of one editor session shared a name (36 such groups) and the
+copies of one actor per streaming cell (503 groups) were kept apart. Now an entry is its name and
+place: copies within 1 m merge, ids include the place, the live `loaded` set keeps where each
+actor stands, and a shared name matches only within 5 m (30 m for an NPC).
+
+**Empty places.** A survey place the hero stays within 40 m (10 m up or down) of for 6 s with
+nothing of it loaded is left out until it loads (Father Jaffer's talk by Lake Cynon, moved on by
+the story).
+
+**What must come first, step 1** (`src/guide/requires.rs`): a placement (key door, gear slot) takes
+items (`puzzle.items`) the survey says who gives (`payload.items`). Every item held: the place is a
+goal with the givers' quest; an item missing: its givers' detail says what for. Step 2 (state
+edges: a drain's `Quest.Facts.LymbicForgeWaterLevel2` opening the flooded hall) and the whole
+game's graph are next.

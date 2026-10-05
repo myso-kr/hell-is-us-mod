@@ -18,11 +18,14 @@
 
 mod bake;
 mod bigmap;
+pub(crate) mod context;
 mod glide;
 mod hud;
 mod marker;
 mod route;
+mod trace;
 
+use super::banner;
 use super::hotkey::{game_window, pid_of};
 use super::layered::{pump, Layered};
 use super::pen::Pen;
@@ -43,6 +46,24 @@ const MAP_PX: i32 = 240;
 /// The compass strip.
 const COMPASS_W: i32 = 560;
 const COMPASS_H: i32 = 60;
+/// How far above the screen's middle the game's right-middle notices reach, on its
+/// 1080-tall layout (`HUD_SecretStarted…`, `HUD_CombatItemPickUp…`: anchored at the
+/// right edge's middle): the tracker ends above it.
+const NOTICE_HALF: f32 = 200.0;
+/// How long the banner shows, and a key item's note.
+/// How far the hero moves (cm), or how long it is, before a goal found blocked is tried
+/// again.
+const BLOCKED_MOVED: f32 = 6000.0;
+const BLOCKED_FOR: Duration = Duration::from_secs(180);
+/// This many different goals found blocked within `ENCLOSED_WITHIN` from within
+/// `ENCLOSED_NEAR` (cm) of one spot: the spot reads as closed, and blocked goals are not
+/// believed for `DISTRUST_FOR`.
+const ENCLOSED_GOALS: usize = 3;
+const ENCLOSED_WITHIN: Duration = Duration::from_secs(5);
+const ENCLOSED_NEAR: f32 = 1000.0;
+const DISTRUST_FOR: Duration = Duration::from_secs(20);
+const BANNER_FOR: Duration = Duration::from_secs(15);
+const KEY_NOTE_FOR: Duration = Duration::from_secs(20);
 /// Gap from the game window's edges.
 const MARGIN: i32 = 24;
 const FRAME: Duration = Duration::from_millis(50);
@@ -99,7 +120,7 @@ fn cursor_shown() -> bool {
 /// What the tracker last drew: the journal, the followed quest, whether its places are
 /// near, whether the guided goal is blocked, the needs line, and the quests followed
 /// besides with their colours.
-type Tracked = (Arc<Vec<Quest>>, Option<String>, bool, bool, String, Vec<(String, [u8; 3])>);
+type Tracked = (Arc<Vec<Quest>>, Option<String>, bool, bool, String, Vec<(String, [u8; 3])>, Vec<context::Line>, i32);
 
 /// A ring to draw in the game's view (marker.rs): where on the screen, the hero's
 /// distance, the colour (`None`, the auto guide's) and whether in focus.
@@ -121,6 +142,25 @@ pub fn run(shared: Arc<Shared>) {
     let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
     let mut pen = Pen::new(tracker::W, tracker::H);
     let mut tracked: Option<Tracked> = None;
+    // The banner under the compass (banner.rs): its window, canvas and pen, what it shows
+    // and until when.
+    let mut banner_window = Layered::new("hiumod-banner", "Hell Is Us Notice", banner::W, banner::H);
+    let mut banner_cv = Canvas::new(banner::W as usize, banner::H as usize);
+    let mut banner_pen = Pen::new(banner::W, banner::H);
+    let mut banner_shown: Option<(String, String)> = None;
+    let mut banner_until = Instant::now();
+    let mut banner_used = 0;
+    // What the deadlines' alert said last, so a new one shows again.
+    let mut alerted = String::new();
+    // Where the last session left off: shown once, on the first frame in play.
+    let mut previously =
+        shared.previous.lock().unwrap().clone().filter(|p| crate::session::now().saturating_sub(p.when) >= 30 * 60);
+    // The context lines, worked out twice a second; the rods held, and a note on the
+    // last one picked up, kept for a while.
+    let mut context_lines: Vec<context::Line> = Vec::new();
+    let mut context_at = Instant::now() - Duration::from_secs(1);
+    let mut rods: Option<std::collections::BTreeSet<String>> = None;
+    let mut key_note: Option<(String, Instant)> = None;
     let mut tracker_used = 0;
     // The big map's window is made at the game window's size, and again if that changes.
     let mut big_window: Option<Layered> = None;
@@ -159,6 +199,21 @@ pub fn run(shared: Arc<Shared>) {
     // A route per thing followed (guide/track.rs), and since when a goal followed has been
     // gone.
     let mut routes: std::collections::HashMap<u64, route::Route> = Default::default();
+    // The goals a route found blocked, with where the hero was and when: kept after the
+    // route is dropped. A route is kept only for what is followed, so without this a
+    // blocked goal let go of looked open again the next frame, was picked again, found
+    // blocked again — the guide flickering between two goals. Tried again once the hero
+    // has moved on (`BLOCKED_MOVED`) or after `BLOCKED_FOR`: a door may have opened.
+    let mut blocked_seen: std::collections::HashMap<u64, ([f32; 3], Instant)> = Default::default();
+    // What the guide works with, written out (trace.rs).
+    let mut tracer = trace::Trace::default();
+    // The goals found blocked lately, with where the hero was; and until when blocked
+    // goals are not believed: when every way from where the hero stands goes through
+    // something, it is the hero's spot (inside a building's rough hull: a porch, a
+    // doorway) that reads as closed, not each goal — measured by Lake Cynon, where the
+    // guide went through six goals in a second down to a key 25 m underground.
+    let mut lately_blocked: std::collections::VecDeque<(Instant, u64, [f32; 3])> = Default::default();
+    let mut distrust_until = Instant::now();
     let mut missing = std::collections::HashMap::new();
     let mut baking = bake::Baking::default();
     let mut saved = Instant::now();
@@ -465,9 +520,53 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 let goals = pinned.get(&goals, &state, world);
 
-                // What can only be reached through something, by any route.
-                let blocked: std::collections::HashSet<u64> =
-                    routes.values().flat_map(|r| r.blocked.iter().copied()).collect();
+                // What can only be reached through something, by any route, remembered.
+                for r in routes.values_mut() {
+                    for (id, is) in r.verdicts() {
+                        if is {
+                            blocked_seen.insert(id, (p, Instant::now()));
+                            lately_blocked.push_back((Instant::now(), id, p));
+                        } else {
+                            blocked_seen.remove(&id);
+                        }
+                    }
+                }
+                lately_blocked.retain(|(t, ..)| t.elapsed() < ENCLOSED_WITHIN);
+                let here_blocked: std::collections::HashSet<u64> = lately_blocked
+                    .iter()
+                    .filter(|(_, _, at)| (at[0] - p[0]).hypot(at[1] - p[1]) < ENCLOSED_NEAR)
+                    .map(|(_, id, _)| *id)
+                    .collect();
+                if here_blocked.len() >= ENCLOSED_GOALS {
+                    tracer.note_event(
+                        &format!(
+                            "every way from here goes through something ({} goals in {} s): the hero's spot \
+                             reads as closed; blocked goals not believed for {} s",
+                            here_blocked.len(),
+                            ENCLOSED_WITHIN.as_secs(),
+                            DISTRUST_FOR.as_secs()
+                        ),
+                        world,
+                        p,
+                    );
+                    for id in &here_blocked {
+                        blocked_seen.remove(id);
+                    }
+                    lately_blocked.clear();
+                    distrust_until = Instant::now() + DISTRUST_FOR;
+                    // What the cascade landed on is no choice: pick again, from the nearest
+                    // wanted goal (one picked by hand is kept).
+                    if !state.held {
+                        state.auto = None;
+                    }
+                }
+                if Instant::now() < distrust_until {
+                    blocked_seen.clear();
+                }
+                blocked_seen.retain(|_, (at, when)| {
+                    (at[0] - p[0]).hypot(at[1] - p[1]) < BLOCKED_MOVED && when.elapsed() < BLOCKED_FOR
+                });
+                let blocked: std::collections::HashSet<u64> = blocked_seen.keys().copied().collect();
                 settle_target(&mut state, &goals, p, crate::quests::followed(&journal, None), &journal, &blocked);
                 // Each quest followed to its own next goal (track.rs).
                 state.resolve_quests(&goals, &journal, p, &blocked);
@@ -482,6 +581,7 @@ pub fn run(shared: Arc<Shared>) {
                 routes.retain(|id, _| followed.iter().any(|f| f.id == *id));
                 let mut drawn: Vec<crate::raster::Drawn> = Vec::new();
                 let mut uncertain = std::collections::HashSet::new();
+                let mut notes: Vec<trace::RouteNote> = Vec::new();
                 for f in &followed {
                     let Some(g) = goals.iter().find(|g| g.id == f.id) else { continue };
                     let path = if state.route {
@@ -501,10 +601,18 @@ pub fn run(shared: Arc<Shared>) {
                     if path.uncertain() {
                         uncertain.insert(f.id);
                     }
+                    if let Some(end) = path.points.last() {
+                        let short = (end[0] - g.at[0]).hypot(end[1] - g.at[1]) / 100.0;
+                        notes.push((f.id, path.points.len(), path.uncertain(), (short * 10.0).round() / 10.0));
+                    }
                     drawn.push(crate::raster::Drawn { id: f.id, path, colour: f.colour, focus: f.focus });
                 }
                 *shared.route_uncertain.lock().unwrap() = uncertain;
                 last_drawn = drawn.clone();
+                let story = crate::quests::followed(&journal, None);
+                if let Some(t) = tracer.observe(&state, &goals, p, world, story, &journal, &blocked, &notes) {
+                    *shared.trace.lock().unwrap() = t;
+                }
 
                 let relief = baking.relief(&state, p, &obstacles);
 
@@ -646,24 +754,119 @@ pub fn run(shared: Arc<Shared>) {
                     // The quests followed besides, in their colours.
                     let besides: Vec<(String, [u8; 3])> =
                         state.tracks.iter().filter_map(|x| Some((x.quest.clone()?, x.rgb()))).collect();
-                    let now =
-                        (journal.clone(), followed.map(|q| q.key.clone()), near, stuck, line.clone(), besides.clone());
+                    // What the place asks now (context.rs), twice a second; and a rod just
+                    // picked up, said for a while.
+                    if context_at.elapsed() >= Duration::from_millis(500) {
+                        context_at = Instant::now();
+                        let snap = shared.snap.lock().unwrap();
+                        if let (Some(s), Some((h, _))) = (snap.as_ref(), here) {
+                            let held = context::rods_held(s);
+                            if let Some(before) = &rods {
+                                if let Some(new) = held.difference(before).next() {
+                                    key_note = context::key_note(s, new, h, world).map(|n| (n, Instant::now()));
+                                }
+                            }
+                            rods = Some(held);
+                            if key_note.as_ref().is_some_and(|(_, at)| at.elapsed() > KEY_NOTE_FOR) {
+                                key_note = None;
+                            }
+                            let note = key_note.as_ref().map(|(n, _)| n.as_str());
+                            context_lines = context::lines(s, &things, &goals, h, world, places, note);
+                        }
+                    }
+                    // At the top right, under the minimap when it shows; no lower than the
+                    // band where the game opens its notices (the right middle: secrets
+                    // started, items picked up), on the game's 1080-tall layout scaled.
+                    let top = r.top + MARGIN + 24;
+                    let y = if state.display == Display::Mini { top + MAP_PX + 12 } else { top };
+                    let scale = (r.bottom - r.top) as f32 / 1080.0;
+                    let band = r.top + (r.bottom - r.top) / 2 - (NOTICE_HALF * scale) as i32;
+                    let max_h = band - y;
+                    let now = (
+                        journal.clone(),
+                        followed.map(|q| q.key.clone()),
+                        near,
+                        stuck,
+                        line.clone(),
+                        besides.clone(),
+                        context_lines.clone(),
+                        max_h,
+                    );
                     if tracked.as_ref() != Some(&now) {
-                        tracker_used =
-                            tracker::draw(&mut tracker_cv, pen, &journal, followed, near, stuck, &line, &besides);
+                        tracker_used = tracker::draw(
+                            &mut tracker_cv,
+                            pen,
+                            &journal,
+                            followed,
+                            near,
+                            stuck,
+                            &line,
+                            &besides,
+                            &context_lines,
+                            max_h,
+                        );
                         tracked = Some(now);
                     }
                     if tracker_used > 0 {
-                        // At the top right, under the minimap when it shows: the game opens
-                        // its pop-ups at the right middle, where the tracker used to be.
-                        let top = r.top + MARGIN + 24;
-                        let y = if state.display == Display::Mini { top + MAP_PX + 12 } else { top };
                         w.present(&tracker_cv, r.right - tracker::W - MARGIN, y);
                     } else {
                         w.hide();
                     }
                 } else if let Some(w) = tracker_window.as_mut() {
                     w.hide();
+                }
+
+                // The banner under the compass: a good deed the next story beat ends (when
+                // the alert is new, for a while), else where the last session left off (on
+                // the first frames in play).
+                let alert = crate::missables::alert(&deadlines).unwrap_or_default();
+                if alert != alerted {
+                    alerted = alert.clone();
+                    if !alert.is_empty() {
+                        banner_shown = Some((tr!("BANNER_BEFORE_YOU_GO_ON").to_string(), alert));
+                        banner_until = Instant::now() + BANNER_FOR;
+                    }
+                }
+                if let (Some(p), Some(_)) = (previously.take(), here) {
+                    if banner_shown.is_none() || Instant::now() >= banner_until {
+                        let quest = p
+                            .quest
+                            .as_ref()
+                            .and_then(|k| journal.iter().find(|q| q.key == *k))
+                            .map(|q| q.name.clone())
+                            .unwrap_or_default();
+                        let ago = crate::session::now().saturating_sub(p.when);
+                        let body = trf!(
+                            "BANNER_PREVIOUSLY_BODY",
+                            ago = super::panel::ago_text(ago),
+                            place = crate::i18n::place(crate::survey::Survey::world_of(&p.world)),
+                            quest = quest
+                        );
+                        banner_shown = Some((tr!("BANNER_PREVIOUSLY").to_string(), body));
+                        banner_until = Instant::now() + BANNER_FOR;
+                    } else {
+                        previously = Some(p);
+                    }
+                }
+                match (banner_window.as_mut(), banner_pen.as_mut(), &banner_shown) {
+                    (Some(w), Some(bp), Some((title, body))) if Instant::now() < banner_until => {
+                        if banner_used == 0 {
+                            let colour = if *title == tr!("BANNER_PREVIOUSLY") {
+                                crate::raster::Rgba(0x5A, 0x9C, 0xE6, 255)
+                            } else {
+                                crate::raster::Rgba(0xE8, 0xC0, 0x6A, 255)
+                            };
+                            banner_used = banner::draw(&mut banner_cv, bp, title, body, colour);
+                        }
+                        let x = r.left + (r.right - r.left - banner::W) / 2;
+                        let y = r.top + 12 + if state.compass { COMPASS_H + 6 } else { 0 };
+                        w.present(&banner_cv, x, y);
+                    }
+                    (Some(w), ..) => {
+                        w.hide();
+                        banner_used = 0;
+                    }
+                    _ => {}
                 }
                 if tick % 20 == 0 {
                     // Under the panel while it shows, so the two never trade places.
@@ -674,6 +877,9 @@ pub fn run(shared: Arc<Shared>) {
                     map_window.keep_on_top(panel);
                     compass_window.keep_on_top(panel);
                     if let Some(w) = tracker_window.as_ref() {
+                        w.keep_on_top(panel);
+                    }
+                    if let Some(w) = banner_window.as_ref() {
                         w.keep_on_top(panel);
                     }
                     if let Some(w) = big_window.as_ref() {
@@ -692,6 +898,10 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 if let Some(w) = tracker_window.as_mut() {
                     w.hide();
+                }
+                if let Some(w) = banner_window.as_mut() {
+                    w.hide();
+                    banner_used = 0;
                 }
                 if let Some(w) = big_window.as_mut() {
                     w.hide();

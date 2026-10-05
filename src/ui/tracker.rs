@@ -43,8 +43,9 @@ fn kind_colour(q: &Quest) -> Rgba {
     }
 }
 
-/// Draw the tracker into `cv` (cleared first); the height used, 0 when there is
-/// nothing to show.
+/// Draw the tracker into `cv` (cleared first): the context lines (context.rs) on top,
+/// then the quests, no taller than `max_h`; the height used, 0 when there is nothing to
+/// show.
 #[allow(clippy::too_many_arguments)]
 pub fn draw(
     cv: &mut Canvas,
@@ -55,8 +56,11 @@ pub fn draw(
     stuck: bool,
     needs: &str,
     besides: &[(String, [u8; 3])],
+    context: &[crate::ui::overlay::context::Line],
+    max_h: i32,
 ) -> i32 {
     cv.clear();
+    let max_h = max_h.clamp(60, H);
     let mut list: Vec<&Quest> = Vec::new();
     if let Some(f) = followed {
         list.push(f);
@@ -66,13 +70,26 @@ pub fn draw(
     let rest = |q: &&Quest| q.active() && Some(q.key.as_str()) != followed.map(|f| f.key.as_str());
     list.extend(journal.iter().filter(rest).filter(|q| colour_of(q).is_some()));
     list.extend(journal.iter().filter(rest).filter(|q| colour_of(q).is_none()).take(OTHERS));
-    if list.is_empty() {
+    if list.is_empty() && context.is_empty() {
         return 0;
     }
     let width = W - TEXT_X - PAD;
     let mut y = PAD;
+    // What the place asks now: a square in the line's colour, the text after it.
+    for l in context {
+        let h = pen.write(cv, TEXT_X, y, width, &l.text, 11, false, TEXT, 2);
+        cv.rect(PAD + 1, y + 5, PAD + 7, y + 11, l.colour);
+        y += h + 3;
+    }
+    if !context.is_empty() && !list.is_empty() {
+        y += 4;
+        cv.rect(PAD, y, W - PAD, y + 1, EDGE);
+        y += 1 + 8;
+    }
     let count = journal.iter().filter(|q| q.active()).count().max(list.len());
-    y += pen.write(cv, PAD, y, W - 2 * PAD, &format!("{}  {count}", tr!("QUESTS")), 11, true, DIM, 1) + 8;
+    if !list.is_empty() {
+        y += pen.write(cv, PAD, y, W - 2 * PAD, &format!("{}  {count}", tr!("QUESTS")), 11, true, DIM, 1) + 8;
+    }
     for (i, q) in list.iter().enumerate() {
         let open = i == 0 && followed.is_some();
         let c = kind_colour(q);
@@ -137,11 +154,11 @@ pub fn draw(
                 y += 1 + 8;
             }
         }
-        if y > H - 40 {
+        if y > max_h - 40 {
             break;
         }
     }
-    let used = (y + PAD - 4).min(H);
+    let used = (y + PAD - 4).min(max_h);
     let card = (0, 0, W, used);
     under(cv, card, 8.0, CARD);
     edge(cv, card, 8.0, EDGE);
@@ -201,14 +218,14 @@ fn fill(cv: &mut Canvas, b: (f32, f32, f32, f32), r: f32, c: Rgba) {
 }
 
 /// A one-pixel line just inside the edge of the box `b` with round corners.
-fn edge(cv: &mut Canvas, b: (i32, i32, i32, i32), r: f32, c: Rgba) {
+pub(crate) fn edge(cv: &mut Canvas, b: (i32, i32, i32, i32), r: f32, c: Rgba) {
     let w = cv.w;
     each_in(cv, float(b), r, |cv, i, inside| cv.blend((i % w) as i32, (i / w) as i32, c, 1.0 - (inside - 0.5).abs()));
 }
 
 /// Put `bg` under what is drawn, over the box `b` with round corners — so a box is as
 /// tall as its content without drawing the content twice.
-fn under(cv: &mut Canvas, b: (i32, i32, i32, i32), r: f32, bg: Rgba) {
+pub(crate) fn under(cv: &mut Canvas, b: (i32, i32, i32, i32), r: f32, bg: Rgba) {
     each_in(cv, float(b), r, |cv, i, inside| {
         let cover = (inside + 0.5).clamp(0.0, 1.0);
         let a = (bg.3 as f32 * cover + 0.5) as u32;

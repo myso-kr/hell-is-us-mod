@@ -735,3 +735,28 @@ MEMORY_NOW	Memory
 MEMORY_PEAK	Memory peak
 MEMORY_ALSO_LOGGED	The memory is also written to the log once a minute.
 TRACK_FOLLOWING_HINT	Followed now: press to let it go.
+CTX_HAZE	A Haze keeps {n} Walkers alive: kill it first ({m}m)
+CTX_HANDOVER	{who} wants {what} you hold ({m}m)
+CTX_SECRET_NEAR	Someone near knows a secret ({m}m)
+CTX_APC	By APC, still to do: {list}
+CTX_APC_NOTHING	By APC: no quest goal left in other regions
+CTX_ITEMS	items
+CTX_PUZZLES	puzzles
+CTX_GROUPS	enemy groups
+CTX_GOALS	goals
+CTX_LEDGER	Within {m}m: {list}
+CTX_LEDGER_CLEAR	Within {m}m: nothing left
+CTX_ROD_NOT_YET	{name}: no lock it completes yet
+CTX_ROD_OPENS_HERE	{name}: {n} lock(s) can be opened now, nearest {m}m
+CTX_ROD_OPENS_AWAY	{name}: {n} lock(s) can be opened now, in other regions
+BANNER_BEFORE_YOU_GO_ON	Before you go on
+BANNER_PREVIOUSLY	Previously
+BANNER_PREVIOUSLY_BODY	{ago}, in {place}, following {quest}
+DEBUG_GUIDE	Guide trace
+DEBUG_GUIDE_EMPTY	Nothing yet: the overlay writes it while the hero is in play.
+DEBUG_GUIDE_NO_TARGET	No auto-guide target ({world})
+DEBUG_BLOCKED	blocked
+DEBUG_GUIDE_HINT	W wanted for the story · B blocked · S skipped · F followed. The same, with every field, is in Mods\doctor\guide.jsonl.
+REQ_PUT_HERE	Put here: {items}
+REQ_PUT_HELD	You hold what goes here.
+REQ_NEEDED_FOR	needed for {place}

@@ -735,3 +735,28 @@ MEMORY_NOW	Pamięć
 MEMORY_PEAK	Szczyt pamięci
 MEMORY_ALSO_LOGGED	Pamięć jest też zapisywana w logu co minutę.
 TRACK_FOLLOWING_HINT	Śledzone: naciśnij, by puścić.
+CTX_HAZE	Haze utrzymuje przy życiu {n} Walkerów: zabij go najpierw ({m} m)
+CTX_HANDOVER	{who} chce {what}, które masz ({m} m)
+CTX_SECRET_NEAR	Ktoś w pobliżu zna sekret ({m} m)
+CTX_APC	APC-em, wciąż do zrobienia: {list}
+CTX_APC_NOTHING	APC: brak celów zadań w innych regionach
+CTX_ITEMS	przedmioty
+CTX_PUZZLES	zagadki
+CTX_GROUPS	grupy wrogów
+CTX_GOALS	cele
+CTX_LEDGER	W promieniu {m} m: {list}
+CTX_LEDGER_CLEAR	W promieniu {m} m: nic nie zostało
+CTX_ROD_NOT_YET	{name}: nie kompletuje jeszcze żadnego zamka
+CTX_ROD_OPENS_HERE	{name}: {n} zamek/zamki do otwarcia, najbliższy {m} m
+CTX_ROD_OPENS_AWAY	{name}: {n} zamek/zamki do otwarcia, w innych regionach
+BANNER_BEFORE_YOU_GO_ON	Zanim pójdziesz dalej
+BANNER_PREVIOUSLY	Poprzednio
+BANNER_PREVIOUSLY_BODY	{ago}, w: {place}, śledząc {quest}
+DEBUG_GUIDE	Ślad przewodnika
+DEBUG_GUIDE_EMPTY	Jeszcze nic: nakładka zapisuje to podczas gry.
+DEBUG_GUIDE_NO_TARGET	Brak celu autoprzewodnika ({world})
+DEBUG_BLOCKED	zablokowane
+DEBUG_GUIDE_HINT	W potrzebne · B zablokowane · S pominięte · F śledzone. Wszystko w Mods\doctor\guide.jsonl.
+REQ_PUT_HERE	Połóż tutaj: {items}
+REQ_PUT_HELD	Masz to, co tu pasuje.
+REQ_NEEDED_FOR	potrzebne do: {place}

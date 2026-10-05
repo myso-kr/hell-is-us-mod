@@ -156,6 +156,23 @@ fn item(path: &str) -> (String, Option<String>) {
 
 /// The name an actor has once loaded: cooking adds a number after its UAID that the
 /// running game does not have (`…_UAID_047C16054F89B91D02_1325171520` → `…_UAID_047C16054F89B91D02`).
+/// Whether the game has `e` loaded: an actor of its name stands there. A name the survey
+/// has once in the world is enough; a name it has more than once (one editor session's
+/// World Partition actors) is told apart by where it stands — within `SAME_PLACE`, or
+/// `SAME_PERSON` for someone who walks about.
+pub fn is_loaded(e: &Entry, list: &[Entry], loaded: &HashMap<String, Vec<[f32; 3]>>) -> bool {
+    let Some(places) = loaded.get(&e.name) else { return false };
+    if list.iter().filter(|x| x.name == e.name).count() < 2 {
+        return true;
+    }
+    let reach = if e.npc { SAME_PERSON } else { SAME_PLACE };
+    places.iter().any(|p| (p[0] - e.at[0]).hypot(p[1] - e.at[1]) <= reach)
+}
+
+/// How near a loaded actor of a shared name must stand to be the survey's (cm).
+const SAME_PLACE: f32 = 500.0;
+const SAME_PERSON: f32 = 3000.0;
+
 fn runtime_name(cooked: &str) -> String {
     match cooked.rsplit_once('_') {
         Some((head, tail))
@@ -266,9 +283,13 @@ impl Entry {
     }
 
     /// A stable goal id: the name's hash with the top bit set, never an address.
+    /// Its name and its place to the metre: a World Partition name is the same for every
+    /// actor one editor session placed (`…_UAID_<16 hex>`, the survey drops the number
+    /// after it), so the name alone made different places one.
     pub fn id(&self) -> u64 {
         let mut h: u64 = 0xcbf2_9ce4_8422_2325;
-        for b in self.name.bytes() {
+        let at = self.at.map(|v| (v / 100.0).round() as i32);
+        for b in self.name.bytes().chain(at.iter().flat_map(|v| v.to_le_bytes())) {
             h = (h ^ b as u64).wrapping_mul(0x0100_0000_01b3);
         }
         h | 1 << 63
@@ -395,7 +416,11 @@ impl Survey {
                         e.trades.push((want, names(&t["payload"]["facts"]), names(&t["payload"]["tags"])));
                     }
                 }
-                if !(e.items.is_empty() && e.facts.is_empty() && e.tags.is_empty() && e.cats.is_empty()) {
+                // A copy per cell it streams in, at the same place: one is enough.
+                let copy = list
+                    .iter()
+                    .any(|x: &Entry| x.name == e.name && (x.at[0] - e.at[0]).hypot(x.at[1] - e.at[1]) < 100.0);
+                if !copy && !(e.items.is_empty() && e.facts.is_empty() && e.tags.is_empty() && e.cats.is_empty()) {
                     list.push(e);
                 }
             }
@@ -424,18 +449,20 @@ impl Survey {
         &self,
         world: &str,
         k: &Known,
-        loaded: &HashSet<String>,
+        loaded: &HashMap<String, Vec<[f32; 3]>>,
         quests: &HashMap<String, String>,
         met: &mut HashMap<String, String>,
+        empty: &HashSet<u64>,
     ) -> Vec<Goal> {
         let Some(list) = self.worlds.get(world) else { return Vec::new() };
-        for e in list.iter().filter(|e| loaded.contains(&e.name)) {
+        let here = |e: &&Entry| is_loaded(e, list, loaded);
+        for e in list.iter().filter(here) {
             if let Some(f) = &e.flow {
                 met.insert(f.clone(), e.name.clone());
             }
         }
         list.iter()
-            .filter(|e| !loaded.contains(&e.name))
+            .filter(|e| !is_loaded(e, list, loaded) && !empty.contains(&e.id()))
             .filter(|e| e.flow.as_ref().and_then(|f| met.get(f)).is_none_or(|at| *at == e.name))
             .filter_map(|e| {
                 let left = e.left(k);
@@ -760,8 +787,8 @@ mod tests {
         let k = Known { facts: &none, tags: &none, held: &none, saved: &none, talked: &none };
         let mut met = HashMap::new();
         let at = |loaded: &[&str], met: &mut HashMap<String, String>| -> Vec<f32> {
-            let loaded: HashSet<String> = loaded.iter().map(|s| s.to_string()).collect();
-            survey.goals("W", &k, &loaded, &HashMap::new(), met).iter().map(|g| g.at[0]).collect()
+            let loaded: HashMap<String, Vec<[f32; 3]>> = loaded.iter().map(|s| (s.to_string(), Vec::new())).collect();
+            survey.goals("W", &k, &loaded, &HashMap::new(), met, &HashSet::new()).iter().map(|g| g.at[0]).collect()
         };
         // Not met yet: either placement may be where they are.
         assert_eq!(at(&[], &mut met), [9000.0, 10.0]);
@@ -769,6 +796,25 @@ mod tests {
         assert_eq!(at(&["Forge_BP_2"], &mut met), Vec::<f32>::new());
         // Gone out of reach again: the forge, where they were last seen.
         assert_eq!(at(&[], &mut met), [10.0]);
+    }
+
+    #[test]
+    fn a_shared_name_is_told_apart_by_its_place() {
+        // One editor session's World Partition actors share a name once the number after
+        // `_UAID_` is dropped: two save points far apart, one loaded.
+        let at = |x: f32| Entry { at: [x, 0.0, 0.0], name: "Save_UAID_AB".into(), ..entry(&["Key_Item_DA"], &[], &[]) };
+        let survey =
+            Survey { worlds: HashMap::from([("W".to_string(), vec![at(0.0), at(20_000.0)])]), ..Survey::default() };
+        let none = HashSet::new();
+        let k = Known { facts: &none, tags: &none, held: &none, saved: &none, talked: &none };
+        let loaded = HashMap::from([("Save_UAID_AB".to_string(), vec![[20_050.0, 0.0, 0.0]])]);
+        let shown: Vec<f32> = survey
+            .goals("W", &k, &loaded, &HashMap::new(), &mut HashMap::new(), &HashSet::new())
+            .iter()
+            .map(|g| g.at[0])
+            .collect();
+        assert_eq!(shown, [0.0], "the far one is left to the live goals, the other still shown");
+        assert_ne!(at(0.0).id(), at(20_000.0).id(), "two places, two ids");
     }
 
     #[test]

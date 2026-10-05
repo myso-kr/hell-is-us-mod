@@ -253,9 +253,10 @@ pub struct Goals {
     talked_loaded: bool,
     /// The NPCs done with for now (talked to, no topic opened since), by name.
     pub done_npcs: std::collections::HashSet<String>,
-    /// The names of the interactables and NPCs loaded now: the survey leaves these to
-    /// the live goals.
-    pub loaded: std::collections::HashSet<String>,
+    /// The interactables and NPCs loaded now, by name, with where each stands: the survey
+    /// leaves these to the live goals. A World Partition name (`_UAID_`) is the same for
+    /// every actor one editor session placed, so where it stands tells them apart.
+    pub loaded: HashMap<String, Vec<[f32; 3]>>,
     names: HashMap<u64, String>,
     /// A fact asset's investigation, by the fact's address.
     fact_quest: HashMap<u64, Option<u32>>,
@@ -726,7 +727,17 @@ impl Goals {
     }
 
     /// Read what the loaded interactables hand out, when a scan is due.
-    pub fn refresh(&mut self, m: &dyn Memory, n: &Names, hero: u64, root: u64, actors: u64, flows: &HashMap<u32, u64>) {
+    #[allow(clippy::too_many_arguments)]
+    pub fn refresh(
+        &mut self,
+        m: &dyn Memory,
+        n: &Names,
+        hero: u64,
+        root: u64,
+        location: u64,
+        actors: u64,
+        flows: &HashMap<u32, u64>,
+    ) {
         if self.scanned.is_some_and(|t| t.elapsed() < RESCAN) {
             return;
         }
@@ -743,7 +754,7 @@ impl Goals {
         }
         let Some(levels) = self.levels else { return };
         let mut now = HashMap::with_capacity(self.payloads.len());
-        let mut loaded = std::collections::HashSet::new();
+        let mut loaded: HashMap<String, Vec<[f32; 3]>> = HashMap::new();
         let mut names = HashMap::new();
         for lv in crate::actors::array(m, world + levels, 4096) {
             for actor in crate::actors::array(m, lv + actors, 500_000) {
@@ -761,7 +772,19 @@ impl Goals {
                 // with its number (`Convo_Victor_Crafting_BP_2`; without it a loaded one went
                 // unrecognised and was shown twice), a World Partition one (`_UAID_`) without.
                 let name = self.names.remove(&actor).or_else(|| live_name(n, m, actor)).unwrap_or_default();
-                loaded.insert(name.clone());
+                let at = mem::read_u64(m, actor + root)
+                    .filter(|&p| mem::plausible(p))
+                    .and_then(|rc| {
+                        let mut b = [0u8; 24];
+                        m.read(rc + location, &mut b).then_some(b)
+                    })
+                    .map(|b| {
+                        let d = |i: usize| f64::from_le_bytes(b[i * 8..i * 8 + 8].try_into().unwrap()) as f32;
+                        [d(0), d(1), d(2)]
+                    })
+                    .filter(|p| p.iter().all(|v| v.is_finite() && v.abs() < 1.0e7));
+                let places = loaded.entry(name.clone()).or_default();
+                places.extend(at);
                 names.insert(actor, name);
                 if npc {
                     now.insert(actor, (class, self.read_npc(m, n, actor, root, flows)));

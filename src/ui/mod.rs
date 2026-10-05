@@ -19,6 +19,7 @@
 //! process skips that, as it does for `hold`; `hiumod restore` covers it the same way.
 
 mod app_icon;
+mod banner;
 mod console;
 mod hotkey;
 mod layered;
@@ -104,6 +105,11 @@ pub struct Shared {
     /// overlay: the big map as it covers the game window now, made small for the same
     /// page — (width, height, pixels, counter).
     pub preview_big: Mutex<Frame>,
+    /// panel: where the last session left off (session.rs), read once at start: the
+    /// overlay's "previously" banner.
+    pub previous: Mutex<Option<crate::session::Session>>,
+    /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
+    pub trace: Mutex<String>,
     /// panel: the Guide page is showing, so the overlay draws `ops`.
     pub ops_wanted: AtomicBool,
     /// overlay: the Guide page's map: north up round the hero, as wide as the big map's

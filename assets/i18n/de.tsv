@@ -735,3 +735,28 @@ MEMORY_NOW	Speicher
 MEMORY_PEAK	Speicherspitze
 MEMORY_ALSO_LOGGED	Der Speicher wird auch einmal pro Minute ins Protokoll geschrieben.
 TRACK_FOLLOWING_HINT	Wird verfolgt: drücken zum Loslassen.
+CTX_HAZE	Ein Haze hält {n} Walker am Leben: zuerst töten ({m} m)
+CTX_HANDOVER	{who} möchte {what}, das du hast ({m} m)
+CTX_SECRET_NEAR	Jemand in der Nähe kennt ein Geheimnis ({m} m)
+CTX_APC	Mit dem APC, noch zu tun: {list}
+CTX_APC_NOTHING	APC: in anderen Regionen kein Questziel mehr
+CTX_ITEMS	Gegenstände
+CTX_PUZZLES	Rätsel
+CTX_GROUPS	Gegnergruppen
+CTX_GOALS	Ziele
+CTX_LEDGER	Im Umkreis von {m} m: {list}
+CTX_LEDGER_CLEAR	Im Umkreis von {m} m: nichts mehr
+CTX_ROD_NOT_YET	{name}: noch kein Schloss damit vollständig
+CTX_ROD_OPENS_HERE	{name}: {n} Schloss/Schlösser jetzt zu öffnen, nächstes {m} m
+CTX_ROD_OPENS_AWAY	{name}: {n} Schloss/Schlösser jetzt zu öffnen, in anderen Regionen
+BANNER_BEFORE_YOU_GO_ON	Bevor du weitermachst
+BANNER_PREVIOUSLY	Zuvor
+BANNER_PREVIOUSLY_BODY	{ago}, in {place}, auf der Spur von {quest}
+DEBUG_GUIDE	Führungs-Trace
+DEBUG_GUIDE_EMPTY	Noch nichts: das Overlay schreibt es, während der Held spielt.
+DEBUG_GUIDE_NO_TARGET	Kein Ziel der Auto-Führung ({world})
+DEBUG_BLOCKED	blockiert
+DEBUG_GUIDE_HINT	W für die Story gebraucht · B blockiert · S übersprungen · F verfolgt. Alles in Mods\doctor\guide.jsonl.
+REQ_PUT_HERE	Hier ablegen: {items}
+REQ_PUT_HELD	Du hast, was hierher gehört.
+REQ_NEEDED_FOR	gebraucht für {place}

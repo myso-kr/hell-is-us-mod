@@ -735,3 +735,28 @@ MEMORY_NOW	Память
 MEMORY_PEAK	Пик памяти
 MEMORY_ALSO_LOGGED	Память также записывается в журнал раз в минуту.
 TRACK_FOLLOWING_HINT	Отслеживается: нажмите, чтобы снять.
+CTX_HAZE	Хейз держит живыми {n} Ходоков: убейте его первым ({m} м)
+CTX_HANDOVER	{who} хочет {what}, что у вас есть ({m} м)
+CTX_SECRET_NEAR	Рядом кто-то знает секрет ({m} м)
+CTX_APC	На БТР, ещё осталось: {list}
+CTX_APC_NOTHING	БТР: в других регионах целей не осталось
+CTX_ITEMS	предметы
+CTX_PUZZLES	головоломки
+CTX_GROUPS	группы врагов
+CTX_GOALS	цели
+CTX_LEDGER	В радиусе {m} м: {list}
+CTX_LEDGER_CLEAR	В радиусе {m} м: ничего не осталось
+CTX_ROD_NOT_YET	{name}: пока не завершает ни один замок
+CTX_ROD_OPENS_HERE	{name}: можно открыть замков: {n}, ближайший {m} м
+CTX_ROD_OPENS_AWAY	{name}: можно открыть замков: {n}, в других регионах
+BANNER_BEFORE_YOU_GO_ON	Прежде чем продолжить
+BANNER_PREVIOUSLY	Ранее
+BANNER_PREVIOUSLY_BODY	{ago}, {place}, задание: {quest}
+DEBUG_GUIDE	Трассировка навигации
+DEBUG_GUIDE_EMPTY	Пока пусто: оверлей пишет это во время игры.
+DEBUG_GUIDE_NO_TARGET	Нет цели автонавигации ({world})
+DEBUG_BLOCKED	заблокировано
+DEBUG_GUIDE_HINT	W нужно · B заблокировано · S пропущено · F отслеживается. Всё в Mods\doctor\guide.jsonl.
+REQ_PUT_HERE	Положить сюда: {items}
+REQ_PUT_HELD	У вас есть то, что сюда нужно.
+REQ_NEEDED_FOR	нужно для: {place}

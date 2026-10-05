@@ -735,3 +735,28 @@ MEMORY_NOW	메모리
 MEMORY_PEAK	메모리 최대
 MEMORY_ALSO_LOGGED	메모리는 1분마다 로그에도 기록됩니다.
 TRACK_FOLLOWING_HINT	추적 중입니다. 누르면 해제합니다.
+CTX_HAZE	헤이즈가 워커 {n}마리를 지키는 중: 먼저 처치하세요 ({m}m)
+CTX_HANDOVER	{who}에게 건넬 {what} ({m}m)
+CTX_SECRET_NEAR	가까이에 비밀을 아는 사람이 있습니다 ({m}m)
+CTX_APC	장갑차로 갈 곳, 남은 목표: {list}
+CTX_APC_NOTHING	장갑차: 다른 지역에 남은 퀘스트 목표가 없습니다
+CTX_ITEMS	아이템
+CTX_PUZZLES	퍼즐
+CTX_GROUPS	적 무리
+CTX_GOALS	목표
+CTX_LEDGER	주변 {m}m: {list}
+CTX_LEDGER_CLEAR	주변 {m}m: 남은 것 없음
+CTX_ROD_NOT_YET	{name}: 아직 이것으로 다 채워지는 잠금이 없습니다
+CTX_ROD_OPENS_HERE	{name}: 이제 열 수 있는 잠금 {n}곳, 가장 가까운 곳 {m}m
+CTX_ROD_OPENS_AWAY	{name}: 이제 열 수 있는 잠금 {n}곳 (다른 지역)
+BANNER_BEFORE_YOU_GO_ON	진행하기 전에
+BANNER_PREVIOUSLY	지난 이야기
+BANNER_PREVIOUSLY_BODY	{ago}, {place}에서 {quest} 진행 중이었습니다
+DEBUG_GUIDE	길찾기 추적
+DEBUG_GUIDE_EMPTY	아직 없습니다. 주인공이 플레이 중일 때 오버레이가 기록합니다.
+DEBUG_GUIDE_NO_TARGET	자동 안내 대상 없음 ({world})
+DEBUG_BLOCKED	막힘
+DEBUG_GUIDE_HINT	W 스토리에 필요 · B 막힘 · S 건너뜀 · F 추적 중. 모든 항목은 Mods\doctor\guide.jsonl에 있습니다.
+REQ_PUT_HERE	놓을 곳: {items}
+REQ_PUT_HELD	여기에 놓을 아이템을 가지고 있습니다.
+REQ_NEEDED_FOR	{place}에 필요

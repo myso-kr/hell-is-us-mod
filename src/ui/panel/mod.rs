@@ -127,6 +127,11 @@ fn pin_picker(ui: &mut egui::Ui, id: &str, kind: &mut crate::minimap::PinKind) -
 
 /// The Follow button on a place the survey names (guide/track.rs): follow it, or, followed
 /// already, let it go.
+/// "3 hours ago", as the panel says it: for the overlay's banner.
+pub(crate) fn ago_text(secs: u64) -> String {
+    now::ago(secs)
+}
+
 fn guide_to(state: &mut crate::minimap::MapState, goals: &[crate::goals::Goal], x: &crate::survey::Need) {
     state.toggle(need_track(goals, x));
 }
@@ -395,6 +400,7 @@ impl Panel {
             .collect();
         let tab = saved.tab.as_deref();
         let previous = crate::session::read();
+        *shared.previous.lock().unwrap() = previous.clone();
         // Back after a break: open on the "now" page, where the "previously" card is.
         let back = previous.as_ref().is_some_and(|p| crate::session::now().saturating_sub(p.when) >= 30 * 60);
         Panel {
@@ -789,9 +795,10 @@ impl Panel {
             // The figures beside what the cheats on write; the test record across the page.
             _ if self.tool == Some(Tool::Debug) => {
                 let cols = self.columns;
-                tw::spans(t, cols, &[1, 2, 3], |t, i| match i {
+                tw::spans(t, cols, &[1, 2, 3, 3], |t, i| match i {
                     0 => self.debug_status(t, snap),
                     1 => self.debug_writes(t, snap),
+                    2 => self.debug_guide(t),
                     _ => self.debug_marks(t),
                 })
             }

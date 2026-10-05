@@ -6,6 +6,36 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## Unreleased
+
+### Added
+
+- Context lines at the top of the quest tracker, each only when it applies: what is left within
+  120 m, a Lymbic rod just picked up and the locks it opens, someone near who wants an item held
+  or tells a secret, a Haze keeping Walkers alive in a fight, and at the APC the regions with the
+  most left. A banner under the compass says when the next story beat ends a good deed, and where
+  the last session left off after a break.
+- The guide is traced: `Mods\doctor\guide.jsonl`, one record a line (each target change with why,
+  and the guide's state every few seconds), and the Debug page's Guide trace card.
+- What must come first, step 1: holding every item a key door or a slot takes makes it a goal, and
+  what gives an item a placement still takes says so.
+
+### Changed
+
+- Another floor's marks carry a badge on their corner (up in blue, down in amber), not a loose
+  arrow; the Follow button reads "Follow" or "● Let go" on the track's colour.
+- The tracker stays above the band where the game opens its notices (the right middle), read from
+  the game's own HUD layout.
+
+### Fixed
+
+- The auto guide no longer flickers between two goals: a goal found blocked is remembered after its
+  route is dropped. When every way from where the hero stands reads as blocked (a porch inside a
+  building's rough hull), the spot is distrusted instead of guiding down to a key underground.
+- No guide to a place with no one or nothing there: survey places that share a name are told apart
+  by where they stand, copies per streaming cell are merged (no more doubles in Places), and a
+  survey place the hero stands by that the game does not load is left out.
+
 ## 0.4.0 — 2026-10-05
 
 Verified on Steam build **24045435**, where `hiumod doctor` passes every check.

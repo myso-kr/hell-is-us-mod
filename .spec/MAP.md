@@ -203,7 +203,7 @@ panel settings, and have the single map key cycle through display modes, as most
   0.7 and opacity 1 → 0.35 (the target only down to 0.7). A height difference ≥ 3 m (`FLOOR_DZ`) adds
   ▲/▼ next to the pin. Under the target, a label like `85m ▼12m` (above in sky blue, below in orange).
 - Map: icons and goals more than 3 m above or below the feet fade over 3–6 m down to one-third
-  opacity and get ▲/▼ (`floor_alpha`, `floor_arrow`). The structure bands now draw standing things
+  opacity and get ▲/▼ (`floor_alpha`, `floor_badge`: since 2026-10-05 a badge on the mark's bottom-right corner, not a loose arrow that strayed onto neighbours). The structure bands now draw standing things
   (walls) on **the floor above** (base 3–12 m up) and **the floor below / underground** (top 1.5–15 m
   down) very faintly, like ghosts — previously they were not drawn at all. Included in outline mode.
 - Measured (Jova, the Vitalis house): the Family Reunion goal is 11–14 m below (underground). The
