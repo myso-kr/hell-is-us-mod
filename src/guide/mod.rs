@@ -4,6 +4,7 @@
 pub mod budget;
 pub mod clues;
 pub mod goals;
+pub mod graph;
 pub mod ledger;
 pub mod missables;
 pub mod pathfind;

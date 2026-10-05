@@ -371,6 +371,45 @@ class Survey(DefaultFileProvider provider)
         return i >= 0 && i < exports.Count ? exports[i] : null;
     }
 
+    /// A condition as the graph reads it: its class; the interactable it watches and the
+    /// state it wants; the tags, facts and items it names; and its sub-conditions (an
+    /// all-of or any-of), recursively.
+    static JObject Condition(List<UObject> exports, UObject cond, int depth)
+    {
+        var p = Props(cond);
+        var j = new JObject { ["type"] = cond.Class?.Name ?? "" };
+        // Every level actor it names, whatever the property (`InteractableActor`, the single-use
+        // interactable it watches, a trigger): `Class'Map:PersistentLevel.<actor>'`, a
+        // sub-object of an actor (a component) left out.
+        var actors = p.SelectTokens("$..ObjectName")
+            .Select(t => ((string?)t ?? "").TrimEnd('\''))
+            .Select(n => n.Split(":PersistentLevel.", 2))
+            .Where(s => s.Length == 2 && !s[1].Contains('.'))
+            .Select(s => s[1])
+            .Distinct().ToList();
+        if (actors.Count == 1) j["actor"] = actors[0];
+        else if (actors.Count > 1) j["actors"] = new JArray(actors);
+        if (p["ExpectedState"] is { } st) j["state"] = st;
+        var tags = p.SelectTokens("$..TagName").Select(t => (string?)t).Where(t => !string.IsNullOrEmpty(t)).Distinct().ToList();
+        if (tags.Count > 0) j["tags"] = new JArray(tags);
+        var refs = Paths(p).ToList();
+        var facts = refs.Where(r => r.Contains("Fact")).Select(r => r.Split('/').Last()).Distinct().ToList();
+        if (facts.Count > 0) j["facts"] = new JArray(facts);
+        var items = refs.Where(r => r.Contains("/Items/")).Select(r => r.Split('/').Last()).Distinct().ToList();
+        if (items.Count > 0) j["items"] = new JArray(items);
+        foreach (var flag in new[] { "bNegate", "bInvert", "Operator", "LogicalOperator" })
+            if (p[flag] is { } v) j[flag] = v;
+        if (depth < 6)
+        {
+            var subs = new JArray();
+            foreach (var r in p.SelectTokens("$..ObjectPath"))
+                if (Resolve(exports, r.Parent?.Parent) is { } sub && sub != cond && (sub.Class?.Name ?? "").Contains("Condition"))
+                    subs.Add(Condition(exports, sub, depth + 1));
+            if (subs.Count > 0) j["all"] = subs;
+        }
+        return j;
+    }
+
     /// A component's world transform: its relative one under its attach parent's.
     static Xf World(List<UObject> exports, UObject comp, int depth)
     {
@@ -396,7 +435,22 @@ class Survey(DefaultFileProvider provider)
             string? travel = cls.Contains("APC_Enter") ? "apc"
                 : cls.Contains("SavePoint") ? (cls.Contains("NoTravel") ? "save.local" : "save")
                 : null;
-            if (travel == null && !comps.Any(c => Wanted.Contains(c.Class?.Name))) continue;
+            // What turns it on (a receiver's `Activators`, on its action components): the
+            // edges of the requirement graph (.spec/GRAPH.md). Activators and receivers are
+            // kept whatever else they hold, so both ends of an edge are in the survey.
+            // `Class'Map:PersistentLevel.<actor>'`: the actor's full name.
+            var activators = comps
+                .SelectMany(c => Props(c)["Activators"]?.SelectTokens("$..InteractableActor.ObjectName") ?? [])
+                .Select(t => ((string?)t ?? "").TrimEnd('\'').Split('.').Last())
+                .Where(n => n.Length > 0)
+                .Distinct().ToList();
+            // What can be an end of an edge: whatever a receiver names as its activator —
+            // levers, slots, area triggers (`TriggerNoActions`), doors, first-generation
+            // Lymbic activators, cinematic callers, drone translations.
+            var linked = activators.Count > 0
+                || new[] { "Activator", "Receiver", "Trigger", "Door", "Caller", "DroneTranslation", "_Interact_BP" }
+                    .Any(k => cls.Contains(k));
+            if (travel == null && !linked && !comps.Any(c => Wanted.Contains(c.Class?.Name))) continue;
             var rec = new JObject { ["name"] = actor.Name, ["class"] = actor.Class?.Name ?? "", ["cell"] = cell };
             // Where: the root component in world space — through what it is attached to.
             var actorProps = Props(actor);
@@ -445,7 +499,15 @@ class Survey(DefaultFileProvider provider)
             var vault = rec["class"]!.ToString().StartsWith("VOFK_") && rec["class"]!.ToString().Contains("DialPuzzle");
             if (vault) rec["vault"] = true;
             if (travel != null) rec["travel"] = travel;
-            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null || vault || puzzle != null || travel != null) found.Add(rec);
+            if (activators.Count > 0) rec["activators"] = new JArray(activators);
+            // When it can be used (`ActionCondition` on its actions): the other end of the
+            // graph's state edges — another interactable used, a fact or tag known.
+            var conds = new JArray();
+            foreach (var c in comps)
+                if (Resolve(exports, Props(c)["ActionCondition"]?["Condition"]) is { } cond)
+                    conds.Add(Condition(exports, cond, 0));
+            if (conds.Count > 0) rec["conditions"] = conds;
+            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null || vault || puzzle != null || travel != null || linked) found.Add(rec);
         }
         return found;
     }
@@ -495,7 +557,8 @@ class Survey(DefaultFileProvider provider)
         var pkg = provider.LoadPackage(map);
         foreach (var e in pkg.GetExports())
         {
-            if (!e.Name.Contains(want) && e.Outer?.Name.Contains(want) != true) continue;
+            // By its path, so a sub-object (an action's condition) of the actor is shown too.
+            if (!e.GetPathName().Contains(want)) continue;
             Console.WriteLine($"== {map} {e.Outer?.Name} {e.Name} [{e.Class?.Name}]");
             Console.WriteLine(Props(e).ToString(Formatting.Indented));
         }

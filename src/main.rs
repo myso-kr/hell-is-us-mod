@@ -327,12 +327,50 @@ fn survey_tool() -> Option<std::path::PathBuf> {
     .find(|p| p.exists())
 }
 
+/// `doctor graph`: the requirement graph from the survey (graph.rs) — how much of the game
+/// can be played to from nothing known, what cannot, and what no place gives. Reads only
+/// the survey, not the game.
+fn graph() -> R {
+    let g = hiumod::graph::Graph::load(&hiumod::paths::data_dir().join("survey"));
+    let r = g.reach();
+    let mut out = format!("nodes {} · doable from nothing known {} · stuck {}\n", r.nodes, r.doable, r.stuck.len());
+    let mut by_world: std::collections::BTreeMap<&str, (usize, usize)> = Default::default();
+    for (i, n) in g.nodes.iter().enumerate() {
+        let e = by_world.entry(n.world.as_str()).or_default();
+        e.0 += 1;
+        if r.stuck.contains(&i) {
+            e.1 += 1;
+        }
+    }
+    for (w, (all, stuck)) in &by_world {
+        out += &format!("  {w}: {all} nodes, {stuck} stuck\n");
+    }
+    let mut missing: Vec<(&String, &usize)> = r.no_giver.iter().collect();
+    missing.sort_by(|a, b| b.1.cmp(a.1).then(a.0.cmp(b.0)));
+    out += &format!("needed, given by no place ({}):\n", missing.len());
+    for (what, n) in &missing {
+        out += &format!("  {n:3}  {what}\n");
+    }
+    out += "stuck:\n";
+    for &i in &r.stuck {
+        let n = &g.nodes[i];
+        out += &format!("  {} · {} · {:?}\n", n.world, n.class, n.needs);
+    }
+    print!("{out}");
+    let dir = hiumod::paths::data_dir().join("doctor");
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    std::fs::write(dir.join("graph.txt"), &out).map_err(|e| e.to_string())
+}
+
 /// `doctor inspect|find|dump|watch|scan|usmap|survey` (probe.rs): reads only.
 fn probe(args: &[String]) -> R {
     use hiumod::mem::{self, Memory};
     use hiumod::probe;
     if args.first().map(String::as_str) == Some("profile") {
         return profile(args.get(1).and_then(|s| s.parse().ok()).unwrap_or(30));
+    }
+    if args.first().map(String::as_str) == Some("graph") {
+        return graph();
     }
     let a = attach()?;
     let (m, n) = (&a.game, &a.anchors.names);

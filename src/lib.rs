@@ -22,7 +22,7 @@ pub mod ui;
 pub mod unreal;
 
 pub use cheat::{cheats, extras, hold};
-pub use guide::{budget, clues, goals, ledger, missables, pathfind, quests, requires, slots, survey, tables};
+pub use guide::{budget, clues, goals, graph, ledger, missables, pathfind, quests, requires, slots, survey, tables};
 pub use infra::{backup, gamedata, log, logfile, memstat, paths, prof, runtime, session, settings, verify};
 pub use map::{icons, minimap, raster, relief, symbols};
 pub use read::{actors, attr, geometry, knowledge, navmesh, obstacles, puzzles, scene_cache, terrain};
