@@ -229,3 +229,24 @@ The worker (analysed span by span; the step's 100 ms period overran):
   per entry (it was O(n²) over the world's entries, twice).
 - `Scanner::positions` reads what does not walk about (all but enemies and people) every 10th step
   and keeps its last place between.
+
+### Phase 2 (2026-10-06)
+
+Measured with reads per span (phase 1, `prof::count_read`), same 30 s window in play:
+
+| | phase 1 | phase 2 |
+|---|---|---|
+| hold | 5.5 ms, 4,393 reads a step | 4.4 ms, 2,753 reads |
+| survey (graph gate, flood, doors) | 3.9 ms every step | 1.4 ms; gated 31 of 275 steps |
+| reads a step | 13,538 | 11,747 |
+| panel waiting on the map lock | up to 96 ms | not while the overlay draws |
+
+- `Attached::session` keeps the attribute layout (`attr::Layout`) by (set array data, count,
+  hero) for up to 5 s; every write still checks the attribute's vtable.
+- Frail enemies: a record holds while its attribute's vtable and its set's class read the same
+  (two reads); it is found again (the ability system walked) only when they do not.
+- The graph's gating, flooding and door steps are kept by `gated_key` (world, knowledge reading,
+  steps, scene, each goal's id and metre).
+- The overlay draws the minimap and the big map from `MapState::for_drawing` (this world's trail
+  and pins only) with the lock let go.
+- `Layered::present` skips a present whose pixels, place and fade are those of the last one.

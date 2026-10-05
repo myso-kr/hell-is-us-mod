@@ -114,8 +114,8 @@ const FRAIL: f32 = 1.0;
 pub struct Extras {
     /// Enemy → (its class, its time dilation before the cheat).
     time: HashMap<u64, (u64, f32)>,
-    /// Enemy → (its class, its Health attribute's address, BaseValue, CurrentValue before).
-    frail: HashMap<u64, (u64, u64, f32, f32)>,
+    /// Enemy → what was found of it and its Health before the cheat.
+    frail: HashMap<u64, Frail>,
     /// Inventory stack → the least it is held at.
     stock: HashMap<u64, u32>,
     /// Weapon item → its total experience as last seen (after any bonus).
@@ -125,6 +125,27 @@ pub struct Extras {
     /// The hero, and its primitive components' overlap bits before the untouchable
     /// cheat: (byte address, mask, byte as it was).
     overlaps: Option<(u64, Vec<Bit>)>,
+}
+
+/// A frail enemy's record: the actor's class, its Health attribute and the set that holds
+/// it (with the set's class and the attribute's vtable as found), and the values before.
+#[derive(Clone, Copy)]
+struct Frail {
+    class: u64,
+    at: u64,
+    set: u64,
+    set_class: u64,
+    vtable: u64,
+    base: f32,
+    current: f32,
+}
+
+impl Frail {
+    /// Still the attribute it was: two reads — the attribute's vtable and the set's class —
+    /// where finding it again walks the enemy's ability system.
+    fn holds(&self, m: &dyn Memory) -> bool {
+        mem::read_u64(m, self.at) == Some(self.vtable) && mem::read_u64(m, self.set + CLASS) == Some(self.set_class)
+    }
 }
 
 /// A bitfield bool to put back: (byte address, mask, byte as it was).
@@ -184,12 +205,12 @@ fn stacks(m: &dyn Memory, n: &Names, inv: u64) -> Vec<Stack> {
 }
 
 /// An enemy's Health attribute: the address of its `FGameplayAttributeData`.
-fn health_of(m: &dyn Memory, n: &Names, enemy: u64) -> Option<u64> {
+fn health_of(m: &dyn Memory, n: &Names, enemy: u64) -> Option<(u64, u64)> {
     let (_, asc) = crate::player::find_asc(n, m, enemy).ok()?;
     let sets = n.field(m, asc, "SpawnedAttributes")?;
     for set in crate::actors::array(m, asc + sets.offset as u64, 64) {
         if mem::read_u64(m, set + CLASS).and_then(|c| n.object(m, c)).as_deref() == Some("HealthAttributeSet") {
-            return n.field(m, set, "Health").map(|p| set + p.offset as u64);
+            return n.field(m, set, "Health").map(|p| (set, set + p.offset as u64));
         }
     }
     None
@@ -220,7 +241,7 @@ impl Extras {
         // The gone are forgotten: there is nothing of them to put back, and their memory
         // may be another object's by now.
         self.time.retain(|e, (c, _)| alive.contains(e) && class_of(*e) == Some(*c));
-        self.frail.retain(|e, (c, ..)| alive.contains(e) && class_of(*e) == Some(*c));
+        self.frail.retain(|e, f| alive.contains(e) && class_of(*e) == Some(f.class));
         // The ghost let go of with a record left (a killed panel's): put back now.
         if self.team.is_some() && wants(|e| matches!(e, Effect::Ghost)).is_none() {
             self.release_ghost(a);
@@ -246,13 +267,22 @@ impl Extras {
 
         if wants(|e| matches!(e, Effect::EnemyFrail)).is_some() {
             for &e in &alive {
-                // Found again every tick: the attribute written is the one this enemy has
-                // now, never an address kept from an enemy that was here before.
-                let Some(at) = health_of(m, n, e) else { continue };
-                if self.frail.get(&e).is_none_or(|&(_, was, ..)| was != at) {
-                    let (Some(c), Some((b, cur))) = (class_of(e), pair(m, at)) else { continue };
-                    self.frail.insert(e, (c, at, b, cur));
-                }
+                // The attribute written is the one this enemy has now, never an address kept
+                // from an enemy that was here before: checked every tick, found again when
+                // it no longer holds.
+                let at = match self.frail.get(&e).filter(|f| f.holds(m)) {
+                    Some(f) => f.at,
+                    None => {
+                        let Some((set, at)) = health_of(m, n, e) else { continue };
+                        let (Some(class), Some(set_class), Some(vtable), Some((base, current))) =
+                            (class_of(e), class_of(set), mem::read_u64(m, at), pair(m, at))
+                        else {
+                            continue;
+                        };
+                        self.frail.insert(e, Frail { class, at, set, set_class, vtable, base, current });
+                        at
+                    }
+                };
                 if pair(m, at).is_some_and(|(_, c)| c > FRAIL) && !put_pair(m, at, FRAIL, FRAIL) {
                     errors.push("frail enemies: write failed".into());
                 }
@@ -384,10 +414,10 @@ impl Extras {
             }
         }
         if !kept(|e| matches!(e, Effect::EnemyFrail)) {
-            for (e, (class, at, b, c)) in self.frail.drain() {
+            for (e, f) in self.frail.drain() {
                 // and the Health attribute is still the one the record was taken from
-                if same(e, class) && health_of(m, n, e) == Some(at) {
-                    put_pair(m, at, b, c);
+                if same(e, f.class) && f.holds(m) && health_of(m, n, e).map(|(_, at)| at) == Some(f.at) {
+                    put_pair(m, f.at, f.base, f.current);
                 }
             }
         }

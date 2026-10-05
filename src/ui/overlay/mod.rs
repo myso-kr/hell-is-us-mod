@@ -754,7 +754,12 @@ pub fn run(shared: Arc<Shared>) {
 
                 let relief = baking.relief(&state, p, &obstacles);
 
-                if state.display == Display::Big {
+                // The maps are drawn from a copy (with this world's trail and pins), the lock let
+                // go meanwhile: the panel waited on it up to 96 ms (measured) while the big map
+                // drew.
+                let mut drawing = state.for_drawing(world);
+                drop(state);
+                if drawing.display == Display::Big {
                     map_window.hide();
                     // The whole game window is its canvas: centred on the hero, fading out
                     // toward the edges (as Diablo's and Path of Exile's overlay maps).
@@ -777,7 +782,7 @@ pub fn run(shared: Arc<Shared>) {
                         let drawn = bigmap::frame(
                             &mut big_scroll,
                             &mut big_cv,
-                            &state,
+                            &drawing,
                             world,
                             (p, yaw),
                             &things,
@@ -789,7 +794,7 @@ pub fn run(shared: Arc<Shared>) {
                         );
                         drop(t);
                         // Shown again only when drawn anew, or moved, or faded otherwise.
-                        let alpha = (state.big_alpha as u32 * 255 / 100) as u8;
+                        let alpha = (drawing.big_alpha as u32 * 255 / 100) as u8;
                         if drawn || big_at != (bx, by, alpha) {
                             let _t = crate::prof::span("big.present");
                             w.present_alpha(&big_cv, bx, by, alpha);
@@ -801,22 +806,22 @@ pub fn run(shared: Arc<Shared>) {
                         w.hide();
                     }
                     big_at = NOT_SHOWN;
-                    if state.display == Display::Mini {
+                    if drawing.display == Display::Mini {
                         let view = View {
                             center: p,
                             yaw_deg: yaw,
-                            heading_up: state.heading_up,
-                            scale: (MAP_PX as f32 / 2.0 - 14.0) / (state.radius_m * 100.0),
-                            north_deg: state.north_yaw,
-                            outline: state.mini_outline,
+                            heading_up: drawing.heading_up,
+                            scale: (MAP_PX as f32 / 2.0 - 14.0) / (drawing.radius_m * 100.0),
+                            north_deg: drawing.north_yaw,
+                            outline: drawing.mini_outline,
                             full: false,
                         };
                         // Dots are the big map's: the minimap is small, in a corner.
-                        let dots = std::mem::replace(&mut state.dots, false);
+                        drawing.dots = false;
                         let t = crate::prof::span("mini.draw");
                         draw_map(
                             &mut map_cv,
-                            &state,
+                            &drawing,
                             world,
                             &view,
                             &things,
@@ -826,7 +831,6 @@ pub fn run(shared: Arc<Shared>) {
                             &drawn,
                             relief.as_deref(),
                         );
-                        state.dots = dots;
                         drop(t);
                         let _t = crate::prof::span("mini.present");
                         crate::prof::timed("present.mini", || {
@@ -836,6 +840,8 @@ pub fn run(shared: Arc<Shared>) {
                         map_window.hide();
                     }
                 }
+
+                state = crate::prof::timed("lock.map", || shared.map.lock().unwrap());
 
                 // Each thing followed marked where it stands in the game's view, when near
                 // (marker.rs): a ring in its colour, one window each.

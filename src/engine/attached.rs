@@ -37,7 +37,33 @@ pub struct Attached {
     inventory: RefCell<Option<u64>>,
     /// The guide: what the hero knows (from the save state) and where there is more.
     guide: RefCell<Guide>,
+    /// The attribute session's layout, by what it was found from (the set array's data and
+    /// count, the hero), and when: rebuilding it read every set and every attribute's
+    /// vtable, 4,000 reads a step (measured), for sets that change on a level load.
+    session_layout: RefCell<Option<KeptLayout>>,
 }
+
+/// An attribute layout kept: (set array data, count, hero), when, the layout.
+type KeptLayout = ((u64, u32, u64), Instant, crate::attr::Layout);
+
+/// What the graph's gating of `goals` depends on: the world and the knowledge's reading,
+/// whether the steps are wanted, the scene (its pools), and each goal by id and where it
+/// is to the metre.
+fn gated_key(key: &(String, Option<Instant>), steps: bool, scene: usize, goals: &[Goal]) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    key.0.hash(&mut h);
+    key.1.hash(&mut h);
+    (steps, scene).hash(&mut h);
+    for g in goals {
+        g.id.hash(&mut h);
+        g.at.map(|v| (v / 100.0).round() as i64).hash(&mut h);
+    }
+    h.finish()
+}
+
+/// A kept attribute layout is found again at least this often.
+const SESSION_FOR: Duration = Duration::from_secs(5);
 
 /// GUObjectArray, the save slots found through it, the knowledge last read, and the
 /// interactables' payloads — each refreshed on its own clock.
@@ -73,6 +99,10 @@ struct Guide {
     logic_puzzles: Vec<crate::graph::LogicPuzzle>,
     /// The shut barriers of the hero's world and their chains' first steps (graph.rs).
     doors: Vec<crate::graph::DoorStep>,
+    /// The goals as the graph gated them and the door steps, by what they were worked out
+    /// from (`gated_key`): the same goals, knowledge and scene give the same answer, which
+    /// cost 3 ms of every step (measured) for inputs that change every 2 s.
+    gated: Option<(u64, Vec<Goal>, Vec<crate::graph::DoorStep>)>,
     /// The game's spawner and vault tables (Mods\survey), read once.
     tables: Option<crate::tables::Tables>,
     /// `gamedata::generation` when those two were read: new files read again.
@@ -163,6 +193,7 @@ pub fn attach() -> Result<Attached, String> {
         anchors,
         version,
         chain: RefCell::new(None),
+        session_layout: RefCell::new(None),
         scanner: RefCell::default(),
         guide: RefCell::default(),
         geometry: RefCell::default(),
@@ -187,8 +218,18 @@ impl Attached {
         let chain = self.chain()?;
         let arr = chain.attribute_sets(&self.game, &self.anchors)?;
         let n = &self.anchors.names;
-        let mut s = Session::open(&self.game, self.game.module(), n, arr)?;
         let pawn = chain.hero(&self.game, &self.anchors)?;
+        let key = (
+            crate::mem::read_u64(&self.game, arr).unwrap_or(0),
+            crate::mem::read_u32(&self.game, arr + 8).unwrap_or(0),
+            pawn,
+        );
+        if let Some((_, _, l)) =
+            self.session_layout.borrow().as_ref().filter(|(k, at, _)| *k == key && at.elapsed() < SESSION_FOR)
+        {
+            return Ok(Session::with_layout(&self.game, l.clone()));
+        }
+        let mut s = Session::open(&self.game, self.game.module(), n, arr)?;
         s.add_fields(n, cheats::HERO, pawn, cheats::HERO_FIELDS);
         if let Ok(mc) = n.follow(&self.game, pawn, "CharacterMovement") {
             if n.is_a(&self.game, mc, "CharacterMovementComponent") {
@@ -200,6 +241,7 @@ impl Attached {
                 s.add_fields(n, cheats::WORLD, ws, cheats::WORLD_FIELDS);
             }
         }
+        *self.session_layout.borrow_mut() = Some((key, Instant::now(), s.layout()));
         Ok(s)
     }
 
@@ -442,29 +484,35 @@ impl Attached {
             let state = crate::graph::State { used: &g.saved, known: &g.known_all, held: &g.held };
             // Only when the player asked for it (Settings: what must come first).
             let steps = crate::settings::live(crate::settings::Consent::STEPS);
-            if steps {
-                crate::prof::timed("graph.gate", || graph.gate(&mut goals, w, &state));
-                // Under deadly water now: held back, the drain's chain guided to instead.
-                let done = g.obstacles.done.clone();
-                crate::prof::timed("graph.flood", || graph.flood(&mut goals, w, &done.pools, &state));
-            }
             if fresh {
                 g.logic_puzzles = graph.logic_puzzles(w, &state);
                 g.opened = graph.passable(w, &state);
                 g.one_way = graph.one_way(w, &state);
-                g.graph_for = Some(key);
+                g.graph_for = Some(key.clone());
             }
-            g.doors =
-                crate::prof::timed(
-                    "graph.doors",
-                    || {
+            let done = g.obstacles.done.clone();
+            let gk = gated_key(&key, steps, Arc::as_ptr(&done) as usize, &goals);
+            match g.gated.as_ref().filter(|(k, ..)| *k == gk) {
+                Some((_, gated, doors)) => {
+                    goals = gated.clone();
+                    g.doors = doors.clone();
+                }
+                None => {
+                    if steps {
+                        crate::prof::timed("graph.gate", || graph.gate(&mut goals, w, &state));
+                        // Under deadly water now: held back, the drain's chain guided to instead.
+                        crate::prof::timed("graph.flood", || graph.flood(&mut goals, w, &done.pools, &state));
+                    }
+                    g.doors = crate::prof::timed("graph.doors", || {
                         if steps {
                             graph.door_steps(&goals, w, &state)
                         } else {
                             Vec::new()
                         }
-                    },
-                );
+                    });
+                    g.gated = Some((gk, goals.clone(), g.doors.clone()));
+                }
+            }
         }
         Ok((goals, k))
     }

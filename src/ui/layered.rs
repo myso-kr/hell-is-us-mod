@@ -28,6 +28,9 @@ pub struct Layered {
     pub w: i32,
     pub h: i32,
     shown: bool,
+    /// Where and how faded it was last presented: with the same pixels (the DIB still holds
+    /// them), presenting again is skipped.
+    last: Option<(i32, i32, u8)>,
 }
 
 impl Layered {
@@ -81,7 +84,7 @@ impl Layered {
                 return None;
             }
             SelectObject(dc, bitmap);
-            Some(Layered { hwnd, screen, dc, bitmap, bits: bits.cast(), w, h, shown: false })
+            Some(Layered { hwnd, screen, dc, bitmap, bits: bits.cast(), w, h, shown: false, last: None })
         }
     }
 
@@ -94,6 +97,16 @@ impl Layered {
     /// free: Windows applies it, nothing is redrawn.
     pub fn present_alpha(&mut self, cv: &Canvas, x: i32, y: i32, alpha: u8) {
         debug_assert_eq!(cv.px.len(), (self.w * self.h) as usize);
+        // Nothing changed: the same pixels, at the same place, as faded. Comparing is a
+        // memcmp; presenting is a copy through the compositor (0.7 ms a window, measured).
+        // SAFETY: `bits` is the DIB section of w × h pixels made with the window.
+        let same = self.shown
+            && self.last == Some((x, y, alpha))
+            && unsafe { std::slice::from_raw_parts(self.bits, cv.px.len()) } == &cv.px[..];
+        if same {
+            return;
+        }
+        self.last = Some((x, y, alpha));
         unsafe {
             std::ptr::copy_nonoverlapping(cv.px.as_ptr(), self.bits, cv.px.len());
             let blend = BLENDFUNCTION {

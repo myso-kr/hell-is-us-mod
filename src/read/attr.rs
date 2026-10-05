@@ -36,6 +36,7 @@ const CURRENT: u64 = 0xC;
 const ATTRIBUTE_SIZE: u32 = 0x10;
 
 /// One attribute set as the game has it right now.
+#[derive(Clone)]
 pub struct Set {
     pub object: u64,
     pub class: String,
@@ -57,7 +58,29 @@ pub struct Session<'a> {
     fields: HashMap<(String, String), u64>,
 }
 
+/// What a session found, without the memory it reads: kept by the caller while the sets
+/// it was found from are the same (engine `Attached::session`), so the step does not walk
+/// every set and read every attribute's vtable again.
+#[derive(Clone)]
+pub struct Layout {
+    sets: Vec<Set>,
+    index: HashMap<(String, String), u64>,
+    vtable: u64,
+    fields: HashMap<(String, String), u64>,
+}
+
 impl<'a> Session<'a> {
+    /// The layout to keep.
+    pub fn layout(&self) -> Layout {
+        Layout { sets: self.sets.clone(), index: self.index.clone(), vtable: self.vtable, fields: self.fields.clone() }
+    }
+
+    /// A session from a kept layout. Every attribute is still checked against the vtable
+    /// before it is written (`checked`), as in a fresh one.
+    pub fn with_layout(m: &'a dyn Memory, l: Layout) -> Session<'a> {
+        Session { m, sets: l.sets, index: l.index, vtable: l.vtable, fields: l.fields }
+    }
+
     /// `module` is the game's image range: the attribute vtable must live in it.
     /// `arr` is the `SpawnedAttributes` TArray (player.rs).
     pub fn open(m: &'a dyn Memory, module: (u64, u64), names: &Names, arr: u64) -> Result<Session<'a>, String> {

@@ -123,6 +123,65 @@ pub struct MapState {
     pub dirty: bool,
 }
 
+impl MapState {
+    /// A copy to draw `world` from: everything but other worlds' trails and pins, which can
+    /// be thousands of points each and are not drawn.
+    pub fn for_drawing(&self, world: &str) -> MapState {
+        // Every field named, so a new one is not left out unseen.
+        MapState {
+            display: self.display,
+            cycle: self.cycle,
+            heading_up: self.heading_up,
+            radius_m: self.radius_m,
+            toggle_key: self.toggle_key,
+            marker_key: self.marker_key,
+            layers: self.layers,
+            hidden: self.hidden.clone(),
+            icon_px: self.icon_px,
+            terrain: self.terrain,
+            relief: self.relief,
+            compass: self.compass,
+            compass_key: self.compass_key,
+            cycle_key: self.cycle_key,
+            guide_auto: self.guide_auto,
+            goal_tiers: self.goal_tiers,
+            quest: self.quest.clone(),
+            tracker: self.tracker,
+            held: self.held,
+            tracks: self.tracks.clone(),
+            focus: self.focus,
+            resolved: self.resolved.clone(),
+            done: Vec::new(),
+            skipped: self.skipped.clone(),
+            north_yaw: self.north_yaw,
+            big_alpha: self.big_alpha,
+            big_outline: self.big_outline,
+            mini_outline: self.mini_outline,
+            dots: self.dots,
+            haze_links: self.haze_links.clone(),
+            opacity: self.opacity,
+            big_radius_m: self.big_radius_m,
+            hide_in_menus: self.hide_in_menus,
+            route: self.route,
+            screen_route: self.screen_route,
+            screen_marks: self.screen_marks,
+            auto: self.auto,
+            trails: self
+                .trails
+                .get(world)
+                .map(|v| BTreeMap::from([(world.to_string(), v.clone())]))
+                .unwrap_or_default(),
+            markers: self
+                .markers
+                .get(world)
+                .map(|v| BTreeMap::from([(world.to_string(), v.clone())]))
+                .unwrap_or_default(),
+            pin_kind: self.pin_kind,
+            dirty: self.dirty,
+        }
+    }
+}
+
 impl Default for MapState {
     fn default() -> MapState {
         MapState {
