@@ -19,6 +19,7 @@ struct Bridged {
     from: Arc<crate::navmesh::NavMesh>,
     opened: Vec<([f32; 3], Option<[f32; 3]>)>,
     one_way: Vec<[[f32; 3]; 2]>,
+    lifts: Vec<Vec<[f32; 3]>>,
     mesh: Arc<crate::navmesh::NavMesh>,
 }
 
@@ -95,6 +96,8 @@ struct Guide {
     opened: Vec<([f32; 3], Option<[f32; 3]>)>,
     /// The shut one-sided doors of the hero's world and the side each opens from.
     one_way: Vec<[[f32; 3]; 2]>,
+    /// The elevators of the hero's world that run, as their stops (graph.rs `lifts`).
+    lifts: Vec<Vec<[f32; 3]>>,
     bridged: Option<Bridged>,
     /// The survey of every world (Mods\survey), read once; and what the hero knows and
     /// holds by name, to judge it with — renewed with the knowledge.
@@ -509,6 +512,7 @@ impl Attached {
                 g.logic_puzzles = graph.logic_puzzles(w, &state);
                 g.opened = graph.passable(w, &state);
                 g.one_way = graph.one_way(w, &state);
+                g.lifts = graph.lifts(w, &state);
                 g.graph_for = Some(key.clone());
             }
             let done = g.obstacles.done.clone();
@@ -816,17 +820,22 @@ impl Attached {
     pub fn nav(&self) -> Arc<crate::navmesh::NavMesh> {
         let mut g = self.guide.borrow_mut();
         let base = g.nav.done.clone();
-        if g.opened.is_empty() && g.one_way.is_empty() {
+        if g.opened.is_empty() && g.one_way.is_empty() && g.lifts.is_empty() {
             return base;
         }
         if let Some(b) = &g.bridged {
-            if Arc::ptr_eq(&b.from, &base) && b.opened == g.opened && b.one_way == g.one_way {
+            if Arc::ptr_eq(&b.from, &base) && b.opened == g.opened && b.one_way == g.one_way && b.lifts == g.lifts {
                 return b.mesh.clone();
             }
         }
-        let mesh = Arc::new(base.bridged(&g.opened).one_way(&g.one_way));
-        g.bridged =
-            Some(Bridged { from: base, opened: g.opened.clone(), one_way: g.one_way.clone(), mesh: mesh.clone() });
+        let mesh = Arc::new(base.bridged(&g.opened).one_way(&g.one_way).lifts(&g.lifts));
+        g.bridged = Some(Bridged {
+            from: base,
+            opened: g.opened.clone(),
+            one_way: g.one_way.clone(),
+            lifts: g.lifts.clone(),
+            mesh: mesh.clone(),
+        });
         mesh
     }
 

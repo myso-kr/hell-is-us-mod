@@ -36,9 +36,12 @@ const EXTERNAL: u16 = 0x8000;
 /// Two border edges are one portal when their heights differ by less than this (cm).
 const STEP: f32 = 60.0;
 /// A goal this near a floor that can be walked to (cm across), this far above it at most
-/// or this far below, is reached from that floor (`floor_under`).
+/// or this far below, is reached from that floor (`floor_under`). Above: a lever on a wall,
+/// an item on a shelf — 2.5 m, not the 8 m it was: a ledge 8 m up is reached by a ladder or a
+/// climb the navmesh does not have, and a route drawn straight up through the air to it was
+/// taken for one that gets there (seen in play, in a boss's room).
 const SNAP: f32 = 300.0;
-const SNAP_BELOW: f32 = 800.0;
+const SNAP_BELOW: f32 = 250.0;
 const SNAP_ABOVE: f32 = 150.0;
 /// The lookup grid's cell (cm).
 const BUCKET: f32 = 1000.0;
@@ -577,6 +580,13 @@ pub fn read_tiles(m: &dyn Memory, n: &Names, chunks: &[u64]) -> Vec<Vec<u8>> {
 /// or down from the door's foot).
 const BRIDGE: f32 = 300.0;
 const BRIDGE_UPDOWN: f32 = 200.0;
+/// Two sides joined through a door are on one floor: their polys' heights this near (cm). Any
+/// two groups within `BRIDGE_UPDOWN` of the door were joined, a ledge above with the floor
+/// below — a way straight up through the air.
+const BRIDGE_STEP: f32 = 120.0;
+/// How near an elevator's lever its stop's floor is (cm): across, and up or down.
+const LIFT_NEAR: f32 = 600.0;
+const LIFT_UPDOWN: f32 = 400.0;
 
 impl NavMesh {
     /// The mesh with a way through each of `doors`: where a door the hero can pass stands,
@@ -586,6 +596,45 @@ impl NavMesh {
     /// the group nearest the door is joined to each other group through the door's point —
     /// for a one-sided door, not from its locked side to its open side. Where the two sides
     /// were joined already, nothing changes.
+    /// With the elevators' floors joined: each stop's floor (the poly nearest where its lever
+    /// stands, within `LIFT_NEAR` across and `LIFT_UPDOWN` up or down) to the next stop's, both
+    /// ways, through a gate at the lever (graph.rs `lifts`).
+    pub fn lifts(&self, lifts: &[Vec<[f32; 3]>]) -> NavMesh {
+        let mut out = self.clone();
+        for stops in lifts {
+            let floors: Vec<(u32, [f32; 3])> = stops
+                .iter()
+                .filter_map(|&s| {
+                    let (cx, cy) = cell(s[0], s[1]);
+                    let mut best: Option<(f32, u32)> = None;
+                    for y in cy - 1..=cy + 1 {
+                        for x in cx - 1..=cx + 1 {
+                            for &i in out.grid.get(&(x, y)).into_iter().flatten() {
+                                let p = &out.polys[i as usize];
+                                let d = outline_distance(&p.corners, s);
+                                if d <= LIFT_NEAR
+                                    && (p.centre[2] - s[2]).abs() <= LIFT_UPDOWN
+                                    && best.is_none_or(|(b, _)| d < b)
+                                {
+                                    best = Some((d, i));
+                                }
+                            }
+                        }
+                    }
+                    best.map(|(_, i)| (i, [s[0], s[1], out.polys[i as usize].centre[2]]))
+                })
+                .collect();
+            for w in floors.windows(2) {
+                let ((a, ga), (b, gb)) = (w[0], w[1]);
+                if a != b {
+                    out.polys[a as usize].links.push((b, [ga, ga]));
+                    out.polys[b as usize].links.push((a, [gb, gb]));
+                }
+            }
+        }
+        out
+    }
+
     pub fn bridged(&self, doors: &[([f32; 3], Option<[f32; 3]>)]) -> NavMesh {
         let mut out = self.clone();
         for &(d, from) in doors {
@@ -644,6 +693,9 @@ impl NavMesh {
                         continue;
                     }
                     let z = out.polys[a as usize].centre[2];
+                    if (z - out.polys[b as usize].centre[2]).abs() > BRIDGE_STEP {
+                        continue;
+                    }
                     let gate = [d[0], d[1], z];
                     out.polys[a as usize].links.push((b, [gate, gate]));
                 }
@@ -791,6 +843,40 @@ mod tests {
             "{:?}",
             path.points
         );
+    }
+
+    #[test]
+    fn an_elevator_joins_its_floors() {
+        // Two floors over one square, 0 and 2000 up; an elevator's levers at both.
+        let v = [
+            [0.0, 0.0, 0.0],
+            [1000.0, 0.0, 0.0],
+            [1000.0, 0.0, 1000.0],
+            [0.0, 0.0, 1000.0],
+            [0.0, 2000.0, 0.0],
+            [1000.0, 2000.0, 0.0],
+            [1000.0, 2000.0, 1000.0],
+            [0.0, 2000.0, 1000.0],
+        ];
+        let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0, 0, 0, 0]), (&[4, 5, 6, 7], &[0, 0, 0, 0])])]);
+        let (low, high) = ([-200.0, -200.0, 0.0], [-800.0, -800.0, 2000.0]);
+        assert!(mesh.route(low, high).is_some_and(|(p, _)| p.uncertain()), "no way up without it");
+        let lift = mesh.lifts(&[vec![[-500.0, -500.0, 100.0], [-500.0, -500.0, 2100.0]]]);
+        let (path, heights) = lift.route(low, high).expect("joined");
+        assert!(!path.uncertain());
+        assert!(heights.iter().any(|&z| z < 10.0) && heights.iter().any(|&z| z > 1990.0));
+    }
+
+    #[test]
+    fn a_goal_high_over_the_floor_is_not_reached_from_it() {
+        // One room, 0..1000 square at height 0; the goal over its middle.
+        let v = [[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0], [1000.0, 0.0, 1000.0], [0.0, 0.0, 1000.0]];
+        let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0, 0, 0, 0])])]);
+        let from = [-200.0, -200.0, 0.0];
+        // A lever on the wall, 1.5 m up: reached.
+        assert!(mesh.route(from, [-500.0, -500.0, 150.0]).is_some_and(|(p, _)| !p.uncertain()));
+        // A ledge 5 m up (a ladder's top): not reached by walking; the way there is uncertain.
+        assert!(mesh.route(from, [-500.0, -500.0, 500.0]).is_some_and(|(p, _)| p.uncertain()));
     }
 
     #[test]

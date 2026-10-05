@@ -940,6 +940,48 @@ impl Graph {
             .collect()
     }
 
+    /// The elevators of `world` that run now, each as its stops (where its call levers stand,
+    /// lowest first): an elevator's receiver (`…ElevatorTwoFloors…Receiver…`) is used by the
+    /// levers that call it to each floor. One that takes an item first (a gear to fit) is left
+    /// out until it is held. The navmesh has no way between an elevator's floors
+    /// (navmesh.rs `lifts`): without them a floor reached by one was no floor at all.
+    pub fn lifts(&self, world: &str, s: &State) -> Vec<Vec<[f32; 3]>> {
+        fn flat(n: &Need, out: &mut Vec<Need>) {
+            match n {
+                Need::All(v) | Need::Any(v) => v.iter().for_each(|x| flat(x, out)),
+                other => out.push(other.clone()),
+            }
+        }
+        let mut out = Vec::new();
+        for n in self
+            .nodes
+            .iter()
+            .filter(|n| n.world == world && n.class.contains("Elevator") && n.class.contains("Receiver"))
+        {
+            let mut needs = Vec::new();
+            n.needs.iter().for_each(|x| flat(x, &mut needs));
+            if needs.iter().any(|x| matches!(x, Need::Item(it) if !s.held.contains(it))) {
+                continue;
+            }
+            let mut stops: Vec<[f32; 3]> = needs
+                .iter()
+                .filter_map(|x| match x {
+                    Need::Used(a) => self.node(world, a).map(|j| &self.nodes[j]),
+                    _ => None,
+                })
+                .filter(|l| l.class.contains("Elevator"))
+                .map(|l| l.at)
+                .collect();
+            stops.sort_by(|a, b| a[2].total_cmp(&b[2]));
+            // one stop a floor: levers at one stop (call and ride) are one
+            stops.dedup_by(|a, b| (a[2] - b[2]).abs() < LIFT_FLOOR);
+            if stops.len() >= 2 {
+                out.push(stops);
+            }
+        }
+        out
+    }
+
     /// The one-sided doors of `world` still shut: where each stands and the side it opens
     /// from (navmesh.rs `one_way`).
     pub fn one_way(&self, world: &str, s: &State) -> Vec<[[f32; 3]; 2]> {
@@ -1040,6 +1082,9 @@ impl Graph {
 }
 
 /// How a node reads to the player: what it gives, what goes there, or its class's words.
+/// Levers of one elevator less than this apart in height (cm) stand at one stop.
+const LIFT_FLOOR: f32 = 300.0;
+
 /// How near a door the hero stands for `door_here` (cm): across, and up or down.
 const DOOR_HERE: f32 = 400.0;
 const DOOR_HERE_DZ: f32 = 300.0;

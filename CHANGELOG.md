@@ -84,6 +84,14 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- Routes take an elevator between its floors (graph.rs `lifts`, navmesh.rs `lifts`): the
+  navmesh has no way between them, so a floor reached by one (the forge's crypt, 85 m down) had
+  no route, and one was drawn straight up through the air instead.
+- A goal counts as reached from a floor below it only within 2.5 m (a lever on a wall, a shelf),
+  not 8 m: a ledge reached by a ladder was taken for a place the route gets to, and the auto guide
+  ranked it as reachable. Two sides of a door are joined only when their floors are within 1.2 m.
+- A survey place that gives no item is named for what it is — a fight, a lever, something to
+  look at, a door — not "a place to examine".
 - "What can be done here now" no longer lists markers that pay out only when something else is
   done first (a drain step after a gear is placed and a lever pulled): named after the region and
   standing by a sign, one looked like the place to go.

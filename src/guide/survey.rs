@@ -320,10 +320,14 @@ impl Entry {
             trf!("TALK_NPC", p = p)
         } else {
             // A pickup by what it gives, in the game's words; a place that gives no item
-            // (a fact, a tag) has no name the game shows.
+            // (a fact, a tag) has no name the game shows: what it is, by its class — a fight
+            // (a spawner), a lever, something to look at, a door — and only else "a place to
+            // examine" (a boss's fight far below read as one, seen in play).
             match self.items.first() {
                 Some(i) => crate::goals::item_label(i),
-                None => tr!("PLACE_TO_EXAMINE").to_string(),
+                None if self.class.ends_with("_Spawner_C") => tr!("GRAPH_FIGHT").to_string(),
+                None => crate::actors::by_class(&self.class)
+                    .map_or_else(|| tr!("PLACE_TO_EXAMINE").to_string(), |s| s.label().to_string()),
             }
         }
     }
