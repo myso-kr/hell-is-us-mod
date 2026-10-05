@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	"先做什么"导航已关闭：导航会直接前往目标，�
 TELEPORT_BACK	回到上一个位置
 MOVED_BACK	已回到传送前的位置。
 NOTHING_TO_GO_BACK_TO	没有保存传送前的位置。
+GRAPH_OPENS_FROM_OTHER_SIDE	只能从另一侧打开：引导至可开启的一侧

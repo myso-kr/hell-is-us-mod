@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	"Co najpierw" jest wyłączone: przewodnik idzie prosto do celu,
 TELEPORT_BACK	Wróć do ostatniej pozycji
 MOVED_BACK	Wrócono na miejsce sprzed teleportacji.
 NOTHING_TO_GO_BACK_TO	Brak zapisanej pozycji sprzed teleportacji.
+GRAPH_OPENS_FROM_OTHER_SIDE	otwiera się tylko z drugiej strony: prowadzi na tę stronę

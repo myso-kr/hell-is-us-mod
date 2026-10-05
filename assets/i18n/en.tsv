@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	What must come first is off: the guide goes straight to the goal
 TELEPORT_BACK	Back to last position
 MOVED_BACK	Back where you stood before the teleport.
 NOTHING_TO_GO_BACK_TO	No position before a teleport is kept.
+GRAPH_OPENS_FROM_OTHER_SIDE	opens from the other side only: guided to that side

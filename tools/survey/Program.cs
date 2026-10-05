@@ -580,6 +580,19 @@ class Survey(DefaultFileProvider provider)
             var vault = rec["class"]!.ToString().StartsWith("VOFK_") && rec["class"]!.ToString().Contains("DialPuzzle");
             if (vault) rec["vault"] = true;
             if (travel != null) rec["travel"] = travel;
+            // A door that opens from one side only ("locked from the other side"): where the
+            // hero must stand to open it, its `TriggerUnlockable` box — the placed copy's, or
+            // the blueprint's under the actor's root.
+            if (cls.Contains("OneSidedLock"))
+            {
+                var from = comps.FirstOrDefault(c => c.Name == "TriggerUnlockable") is { } box && Props(box)["RelativeLocation"] != null
+                    ? World(exports, box, 0)
+                    : ClassTemplates(actor).FirstOrDefault(t => t.Name.StartsWith("TriggerUnlockable")) is { } tb
+                        ? at.Apply(Xf.From(Props(tb)["RelativeLocation"], Props(tb)["RelativeRotation"], Props(tb)["RelativeScale3D"]))
+                        : (Xf?)null;
+                if (from is { } f)
+                    rec["opens_from"] = new JArray(Math.Round(f.T.X), Math.Round(f.T.Y), Math.Round(f.T.Z));
+            }
             if (activators.Count > 0) rec["activators"] = new JArray(activators);
             // A quest listener sets facts by its blueprint's logic (a boss killed, a photo
             // taken): the tags it names (`Tag_…`) are what it can give, as the story goes.
@@ -697,7 +710,8 @@ class Survey(DefaultFileProvider provider)
         try
         {
             found = provider.LoadPackage(pkg).GetExports()
-                .Where(e => e.Name.EndsWith("_GEN_VARIABLE") && (e.Class?.Name is "TradeGiveItemRuneComponent" or "FlowComponent"))
+                .Where(e => e.Name.EndsWith("_GEN_VARIABLE")
+                    && (e.Class?.Name is "TradeGiveItemRuneComponent" or "FlowComponent" || e.Name.StartsWith("TriggerUnlockable")))
                 .ToList();
         }
         catch { }

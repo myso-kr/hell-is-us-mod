@@ -52,6 +52,9 @@ pub struct Node {
     /// Gives what it gives by the story's scripts (a quest listener), not by being used:
     /// no place to go for it.
     pub scripted: bool,
+    /// A door that opens from one side only ("locked from the other side"): where the hero
+    /// must stand to open it (the survey's `opens_from`).
+    pub opens_from: Option<[f32; 3]>,
 }
 
 /// How a receiver's activators must be used (`MultiActivatorsActivationAction`,
@@ -320,6 +323,10 @@ impl Graph {
             activators: acts,
             logic,
             scripted,
+            opens_from: a["opens_from"]
+                .as_array()
+                .filter(|x| x.len() == 3)
+                .map(|x| std::array::from_fn(|k| x[k].as_f64().unwrap_or(0.0) as f32)),
         });
     }
 
@@ -661,13 +668,19 @@ impl Graph {
             // The goal there, or one made for the step (not put in the goals: only taken up
             // when a route runs through the barrier).
             let goal = match goals.iter().find(|g| (g.at[0] - f.at[0]).hypot(g.at[1] - f.at[1]) <= NEAR) {
-                Some(g) => g.clone(),
+                // A one-sided door: to the side it opens from.
+                Some(g) => crate::goals::Goal { at: f.opens_from.unwrap_or(g.at), ..g.clone() },
                 None => crate::goals::Goal {
                     tier: crate::goals::Tier::Quest,
                     id: step_id(f),
                     label: label(f),
-                    detail: trf!("GRAPH_STEP_FOR", chain = text),
-                    at: f.at,
+                    detail: match f.opens_from {
+                        Some(_) => {
+                            format!("{} · {}", trf!("GRAPH_STEP_FOR", chain = text), tr!("GRAPH_OPENS_FROM_OTHER_SIDE"))
+                        }
+                        None => trf!("GRAPH_STEP_FOR", chain = text),
+                    },
+                    at: f.opens_from.unwrap_or(f.at),
                     quests: vec![],
                     tags: vec![],
                     keys: vec![],
@@ -859,6 +872,13 @@ impl Graph {
         let n = &self.nodes[first];
         match goals.iter_mut().find(|g| (g.at[0] - n.at[0]).hypot(g.at[1] - n.at[1]) <= NEAR) {
             Some(g) => {
+                // A one-sided door: to the side it opens from.
+                if let Some(from) = n.opens_from {
+                    if g.at != from {
+                        g.at = from;
+                        g.detail = format!("{} · {}", g.detail, tr!("GRAPH_OPENS_FROM_OTHER_SIDE"));
+                    }
+                }
                 for k in &of.keys {
                     if !g.keys.contains(k) {
                         g.keys.push(k.clone());
@@ -878,8 +898,13 @@ impl Graph {
                 tier: of.tier,
                 id: step_id(n),
                 label: label(n),
-                detail: trf!("GRAPH_STEP_FOR", chain = text),
-                at: n.at,
+                detail: match n.opens_from {
+                    Some(_) => {
+                        format!("{} · {}", trf!("GRAPH_STEP_FOR", chain = text), tr!("GRAPH_OPENS_FROM_OTHER_SIDE"))
+                    }
+                    None => trf!("GRAPH_STEP_FOR", chain = text),
+                },
+                at: n.opens_from.unwrap_or(n.at),
                 quests: of.quests.clone(),
                 tags: of.tags.clone(),
                 keys: of.keys.clone(),
@@ -1116,6 +1141,26 @@ mod tests {
         assert_eq!(goals[0].gate, Gate::Conditional, "the key held back");
         let step = goals.iter().find(|x| x.at == [0.0, 0.0, 0.0]).expect("the gear made a goal");
         assert_eq!(step.keys, ["Q2"], "of the key's quest");
+    }
+
+    #[test]
+    fn a_one_sided_door_is_guided_to_from_the_side_it_opens() {
+        let mut g = Graph::default();
+        let door = json!({"name": "Door", "class": "WroughtIronDoor_OneSidedLock_Interact_BP_C", "at": [0, 0, 0],
+            "guid": "d1", "opens_from": [-150, 0, 100]});
+        g.add("W", &door, &Value::Null);
+        g.index();
+        let none = HashSet::new();
+        let s = State { used: &none, known: &none, held: &none };
+        let steps = g.door_steps(&[], "W", &s);
+        assert_eq!(steps.len(), 1);
+        assert_eq!(steps[0].at, [0.0, 0.0, 0.0], "the barrier where it stands");
+        assert_eq!(steps[0].goal.at, [-150.0, 0.0, 100.0], "its step on the side it opens from");
+        // Opened: no longer in the way, and a way through it for the navmesh.
+        let used: HashSet<String> = ["d1".to_string()].into();
+        let s = State { used: &used, known: &none, held: &none };
+        assert!(g.door_steps(&[], "W", &s).is_empty());
+        assert_eq!(g.opened("W", &s), [[0.0, 0.0, 0.0]]);
     }
 
     #[test]

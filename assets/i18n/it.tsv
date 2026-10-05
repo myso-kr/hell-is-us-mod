@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	"Cosa viene prima" è disattivato: la guida va dritta all'obiett
 TELEPORT_BACK	Torna all'ultima posizione
 MOVED_BACK	Tornato dove eri prima del teletrasporto.
 NOTHING_TO_GO_BACK_TO	Nessuna posizione precedente al teletrasporto salvata.
+GRAPH_OPENS_FROM_OTHER_SIDE	si apre solo dall'altro lato: guida verso quel lato

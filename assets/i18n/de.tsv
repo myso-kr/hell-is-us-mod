@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	"Was zuerst kommt" ist aus: die Führung geht direkt zum Ziel, a
 TELEPORT_BACK	Zur letzten Position
 MOVED_BACK	Zurück am Standort vor dem Teleport.
 NOTHING_TO_GO_BACK_TO	Kein Standort vor einem Teleport gemerkt.
+GRAPH_OPENS_FROM_OTHER_SIDE	öffnet nur von der anderen Seite: zu dieser Seite geführt

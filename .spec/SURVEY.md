@@ -280,3 +280,14 @@ whatever their components, with `travel`: `apc`, `save`, or `save.local` (the `�
 which do not take the hero to the APC). `Survey::exits` reads them, one per place (a blueprint is
 in each cell it streams in). Every region has at least one APC door (one per place, after the one-per-cell
 merge). Re-run: every other actor came out the same.
+
+## 10. Doors that open from one side (2026-10-05)
+
+The user: some doors say "locked from the other side" and open one way only. They are the
+`…_OneSidedLock_Interact_BP_C` classes (some twenty kinds: dungeon, mine, fence, library, museum
+doors). Each has two hero-only overlap boxes, `TriggerLocked` and `TriggerUnlockable`, about 1.1 m
+either side of the door; its condition is `IsHeroInTriggerCondition_BP_C`: the hero in the
+unlockable box. The survey records the unlockable box's world position as `opens_from` (the placed
+copy's box through its attach parents, or the blueprint's `TriggerUnlockable…_GEN_VARIABLE` under the
+actor's root when the copy does not repeat it).
+

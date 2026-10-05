@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	"먼저 할 일" 안내가 꺼져 있어요: 잠긴 문이나 �
 TELEPORT_BACK	마지막 위치로 이동
 MOVED_BACK	순간이동 전 위치로 돌아왔습니다.
 NOTHING_TO_GO_BACK_TO	순간이동 전 위치가 저장되어 있지 않습니다.
+GRAPH_OPENS_FROM_OTHER_SIDE	반대편에서만 열림: 열 수 있는 쪽으로 안내

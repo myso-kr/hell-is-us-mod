@@ -152,6 +152,11 @@ made for it), holds it, and traces "the way to X runs through Y: first ...". It 
 barrier opens or the step is no longer first. A step whose own way is blocked is not taken up (else
 the two take turns), and while a barrier is seen the closed-spot rule (GUIDE.md) stays off.
 
+A one-sided door (SURVEY.md §10) keeps its `opens_from`: its step goal, and a survey goal at it the
+graph steps to, stand there instead of at the door, with "opens from the other side only", so the
+route goes round to the side it opens from rather than to the face that cannot open it. Once used, it
+is an opened door like any other (ROUTES.md §8). Test: `a_one_sided_door_is_guided_to_from_the_side_it_opens`.
+
 ## 10. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.

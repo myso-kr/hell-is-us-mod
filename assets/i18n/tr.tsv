@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	"Önce ne yapılacak" kapalı: rehber kapıları ve suyu dikkate
 TELEPORT_BACK	Son konuma dön
 MOVED_BACK	Işınlanmadan önceki yerine döndün.
 NOTHING_TO_GO_BACK_TO	Işınlanmadan önceki konum saklanmadı.
+GRAPH_OPENS_FROM_OTHER_SIDE	yalnızca diğer taraftan açılır: o tarafa yönlendirir

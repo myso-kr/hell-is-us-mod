@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	"O que vem primeiro" está desligado: o guia vai direto ao objet
 TELEPORT_BACK	Voltar à última posição
 MOVED_BACK	De volta aonde você estava antes do teleporte.
 NOTHING_TO_GO_BACK_TO	Nenhuma posição anterior ao teleporte guardada.
+GRAPH_OPENS_FROM_OTHER_SIDE	só abre do outro lado: guia até esse lado

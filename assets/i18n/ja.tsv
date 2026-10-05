@@ -802,3 +802,4 @@ GUIDE_STEPS_OFF	「先にやること」案内はオフです：鍵のかかっ�
 TELEPORT_BACK	最後の位置へ移動
 MOVED_BACK	テレポート前の位置に戻りました。
 NOTHING_TO_GO_BACK_TO	テレポート前の位置が保存されていません。
+GRAPH_OPENS_FROM_OTHER_SIDE	反対側からのみ開く：開けられる側へ案内
