@@ -299,7 +299,7 @@ impl ScreenRoute {
         let (bw, bh) = (((x1 - x0) / BUCKET + 1) * BUCKET, ((y1 - y0) / BUCKET + 1) * BUCKET);
         let (bw, bh) = (bw.min(w), bh.min(h));
         if self.window.as_ref().is_none_or(|win| win.w != bw || win.h != bh) {
-            self.window = Layered::new("hiumod-route", "Hell Is Us Route", bw, bh);
+            self.window = Layered::new_composed("hiumod-route", "Hell Is Us Route", bw, bh);
             self.canvas = Canvas::new(bw as usize, bh as usize);
         }
         let Some(win) = self.window.as_mut() else { return };

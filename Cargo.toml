@@ -19,6 +19,15 @@ egui_taffy = "0.14"
 raw-window-handle = "0.6"
 # update.rs: checking a downloaded release against its .sha256. Pure Rust, MIT/Apache-2.0.
 sha2 = { version = "0.10", default-features = false }
+# ui/composed.rs: the large overlays through DirectComposition (COM, which windows-sys has not).
+windows = { version = "0.62", features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Direct3D",
+    "Win32_Graphics_Direct3D11",
+    "Win32_Graphics_DirectComposition",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+] }
 windows-sys = { version = "0.59", features = [
     "Win32_Foundation",
     "Win32_Graphics_Gdi",

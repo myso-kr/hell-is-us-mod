@@ -1336,6 +1336,7 @@ dependencies = [
  "resvg",
  "serde_json",
  "sha2",
+ "windows",
  "windows-sys 0.59.0",
 ]
 

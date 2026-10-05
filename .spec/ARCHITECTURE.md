@@ -281,3 +281,8 @@ in play: things 4,186 → 2,079 reads a step, goals.refresh 1,503 → 37, the st
 - Not done: presenting through DirectComposition (a swap chain on a `WS_EX_NOREDIRECTIONBITMAP`
   window) instead of UpdateLayeredWindow. It needs the COM interfaces of the `windows` crate, a new
   dependency; the measured gain is the big map's present (4.6 ms a frame at 30 fps).
+- Done since: the big map and the game view's layer present through DirectComposition
+  (`ui/composed.rs`: a premultiplied flip-model swap chain on a `WS_EX_NOREDIRECTIONBITMAP`
+  window, `Layered::new_composed`, falling back to UpdateLayeredWindow). Offscreen, a present
+  costs about the same either way (1440² 0.93 vs 0.97 ms, 2560×1440 1.97 vs 1.79 ms); confirmed
+  in play to show and pass clicks as before.

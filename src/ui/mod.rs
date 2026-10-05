@@ -20,6 +20,7 @@
 
 mod app_icon;
 mod banner;
+mod composed;
 mod console;
 mod hotkey;
 mod layered;

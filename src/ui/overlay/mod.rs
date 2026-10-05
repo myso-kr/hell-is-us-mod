@@ -786,7 +786,7 @@ pub fn run(shared: Arc<Shared>) {
                     let (gw, gh) = (side, side);
                     let (bx, by) = (r.left + (r.right - r.left - side) / 2, r.top + (r.bottom - r.top - side) / 2);
                     if big_window.as_ref().is_none_or(|w| (w.w, w.h) != (gw, gh)) {
-                        big_window = Layered::new("hiumod-bigmap", "Hell Is Us Map", gw, gh);
+                        big_window = Layered::new_composed("hiumod-bigmap", "Hell Is Us Map", gw, gh);
                         big_cv = Canvas::new(gw as usize, gh as usize);
                         big_scroll = bigmap::Scroll::default();
                         big_at = NOT_SHOWN;

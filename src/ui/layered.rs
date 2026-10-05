@@ -1,5 +1,10 @@
 //! A click-through, always-on-top window shown from a pixel buffer — the minimap and
 //! the compass are each one. Never takes focus or clicks; the game keeps the mouse.
+//!
+//! Two ways to show the pixels: UpdateLayeredWindow (each present copies the bitmap through
+//! the compositor — fine for small windows), or for the large ones (`new_composed`: the big
+//! map, the game view's layer) a DirectComposition swap chain (composed.rs), falling back to
+//! the first where it cannot be made.
 
 use crate::raster::Canvas;
 use windows_sys::Win32::Foundation::{HWND, POINT, SIZE};
@@ -14,6 +19,9 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
     SWP_NOSIZE, SW_HIDE, SW_SHOWNOACTIVATE, ULW_ALPHA, WNDCLASSW, WS_EX_LAYERED, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW,
     WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_POPUP,
 };
+
+/// A window without a redirection bitmap: its content is a composition (composed.rs).
+const WS_EX_NOREDIRECTIONBITMAP: u32 = 0x0020_0000;
 
 fn wide(s: &str) -> Vec<u16> {
     s.encode_utf16().chain([0]).collect()
@@ -31,10 +39,22 @@ pub struct Layered {
     /// Where and how faded it was last presented: with the same pixels (the DIB still holds
     /// them), presenting again is skipped.
     last: Option<(i32, i32, u8)>,
+    /// The swap chain its pixels go through, for a composed window.
+    composed: Option<crate::ui::composed::Composed>,
 }
 
 impl Layered {
     pub fn new(class: &str, title: &str, w: i32, h: i32) -> Option<Layered> {
+        Layered::make(class, title, w, h, false)
+    }
+
+    /// A large window shown through DirectComposition; an ordinary one where that cannot be
+    /// made (no Direct3D 11, an old Windows).
+    pub fn new_composed(class: &str, title: &str, w: i32, h: i32) -> Option<Layered> {
+        Layered::make(class, title, w, h, true).or_else(|| Layered::new(class, title, w, h))
+    }
+
+    fn make(class: &str, title: &str, w: i32, h: i32, composed: bool) -> Option<Layered> {
         unsafe {
             let instance = GetModuleHandleW(std::ptr::null());
             let class = wide(class);
@@ -46,8 +66,9 @@ impl Layered {
             };
             RegisterClassW(&wc);
             let title = wide(title);
+            let style = WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE;
             let hwnd = CreateWindowExW(
-                WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+                if composed { style | WS_EX_NOREDIRECTIONBITMAP } else { style },
                 class.as_ptr(),
                 title.as_ptr(),
                 WS_POPUP,
@@ -63,6 +84,26 @@ impl Layered {
             if hwnd.is_null() {
                 return None;
             }
+            let comp = if composed {
+                // Layered and transparent for clicks to go through; opaque as a layer, the
+                // composition carries the alpha.
+                windows_sys::Win32::UI::WindowsAndMessaging::SetLayeredWindowAttributes(
+                    hwnd,
+                    0,
+                    255,
+                    windows_sys::Win32::UI::WindowsAndMessaging::LWA_ALPHA,
+                );
+                match crate::ui::composed::Composed::new(hwnd, w, h) {
+                    Ok(c) => Some(c),
+                    Err(e) => {
+                        crate::logfile::line(&format!("composition unavailable ({e}): layered window instead"));
+                        DestroyWindow(hwnd);
+                        return None;
+                    }
+                }
+            } else {
+                None
+            };
             let screen = GetDC(std::ptr::null_mut());
             let dc = CreateCompatibleDC(screen);
             let mut info: BITMAPINFO = std::mem::zeroed();
@@ -84,7 +125,18 @@ impl Layered {
                 return None;
             }
             SelectObject(dc, bitmap);
-            Some(Layered { hwnd, screen, dc, bitmap, bits: bits.cast(), w, h, shown: false, last: None })
+            Some(Layered {
+                hwnd,
+                screen,
+                dc,
+                bitmap,
+                bits: bits.cast(),
+                w,
+                h,
+                shown: false,
+                last: None,
+                composed: comp,
+            })
         }
     }
 
@@ -106,7 +158,34 @@ impl Layered {
         if same {
             return;
         }
+        let moved = self.last.is_none_or(|(lx, ly, _)| (lx, ly) != (x, y));
         self.last = Some((x, y, alpha));
+        if let Some(c) = self.composed.as_mut() {
+            // SAFETY: the DIB (kept as the last frame, for the comparison above) holds w × h
+            // pixels; the window is this thread's.
+            unsafe {
+                std::ptr::copy_nonoverlapping(cv.px.as_ptr(), self.bits, cv.px.len());
+                if moved {
+                    SetWindowPos(
+                        self.hwnd,
+                        std::ptr::null_mut(),
+                        x,
+                        y,
+                        0,
+                        0,
+                        SWP_NOSIZE | SWP_NOACTIVATE | windows_sys::Win32::UI::WindowsAndMessaging::SWP_NOZORDER,
+                    );
+                }
+                if let Err(e) = c.present(std::slice::from_raw_parts(self.bits, cv.px.len()), alpha) {
+                    crate::logfile::line(&format!("composition present failed: {e}"));
+                }
+                if !self.shown {
+                    ShowWindow(self.hwnd, SW_SHOWNOACTIVATE);
+                    self.shown = true;
+                }
+            }
+            return;
+        }
         unsafe {
             std::ptr::copy_nonoverlapping(cv.px.as_ptr(), self.bits, cv.px.len());
             let blend = BLENDFUNCTION {
@@ -176,14 +255,23 @@ mod tests {
     #[ignore]
     fn present_cost() {
         for (w, h) in [(2560, 1440), (1440, 1440), (1920, 1080), (1080, 1080)] {
-            let mut win = Layered::new("hiumod-bench", "bench", w, h).unwrap();
-            let cv = Canvas { w: w as usize, h: h as usize, px: vec![0x8000_0000; (w * h) as usize] };
-            win.present(&cv, -30000, -30000);
-            let started = std::time::Instant::now();
-            for _ in 0..60 {
+            for composed in [false, true] {
+                let mut win = if composed {
+                    Layered::new_composed("hiumod-bench2", "bench", w, h).unwrap()
+                } else {
+                    Layered::new("hiumod-bench", "bench", w, h).unwrap()
+                };
+                let cv = Canvas { w: w as usize, h: h as usize, px: vec![0x8000_0000; (w * h) as usize] };
                 win.present(&cv, -30000, -30000);
+                let started = std::time::Instant::now();
+                for _ in 0..60 {
+                    win.present(&cv, -30000, -30000);
+                }
+                println!(
+                    "{w}x{h} composed={composed}: {:.2} ms a frame",
+                    started.elapsed().as_secs_f64() * 1000.0 / 60.0
+                );
             }
-            println!("{w}x{h}: {:.2} ms a frame", started.elapsed().as_secs_f64() * 1000.0 / 60.0);
         }
     }
 }
