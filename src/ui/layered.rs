@@ -20,6 +20,10 @@ use windows_sys::Win32::UI::WindowsAndMessaging::{
     WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_POPUP,
 };
 
+/// Streamer mode: every overlay window kept out of screen capture (recording, streaming) —
+/// the player sees them, the viewers see the game. Set by the overlay from the settings.
+pub static HIDE_FROM_CAPTURE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
 /// A window without a redirection bitmap: its content is a composition (composed.rs).
 const WS_EX_NOREDIRECTIONBITMAP: u32 = 0x0020_0000;
 
@@ -41,6 +45,8 @@ pub struct Layered {
     last: Option<(i32, i32, u8)>,
     /// The swap chain its pixels go through, for a composed window.
     composed: Option<crate::ui::composed::Composed>,
+    /// Whether it is kept out of capture now (`HIDE_FROM_CAPTURE`).
+    hidden_from_capture: bool,
 }
 
 impl Layered {
@@ -136,6 +142,7 @@ impl Layered {
                 shown: false,
                 last: None,
                 composed: comp,
+                hidden_from_capture: false,
             })
         }
     }
@@ -149,6 +156,18 @@ impl Layered {
     /// free: Windows applies it, nothing is redrawn.
     pub fn present_alpha(&mut self, cv: &Canvas, x: i32, y: i32, alpha: u8) {
         debug_assert_eq!(cv.px.len(), (self.w * self.h) as usize);
+        let hide = HIDE_FROM_CAPTURE.load(std::sync::atomic::Ordering::Relaxed);
+        if hide != self.hidden_from_capture {
+            // WDA_EXCLUDEFROMCAPTURE (Windows 10 2004 on); WDA_NONE back
+            // SAFETY: the window is this thread's.
+            unsafe {
+                windows_sys::Win32::UI::WindowsAndMessaging::SetWindowDisplayAffinity(
+                    self.hwnd,
+                    if hide { 0x11 } else { 0 },
+                );
+            }
+            self.hidden_from_capture = hide;
+        }
         // Nothing changed: the same pixels, at the same place, as faded. Comparing is a
         // memcmp; presenting is a copy through the compositor (0.7 ms a window, measured).
         // SAFETY: `bits` is the DIB section of w × h pixels made with the window.

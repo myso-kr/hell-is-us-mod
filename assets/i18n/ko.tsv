@@ -842,3 +842,4 @@ GLYPH_BOW	활과 화살
 GLYPH_RING	위가 트인 고리
 GLYPH_CLAWS	발톱 자국
 ENEMY_HEALTH_SHARE_DEFAULT_1	적 체력 배율 (1 = 원래대로)
+STREAMER_MODE	스트리머 모드: 녹화·방송 화면에서 오버레이 숨기기

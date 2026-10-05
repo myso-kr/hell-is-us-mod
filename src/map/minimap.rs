@@ -108,6 +108,8 @@ pub struct MapState {
     pub route: bool,
     /// The route in focus laid in the game's view (overlay/screenroute.rs).
     pub screen_route: bool,
+    /// Streamer mode: the overlays kept out of recordings and streams (layered.rs).
+    pub streamer: bool,
     /// The maps' icons over what is near in the game's view (enemies, items, people…), as the
     /// minimap's kinds and sorts are shown.
     pub screen_marks: bool,
@@ -165,6 +167,7 @@ impl MapState {
             route: self.route,
             screen_route: self.screen_route,
             screen_marks: self.screen_marks,
+            streamer: self.streamer,
             auto: self.auto,
             trails: self
                 .trails
@@ -221,6 +224,7 @@ impl Default for MapState {
             hide_in_menus: true,
             route: true,
             screen_route: true,
+            streamer: false,
             screen_marks: true,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
@@ -310,7 +314,10 @@ impl MapState {
             self.north_yaw,
             self.tracker
         );
-        out += &format!("screen_route {}\nscreen_marks {}\n", self.screen_route, self.screen_marks);
+        out += &format!(
+            "screen_route {}\nscreen_marks {}\nstreamer {}\n",
+            self.screen_route, self.screen_marks, self.streamer
+        );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
         }
@@ -377,6 +384,7 @@ impl MapState {
                 ["route", v] => s.route = v == "true",
                 ["screen_route", v] => s.screen_route = v == "true",
                 ["screen_marks", v] => s.screen_marks = v == "true",
+                ["streamer", v] => s.streamer = v == "true",
                 ["north_yaw", v] => {
                     if let Some(n) = v.parse::<f32>().ok().filter(|n| (0.0..360.0).contains(n)) {
                         s.north_yaw = n;

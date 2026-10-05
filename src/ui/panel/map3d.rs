@@ -1611,6 +1611,7 @@ impl super::Panel {
         use crate::ui::tw::{self, note};
         tw::switch(t, &mut state.screen_route, tr!("SCREEN3D_ROUTE"));
         tw::switch(t, &mut state.screen_marks, tr!("SCREEN3D_MARKS"));
+        tw::switch(t, &mut state.streamer, tr!("STREAMER_MODE"));
         note(t, tr!("SCREEN3D_NOTE"));
     }
 }

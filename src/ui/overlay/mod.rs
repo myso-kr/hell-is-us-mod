@@ -387,6 +387,7 @@ pub fn run(shared: Arc<Shared>) {
 
         let haze_links = shared.snap.lock().unwrap().as_ref().map(|s| s.haze_links.clone()).unwrap_or_default();
         let mut state = crate::prof::timed("lock.map", || shared.map.lock().unwrap());
+        crate::ui::layered::HIDE_FROM_CAPTURE.store(state.streamer, Ordering::Relaxed);
         if state.haze_links != *haze_links {
             state.haze_links = (*haze_links).clone();
         }

@@ -842,3 +842,4 @@ GLYPH_BOW	arc et flèche
 GLYPH_RING	anneau ouvert en haut
 GLYPH_CLAWS	traces de griffes
 ENEMY_HEALTH_SHARE_DEFAULT_1	Santé ennemie, part (1 = inchangée)
+STREAMER_MODE	Mode streamer : masquer les surcouches dans les enregistrements et diffusions

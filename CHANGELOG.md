@@ -10,6 +10,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- Streamer mode (Map page, the game view tab): every overlay is kept out of recordings and streams
+  (Windows 10 2004 and later), so the player sees the maps and the viewers see the game.
 - A cheat for enemies' health share (10–100 %): each enemy's health is cut to that share of what
   it had when first seen, once, and the fight goes on from there; lowering the share cuts again,
   switching it off heals no one. Frail enemies win over it.

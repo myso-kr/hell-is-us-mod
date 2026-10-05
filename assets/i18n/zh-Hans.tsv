@@ -842,3 +842,4 @@ GLYPH_BOW	弓箭
 GLYPH_RING	上方开口的环
 GLYPH_CLAWS	爪痕
 ENEMY_HEALTH_SHARE_DEFAULT_1	敌人生命比例（1 = 不变）
+STREAMER_MODE	主播模式：在录制和直播中隐藏叠加层

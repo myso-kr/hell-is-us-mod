@@ -842,3 +842,4 @@ GLYPH_BOW	弓矢
 GLYPH_RING	上が開いた輪
 GLYPH_CLAWS	爪痕
 ENEMY_HEALTH_SHARE_DEFAULT_1	敵の体力の割合（1 = そのまま）
+STREAMER_MODE	配信モード: 録画・配信からオーバーレイを隠す

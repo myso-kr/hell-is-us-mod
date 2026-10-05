@@ -842,3 +842,4 @@ GLYPH_BOW	Pfeil und Bogen
 GLYPH_RING	oben offener Ring
 GLYPH_CLAWS	Krallenspuren
 ENEMY_HEALTH_SHARE_DEFAULT_1	Gegnergesundheit, Anteil (1 = unverändert)
+STREAMER_MODE	Streamer-Modus: Overlays in Aufnahmen und Streams ausblenden
