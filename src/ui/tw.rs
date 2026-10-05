@@ -650,6 +650,66 @@ pub fn switch(tui: &mut Tui, on: &mut bool, label: impl Into<RichText>) -> egui:
     })
 }
 
+/// A tab bar: the open tab lit (a tinted top, an accent underline, bright text), the others dim
+/// text that brightens under the pointer, a rule under the row. Wraps when narrow. Returns whether
+/// another tab was opened.
+pub fn tabs(tui: &mut Tui, open: &mut u8, names: &[&str]) -> bool {
+    use super::theme::{ACCENT, ACCENT_DEEP, DIM, TEXT};
+    block(tui, |ui| {
+        let mut changed = false;
+        let top = ui.cursor().top();
+        ui.horizontal_wrapped(|ui| {
+            ui.spacing_mut().item_spacing = egui::vec2(2.0, 4.0);
+            for (k, name) in names.iter().enumerate() {
+                let on = *open == k as u8;
+                let font = egui::FontId::proportional(13.5);
+                let galley = ui.painter().layout_no_wrap(name.to_string(), font, TEXT);
+                let size = galley.size() + egui::vec2(22.0, 14.0);
+                let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click());
+                // a tab to screen readers and UI Automation, selected or not
+                resp.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::SelectableLabel, true, on, *name));
+                let hover = resp.hovered();
+                let p = ui.painter();
+                if on {
+                    p.rect_filled(rect, egui::CornerRadius { nw: 6, ne: 6, sw: 0, se: 0 }, ACCENT_DEEP);
+                    p.rect_filled(
+                        egui::Rect::from_min_max(egui::pos2(rect.left(), rect.bottom() - 2.5), rect.right_bottom()),
+                        1.0,
+                        ACCENT,
+                    );
+                } else if hover {
+                    p.rect_filled(
+                        rect,
+                        egui::CornerRadius { nw: 6, ne: 6, sw: 0, se: 0 },
+                        Color32::from_rgba_unmultiplied(255, 255, 255, 10),
+                    );
+                }
+                let colour = if on {
+                    TEXT
+                } else if hover {
+                    TEXT.gamma_multiply(0.9)
+                } else {
+                    DIM
+                };
+                p.galley(rect.center() - galley.size() / 2.0, galley, colour);
+                if resp.on_hover_cursor(egui::CursorIcon::PointingHand).clicked() && !on {
+                    *open = k as u8;
+                    changed = true;
+                }
+            }
+        });
+        // the rule under the whole row, the open tab's underline over it
+        let y = ui.cursor().top().max(top) - 3.0;
+        ui.painter().hline(
+            ui.max_rect().x_range(),
+            y,
+            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 28)),
+        );
+        ui.add_space(4.0);
+        changed
+    })
+}
+
 /// Choices that wrap onto the next line.
 pub fn choices<T>(tui: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
     tui.style(wrap(super::theme::INLINE)).add(body)

@@ -423,14 +423,7 @@ impl Panel {
         card(t, tr!("MAP_SETTINGS"), |t| {
             let tabs =
                 [tr!("MINIMAP"), tr!("BIG_MAP"), tr!("TERRAIN"), tr!("LAYER_OPACITY"), tr!("SCREEN3D"), tr!("KEYS")];
-            tw::choices(t, |t| {
-                for (k, name) in tabs.into_iter().enumerate() {
-                    // whole words: the row wraps, not the tab's name
-                    if w(t, |ui| ui.selectable_label(self.map_settings == k as u8, name)).clicked() {
-                        self.map_settings = k as u8;
-                    }
-                }
-            });
+            tw::tabs(t, &mut self.map_settings, &tabs);
             match self.map_settings {
                 0 => self.map_card(t, state, 0),
                 1 => self.map_card(t, state, 2),
