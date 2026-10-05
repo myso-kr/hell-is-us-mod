@@ -6,7 +6,7 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
-## Unreleased
+## 0.5.0 — 2026-10-06
 
 ### Added
 
@@ -20,26 +20,6 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - The game view's 3D layer can be turned on and off apart: the route on the floor (now a narrower
   band starting a few metres ahead) and the maps' icons over what is near, hidden behind walls
   and ground.
-
-### Changed
-
-- The game view's route is half as wide (14 cm on the floor, 18 px at most) and quieter, and
-  the stretch the hero's body stands in front of, seen from the camera, is no longer drawn over
-  the hero's back.
-- The route looks cleaner, as games and map apps draw theirs: on the 3D map a bright core with a
-  dark outline and smooth edges, a still chevron every 3 m, just over the floor (0.15 m and a
-  depth offset, not 0.6 m afloat), dotted where hidden; in the game view drawn by each pixel's
-  distance to the line — smooth edges, round joints and ends, a dark outline, narrowing with
-  distance — and dotted and faint where the world hides it, not cut.
-- The game view's 3D layer is paced by the compositor (DwmFlush): the camera is read right after
-  the screen turns over, so the band no longer swims against the game.
-- The worker reads the game's memory about half as often (13,500 → 6,500 reads a step): one
-  census of the live objects for the obstacle and quest passes, one walk of the levels' actors,
-  the attribute layout and the graph's gating kept while their inputs are the same. The maps draw
-  with the map lock let go, and an overlay window is not presented again when nothing changed.
-
-### Added (2026-10-06)
-
 - Shortcuts down: where the hero can jump off a ledge to a floor below (navmesh.rs `find_drops`:
   0.8–12 m, nothing in the way, no deadly water to land in) and a route that does so is much the
   shorter (a fifth and 20 m), or the walking route is blocked, the minimap and big map draw it
@@ -93,6 +73,20 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Changed
 
+- The game view's route is half as wide (14 cm on the floor, 18 px at most) and quieter, and
+  the stretch the hero's body stands in front of, seen from the camera, is no longer drawn over
+  the hero's back.
+- The route looks cleaner, as games and map apps draw theirs: on the 3D map a bright core with a
+  dark outline and smooth edges, a still chevron every 3 m, just over the floor (0.15 m and a
+  depth offset, not 0.6 m afloat), dotted where hidden; in the game view drawn by each pixel's
+  distance to the line — smooth edges, round joints and ends, a dark outline, narrowing with
+  distance — and dotted and faint where the world hides it, not cut.
+- The game view's 3D layer is paced by the compositor (DwmFlush): the camera is read right after
+  the screen turns over, so the band no longer swims against the game.
+- The worker reads the game's memory about half as often (13,500 → 6,500 reads a step): one
+  census of the live objects for the obstacle and quest passes, one walk of the levels' actors,
+  the attribute layout and the graph's gating kept while their inputs are the same. The maps draw
+  with the map lock let go, and an overlay window is not presented again when nothing changed.
 - Another floor's marks carry a badge on their corner (up in blue, down in amber), not a loose
   arrow; the Follow button reads "Follow" or "● Let go" on the track's colour.
 - The tracker stays above the band where the game opens its notices (the right middle), read from
