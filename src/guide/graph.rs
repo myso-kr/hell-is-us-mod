@@ -49,6 +49,9 @@ pub struct Node {
     pub activators: Vec<String>,
     /// How its activators must be used, when it says (an order or position puzzle).
     pub logic: Option<Logic>,
+    /// Gives what it gives by the story's scripts (a quest listener), not by being used:
+    /// no place to go for it.
+    pub scripted: bool,
 }
 
 /// How a receiver's activators must be used (`MultiActivatorsActivationAction`,
@@ -90,7 +93,15 @@ fn need_of(c: &Value) -> Option<Need> {
     let ty = c["type"].as_str().unwrap_or("");
     let actor = || c["actor"].as_str().map(str::to_string);
     let tags = || -> Vec<String> {
-        c["tags"].as_array().into_iter().flatten().filter_map(|t| t.as_str()).map(str::to_string).collect()
+        // An unset tag reads `None`: no requirement.
+        c["tags"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|t| t.as_str())
+            .filter(|t| *t != "None")
+            .map(str::to_string)
+            .collect()
     };
     match ty {
         "AndCondition" => {
@@ -108,6 +119,10 @@ fn need_of(c: &Value) -> Option<Need> {
         t if t.starts_with("IsSingleUseInteractableNotActivated") => None,
         // An object brought to a place (pushed, carried, turned there): that object used.
         t if t.starts_with("IsAnotherSceneComponentAtLocation") => actor().map(Need::Used),
+        // A state of 0 is "not used yet": nothing to do first. The level does not write a
+        // default value, so no state is 0 too (Jeljin's dial locks, usable while the gazebo
+        // panel is still shut).
+        "InteractableStateCondition" if c["state"].as_i64().unwrap_or(0) == 0 => None,
         t if t.starts_with("IsSingleUseInteractableActivated")
             || t == "InteractableStateCondition"
             || t.contains("OtherElementActivated") =>
@@ -115,6 +130,24 @@ fn need_of(c: &Value) -> Option<Need> {
             actor().map(Need::Used)
         }
         _ => None,
+    }
+}
+
+/// The items a need asks held, through its alls and anys.
+fn items_of(n: &Need) -> Vec<String> {
+    match n {
+        Need::Item(it) => vec![it.clone()],
+        Need::All(v) | Need::Any(v) => v.iter().flat_map(items_of).collect(),
+        _ => Vec::new(),
+    }
+}
+
+/// The facts a need asks known, through its alls and anys.
+fn facts_of(n: &Need) -> Vec<String> {
+    match n {
+        Need::Fact(t, true) => vec![t.clone()],
+        Need::All(v) | Need::Any(v) => v.iter().flat_map(facts_of).collect(),
+        _ => Vec::new(),
     }
 }
 
@@ -236,6 +269,29 @@ impl Graph {
         }
         let mut gives_tags = strs(&a["payload"]["tags"]);
         gives_tags.extend(strs(&a["payload"]["facts"]));
+        // A quest listener: what its blueprint sets as the story goes.
+        let script = strs(&a["script_tags"]);
+        let scripted = !script.is_empty();
+        gives_tags.extend(script);
+        // Each trade an NPC takes: a node of its own, needing the item, giving the reward.
+        for (k, t) in a["trades"].as_array().into_iter().flatten().enumerate() {
+            let Some(item) = t["item"].as_str() else { continue };
+            let item = item.rsplit('/').next().unwrap_or(item).to_string();
+            let mut tags = strs(&t["payload"]["tags"]);
+            tags.extend(strs(&t["payload"]["facts"]));
+            let name = format!("{full}#trade{k}");
+            self.by_name.insert((world.to_string(), name.clone()), self.nodes.len());
+            self.nodes.push(Node {
+                world: world.to_string(),
+                name,
+                class: "Trade".into(),
+                at,
+                gives_items: strs(&t["payload"]["items"]),
+                gives_tags: tags,
+                needs: vec![Need::Item(item)],
+                ..Default::default()
+            });
+        }
         self.by_name.insert((world.to_string(), full.clone()), self.nodes.len());
         self.nodes.push(Node {
             world: world.to_string(),
@@ -248,10 +304,59 @@ impl Graph {
             needs,
             activators: acts,
             logic,
+            scripted,
         });
     }
 
     fn index(&mut self) {
+        // A fight's outcome no place gives (`…EncounterKilled`, `…Encounter.Completed`, a
+        // boss killed): the fight's script sets it. A node for it where it is needed, so a
+        // chain reads "win the fight", not a dead end.
+        let given: HashSet<String> = self.nodes.iter().flat_map(|n| n.gives_tags.iter().cloned()).collect();
+        let mut fights: Vec<(String, [f32; 3], String)> = Vec::new();
+        for n in &self.nodes {
+            for t in n.needs.iter().flat_map(facts_of) {
+                let fight = ["Encounter", "Killed", "Boss"].iter().any(|k| t.contains(k));
+                if fight && !given.contains(&t) && !fights.iter().any(|f| f.0 == n.world && f.2 == t) {
+                    fights.push((n.world.clone(), n.at, t));
+                }
+            }
+        }
+        let items: HashSet<String> = self.nodes.iter().flat_map(|n| n.gives_items.iter().cloned()).collect();
+        let mut story_items: Vec<(String, [f32; 3], String)> = Vec::new();
+        for n in &self.nodes {
+            for it in n.needs.iter().flat_map(items_of) {
+                if !items.contains(&it) && !story_items.iter().any(|f| f.0 == n.world && f.2 == it) {
+                    story_items.push((n.world.clone(), n.at, it));
+                }
+            }
+        }
+        for (world, at, item) in story_items {
+            let name = format!("{world}:story:{item}");
+            self.by_name.insert((world.clone(), name.clone()), self.nodes.len());
+            self.nodes.push(Node {
+                world,
+                name,
+                class: "StoryGives".into(),
+                at,
+                gives_items: vec![item],
+                scripted: true,
+                ..Default::default()
+            });
+        }
+        for (world, at, tag) in fights {
+            let name = format!("{world}:fight:{tag}");
+            self.by_name.insert((world.clone(), name.clone()), self.nodes.len());
+            self.nodes.push(Node {
+                world,
+                name,
+                class: "FightWon".into(),
+                at,
+                gives_tags: vec![tag],
+                scripted: true,
+                ..Default::default()
+            });
+        }
         for (i, n) in self.nodes.iter().enumerate() {
             for it in &n.gives_items {
                 self.item_givers.entry(it.clone()).or_default().push(i);
@@ -390,7 +495,7 @@ impl Graph {
 
     fn can(&self, n: &Need, world: &str, doable: &[bool], known: &HashSet<&str>, items: &HashSet<&str>) -> bool {
         match n {
-            Need::Used(a) => self.node(world, a).is_some_and(|i| doable[i]),
+            Need::Used(a) => self.node(world, a).is_none_or(|i| doable[i]),
             Need::Fact(t, true) => known.contains(t.as_str()),
             Need::Fact(_, false) => true,
             Need::Item(it) => items.contains(it.as_str()),
@@ -512,6 +617,23 @@ impl Graph {
 
 /// How a node reads to the player: what it gives, what goes there, or its class's words.
 pub fn label(n: &Node) -> String {
+    if n.class == "FightWon" {
+        return tr!("GRAPH_FIGHT").to_string();
+    }
+    if n.scripted {
+        return tr!("GRAPH_STORY").to_string();
+    }
+    if n.class == "Trade" {
+        let wants: Vec<String> = n
+            .needs
+            .iter()
+            .filter_map(|x| match x {
+                Need::Item(it) => Some(crate::goals::item_label(it)),
+                _ => None,
+            })
+            .collect();
+        return trf!("GRAPH_TRADE", item = wants.join(", "));
+    }
     if let Some(it) = n.gives_items.first() {
         return crate::goals::item_label(it);
     }
@@ -575,7 +697,11 @@ impl Graph {
             g.gate = Gate::Conditional;
             g.detail = format!("{} · {}", g.detail, trf!("GRAPH_FIRST", chain = text));
             chains.push((g.id, names));
-            firsts.push((*chain.last().unwrap(), g.clone(), text));
+            let first = *chain.last().unwrap();
+            // The story's scripts give it: nowhere to send the hero.
+            if !self.nodes[first].scripted {
+                firsts.push((first, g.clone(), text));
+            }
         }
         for (first, of, text) in firsts {
             self.step(goals, first, &of, &text);

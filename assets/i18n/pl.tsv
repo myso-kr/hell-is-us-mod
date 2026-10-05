@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: pozycja {p}
 LOGIC_PUZZLES	Zagadki kolejności i pozycji · zostało {left}
 NO_LOGIC_PUZZLES_HERE	Brak zagadek kolejności lub pozycji w tym regionie.
 LOGIC_PUZZLES_HINT	Z danych gry: które urządzenia, w jakiej kolejności, w jakiej pozycji. Ukryte, dopóki nie zapytasz.
+GRAPH_STORY	postęp fabuły
+GRAPH_TRADE	wymiana: {item}
+GRAPH_FIGHT	wygrać walkę

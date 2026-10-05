@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: положение {p}
 LOGIC_PUZZLES	Головоломки порядка и положения · осталось {left}
 NO_LOGIC_PUZZLES_HERE	В этом регионе нет головоломок порядка или положения.
 LOGIC_PUZZLES_HINT	Из данных игры: какие устройства, в каком порядке, в какое положение. Скрыто, пока не спросите.
+GRAPH_STORY	развитие сюжета
+GRAPH_TRADE	обменять {item}
+GRAPH_FIGHT	победить в бою

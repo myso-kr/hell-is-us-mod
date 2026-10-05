@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}：位置{p}
 LOGIC_PUZZLES	順番・位置パズル · 残り{left}
 NO_LOGIC_PUZZLES_HERE	この地域に順番・位置パズルはありません。
 LOGIC_PUZZLES_HINT	ゲームのデータから：どの装置を、どの順番で、どの位置に。押すまで隠れています。
+GRAPH_STORY	ストーリーの進行
+GRAPH_TRADE	{item}を渡す
+GRAPH_FIGHT	戦闘に勝つ

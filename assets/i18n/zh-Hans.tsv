@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}：位置{p}
 LOGIC_PUZZLES	顺序与位置谜题 · 剩余{left}
 NO_LOGIC_PUZZLES_HERE	本区域没有顺序或位置谜题。
 LOGIC_PUZZLES_HINT	来自游戏数据：哪些装置、什么顺序、什么位置。点击前隐藏。
+GRAPH_STORY	剧情推进
+GRAPH_TRADE	交出{item}
+GRAPH_FIGHT	赢得战斗

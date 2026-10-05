@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: Stellung {p}
 LOGIC_PUZZLES	Reihenfolge- und Stellungsrätsel · {left} offen
 NO_LOGIC_PUZZLES_HERE	In dieser Region kein Reihenfolge- oder Stellungsrätsel.
 LOGIC_PUZZLES_HINT	Aus den Spieldaten: welche Geräte, in welcher Reihenfolge, in welche Stellung. Verborgen, bis du fragst.
+GRAPH_STORY	der Fortgang der Geschichte
+GRAPH_TRADE	{item} tauschen
+GRAPH_FIGHT	den Kampf gewinnen

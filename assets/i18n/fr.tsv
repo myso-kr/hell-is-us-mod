@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place} : position {p}
 LOGIC_PUZZLES	Énigmes d'ordre et de position · {left} restantes
 NO_LOGIC_PUZZLES_HERE	Pas d'énigme d'ordre ou de position dans cette région.
 LOGIC_PUZZLES_HINT	Des données du jeu : quels dispositifs, dans quel ordre, dans quelle position. Caché tant que vous ne demandez pas.
+GRAPH_STORY	la suite de l'histoire
+GRAPH_TRADE	échanger {item}
+GRAPH_FIGHT	gagner le combat

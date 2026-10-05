@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: position {p}
 LOGIC_PUZZLES	Order and position puzzles · {left} left
 NO_LOGIC_PUZZLES_HERE	No order or position puzzle in this region.
 LOGIC_PUZZLES_HINT	From the game's own data: which devices, in what order, to which position. Hidden until you ask.
+GRAPH_STORY	the story going on
+GRAPH_TRADE	trade {item}
+GRAPH_FIGHT	win the fight

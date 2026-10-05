@@ -88,7 +88,30 @@ the Keystone of Terror, the elevator key, `Quest.Facts.TerrorKeystoneGathered`).
 them as the world's `gives` {enter, boss (with where the fight's room is)}; the graph has a node for
 each. `doctor graph` after: 2481 nodes, 2417 reachable, 64 stuck, 12 things no place gives.
 
-## 6. Next
+## 6. Every giver found (2026-10-05)
+
+What `--grep` found for the rest, and how the graph takes it:
+
+- **NPC blueprints' trades and conversations**: the placed NPC does not repeat its blueprint's
+  component templates (the Jova drunkard's `TradeGiveItemRune`: the liquor for Colonel Vaas's office
+  key). The survey reads them from the class's package; each trade is a node of its own (at the NPC,
+  needing the item, giving the reward).
+- **Quest listeners** (`Gameplay/QuestListeners/*`): their logic is blueprint code, but the tags they
+  set are their defaults' `Tag_…` (a boss killed, a photo taken). Recorded as `script_tags`; a node
+  marked scripted ("the story going on"): a chain ending there holds its goal back with nothing to
+  go to.
+- **Fights**: an outcome no place gives (`…EncounterKilled`, `…Encounter.Completed`, a boss) is a
+  "win the fight" node where it is needed.
+- **Items no place gives** (the hero's necklace): a "the story going on" node.
+- Readings fixed: an unset tag reads `None` (no need); an `InteractableStateCondition` with state 0,
+  or none written (the default is not serialised), is "not used yet" (Jeljin's dial locks, usable
+  while the gazebo panel is shut — read as used, they made a cycle); an actor the survey has not (a
+  level instance's part) holds nothing back.
+
+`doctor graph`: **2598 nodes, all 2598 reachable from nothing known; none stuck, nothing needed that
+nothing gives.**
+
+## 7. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items

@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: konum {p}
 LOGIC_PUZZLES	Sıra ve konum bulmacaları · {left} kaldı
 NO_LOGIC_PUZZLES_HERE	Bu bölgede sıra ya da konum bulmacası yok.
 LOGIC_PUZZLES_HINT	Oyunun verisinden: hangi cihazlar, hangi sırayla, hangi konuma. Sorana kadar gizli.
+GRAPH_STORY	hikâyenin ilerlemesi
+GRAPH_TRADE	{item} takası
+GRAPH_FIGHT	dövüşü kazan

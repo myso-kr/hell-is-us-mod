@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: 위치 {p}
 LOGIC_PUZZLES	순서·위치 퍼즐 · 남은 {left}
 NO_LOGIC_PUZZLES_HERE	이 지역에는 순서·위치 퍼즐이 없습니다.
 LOGIC_PUZZLES_HINT	게임 데이터에서 읽은 정답: 어떤 장치를 어떤 순서로, 어떤 위치로. 누르기 전까지 숨겨져 있습니다.
+GRAPH_STORY	스토리 진행
+GRAPH_TRADE	{item} 건네기
+GRAPH_FIGHT	전투에서 이기기

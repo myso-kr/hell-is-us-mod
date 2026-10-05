@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: posición {p}
 LOGIC_PUZZLES	Puzles de orden y posición · quedan {left}
 NO_LOGIC_PUZZLES_HERE	No hay puzles de orden o posición en esta región.
 LOGIC_PUZZLES_HINT	De los datos del juego: qué dispositivos, en qué orden, a qué posición. Oculto hasta que lo pidas.
+GRAPH_STORY	el avance de la historia
+GRAPH_TRADE	intercambiar {item}
+GRAPH_FIGHT	ganar el combate

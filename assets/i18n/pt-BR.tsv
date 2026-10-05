@@ -778,3 +778,6 @@ GRAPH_ANSWER_POSITION	{k}. {place}: posição {p}
 LOGIC_PUZZLES	Quebra-cabeças de ordem e posição · faltam {left}
 NO_LOGIC_PUZZLES_HERE	Nenhum quebra-cabeça de ordem ou posição nesta região.
 LOGIC_PUZZLES_HINT	Dos dados do jogo: quais dispositivos, em que ordem, em que posição. Oculto até você pedir.
+GRAPH_STORY	o avanço da história
+GRAPH_TRADE	trocar {item}
+GRAPH_FIGHT	vencer o combate

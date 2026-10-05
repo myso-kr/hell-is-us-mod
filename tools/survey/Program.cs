@@ -479,7 +479,7 @@ class Survey(DefaultFileProvider provider)
             // levers, slots, area triggers (`TriggerNoActions`), doors, first-generation
             // Lymbic activators, cinematic callers, drone translations.
             var linked = activators.Count > 0
-                || new[] { "Activator", "Receiver", "Trigger", "Door", "Caller", "DroneTranslation", "_Interact_BP" }
+                || new[] { "Activator", "Receiver", "Trigger", "Door", "Caller", "DroneTranslation", "_Interact_BP", "QuestListener" }
                     .Any(k => cls.Contains(k));
             if (travel == null && !linked && !comps.Any(c => Wanted.Contains(c.Class?.Name))) continue;
             var rec = new JObject { ["name"] = actor.Name, ["class"] = actor.Class?.Name ?? "", ["cell"] = cell };
@@ -526,11 +526,42 @@ class Survey(DefaultFileProvider provider)
                         break;
                 }
             }
+            // An NPC whose trades or conversation are its blueprint's (the component templates,
+            // which the placed actor does not repeat): read from the class's own package.
+            if (rec["trades"] == null || rec["flow"] == null)
+            {
+                foreach (var t in ClassTemplates(actor))
+                {
+                    var tp = Props(t);
+                    if (rec["trades"] == null && (t.Class?.Name ?? "") == "TradeGiveItemRuneComponent")
+                    {
+                        var trades = new JArray();
+                        foreach (var tr in tp["Rune"]?["ValidTrades"] ?? new JArray())
+                            trades.Add(new JObject { ["item"] = Paths(tr["Item"]).FirstOrDefault(), ["payload"] = Payload(tr["Payload"]) });
+                        if (trades.Count > 0) rec["trades"] = trades;
+                    }
+                    if (rec["flow"] == null && (t.Class?.Name ?? "") == "FlowComponent" && Paths(tp["RootFlow"]).FirstOrDefault() is { } flow)
+                    {
+                        rec["flow"] = flow;
+                        flowsToRead.Add(flow);
+                    }
+                }
+            }
             // A Vault of Forbidden Knowledge's dial door: where the vault notebook guides to.
             var vault = rec["class"]!.ToString().StartsWith("VOFK_") && rec["class"]!.ToString().Contains("DialPuzzle");
             if (vault) rec["vault"] = true;
             if (travel != null) rec["travel"] = travel;
             if (activators.Count > 0) rec["activators"] = new JArray(activators);
+            // A quest listener sets facts by its blueprint's logic (a boss killed, a photo
+            // taken): the tags it names (`Tag_…`) are what it can give, as the story goes.
+            if (cls.Contains("QuestListener"))
+            {
+                var lp = Props(actor);
+                var tags = lp.Properties().Where(x => x.Name.StartsWith("Tag_"))
+                    .SelectMany(x => x.Value.SelectTokens("$..TagName")).Select(t => (string?)t)
+                    .Where(t => !string.IsNullOrEmpty(t)).Distinct().ToList();
+                if (tags.Count > 0) rec["script_tags"] = new JArray(tags);
+            }
             // How the activators must be used (`MultiActivatorsActivationAction`: in the order
             // listed, all of them, within a time; `MultiActivatorsStateAction`: each turned to
             // its position): the answer of an order or position puzzle.
@@ -621,6 +652,28 @@ class Survey(DefaultFileProvider provider)
             gives["boss"] = boss;
         }
         return gives.Count > 0 ? gives : null;
+    }
+
+    /// The component templates of an actor's blueprint (its `_GEN_VARIABLE`s), read once a
+    /// class.
+    readonly Dictionary<string, List<UObject>> templates = new();
+    List<UObject> ClassTemplates(UObject actor)
+    {
+        var cls = actor.Class?.GetPathName() ?? "";
+        var dot = cls.LastIndexOf('.');
+        if (dot < 0 || !cls.StartsWith("/Game/")) return [];
+        var pkg = cls[..dot];
+        if (templates.TryGetValue(pkg, out var cached)) return cached;
+        var found = new List<UObject>();
+        try
+        {
+            found = provider.LoadPackage(pkg).GetExports()
+                .Where(e => e.Name.EndsWith("_GEN_VARIABLE") && (e.Class?.Name is "TradeGiveItemRuneComponent" or "FlowComponent"))
+                .ToList();
+        }
+        catch { }
+        templates[pkg] = found;
+        return found;
     }
 
     /// Every export whose properties name `want`: what points at an actor (`--refs`).
