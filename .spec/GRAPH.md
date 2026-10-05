@@ -111,7 +111,20 @@ What `--grep` found for the rest, and how the graph takes it:
 `doctor graph`: **2598 nodes, all 2598 reachable from nothing known; none stuck, nothing needed that
 nothing gives.**
 
-## 7. Next
+## 7. Datapad entries and the quests' facts (2026-10-05)
+
+A payload gives Datapad entries whole (`BaseIdentity`: an identity — a person, a place, a thing —
+with its base facts). The survey records a payload's `identities` and writes every identity's base
+facts and related items (`identities.json`, 92); the graph gives a node its identities' facts.
+
+`doctor graph` reports the facts: 755 of the Datapad's 887 are given by some node. Of the main
+quests' own facts (`QuestNN` in the name) 37 of 42: Quest03 and Quest06 all, the rest missing only
+the journal's descriptions and an NPC's tie to the quest — set by the quests' scripts. The 132 not
+given are entries' details (Info/Desc, 74), names, locations and quest ties: cutscenes (level
+sequences), the drone's talks and the quests' scripts give them, and a few are decoys never given
+(`…_Dummy01_Name`).
+
+## 8. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items

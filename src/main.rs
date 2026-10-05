@@ -351,6 +351,39 @@ fn graph() -> R {
     for (what, n) in &missing {
         out += &format!("  {n:3}  {what}\n");
     }
+    // Each quest's Datapad facts, and what gives them.
+    let facts: Vec<String> = std::fs::read_to_string(hiumod::paths::data_dir().join("locale").join("facts.tsv"))
+        .unwrap_or_default()
+        .lines()
+        .filter_map(|l| l.split('\t').nth(1).map(str::to_string))
+        .collect();
+    let given = facts.iter().filter(|f| g.gives(f)).count();
+    out += &format!("Datapad facts given by some node: {given}/{}\n", facts.len());
+    // Those no node gives, by their kind (the sixth column: Name, Location, Quest…).
+    let kinds: Vec<(String, String)> =
+        std::fs::read_to_string(hiumod::paths::data_dir().join("locale").join("facts.tsv"))
+            .unwrap_or_default()
+            .lines()
+            .filter_map(|l| {
+                let c: Vec<&str> = l.split('\t').collect();
+                Some((c.get(1)?.to_string(), c.get(5)?.to_string()))
+            })
+            .collect();
+    let mut by_kind: std::collections::BTreeMap<&str, usize> = Default::default();
+    for (_, k) in kinds.iter().filter(|(f, _)| !g.gives(f)) {
+        *by_kind.entry(k.as_str()).or_default() += 1;
+    }
+    out += &format!("  not given, by kind: {by_kind:?}\n");
+    out += "quests (facts given / all, by kind of giver):\n";
+    for (q, all, kinds, none) in g.quest_coverage(&facts) {
+        let given: usize = kinds.values().sum();
+        let mut k: Vec<String> = kinds.iter().map(|(k, n)| format!("{k} {n}")).collect();
+        k.sort();
+        out += &format!("  {q}: {given}/{all} ({})\n", k.join(", "));
+        for f in none.iter().take(6) {
+            out += &format!("      not given: {f}\n");
+        }
+    }
     out += "stuck:\n";
     for &i in &r.stuck {
         let n = &g.nodes[i];

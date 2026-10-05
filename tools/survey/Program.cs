@@ -177,8 +177,35 @@ Tables.Write(provider, outDir);
 ///   region, clue, research entries to unlock, and the four-symbol code.
 static class Tables
 {
+    /// Every identity (a Datapad entry: a person, a place, a thing) with its base facts and
+    /// related items: what a payload naming it gives (`identities.json`).
+    static void Identities(DefaultFileProvider provider, string outDir)
+    {
+        var all = new JObject();
+        foreach (var path in provider.Files.Keys.Where(p => p.StartsWith("HellIsUs/Content/GameData/StoryUnits/") && p.EndsWith("_Identity_DA.uasset")).OrderBy(p => p))
+        {
+            try
+            {
+                foreach (var e in provider.LoadPackage(path).GetExports().Where(e => e.Class?.Name == "IdentityData"))
+                {
+                    var j = JObject.Parse(JsonConvert.SerializeObject(e.Properties.ToDictionary(x => x.Name.Text, x => x.Tag)));
+                    string Last(JToken t) => ((string?)t["ObjectPath"] ?? (string?)t["ObjectName"] ?? "").Split('/').Last().Split('.').First().Split('\'').Last();
+                    all[e.Name] = new JObject
+                    {
+                        ["facts"] = new JArray((j["BaseFacts"] ?? new JArray()).Select(Last).Where(x => x.Length > 0)),
+                        ["items"] = new JArray((j["RelatedItems"] ?? new JArray()).Select(Last).Where(x => x.Length > 0)),
+                    };
+                }
+            }
+            catch { }
+        }
+        File.WriteAllText(Path.Combine(outDir, "identities.json"), all.ToString(Formatting.Indented));
+        Console.Error.WriteLine($"identities: {all.Count}");
+    }
+
     public static void Write(DefaultFileProvider provider, string outDir)
     {
+        Identities(provider, outDir);
         // As the mod's {g:namespace/key}: a string table's namespace is its TableNamespace.
         var nsOf = new Dictionary<string, string?>();
         string Text(JToken? t)
@@ -387,6 +414,8 @@ class Survey(DefaultFileProvider provider)
         ["items"] = new JArray(Paths(data?["ItemsToAdd"]).Distinct()),
         ["facts"] = new JArray(Objects(data?["ContainedFacts"]).Distinct()),
         ["tags"] = new JArray(Tags(data?["TagFacts"]).Distinct()),
+        // The Datapad entries it gives whole: each with its base facts (identities.json).
+        ["identities"] = new JArray(Objects(data?["BaseIdentity"]).Distinct()),
     };
 
     static bool Empty(JObject p) => p.Properties().All(x => !((JArray)x.Value).Any());

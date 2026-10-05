@@ -142,6 +142,17 @@ fn items_of(n: &Need) -> Vec<String> {
     }
 }
 
+/// What a payload gives as facts and tags: its own, and the base facts of each Datapad entry
+/// (identity) it gives whole (`identities.json`).
+fn payload_facts(p: &Value, identities: &Value) -> Vec<String> {
+    let mut out = strs(&p["tags"]);
+    out.extend(strs(&p["facts"]));
+    for id in strs(&p["identities"]) {
+        out.extend(strs(&identities[id.as_str()]["facts"]));
+    }
+    out
+}
+
 /// The facts a need asks known, through its alls and anys.
 fn facts_of(n: &Need) -> Vec<String> {
     match n {
@@ -180,6 +191,11 @@ impl Graph {
     /// Every world's survey in `dir`.
     pub fn load(dir: &Path) -> Graph {
         let mut g = Graph::default();
+        // What each Datapad entry gives whole: its base facts.
+        let identities: Value = std::fs::read_to_string(dir.join("identities.json"))
+            .ok()
+            .and_then(|t| serde_json::from_str(&t).ok())
+            .unwrap_or(Value::Null);
         // What each conversation gives, through its sub-graphs: an NPC's gifts.
         let flows: Value = std::fs::read_to_string(dir.join("flows.json"))
             .ok()
@@ -188,7 +204,10 @@ impl Graph {
         let Ok(files) = std::fs::read_dir(dir) else { return g };
         for f in files.flatten() {
             let path = f.path();
-            if path.extension().is_none_or(|e| e != "json") || path.file_name().is_some_and(|n| n == "flows.json") {
+            let skip = ["flows.json", "identities.json", "spawners.json", "recipes.json", "vaults.json"];
+            if path.extension().is_none_or(|e| e != "json")
+                || path.file_name().is_some_and(|n| skip.iter().any(|s| n == *s))
+            {
                 continue;
             }
             let Some(v) = std::fs::read_to_string(&path).ok().and_then(|t| serde_json::from_str::<Value>(&t).ok())
@@ -205,8 +224,7 @@ impl Graph {
                 let at =
                     p["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
                 let at = at.filter(|x| x.len() == 3).map_or([0.0; 3], |x| [x[0], x[1], x[2]]);
-                let mut gives_tags = strs(&p["tags"]);
-                gives_tags.extend(strs(&p["facts"]));
+                let gives_tags = payload_facts(p, &identities);
                 let name = format!("{world}:{kind}");
                 g.by_name.insert((world.to_string(), name.clone()), g.nodes.len());
                 g.nodes.push(Node {
@@ -220,13 +238,12 @@ impl Graph {
                 });
             }
             for a in v["actors"].as_array().into_iter().flatten() {
-                g.add(world, a);
+                g.add(world, a, &identities);
                 if let (Some(flow), Some(last)) = (a["flow"].as_str(), g.nodes.last_mut()) {
                     if last.name == a["name"].as_str().unwrap_or("") {
                         for p in flow_payloads(&flows, flow) {
                             last.gives_items.extend(strs(&p["items"]));
-                            last.gives_tags.extend(strs(&p["tags"]));
-                            last.gives_tags.extend(strs(&p["facts"]));
+                            last.gives_tags.extend(payload_facts(&p, &identities));
                         }
                     }
                 }
@@ -236,7 +253,7 @@ impl Graph {
         g
     }
 
-    fn add(&mut self, world: &str, a: &Value) {
+    fn add(&mut self, world: &str, a: &Value, identities: &Value) {
         let full = a["name"].as_str().unwrap_or("").to_string();
         // A copy per streaming cell: one node.
         if self.by_name.contains_key(&(world.to_string(), full.clone())) {
@@ -267,8 +284,7 @@ impl Graph {
         if !items.is_empty() && a["puzzle"]["expects"].is_null() {
             needs.push(Need::All(items.into_iter().map(Need::Item).collect()));
         }
-        let mut gives_tags = strs(&a["payload"]["tags"]);
-        gives_tags.extend(strs(&a["payload"]["facts"]));
+        let mut gives_tags = payload_facts(&a["payload"], identities);
         // A quest listener: what its blueprint sets as the story goes.
         let script = strs(&a["script_tags"]);
         let scripted = !script.is_empty();
@@ -277,8 +293,7 @@ impl Graph {
         for (k, t) in a["trades"].as_array().into_iter().flatten().enumerate() {
             let Some(item) = t["item"].as_str() else { continue };
             let item = item.rsplit('/').next().unwrap_or(item).to_string();
-            let mut tags = strs(&t["payload"]["tags"]);
-            tags.extend(strs(&t["payload"]["facts"]));
+            let tags = payload_facts(&t["payload"], identities);
             let name = format!("{full}#trade{k}");
             self.by_name.insert((world.to_string(), name.clone()), self.nodes.len());
             self.nodes.push(Node {
@@ -365,6 +380,11 @@ impl Graph {
                 self.tag_givers.entry(t.clone()).or_default().push(i);
             }
         }
+    }
+
+    /// Whether some node gives the fact or tag `t`.
+    pub fn gives(&self, t: &str) -> bool {
+        self.tag_givers.contains_key(t)
     }
 
     pub fn node(&self, world: &str, name: &str) -> Option<usize> {
@@ -800,6 +820,56 @@ fn step_id(n: &Node) -> u64 {
     h.finish() | 1 << 63
 }
 
+impl Graph {
+    /// For each quest (`QuestNN` in its facts' names) of the Datapad's facts (`facts.tsv`):
+    /// how many facts it has, and how many some node gives, by what kind of giver — a place,
+    /// a conversation, the story (scripts, fights), a world (first entry, boss fight).
+    pub fn quest_coverage(&self, facts: &[String]) -> Vec<Coverage> {
+        let mut by_quest: std::collections::BTreeMap<String, Vec<&String>> = Default::default();
+        for f in facts {
+            if let Some(i) = f.find("Quest") {
+                let digits: String = f[i + 5..].chars().take_while(|c| c.is_ascii_digit()).collect();
+                if digits.len() == 2 {
+                    by_quest.entry(format!("Quest{digits}")).or_default().push(f);
+                }
+            }
+        }
+        by_quest
+            .into_iter()
+            .map(|(q, fs)| {
+                let mut kinds: HashMap<&'static str, usize> = HashMap::new();
+                let mut none = Vec::new();
+                for f in &fs {
+                    let kind = self.tag_givers.get(f.as_str()).and_then(|g| g.first()).map(|&i| {
+                        let n = &self.nodes[i];
+                        if n.class == "WorldFirstEntered" || n.class == "BossFightWon" {
+                            "world"
+                        } else if n.scripted {
+                            "story"
+                        } else if n.class == "Trade"
+                            || n.class.contains("NPC")
+                            || n.class.contains("Convo")
+                            || n.class.contains("Quickchat")
+                        {
+                            "conversation"
+                        } else {
+                            "place"
+                        }
+                    });
+                    match kind {
+                        Some(k) => *kinds.entry(k).or_default() += 1,
+                        None => none.push((*f).clone()),
+                    }
+                }
+                (q, fs.len(), kinds, none)
+            })
+            .collect()
+    }
+}
+
+/// A quest's facts: the quest, how many, how many each kind of giver gives, those none gives.
+pub type Coverage = (String, usize, HashMap<&'static str, usize>, Vec<String>);
+
 /// What `reach` found.
 pub struct Report {
     pub nodes: usize,
@@ -827,7 +897,7 @@ mod tests {
             json!({"name": "Drain", "class": "WaterDrain_PayloadInactive", "at": [300, 0, 0], "guid": "g4", "activators": ["Lever"], "payload": {"tags": ["Water2"]}}),
             json!({"name": "Key", "class": "Key_Gather", "at": [400, 0, 0], "guid": "g5", "conditions": [{"type": "DoesHeroHasFactCondition_BP_C", "tags": ["Water2"]}], "payload": {"items": ["Key_Item_DA"]}}),
         ] {
-            g.add("W", &a);
+            g.add("W", &a, &Value::Null);
         }
         g.index();
         g
