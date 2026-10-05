@@ -20,7 +20,7 @@
 
 use crate::knowledge::Knowledge;
 use crate::mem::{self, Memory};
-use crate::names::{Names, CLASS};
+use crate::names::Names;
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
@@ -185,7 +185,8 @@ const REST: std::time::Duration = std::time::Duration::from_secs(5);
 pub struct Quests {
     mains: Vec<Main>,
     /// The pass under way: every object, how far it got, and what it found so far.
-    pending: Vec<u64>,
+    /// (object, class), from the census (gobjects.rs).
+    pending: Vec<(u64, u64)>,
     cursor: usize,
     /// When the last pass ended: the next waits `REST`.
     rested: Option<std::time::Instant>,
@@ -360,7 +361,7 @@ impl Quests {
     /// A slice of the walk over every object that finds the main quests and their
     /// facts, and the good deeds' table if it is loaded. A pass ends with the journal
     /// rebuilt and the next one starts over; `objects` is asked for only then.
-    pub fn step(&mut self, m: &dyn Memory, n: &Names, objects: impl FnOnce() -> Vec<u64>) {
+    pub fn step(&mut self, m: &dyn Memory, n: &Names, objects: impl FnOnce() -> Vec<(u64, u64)>) {
         self.load();
         if self.cursor >= self.pending.len() {
             if !self.pending.is_empty() {
@@ -371,22 +372,19 @@ impl Quests {
             if self.ready() && self.rested.is_some_and(|t| t.elapsed() < REST) {
                 return;
             }
-            // In address order, so neighbours' class pointers come from one page read.
+            // In address order (the census's), so neighbours come from one page read.
             self.pending = objects();
-            self.pending.sort_unstable();
             self.cursor = 0;
         }
         let budget = if self.ready() { LATER } else { FIRST };
         let started = std::time::Instant::now();
-        let paged = mem::Paged::new(m);
         let mut i = self.cursor;
         while i < self.pending.len() {
             if i % 512 == 0 && started.elapsed() >= budget {
                 break;
             }
-            let o = self.pending[i];
+            let (o, class) = self.pending[i];
             i += 1;
-            let Some(class) = mem::read_u64(&paged, o + CLASS).filter(|&c| mem::plausible(c)) else { continue };
             let role = *self.roles.entry(class).or_insert_with(|| match n.object(m, class).as_deref() {
                 Some("QuestData") => Role::Quest,
                 Some("SecretsSubsystem") => Role::Secrets,

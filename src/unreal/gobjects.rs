@@ -20,6 +20,62 @@ pub struct Objects {
     pub at: u64,
 }
 
+/// FUObjectItem::SerialNumber: a slot's object is the same one while its pointer and serial are.
+const SERIAL: usize = 0x10;
+
+/// Every live object with its class, kept between readings: a reading reads the slot table (a
+/// read a chunk) and the class of only the slots whose object changed. The passes over every
+/// object (obstacles, quests) each read every object's class themselves before — 3,000 reads a
+/// step between them (measured).
+#[derive(Default)]
+pub struct Census {
+    /// Per slot: the object, its serial, its class (0 when unreadable).
+    slots: Vec<(u64, u32, u64)>,
+    read: Option<std::time::Instant>,
+}
+
+impl Census {
+    /// Read the table again if `fresh` has passed since the last reading.
+    pub fn refresh(&mut self, m: &dyn Memory, objects: &Objects, fresh: std::time::Duration) {
+        if self.read.is_some_and(|t| t.elapsed() < fresh) {
+            return;
+        }
+        self.read = Some(std::time::Instant::now());
+        let Some((chunks, num)) = objects.table(m) else { return };
+        self.slots.resize(num as usize, (0, 0, 0));
+        let paged = mem::Paged::new(m);
+        for c in 0..num.div_ceil(CHUNK) {
+            let Some(chunk) = mem::read_u64(m, chunks + c * 8).filter(|&p| mem::plausible(p)) else { continue };
+            let count = (num - c * CHUNK).min(CHUNK);
+            let mut buf = vec![0u8; (count * ITEM) as usize];
+            if !m.read(chunk, &mut buf) {
+                continue;
+            }
+            for (i, b) in buf.chunks_exact(ITEM as usize).enumerate() {
+                let obj = u64::from_le_bytes(b[..8].try_into().unwrap());
+                let serial = u32::from_le_bytes(b[SERIAL..SERIAL + 4].try_into().unwrap());
+                let slot = &mut self.slots[(c * CHUNK) as usize + i];
+                if slot.0 != obj || slot.1 != serial {
+                    let class = if mem::plausible(obj) {
+                        mem::read_u64(&paged, obj + CLASS).filter(|&p| mem::plausible(p)).unwrap_or(0)
+                    } else {
+                        0
+                    };
+                    *slot = (obj, serial, class);
+                }
+            }
+        }
+    }
+
+    /// Every live object and its class, in address order (neighbours share pages).
+    pub fn pairs(&self) -> Vec<(u64, u64)> {
+        let mut out: Vec<(u64, u64)> =
+            self.slots.iter().filter(|s| s.2 != 0 && mem::plausible(s.0)).map(|s| (s.0, s.2)).collect();
+        out.sort_unstable();
+        out
+    }
+}
+
 impl Objects {
     fn table(&self, m: &dyn Memory) -> Option<(u64, u64)> {
         let chunks = mem::read_u64(m, self.at).filter(|&p| mem::plausible(p))?;
@@ -136,5 +192,24 @@ mod tests {
         assert_eq!(o.all(&m).len(), 80);
         let n = crate::player::tests::anchors(&m).names;
         assert_eq!(o.of_class(&m, &n, "CharlieSaveGame"), [0x6000_0700]);
+    }
+
+    #[test]
+    fn the_census_reads_a_class_again_only_when_its_slot_changes() {
+        use std::time::Duration;
+        let m = world();
+        let o = discover(&m, BASE).unwrap();
+        let mut c = Census::default();
+        c.refresh(&m, &o, Duration::ZERO);
+        let class = mem::read_u64(&m, 0x6000_0700 + CLASS).unwrap();
+        assert!(c.pairs().contains(&(0x6000_0700, class)));
+        // The object's class pointer changes, its slot does not: the census keeps what it read.
+        m.ptr(0x6000_0700 + CLASS, 0x6400_0000);
+        c.refresh(&m, &o, Duration::ZERO);
+        assert!(c.pairs().contains(&(0x6000_0700, class)));
+        // A new serial in the slot: another object there, read again.
+        m.put(0x6200_0000 + 7 * ITEM + SERIAL as u64, &9u32.to_le_bytes());
+        c.refresh(&m, &o, Duration::ZERO);
+        assert!(c.pairs().contains(&(0x6000_0700, 0x6400_0000)));
     }
 }

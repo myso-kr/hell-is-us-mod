@@ -250,3 +250,13 @@ Measured with reads per span (phase 1, `prof::count_read`), same 30 s window in 
 - The overlay draws the minimap and the big map from `MapState::for_drawing` (this world's trail
   and pins only) with the lock let go.
 - `Layered::present` skips a present whose pixels, place and fade are those of the last one.
+
+### Phase 4a: the object census (2026-10-06)
+
+The obstacle and quest passes each read every live object's class (about 500,000) themselves.
+`gobjects::Census` keeps (object, serial, class) per GUObjectArray slot: a reading reads the slot
+table a chunk at a time and the class only of slots whose object or serial changed, at most once a
+second (`CENSUS_FOR`); both passes take its (object, class) pairs in address order. Measured, 30 s
+in play: obstacles 5.3 → 3.0 ms (1,506 → 921 reads a step), quests 4.1 → 0.8 ms (1,454 → 125),
+the step 29.5 → 17.8 ms. The first reading, at start, reads every class once (about 0.8 s on the
+worker's thread).

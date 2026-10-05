@@ -21,7 +21,6 @@
 //! Collecting walks GUObjectArray a slice at a time, so no step stalls; a full pass
 //! replaces the set.
 
-use crate::gobjects::Objects;
 use crate::mem::{self, Memory};
 use crate::names::{Names, CLASS};
 use crate::scene_cache;
@@ -473,7 +472,8 @@ pub struct Obstacles {
     shapes: HashMap<u64, Shapes>,
     profiles: HashMap<u32, bool>,
     /// The objects of the pass in progress, and how far through them.
-    pending: Vec<u64>,
+    /// (object, class), from the census (gobjects.rs).
+    pending: Vec<(u64, u64)>,
     cursor: usize,
     /// When the last pass ended: the next waits `REST`.
     rested: Option<std::time::Instant>,
@@ -629,7 +629,14 @@ impl Obstacles {
     }
 
     /// One slice of the pass; when the pass completes, `done` is replaced.
-    pub fn step(&mut self, m: &dyn Memory, n: &Names, objects: &Objects, hero: [f64; 3], world: &str) {
+    pub fn step(
+        &mut self,
+        m: &dyn Memory,
+        n: &Names,
+        objects: impl FnOnce() -> Vec<(u64, u64)>,
+        hero: [f64; 3],
+        world: &str,
+    ) {
         // An empty name is a world not read this step (loading): the scene stays.
         if !world.is_empty() && world != self.world {
             // Another world: what this pass gathered is not of it. Start from what was
@@ -673,16 +680,13 @@ impl Obstacles {
                 return;
             }
             self.started_at = Some(hero);
-            // In address order, so neighbours' class pointers come from one page read.
-            self.pending = objects.all(m);
-            self.pending.sort_unstable();
+            // In address order (the census's), so neighbours come from one page read.
+            self.pending = objects();
             self.cursor = 0;
         }
         let end = (self.cursor + SLICE).min(self.pending.len());
-        let paged = mem::Paged::new(m);
         for i in self.cursor..end {
-            let o = self.pending[i];
-            let Some(class) = mem::read_u64(&paged, o + CLASS).filter(|&c| mem::plausible(c)) else { continue };
+            let (o, class) = self.pending[i];
             if let Some(f) = self.fields(m, n, o, class) {
                 self.component(m, n, o, f, hero);
             }

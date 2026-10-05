@@ -62,6 +62,10 @@ fn gated_key(key: &(String, Option<Instant>), steps: bool, scene: usize, goals: 
     h.finish()
 }
 
+/// The census is read again for a pass at most this often: two passes starting together share
+/// one reading.
+const CENSUS_FOR: Duration = Duration::from_secs(1);
+
 /// A kept attribute layout is found again at least this often.
 const SESSION_FOR: Duration = Duration::from_secs(5);
 
@@ -70,6 +74,8 @@ const SESSION_FOR: Duration = Duration::from_secs(5);
 #[derive(Default)]
 struct Guide {
     objects: Option<Objects>,
+    /// Every live object and its class, shared by the passes over them (gobjects.rs).
+    census: crate::gobjects::Census,
     saves: Vec<u64>,
     saves_read: Option<Instant>,
     knowledge: Option<Knowledge>,
@@ -403,18 +409,30 @@ impl Attached {
         }
         if let Ok((p, _)) = chain.pose(m, &self.anchors) {
             let _t = crate::prof::span("obstacles");
-            let objects = g.objects.take().unwrap();
             // The world names the scene kept on disk (scene_cache.rs); unknown, none is.
             let world = chain.world(m, &self.anchors).unwrap_or_default();
-            g.obstacles.step(m, n, &objects, p, &world);
-            g.objects = Some(objects);
+            let g = &mut *g;
+            let (objects, census) = (g.objects.as_ref().unwrap(), &mut g.census);
+            g.obstacles.step(
+                m,
+                n,
+                || {
+                    census.refresh(m, objects, CENSUS_FOR);
+                    census.pairs()
+                },
+                p,
+                &world,
+            );
         }
         {
             let g = &mut *g;
-            let objects = g.objects.as_ref().unwrap();
+            let (objects, census) = (g.objects.as_ref().unwrap(), &mut g.census);
             {
                 let _t = crate::prof::span("quests");
-                g.quests.step(m, n, || objects.all(m));
+                g.quests.step(m, n, || {
+                    census.refresh(m, objects, CENSUS_FOR);
+                    census.pairs()
+                });
             }
             let _t = crate::prof::span("nav");
             g.nav.step(m, n, g.quests.nav_actors());
