@@ -88,6 +88,9 @@ pub enum Effect {
     EnemyTime,
     /// Every enemy's health held at 1.
     EnemyFrail,
+    /// Every enemy's health cut to the slider's share of what it had when first seen —
+    /// once; the fight goes on from there.
+    EnemyHealth,
     /// Inventory stacks whose class name holds this, kept from going down.
     Stock(&'static str),
     /// Weapon experience the game grants, multiplied by the slider's value.
@@ -178,6 +181,8 @@ pub const CHEATS: &[Cheat] = &[
     // Enemies: their own clock and their health (extras.rs).
     slider("enemy_time", Group::Combat, "ENEMY_SPEED_DEFAULT_1", &[Effect::EnemyTime], 0.05, 1.0, 0.3, true),
     toggle("frail", Group::Combat, "FRAIL_ENEMIES_ONE_HIT_KILLS", &[Effect::EnemyFrail], true),
+    // Above 1 the game clamps health to its maximum: weaker only.
+    slider("enemy_health", Group::Combat, "ENEMY_HEALTH_SHARE_DEFAULT_1", &[Effect::EnemyHealth], 0.1, 1.0, 0.5, false),
     // Items: the stack counts in the inventory (extras.rs).
     toggle("stock", Group::Items, "CONSUMABLES_NEVER_RUN_OUT", &[Effect::Stock("Useable")], true),
     slider("weapon_xp", Group::Items, "WEAPON_XP_MULTIPLIER_DEFAULT_1", &[Effect::WeaponXp], 1.0, 10.0, 3.0, true),
@@ -281,6 +286,7 @@ impl Active {
                 // extras.rs, each tick after the hero's
                 Effect::EnemyTime
                 | Effect::EnemyFrail
+                | Effect::EnemyHealth
                 | Effect::Stock(_)
                 | Effect::WeaponXp
                 | Effect::Ghost
@@ -331,7 +337,9 @@ mod tests {
             if let Kind::Slider { min, max, default, effects } = c.kind {
                 assert!(min < max && (min..=max).contains(&default), "{}", c.id);
                 assert!(
-                    effects.iter().any(|e| matches!(e, Chosen(_) | Effect::EnemyTime | Effect::WeaponXp)),
+                    effects
+                        .iter()
+                        .any(|e| matches!(e, Chosen(_) | Effect::EnemyTime | Effect::EnemyHealth | Effect::WeaponXp)),
                     "{} has a slider that moves nothing",
                     c.id
                 );

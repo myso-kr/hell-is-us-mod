@@ -841,3 +841,4 @@ GLYPH_ARROWS	strzałki w górę i w dół
 GLYPH_BOW	łuk i strzała
 GLYPH_RING	pierścień otwarty u góry
 GLYPH_CLAWS	ślady pazurów
+ENEMY_HEALTH_SHARE_DEFAULT_1	Zdrowie wrogów, udział (1 = bez zmian)

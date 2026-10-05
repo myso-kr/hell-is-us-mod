@@ -841,3 +841,4 @@ GLYPH_ARROWS	flechas arriba y abajo
 GLYPH_BOW	arco y flecha
 GLYPH_RING	anillo abierto arriba
 GLYPH_CLAWS	marcas de garras
+ENEMY_HEALTH_SHARE_DEFAULT_1	Salud enemiga, proporción (1 = igual)

@@ -75,6 +75,7 @@ impl Panel {
                                         // Past the hero: many targets, not one value to compare.
                                         Effect::EnemyTime
                                         | Effect::EnemyFrail
+                                        | Effect::EnemyHealth
                                         | Effect::Stock(_)
                                         | Effect::WeaponXp
                                         | Effect::Ghost

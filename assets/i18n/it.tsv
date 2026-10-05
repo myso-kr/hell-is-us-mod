@@ -841,3 +841,4 @@ GLYPH_ARROWS	frecce su e giù
 GLYPH_BOW	arco e freccia
 GLYPH_RING	anello aperto in alto
 GLYPH_CLAWS	segni di artigli
+ENEMY_HEALTH_SHARE_DEFAULT_1	Salute nemici, quota (1 = invariata)

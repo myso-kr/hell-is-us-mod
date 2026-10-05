@@ -841,3 +841,4 @@ GLYPH_ARROWS	стрелки вверх и вниз
 GLYPH_BOW	лук и стрела
 GLYPH_RING	кольцо, открытое сверху
 GLYPH_CLAWS	следы когтей
+ENEMY_HEALTH_SHARE_DEFAULT_1	Доля здоровья врагов (1 = как есть)

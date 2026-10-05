@@ -118,3 +118,12 @@ over. Now (`cheat/extras.rs`):
 The ghost cheat's originals (one hero: address, TeamID, Faction) are kept in `ghost.txt` in the
 data folder while it is on. The next run reads it: with the ghost off, the same hero gets its team
 and faction back; another hero (another game) is left alone; the file is removed either way.
+
+## Enemy health share (2026-10-06)
+
+`enemy_health` (slider 0.1–1.0, `Effect::EnemyHealth`, extras.rs): each enemy's
+`HealthAttributeSet.Health` is written once, when first seen, to the share of its base then (base
+and current alike, if the current is above it); a lower share cuts again from that first base. It
+is not restored when switched off: the enemies are mid-fight, and putting their health back would
+heal them. Above 1 the game clamps health to the maximum, so it only weakens. With `frail` on,
+frail wins. Not yet tried in play (`verified: false`).

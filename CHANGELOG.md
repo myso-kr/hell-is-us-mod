@@ -10,6 +10,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- A cheat for enemies' health share (10–100 %): each enemy's health is cut to that share of what
+  it had when first seen, once, and the fight goes on from there; lowering the share cuts again,
+  switching it off heals no one. Frail enemies win over it.
 - Puzzle answers show what the game shows, not a number, where guides tell it: a sconce lit or
   left out (the Sconces of Knowledge, the Forge Foyer), and the Hermit's plinths by the glyph
   each turns inward (up and down arrows, bow, open ring, claws), drawn as SVG beside each line.

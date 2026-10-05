@@ -841,3 +841,4 @@ GLYPH_ARROWS	yukarı aşağı oklar
 GLYPH_BOW	yay ve ok
 GLYPH_RING	üstü açık halka
 GLYPH_CLAWS	pençe izleri
+ENEMY_HEALTH_SHARE_DEFAULT_1	Düşman canı oranı (1 = olduğu gibi)

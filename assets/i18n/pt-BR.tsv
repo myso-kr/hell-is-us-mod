@@ -841,3 +841,4 @@ GLYPH_ARROWS	setas para cima e para baixo
 GLYPH_BOW	arco e flecha
 GLYPH_RING	anel aberto em cima
 GLYPH_CLAWS	marcas de garras
+ENEMY_HEALTH_SHARE_DEFAULT_1	Vida dos inimigos, fração (1 = igual)

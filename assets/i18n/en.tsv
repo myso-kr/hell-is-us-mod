@@ -841,3 +841,4 @@ GLYPH_ARROWS	up and down arrows
 GLYPH_BOW	bow and arrow
 GLYPH_RING	ring open at the top
 GLYPH_CLAWS	claw marks
+ENEMY_HEALTH_SHARE_DEFAULT_1	Enemy health share (1 = as it is)

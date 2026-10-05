@@ -841,3 +841,4 @@ GLYPH_ARROWS	Pfeile auf und ab
 GLYPH_BOW	Pfeil und Bogen
 GLYPH_RING	oben offener Ring
 GLYPH_CLAWS	Krallenspuren
+ENEMY_HEALTH_SHARE_DEFAULT_1	Gegnergesundheit, Anteil (1 = unverändert)

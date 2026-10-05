@@ -116,6 +116,8 @@ pub struct Extras {
     time: HashMap<u64, (u64, f32)>,
     /// Enemy → what was found of it and its Health before the cheat.
     frail: HashMap<u64, Frail>,
+    /// Enemy → (its class, its Health's base when first seen, the share it was cut to).
+    weaker: HashMap<u64, (u64, f32, f32)>,
     /// Inventory stack → the least it is held at.
     stock: HashMap<u64, u32>,
     /// Weapon item → its total experience as last seen (after any bonus).
@@ -242,6 +244,7 @@ impl Extras {
         // may be another object's by now.
         self.time.retain(|e, (c, _)| alive.contains(e) && class_of(*e) == Some(*c));
         self.frail.retain(|e, f| alive.contains(e) && class_of(*e) == Some(f.class));
+        self.weaker.retain(|e, (c, ..)| alive.contains(e) && class_of(*e) == Some(*c));
         // The ghost let go of with a record left (a killed panel's): put back now.
         if self.team.is_some() && wants(|e| matches!(e, Effect::Ghost)).is_none() {
             self.release_ghost(a);
@@ -285,6 +288,30 @@ impl Extras {
                 };
                 if pair(m, at).is_some_and(|(_, c)| c > FRAIL) && !put_pair(m, at, FRAIL, FRAIL) {
                     errors.push("frail enemies: write failed".into());
+                }
+            }
+        }
+
+        // Weaker enemies: each cut once to the share of its health when first seen (and again,
+        // lower only, when the share is lowered); the fight goes on from there. Frail wins.
+        let frail = wants(|e| matches!(e, Effect::EnemyFrail)).is_some();
+        if let (Some(t), false) = (wants(|e| matches!(e, Effect::EnemyHealth)), frail) {
+            let share = t.value.clamp(0.1, 1.0);
+            for &e in &alive {
+                let done = self.weaker.get(&e).copied();
+                if done.is_some_and(|(_, _, s)| s <= share + 1e-3) {
+                    continue;
+                }
+                let Some((_, at)) = health_of(m, n, e) else { continue };
+                let Some((b, c)) = pair(m, at) else { continue };
+                let base = done.map_or(b, |(_, b0, _)| b0);
+                let to = base * share;
+                if c > to && !put_pair(m, at, to, to) {
+                    errors.push("weaker enemies: write failed".into());
+                    continue;
+                }
+                if let Some(class) = class_of(e) {
+                    self.weaker.insert(e, (class, base, share));
                 }
             }
         }
@@ -421,6 +448,10 @@ impl Extras {
                 }
             }
         }
+        // weaker enemies are not healed back: they were mid-fight
+        if !kept(|e| matches!(e, Effect::EnemyHealth)) {
+            self.weaker.clear();
+        }
         if !kept(|e| matches!(e, Effect::Stock(_))) {
             self.stock.clear();
         }
@@ -464,6 +495,7 @@ impl Extras {
     pub fn forget(&mut self) {
         self.time.clear();
         self.frail.clear();
+        self.weaker.clear();
         self.stock.clear();
         self.weapon_xp.clear();
         self.team = None;
