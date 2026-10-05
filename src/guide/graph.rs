@@ -923,7 +923,7 @@ impl Graph {
     /// The story's order as the graph has it: for each world, the round its world-map entry
     /// is first given (it can be travelled to); for each main quest, the rounds its facts are
     /// first given, earliest and latest.
-    pub fn timeline(&self, r: &Report) -> (Vec<(String, usize)>, Vec<(String, usize, usize)>) {
+    pub fn timeline(&self, r: &Report) -> Timeline {
         let first = |pred: &dyn Fn(&Node) -> bool| {
             self.nodes.iter().enumerate().filter(|(_, n)| pred(n)).filter_map(|(i, _)| r.depth[i]).min()
         };
@@ -956,6 +956,10 @@ impl Graph {
         (opened, quests)
     }
 }
+
+/// The graph's order: each world and the round its map entry is first given; each main
+/// quest and the first and last rounds of its facts.
+pub type Timeline = (Vec<(String, usize)>, Vec<(String, usize, usize)>);
 
 /// What `reach` found.
 pub struct Report {
