@@ -9,7 +9,7 @@ use eframe::egui::{self, pos2, Color32, Pos2, Rect, Shape, Stroke};
 /// How long one route takes, drawing and fading (s).
 const CYCLE: f32 = 14.0;
 /// Frames a second while it moves: enough for a slow drift.
-pub const FPS: f32 = 15.0;
+pub const FPS: f32 = 10.0;
 
 pub fn draw(p: &egui::Painter, rect: Rect, t: f32) {
     contours(p, rect, t);

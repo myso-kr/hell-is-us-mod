@@ -41,6 +41,9 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+/// The panel draws a new snapshot at most this often.
+const SNAPSHOT_FRAME: Duration = Duration::from_millis(250);
+
 pub enum Request {
     Set(&'static str, f32),
     Toggles(Vec<Active>),
@@ -264,9 +267,10 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
             close(&shared);
         }
         *shared.snap.lock().unwrap() = Some(snap);
-        // Only a shown panel draws the new snapshot; showing it asks for a frame.
+        // Only a shown panel draws the new snapshot; showing it asks for a frame. At most four
+        // a second: the earliest asked-for frame stands, so snapshots coming faster share one.
         if shared.visible.load(Ordering::SeqCst) {
-            ctx.request_repaint();
+            ctx.request_repaint_after(SNAPSHOT_FRAME);
         }
     }
 }

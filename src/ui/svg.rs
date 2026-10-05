@@ -13,6 +13,7 @@ pub fn texture(ctx: &egui::Context, svg: &str, px: u32) -> Option<egui::TextureH
     if let Some(t) = ctx.data(|d| d.get_temp::<egui::TextureHandle>(id)) {
         return Some(t);
     }
+    let _t = crate::prof::span("svg.raster");
     let icon = crate::icons::render(svg, px as usize).ok()?;
     // The icon is premultiplied ARGB words; egui takes premultiplied RGBA bytes.
     let rgba: Vec<u8> =

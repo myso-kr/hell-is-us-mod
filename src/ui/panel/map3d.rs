@@ -427,6 +427,7 @@ impl Map3d {
         colour: [u8; 3],
         state: &crate::minimap::MapState,
     ) {
+        let _t = crate::prof::span("map3d.view");
         let size = egui::vec2(ui.available_width(), height);
         let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click_and_drag());
         let Some(scene) = self.scene.clone() else {
@@ -460,6 +461,10 @@ impl Map3d {
                 // eased, so the view glides after the hero rather than jumps
                 for (t, h) in self.target.iter_mut().zip(h) {
                     *t += (h - *t) * 0.2;
+                }
+                // frames only while it glides; once there, the snapshots' own frames do
+                if (0..3).any(|k| (h[k] - self.target[k]).abs() > 0.05) {
+                    ui.ctx().request_repaint_after(std::time::Duration::from_millis(16));
                 }
             }
         }
@@ -1010,10 +1015,44 @@ struct Gpu {
     world: String,
     round: i32,
     stale: bool,
+    /// The scene as last drawn, off the screen: a frame buffer (colour, depth and stencil) the
+    /// view's size, and what it was drawn from. A frame that changes nothing in the scene (the
+    /// panel repaints for a snapshot, the pointer, a card) copies it, and draws nothing again.
+    cache: Option<Cached>,
+}
+
+struct Cached {
+    fbo: glow::Framebuffer,
+    colour: glow::Renderbuffer,
+    depth: glow::Renderbuffer,
+    size: (i32, i32),
+    key: u64,
+}
+
+impl Frame {
+    /// What the scene's pixels depend on: the camera and the layers, the round, the route, the
+    /// picked place. Not the icons and controls, which egui draws over it.
+    fn key(&self, world: &str, size: (i32, i32)) -> u64 {
+        use std::hash::{Hash, Hasher};
+        let mut h = std::collections::hash_map::DefaultHasher::new();
+        world.hash(&mut h);
+        size.hash(&mut h);
+        for v in self.vp.iter().chain(&self.eye).chain(&self.target).chain([&self.span, &self.hole, &self.keep]) {
+            v.to_bits().hash(&mut h);
+        }
+        (self.xray, self.round, self.picked).hash(&mut h);
+        self.hero.map(|p| p.map(f32::to_bits)).hash(&mut h);
+        self.route.len().hash(&mut h);
+        for v in &self.route {
+            v.to_bits().hash(&mut h);
+        }
+        h.finish()
+    }
 }
 
 impl Gpu {
     fn new(gl: &glow::Context) -> Option<Gpu> {
+        let _t = crate::prof::span("map3d.gpu_new");
         let version = if egui_glow::ShaderVersion::get(gl).is_embedded() {
             "#version 300 es\nprecision highp float;\n"
         } else {
@@ -1045,6 +1084,7 @@ impl Gpu {
             nodes: None,
             marks: None,
             world: String::new(),
+            cache: None,
             round: i32::MIN,
             stale: true,
         })
@@ -1093,7 +1133,12 @@ impl Gpu {
 
     fn sync(&mut self, gl: &glow::Context, s: &Scene, round: i32) {
         if self.stale || self.world != s.world {
+            let _t = crate::prof::span("map3d.upload");
             self.free(gl);
+            // new buffers: the cached scene is of the old ones
+            if let Some(c) = self.cache.as_mut() {
+                c.key = 0;
+            }
             let (vao, vbo) = Self::upload(gl, &s.terrain, &[3, 3]);
             // SAFETY: as above.
             let ibo = unsafe {
@@ -1139,16 +1184,15 @@ impl Gpu {
     }
 
     fn draw(&mut self, gl: &glow::Context, s: &Scene, f: &Frame, info: &egui::PaintCallbackInfo) {
+        let _t = crate::prof::span("map3d.gl");
         self.sync(gl, s, f.round);
-        // The view's whole rect in pixels, as it is, not clamped to the window as egui's
-        // `viewport_in_pixels` is: scrolled partly out of the window, a clamped viewport squashes
-        // the projection and the view seems to move. What shows is cut by the scissor below.
         let vp = viewport(info.viewport, info.pixels_per_point, info.screen_size_px);
         let clip = info.clip_rect_in_pixels();
-        // SAFETY: as above; every state changed here is put back for egui at the end.
+        let size = (vp.width_px.max(1), vp.height_px.max(1));
+        let key = f.key(&s.world, size);
+        // SAFETY: GL calls on the context egui hands the callback, on its thread; the frame
+        // buffer egui draws into is put back before the copy.
         unsafe {
-            // Only the view's own rect, inside what egui clips it to: clearing more would wipe
-            // the rest of the panel.
             let x0 = vp.left_px.max(clip.left_px);
             let y0 = vp.from_bottom_px.max(clip.from_bottom_px);
             let x1 = (vp.left_px + vp.width_px).min(clip.left_px + clip.width_px);
@@ -1156,9 +1200,87 @@ impl Gpu {
             if x1 <= x0 || y1 <= y0 {
                 return;
             }
+            let window = std::num::NonZeroU32::new(gl.get_parameter_i32(glow::DRAW_FRAMEBUFFER_BINDING) as u32)
+                .map(glow::NativeFramebuffer);
+            if self.cache.as_ref().is_none_or(|c| c.size != size) {
+                self.drop_cache(gl);
+                self.cache = Self::make_cache(gl, size);
+            }
+            let Some(fbo) = self.cache.as_ref().map(|c| c.fbo) else { return };
+            if self.cache.as_ref().is_some_and(|c| c.key != key) {
+                let _t = crate::prof::span("map3d.render");
+                gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fbo));
+                gl.disable(glow::SCISSOR_TEST);
+                gl.viewport(0, 0, size.0, size.1);
+                self.render(gl, s, f);
+                if let Some(c) = self.cache.as_mut() {
+                    c.key = key;
+                }
+            }
+            // the cached scene into the window, cut to what shows
+            gl.bind_framebuffer(glow::READ_FRAMEBUFFER, Some(fbo));
+            gl.bind_framebuffer(glow::DRAW_FRAMEBUFFER, window);
             gl.enable(glow::SCISSOR_TEST);
             gl.scissor(x0, y0, x1 - x0, y1 - y0);
-            gl.viewport(vp.left_px, vp.from_bottom_px, vp.width_px, vp.height_px);
+            gl.blit_framebuffer(
+                0,
+                0,
+                size.0,
+                size.1,
+                vp.left_px,
+                vp.from_bottom_px,
+                vp.left_px + size.0,
+                vp.from_bottom_px + size.1,
+                glow::COLOR_BUFFER_BIT,
+                glow::NEAREST,
+            );
+            gl.bind_framebuffer(glow::FRAMEBUFFER, window);
+        }
+    }
+
+    /// A frame buffer `size` px with a colour and a depth-stencil buffer.
+    unsafe fn make_cache(gl: &glow::Context, size: (i32, i32)) -> Option<Cached> {
+        let fbo = gl.create_framebuffer().ok()?;
+        let colour = gl.create_renderbuffer().ok()?;
+        let depth = gl.create_renderbuffer().ok()?;
+        gl.bind_renderbuffer(glow::RENDERBUFFER, Some(colour));
+        gl.renderbuffer_storage(glow::RENDERBUFFER, glow::RGBA8, size.0, size.1);
+        gl.bind_renderbuffer(glow::RENDERBUFFER, Some(depth));
+        gl.renderbuffer_storage(glow::RENDERBUFFER, glow::DEPTH24_STENCIL8, size.0, size.1);
+        gl.bind_renderbuffer(glow::RENDERBUFFER, None);
+        let was = std::num::NonZeroU32::new(gl.get_parameter_i32(glow::FRAMEBUFFER_BINDING) as u32)
+            .map(glow::NativeFramebuffer);
+        gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fbo));
+        gl.framebuffer_renderbuffer(glow::FRAMEBUFFER, glow::COLOR_ATTACHMENT0, glow::RENDERBUFFER, Some(colour));
+        gl.framebuffer_renderbuffer(glow::FRAMEBUFFER, glow::DEPTH_STENCIL_ATTACHMENT, glow::RENDERBUFFER, Some(depth));
+        let ok = gl.check_framebuffer_status(glow::FRAMEBUFFER) == glow::FRAMEBUFFER_COMPLETE;
+        gl.bind_framebuffer(glow::FRAMEBUFFER, was);
+        let cached = Cached { fbo, colour, depth, size, key: 0 };
+        if ok {
+            Some(cached)
+        } else {
+            gl.delete_framebuffer(cached.fbo);
+            gl.delete_renderbuffer(cached.colour);
+            gl.delete_renderbuffer(cached.depth);
+            None
+        }
+    }
+
+    fn drop_cache(&mut self, gl: &glow::Context) {
+        if let Some(c) = self.cache.take() {
+            // SAFETY: as above.
+            unsafe {
+                gl.delete_framebuffer(c.fbo);
+                gl.delete_renderbuffer(c.colour);
+                gl.delete_renderbuffer(c.depth);
+            }
+        }
+    }
+
+    /// The scene into the bound frame buffer, its viewport already set.
+    fn render(&mut self, gl: &glow::Context, s: &Scene, f: &Frame) {
+        // SAFETY: as above; every state changed here is put back for egui at the end.
+        unsafe {
             gl.clear_color(0.03, 0.06, 0.07, 1.0);
             gl.clear_depth_f32(1.0);
             gl.clear_stencil(0);
@@ -1303,7 +1425,6 @@ impl super::Panel {
             tw::block(t, |ui| {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
                 self.map3d.view(ui, height, hero, &route, colour, state);
-                ui.ctx().request_repaint_after(std::time::Duration::from_millis(33));
             });
         });
     }

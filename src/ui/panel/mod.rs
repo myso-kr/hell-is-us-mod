@@ -1089,6 +1089,12 @@ impl Panel {
 
 impl eframe::App for Panel {
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
+        // Where the panel's frames go (the GL drawing of the last frame is counted in it too:
+        // egui paints it on this thread, after `ui`), in the log every 30 s.
+        if let Some(l) = crate::prof::report("panel", Duration::from_secs(30)) {
+            crate::logfile::line(&l);
+        }
+        let _frame = crate::prof::span("panel.ui");
         // The game's language changed: its font.
         let culture = crate::i18n::culture();
         if self.fonts_for != culture {
