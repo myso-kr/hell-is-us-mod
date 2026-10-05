@@ -852,3 +852,5 @@ OVERLAY_SCALE	Tamanho das sobreposições
 HINT_FIRST	Dica
 HINT_NEXT	Outra dica
 HINT_DEVICES	{n} mecanismos para ajustar, aqui:
+FOG_UNEXPLORED	Escurecer o que não foi explorado
+FORGET_EXPLORED	Esquecer o explorado

@@ -716,6 +716,7 @@ impl Panel {
                         }
                         state.dirty = true;
                     }
+                    tw::switch(t, &mut state.fog, tr!("FOG_UNEXPLORED"));
                     let trail = state.trails.get(wd).map_or(0, |x| x.iter().flatten().count());
                     field(t, tr!("THIS_REGION"), |t| {
                         text(t, RichText::new(trf!("TRAIL_POINTS_PINS", trail = trail, count = count)).color(DIM))
@@ -726,6 +727,9 @@ impl Panel {
                         }
                         if w(t, |ui| ui.button(tr!("REMOVE_ALL_PINS"))).clicked() {
                             state.clear_markers(wd);
+                        }
+                        if state.fog && w(t, |ui| ui.button(tr!("FORGET_EXPLORED"))).clicked() {
+                            state.clear_explored(wd);
                         }
                     });
                 }

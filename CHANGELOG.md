@@ -10,6 +10,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- Fog over the unexplored (Map page, this region): the minimap and big map darken what the hero
+  has not been within 35 m of, with soft edges. The explored cells are kept for good (the trail
+  is not), seeded from the trail on first load, and can be forgotten per region.
 - Logic puzzles give their answer in three steps on the Puzzles page: where the devices to set
   are, then the first set right, then the whole answer — a nudge for those who want one.
 - Overlay size (Accessibility tab, 75–150 %): the minimap, compass, quest tracker, notices and

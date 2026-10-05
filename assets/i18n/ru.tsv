@@ -852,3 +852,5 @@ OVERLAY_SCALE	Размер оверлеев
 HINT_FIRST	Подсказка
 HINT_NEXT	Ещё подсказка
 HINT_DEVICES	Нужно настроить устройств: {n}, где:
+FOG_UNEXPLORED	Затемнять неисследованное
+FORGET_EXPLORED	Забыть исследованное

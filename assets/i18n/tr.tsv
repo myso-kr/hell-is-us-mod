@@ -852,3 +852,5 @@ OVERLAY_SCALE	Kaplama boyutu
 HINT_FIRST	İpucu
 HINT_NEXT	Bir ipucu daha
 HINT_DEVICES	Ayarlanacak {n} düzenek, konumları:
+FOG_UNEXPLORED	Keşfedilmemiş yerleri karart
+FORGET_EXPLORED	Keşfi unut

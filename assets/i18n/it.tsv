@@ -852,3 +852,5 @@ OVERLAY_SCALE	Dimensione overlay
 HINT_FIRST	Indizio
 HINT_NEXT	Altro indizio
 HINT_DEVICES	{n} meccanismi da regolare, qui:
+FOG_UNEXPLORED	Oscura le zone inesplorate
+FORGET_EXPLORED	Dimentica l’esplorato

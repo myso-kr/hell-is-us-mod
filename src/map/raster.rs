@@ -714,6 +714,48 @@ fn draw_terrain(cv: &mut Canvas, state: &MapState, view: &View, footprints: &[Fo
     });
 }
 
+/// The veil over what the hero has not been near (`MapState::explored`), its edge smooth:
+/// each little block takes its share of seen cells, blended between the four around it.
+fn fog(
+    cv: &mut Canvas,
+    view: &View,
+    seen: &std::collections::HashSet<(i32, i32)>,
+    on_map: impl Fn((f32, f32)) -> bool,
+) {
+    const BLOCK: usize = 4;
+    const VEIL: Rgba = Rgba(6, 8, 12, 255);
+    const DARKEST: f32 = 170.0;
+    let cell = crate::minimap::CELL;
+    let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
+    let has = |i: i32, j: i32| if seen.contains(&(i, j)) { 1.0 } else { 0.0 };
+    for by in (0..cv.h).step_by(BLOCK) {
+        for bx in (0..cv.w).step_by(BLOCK) {
+            let p = (bx as f32 + BLOCK as f32 / 2.0 - cx, by as f32 + BLOCK as f32 / 2.0 - cy);
+            if !on_map(p) {
+                continue;
+            }
+            let [wx, wy] = view.unproject(p.0, p.1);
+            let (gx, gy) = (wx / cell - 0.5, wy / cell - 0.5);
+            let (i, j) = (gx.floor() as i32, gy.floor() as i32);
+            let (tx, ty) = (gx - gx.floor(), gy - gy.floor());
+            let top = has(i, j) + (has(i + 1, j) - has(i, j)) * tx;
+            let bottom = has(i, j + 1) + (has(i + 1, j + 1) - has(i, j + 1)) * tx;
+            let lit = top + (bottom - top) * ty;
+            let lit = lit * lit * (3.0 - 2.0 * lit);
+            let a = (DARKEST * (1.0 - lit)) as u32;
+            if a == 0 {
+                continue;
+            }
+            for y in by..(by + BLOCK).min(cv.h) {
+                let row = y * cv.w;
+                for x in bx..(bx + BLOCK).min(cv.w) {
+                    cv.px[row + x] = over(cv.px[row + x], VEIL, a);
+                }
+            }
+        }
+    }
+}
+
 /// Everything over the ground (and its dots): the trail, pins, things,
 /// goals and the route, the rim, north and the hero.
 #[allow(clippy::too_many_arguments)]
@@ -731,6 +773,10 @@ pub fn draw_above(
     let (cx, cy) = (cv.w as f32 / 2.0, cv.h as f32 / 2.0);
     let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= r * r;
     let [ground, lines, marks] = state.opacity;
+
+    if let Some(seen) = state.explored.get(world).filter(|_| state.fog) {
+        fog(cv, view, seen, |p| view.full || inside(p));
+    }
 
     if let Some(trail) = state.trails.get(world) {
         // Newest last: the recent way bright, the old way fading out, so a long walk

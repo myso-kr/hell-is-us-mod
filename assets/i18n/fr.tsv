@@ -852,3 +852,5 @@ OVERLAY_SCALE	Taille des surcouches
 HINT_FIRST	Indice
 HINT_NEXT	Autre indice
 HINT_DEVICES	{n} mécanismes à régler, ici :
+FOG_UNEXPLORED	Assombrir les zones inexplorées
+FORGET_EXPLORED	Oublier l’exploration

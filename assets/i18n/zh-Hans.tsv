@@ -852,3 +852,5 @@ OVERLAY_SCALE	叠加层大小
 HINT_FIRST	提示
 HINT_NEXT	更多提示
 HINT_DEVICES	需要调整的装置 {n} 个，位置：
+FOG_UNEXPLORED	未探索区域变暗
+FORGET_EXPLORED	清除探索记录

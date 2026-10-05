@@ -852,3 +852,5 @@ OVERLAY_SCALE	Tamaño de superposición
 HINT_FIRST	Pista
 HINT_NEXT	Otra pista
 HINT_DEVICES	{n} mecanismos que ajustar, aquí:
+FOG_UNEXPLORED	Oscurecer lo no explorado
+FORGET_EXPLORED	Olvidar lo explorado

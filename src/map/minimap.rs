@@ -16,6 +16,11 @@ const STEP: f32 = 300.0;
 const JUMP: f32 = 5_000.0;
 /// Oldest points go first past this many per world.
 const MAX_TRAIL: usize = 6_000;
+
+/// The explored map's cells (cm): a cell is seen once the hero passes within `SEEN_RADIUS`
+/// of its middle. Kept for good, unlike the trail.
+pub const CELL: f32 = 2_000.0;
+const SEEN_RADIUS: f32 = 3_500.0;
 /// The marker key next to a marker removes it rather than adding a second: within 5 m.
 const NEAR: f32 = 500.0;
 
@@ -127,6 +132,10 @@ pub struct MapState {
     /// Per world: the trail, with `None` where it breaks.
     pub trails: BTreeMap<String, Vec<Option<Point>>>,
     pub markers: BTreeMap<String, Vec<Marker>>,
+    /// Per world: the cells the hero has been near (`CELL`), for the fog over the rest.
+    pub explored: BTreeMap<String, std::collections::HashSet<(i32, i32)>>,
+    /// The maps darken what the hero has not been near yet.
+    pub fog: bool,
     /// The kind the marker key's next pin gets.
     pub pin_kind: PinKind,
     /// Changed since last saved.
@@ -190,6 +199,12 @@ impl MapState {
                 .get(world)
                 .map(|v| BTreeMap::from([(world.to_string(), v.clone())]))
                 .unwrap_or_default(),
+            explored: if self.fog {
+                self.explored.get(world).map(|v| BTreeMap::from([(world.to_string(), v.clone())])).unwrap_or_default()
+            } else {
+                BTreeMap::new()
+            },
+            fog: self.fog,
             pin_kind: self.pin_kind,
             dirty: self.dirty,
         }
@@ -241,6 +256,8 @@ impl Default for MapState {
             overlay_pct: 100,
             screen_marks: true,
             trails: BTreeMap::new(),
+            explored: BTreeMap::new(),
+            fog: false,
             markers: BTreeMap::new(),
             pin_kind: PinKind::Mark,
             dirty: false,
@@ -258,6 +275,9 @@ impl MapState {
     pub fn observe(&mut self, world: &str, p: Point) {
         if !p.iter().all(|v| v.is_finite()) {
             return;
+        }
+        if self.see(world, p) {
+            self.dirty = true;
         }
         let trail = self.trails.entry(world.to_string()).or_default();
         match trail.iter().rev().find_map(|x| *x) {
@@ -285,6 +305,29 @@ impl MapState {
             list.push(Marker { at: p, kind: self.pin_kind, note: String::new() });
             true
         }
+    }
+
+    /// The cells within `SEEN_RADIUS` of `p` marked explored; whether any was new.
+    fn see(&mut self, world: &str, p: Point) -> bool {
+        let seen = self.explored.entry(world.to_string()).or_default();
+        let reach = (SEEN_RADIUS / CELL).ceil() as i32;
+        let (gx, gy) = ((p[0] / CELL).floor() as i32, (p[1] / CELL).floor() as i32);
+        let mut new = false;
+        for j in gy - reach..=gy + reach {
+            for i in gx - reach..=gx + reach {
+                let mid = [(i as f32 + 0.5) * CELL, (j as f32 + 0.5) * CELL];
+                if (mid[0] - p[0]).hypot(mid[1] - p[1]) <= SEEN_RADIUS {
+                    new |= seen.insert((i, j));
+                }
+            }
+        }
+        new
+    }
+
+    /// The explored cells forgotten: the fog back over all of `world`.
+    pub fn clear_explored(&mut self, world: &str) {
+        self.explored.remove(world);
+        self.dirty = true;
     }
 
     pub fn clear_trail(&mut self, world: &str) {
@@ -329,13 +372,14 @@ impl MapState {
             self.tracker
         );
         out += &format!(
-            "screen_route {}\nscreen_marks {}\nstreamer {}\nsafe_colours {}\nhigh_contrast {}\noverlay_scale {}\n",
+            "screen_route {}\nscreen_marks {}\nstreamer {}\nsafe_colours {}\nhigh_contrast {}\noverlay_scale {}\nfog {}\n",
             self.screen_route,
             self.screen_marks,
             self.streamer,
             self.safe_colours,
             self.high_contrast,
-            self.overlay_pct
+            self.overlay_pct,
+            self.fog
         );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
@@ -346,6 +390,14 @@ impl MapState {
             for m in list {
                 let note = m.note.replace(['\n', '\r'], " ");
                 out += &format!("marker {world} {} {} {} {} {note}\n", m.at[0], m.at[1], m.at[2], m.kind.word());
+            }
+        }
+        for (world, seen) in &self.explored {
+            let mut cells: Vec<_> = seen.iter().collect();
+            cells.sort();
+            let cells: Vec<String> = cells.iter().map(|(i, j)| format!("{i},{j}")).collect();
+            for chunk in cells.chunks(200) {
+                out += &format!("seen {world} {}\n", chunk.join(" "));
             }
         }
         for (world, trail) in &self.trails {
@@ -496,6 +548,14 @@ impl MapState {
                     }
                 }
                 ["break", w] => s.trails.entry(w.to_string()).or_default().push(None),
+                ["seen", w, ref cells @ ..] => {
+                    let seen = s.explored.entry(w.to_string()).or_default();
+                    seen.extend(cells.iter().filter_map(|c| {
+                        let (i, j) = c.split_once(',')?;
+                        Some((i.parse().ok()?, j.parse().ok()?))
+                    }));
+                }
+                ["fog", v] => s.fog = v == "true",
                 _ => {}
             }
         }
@@ -514,6 +574,18 @@ impl MapState {
         if let Some(key) = s.quest.take() {
             if s.quest_track(&key).is_none() {
                 s.follow(crate::guide::track::Track::quest(&key, &key));
+            }
+        }
+        // Settings from before the explored cells: what the trail walked counts as seen.
+        let unseen: Vec<(String, Vec<Point>)> = s
+            .trails
+            .iter()
+            .filter(|(w, _)| !s.explored.contains_key(*w))
+            .map(|(w, t)| (w.clone(), t.iter().flatten().copied().collect()))
+            .collect();
+        for (w, points) in unseen {
+            for p in points {
+                s.see(&w, p);
             }
         }
         s
@@ -578,6 +650,18 @@ const OLD_DEFAULT_KEYS: [u8; 4] = [9, 6, 10, 11];
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_cells_walked_near_are_explored_and_kept() {
+        let mut s = MapState { fog: true, ..Default::default() };
+        s.observe("W", [100.0, 100.0, 0.0]);
+        let seen = &s.explored["W"];
+        assert!(seen.contains(&(0, 0)) && seen.contains(&(1, 0)) && seen.contains(&(-1, -1)));
+        assert!(!seen.contains(&(3, 0)), "out of reach");
+        let back = MapState::parse(&s.render());
+        assert_eq!(back.explored["W"], s.explored["W"]);
+        assert!(back.fog);
+    }
 
     fn close(a: (f32, f32), b: (f32, f32)) -> bool {
         (a.0 - b.0).abs() < 1e-3 && (a.1 - b.1).abs() < 1e-3

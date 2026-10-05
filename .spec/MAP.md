@@ -558,3 +558,13 @@ dotted style where hidden):
   it is covered by its distance to the segment — smooth edges, round joints and ends — with a dark
   outline 1.6 px wider; overlaps keep the most covering. Hidden pieces are drawn at 35 % and dotted
   every 1 m instead of cut, since the occlusion test is an approximation.
+
+## Explored fog (2026-10-06)
+
+`MapState::explored` keeps, per world, the 20 m cells (`CELL`) whose middles the hero has passed
+within 35 m of (`SEEN_RADIUS`), marked as positions are observed and saved as `seen <world> i,j …`
+lines (200 cells a line). Unlike the trail (capped at 6,000 points) it is never cut. Settings
+written before it seed it from the trail on load. With `fog` on, `raster::fog` darkens the map in
+4 px blocks by the share of seen cells around each, bilinear and smoothstepped, so the edge is
+soft; it runs before the trail, so pins, things and the route stay on top. `for_drawing` copies
+the cells only while the fog is on.

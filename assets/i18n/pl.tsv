@@ -852,3 +852,5 @@ OVERLAY_SCALE	Rozmiar nakładek
 HINT_FIRST	Wskazówka
 HINT_NEXT	Kolejna wskazówka
 HINT_DEVICES	{n} mechanizmów do ustawienia, tutaj:
+FOG_UNEXPLORED	Przyciemnij niezbadane miejsca
+FORGET_EXPLORED	Zapomnij zbadane

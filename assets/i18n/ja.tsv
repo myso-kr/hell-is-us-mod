@@ -852,3 +852,5 @@ OVERLAY_SCALE	オーバーレイの大きさ
 HINT_FIRST	ヒント
 HINT_NEXT	次のヒント
 HINT_DEVICES	合わせる装置 {n} 個、位置:
+FOG_UNEXPLORED	未探索の場所を暗くする
+FORGET_EXPLORED	探索記録を消す

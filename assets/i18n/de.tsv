@@ -852,3 +852,5 @@ OVERLAY_SCALE	Overlay-Größe
 HINT_FIRST	Hinweis
 HINT_NEXT	Weiterer Hinweis
 HINT_DEVICES	{n} Vorrichtungen einzustellen, hier:
+FOG_UNEXPLORED	Unerkundetes abdunkeln
+FORGET_EXPLORED	Erkundetes vergessen

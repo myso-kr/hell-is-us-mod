@@ -852,3 +852,5 @@ OVERLAY_SCALE	Overlay size
 HINT_FIRST	Hint
 HINT_NEXT	Another hint
 HINT_DEVICES	{n} devices to set, here:
+FOG_UNEXPLORED	Darken where you have not been
+FORGET_EXPLORED	Forget explored

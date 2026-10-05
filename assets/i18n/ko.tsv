@@ -852,3 +852,5 @@ OVERLAY_SCALE	오버레이 크기
 HINT_FIRST	힌트
 HINT_NEXT	힌트 더 보기
 HINT_DEVICES	맞춰야 할 장치 {n}개, 위치:
+FOG_UNEXPLORED	가보지 않은 곳 어둡게 (탐험 안개)
+FORGET_EXPLORED	탐험 기록 지우기
