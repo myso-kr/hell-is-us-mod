@@ -529,6 +529,79 @@ pub fn read_tiles(m: &dyn Memory, n: &Names, chunks: &[u64]) -> Vec<Vec<u8>> {
     out
 }
 
+/// How near an opened door a poly must come to be joined through it (cm, across; and up
+/// or down from the door's foot).
+const BRIDGE: f32 = 300.0;
+const BRIDGE_UPDOWN: f32 = 200.0;
+
+impl NavMesh {
+    /// The mesh with a way through each of `doors` (where opened doors stand). The navmesh
+    /// is the game's baked one: a door closed when it was baked is a wall in it for good,
+    /// and a route would keep going round after the door is opened. Near each door, the
+    /// polys fall in groups joined among themselves; the group nearest the door is joined
+    /// to each other group through the door's point. Where the two sides were joined
+    /// already, nothing changes.
+    pub fn bridged(&self, doors: &[[f32; 3]]) -> NavMesh {
+        let mut out = self.clone();
+        for &d in doors {
+            let (cx, cy) = cell(d[0], d[1]);
+            let mut near: Vec<u32> = Vec::new();
+            for y in cy - 1..=cy + 1 {
+                for x in cx - 1..=cx + 1 {
+                    for &i in out.grid.get(&(x, y)).into_iter().flatten() {
+                        let p = &out.polys[i as usize];
+                        let close = p.corners.iter().chain([&p.centre]).any(|c| flat(*c, d) <= BRIDGE);
+                        if close && (p.centre[2] - d[2]).abs() <= BRIDGE_UPDOWN && !near.contains(&i) {
+                            near.push(i);
+                        }
+                    }
+                }
+            }
+            // The groups, by links among the near polys only.
+            let mut group = vec![usize::MAX; near.len()];
+            let mut groups = 0;
+            for k in 0..near.len() {
+                if group[k] != usize::MAX {
+                    continue;
+                }
+                let mut stack = vec![k];
+                group[k] = groups;
+                while let Some(u) = stack.pop() {
+                    for &(v, _) in &out.polys[near[u] as usize].links {
+                        if let Some(j) = near.iter().position(|&w| w == v).filter(|&j| group[j] == usize::MAX) {
+                            group[j] = groups;
+                            stack.push(j);
+                        }
+                    }
+                }
+                groups += 1;
+            }
+            if groups < 2 {
+                continue;
+            }
+            // Each group's poly nearest the door.
+            let mut best: Vec<Option<(f32, u32)>> = vec![None; groups];
+            for (k, &i) in near.iter().enumerate() {
+                let dist = flat(out.polys[i as usize].centre, d);
+                if best[group[k]].is_none_or(|(b, _)| dist < b) {
+                    best[group[k]] = Some((dist, i));
+                }
+            }
+            let mut ends: Vec<(f32, u32)> = best.into_iter().flatten().collect();
+            ends.sort_by(|a, b| a.0.total_cmp(&b.0));
+            let (_, hub) = ends[0];
+            for &(_, other) in &ends[1..] {
+                for (a, b) in [(hub, other), (other, hub)] {
+                    let z = out.polys[a as usize].centre[2];
+                    let gate = [d[0], d[1], z];
+                    out.polys[a as usize].links.push((b, [gate, gate]));
+                }
+            }
+        }
+        out
+    }
+}
+
 /// Reads the navmesh a little at a time: when the set of chunk actors changes (World
 /// Partition streamed some in or out), their tiles are read two actors a step, then
 /// the mesh is built and published.
@@ -626,6 +699,32 @@ mod tests {
             "{:?}",
             path.points
         );
+    }
+
+    #[test]
+    fn an_opened_door_joins_the_two_sides() {
+        // Two rooms, 0..100 and 140..240 along Recast x, a closed door's gap between.
+        let v = [
+            [0.0, 0.0, 0.0],
+            [100.0, 0.0, 0.0],
+            [100.0, 0.0, 100.0],
+            [0.0, 0.0, 100.0],
+            [140.0, 0.0, 0.0],
+            [240.0, 0.0, 0.0],
+            [240.0, 0.0, 100.0],
+            [140.0, 0.0, 100.0],
+        ];
+        let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0, 0, 0, 0]), (&[4, 5, 6, 7], &[0, 0, 0, 0])])]);
+        let (a, b) = ([-50.0, -50.0, 0.0], [-190.0, -50.0, 0.0]);
+        // Shut: the way stops short and is marked as through something.
+        assert!(mesh.route(a, b).is_some_and(|(p, _)| p.uncertain()));
+        // Opened (the door in the gap, Unreal (−120, −50)): walked through.
+        let open = mesh.bridged(&[[-120.0, -50.0, 0.0]]);
+        let (path, _) = open.route(a, b).expect("joined");
+        assert!(!path.uncertain());
+        assert!(path.points.iter().any(|q| (q[0] + 120.0).abs() < 1.0));
+        // A door where the sides are joined already changes nothing.
+        assert_eq!(open.bridged(&[[-120.0, -50.0, 0.0]]).polys[0].links.len(), open.polys[0].links.len());
     }
 
     #[test]

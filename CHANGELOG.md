@@ -33,6 +33,7 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- After a door is opened, routes go through it: the game's navmesh was baked with it closed.
 - The auto guide no longer flickers between two goals: a goal found blocked is remembered after its
   route is dropped. When every way from where the hero stands reads as blocked (a porch inside a
   building's rough hull), the spot is distrusted instead of guiding down to a key underground.

@@ -203,3 +203,15 @@ injecting into UE to run physics queries — were compared, and the **external a
   falls back to the grid when the player is off the navmesh.
 - There is also a drone `VoxelNavigationDataChunk` ("DroneNavigationData-Drone") — for flight, not
   used for walking routes.
+
+## 8. Opened doors and the baked navmesh (2026-10-05)
+
+The user: after a door is opened with its key or puzzle, the route keeps going the long way round.
+The navmesh is the game's baked one (World Partition chunks, read when the chunk set changes): a door
+closed when it was baked is a wall in it for good. Now the graph lists the doors and gates of the
+hero's world the save has as used (`Graph::opened`), and `NavMesh::bridged` joins the mesh through
+each: the polys within 3 m of the door (2 m up or down) fall in groups by their own links, and the
+group nearest the door is joined to each other one through the door's point (a one-point portal).
+Where the sides were joined already, nothing is added. `Attached::nav` makes the bridged mesh only
+when the mesh or the opened doors change. Test: `an_opened_door_joins_the_two_sides`. A fresh route
+that no longer goes through something replaces the old one at once (`pathfind::better`).

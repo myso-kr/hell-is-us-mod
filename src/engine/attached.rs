@@ -13,6 +13,10 @@ const ABSENT_NEAR: f32 = 4000.0;
 const ABSENT_HEIGHT: f32 = 1000.0;
 const ABSENT_AFTER: Duration = Duration::from_secs(6);
 
+/// A navmesh made with ways through opened doors: the mesh it was made from, the doors,
+/// and the result.
+type Bridged = (Arc<crate::navmesh::NavMesh>, Vec<[f32; 3]>, Arc<crate::navmesh::NavMesh>);
+
 pub struct Attached {
     pub game: Game,
     pub anchors: Anchors,
@@ -44,6 +48,10 @@ struct Guide {
     quests: crate::quests::Quests,
     /// The game's navmesh, read a little at a time.
     nav: crate::navmesh::Nav,
+    /// Where the doors of the hero's world it has opened stand (graph.rs `opened`), and
+    /// the navmesh with a way through each, for the mesh it was made from.
+    opened: Vec<[f32; 3]>,
+    bridged: Option<Bridged>,
     /// The survey of every world (Mods\survey), read once; and what the hero knows and
     /// holds by name, to judge it with — renewed with the knowledge.
     survey: Option<crate::survey::Survey>,
@@ -419,6 +427,7 @@ impl Attached {
                 graph.flood(&mut goals, w, &pools, &state);
             }
             g.logic_puzzles = graph.logic_puzzles(w, &state);
+            g.opened = graph.opened(w, &state);
             g.doors = if steps { graph.door_steps(&goals, w, &state) } else { Vec::new() };
         }
         Ok((goals, k))
@@ -681,9 +690,22 @@ impl Attached {
             .collect()
     }
 
-    /// The navmesh as last read (shared, not copied).
+    /// The navmesh as last read, with a way through each door opened (shared; made anew
+    /// only when the mesh or the opened doors change).
     pub fn nav(&self) -> Arc<crate::navmesh::NavMesh> {
-        self.guide.borrow().nav.done.clone()
+        let mut g = self.guide.borrow_mut();
+        let base = g.nav.done.clone();
+        if g.opened.is_empty() {
+            return base;
+        }
+        if let Some((from, doors, mesh)) = &g.bridged {
+            if Arc::ptr_eq(from, &base) && *doors == g.opened {
+                return mesh.clone();
+            }
+        }
+        let mesh = Arc::new(base.bridged(&g.opened));
+        g.bridged = Some((base, g.opened.clone(), mesh.clone()));
+        mesh
     }
 
     /// The obstacles and ground of the last complete pass (shared, not copied).

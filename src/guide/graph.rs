@@ -623,6 +623,20 @@ pub struct DoorStep {
     pub chain: String,
 }
 
+impl Graph {
+    /// Where the doors and gates of `world` the hero has opened stand: ways the game's
+    /// baked navmesh does not know (navmesh.rs `bridged`).
+    pub fn opened(&self, world: &str, s: &State) -> Vec<[f32; 3]> {
+        (0..self.nodes.len())
+            .filter(|&i| {
+                let n = &self.nodes[i];
+                n.world == world && (n.class.contains("Door") || n.class.contains("Gate")) && self.used(i, s)
+            })
+            .map(|i| self.nodes[i].at)
+            .collect()
+    }
+}
+
 /// What a class's name says stands in the way until used.
 const BARRIERS: [&str; 8] = ["Door", "KeyLocked", "LymbicLock", "Panel", "Gate", "Placement", "Keypad", "DialPuzzle"];
 
