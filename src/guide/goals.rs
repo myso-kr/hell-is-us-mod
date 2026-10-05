@@ -255,7 +255,6 @@ const RESCAN: Duration = Duration::from_secs(2);
 
 #[derive(Default)]
 pub struct Goals {
-    levels: Option<u64>,
     interactable: HashMap<u64, bool>,
     payloads: HashMap<u64, (u64, Option<Payload>)>,
     /// Whether a class is an NPC, by class.
@@ -744,37 +743,26 @@ impl Goals {
 
     /// Read what the loaded interactables hand out, when a scan is due.
     #[allow(clippy::too_many_arguments)]
+    /// `actors`: every actor of the loaded levels and its class, as the scanner last walked
+    /// them (actors.rs `all_actors`) — one walk for both.
     pub fn refresh(
         &mut self,
         m: &dyn Memory,
         n: &Names,
-        hero: u64,
         root: u64,
         location: u64,
-        actors: u64,
+        actors: &[(u64, u64)],
         flows: &HashMap<u32, u64>,
     ) {
-        if self.scanned.is_some_and(|t| t.elapsed() < RESCAN) {
+        if self.scanned.is_some_and(|t| t.elapsed() < RESCAN) || actors.is_empty() {
             return;
         }
         self.scanned = Some(Instant::now());
-        let Some(world) = mem::read_u64(m, hero + OUTER)
-            .filter(|&p| mem::plausible(p))
-            .and_then(|level| mem::read_u64(m, level + OUTER))
-            .filter(|&p| mem::plausible(p))
-        else {
-            return;
-        };
-        if self.levels.is_none() {
-            self.levels = n.field(m, world, "Levels").map(|p| p.offset as u64);
-        }
-        let Some(levels) = self.levels else { return };
         let mut now = HashMap::with_capacity(self.payloads.len());
         let mut loaded: HashMap<String, Vec<[f32; 3]>> = HashMap::new();
         let mut names = HashMap::new();
-        for lv in crate::actors::array(m, world + levels, 4096) {
-            for actor in crate::actors::array(m, lv + actors, 500_000) {
-                let Some(class) = mem::read_u64(m, actor + CLASS).filter(|&c| mem::plausible(c)) else { continue };
+        for &(actor, class) in actors {
+            {
                 let interactable = *self.interactable.entry(class).or_insert_with(|| {
                     n.lineage(m, class).into_iter().any(|c| n.object(m, c).as_deref() == Some("InteractableActor"))
                 });

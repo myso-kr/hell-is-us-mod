@@ -260,3 +260,12 @@ second (`CENSUS_FOR`); both passes take its (object, class) pairs in address ord
 in play: obstacles 5.3 → 3.0 ms (1,506 → 921 reads a step), quests 4.1 → 0.8 ms (1,454 → 125),
 the step 29.5 → 17.8 ms. The first reading, at start, reads every class once (about 0.8 s on the
 worker's thread).
+
+### Phase 4b: one walk of the levels' actors (2026-10-06)
+
+The scanner (every second) and the goals (every 2 s) each walked every loaded level's actors and
+read each one's class. The scanner now keeps each level's (actor, class) pairs while its actor
+array's data and count are unchanged (for at most `LEVEL_FOR`, 5 s: an actor replaced in place
+shows within it), and the goals take the scanner's pairs (`Scanner::all_actors`). Measured, 30 s
+in play: things 4,186 → 2,079 reads a step, goals.refresh 1,503 → 37, the step's reads 10,011 →
+6,501 (13,538 at phase 1).

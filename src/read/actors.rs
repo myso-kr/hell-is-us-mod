@@ -369,6 +369,12 @@ const LEVEL_SPAN: std::ops::Range<u64> = 0x28..0x300;
 const MAX_LEVELS: u32 = 4096;
 const MAX_ACTORS: u32 = 500_000;
 const RESCAN: Duration = Duration::from_secs(1);
+/// A level as last walked: its actor array's (data, count), when, its (actor, class) pairs.
+type LevelSeen = ((u64, u32), Instant, Vec<(u64, u64)>);
+
+/// A level whose actor array (data and count) is as it was is not walked again for this long:
+/// an actor replaced in place, the count unchanged, shows within it.
+const LEVEL_FOR: Duration = Duration::from_secs(5);
 
 /// Where to read whether an actor is spent.
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -482,6 +488,10 @@ pub struct Scanner {
     done: HashMap<u64, (u64, Option<Done>)>,
     tracked: Vec<Tracked>,
     scanned: Option<Instant>,
+    /// Per level: its actor array as last read (data, count), when, and its actors with their
+    /// classes — what `refresh` walks, and what the goals walk too (`all_actors`).
+    levels_seen: HashMap<u64, LevelSeen>,
+    all_actors: Vec<(u64, u64)>,
     /// Steps of `positions`, for `STILL_EVERY`.
     tick: u32,
 }
@@ -543,12 +553,17 @@ impl Scanner {
         let (levels_off, actors_off) = (self.levels.unwrap(), self.actors.unwrap());
 
         let mut tracked = Vec::new();
-        for lv in array(m, world + levels_off, MAX_LEVELS) {
-            for actor in array(m, lv + actors_off, MAX_ACTORS) {
+        let levels: Vec<u64> = array(m, world + levels_off, MAX_LEVELS);
+        self.levels_seen.retain(|l, _| levels.contains(l));
+        let mut all = Vec::new();
+        for lv in levels {
+            all.extend(self.level_actors(m, lv + actors_off, lv));
+        }
+        for &(actor, class) in &all {
+            {
                 if actor == hero {
                     continue;
                 }
-                let Some(class) = mem::read_u64(m, actor + CLASS).filter(|&c| mem::plausible(c)) else { continue };
                 let sub = *self.kinds.entry(class).or_insert_with(|| {
                     let lineage: Vec<String> = n.lineage(m, class).into_iter().filter_map(|c| n.object(m, c)).collect();
                     classify(&lineage)
@@ -577,7 +592,32 @@ impl Scanner {
         let alive: std::collections::HashSet<u64> = tracked.iter().map(|t| t.actor).collect();
         self.done.retain(|a, _| alive.contains(a));
         self.tracked = tracked;
+        self.all_actors = all;
         Ok(())
+    }
+
+    /// A level's actors with their classes: as last read while its actor array's data and
+    /// count are the same (for `LEVEL_FOR`), else read again — the array in one read, the
+    /// classes through a page cache.
+    fn level_actors(&mut self, m: &dyn Memory, at: u64, level: u64) -> Vec<(u64, u64)> {
+        let sig = (mem::read_u64(m, at).unwrap_or(0), mem::read_u32(m, at + 8).unwrap_or(0));
+        if let Some((s, t, list)) = self.levels_seen.get(&level) {
+            if *s == sig && t.elapsed() < LEVEL_FOR {
+                return list.clone();
+            }
+        }
+        let paged = mem::Paged::new(m);
+        let list: Vec<(u64, u64)> = array(m, at, MAX_ACTORS)
+            .into_iter()
+            .filter_map(|a| Some((a, mem::read_u64(&paged, a + CLASS).filter(|&c| mem::plausible(c))?)))
+            .collect();
+        self.levels_seen.insert(level, (sig, Instant::now(), list.clone()));
+        list
+    }
+
+    /// Every actor of the loaded levels and its class, as of the last scan.
+    pub fn all_actors(&self) -> &[(u64, u64)] {
+        &self.all_actors
     }
 
     /// Where every tracked actor is now (cm). `location` is

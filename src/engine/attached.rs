@@ -363,7 +363,8 @@ impl Attached {
     /// for the compass and the guide.
     pub fn goals(&self) -> Result<(Vec<Goal>, Knowledge), String> {
         let chain = self.chain()?;
-        let hero = chain.hero(&self.game, &self.anchors)?;
+        // the hero in play, or no goals
+        chain.hero(&self.game, &self.anchors)?;
         let (m, n) = (&self.game, &self.anchors.names);
         let mut g = self.guide.borrow_mut();
         g.fresh();
@@ -401,11 +402,11 @@ impl Attached {
             g.saved = saved_guids(m, n, save);
             g.fact_keys = g.quests.fact_keys();
         }
-        let actors = self.scanner.borrow().actors_offset().ok_or(tr!("ACTORS_NOT_SCANNED_YET"))?;
         {
             let _t = crate::prof::span("goals.refresh");
             let g = &mut *g;
-            g.goals.refresh(m, n, hero, chain.root, chain.location, actors, g.quests.flows());
+            let scanner = self.scanner.borrow();
+            g.goals.refresh(m, n, chain.root, chain.location, scanner.all_actors(), g.quests.flows());
         }
         if let Ok((p, _)) = chain.pose(m, &self.anchors) {
             let _t = crate::prof::span("obstacles");
