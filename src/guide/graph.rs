@@ -482,21 +482,29 @@ impl Graph {
     /// it). The rest, with what keeps them out, is the graph's report.
     pub fn reach(&self) -> Report {
         let mut doable = vec![false; self.nodes.len()];
+        let mut depth = vec![None; self.nodes.len()];
         let mut known: HashSet<&str> = HashSet::new();
         let mut items: HashSet<&str> = HashSet::new();
-        loop {
-            let mut changed = false;
-            for (i, n) in self.nodes.iter().enumerate() {
-                if doable[i] || !n.needs.iter().all(|x| self.can(x, &n.world, &doable, &known, &items)) {
-                    continue;
-                }
-                doable[i] = true;
-                changed = true;
-                known.extend(n.gives_tags.iter().map(String::as_str));
-                items.extend(n.gives_items.iter().map(String::as_str));
-            }
-            if !changed {
+        // In rounds: what a round makes doable counts from the next, so a node's round is how
+        // many steps from the start it is (the story's order, roughly).
+        for round in 0.. {
+            let new: Vec<usize> = (0..self.nodes.len())
+                .filter(|&i| {
+                    !doable[i]
+                        && self.nodes[i]
+                            .needs
+                            .iter()
+                            .all(|x| self.can(x, &self.nodes[i].world, &doable, &known, &items))
+                })
+                .collect();
+            if new.is_empty() {
                 break;
+            }
+            for i in new {
+                doable[i] = true;
+                depth[i] = Some(round);
+                known.extend(self.nodes[i].gives_tags.iter().map(String::as_str));
+                items.extend(self.nodes[i].gives_items.iter().map(String::as_str));
             }
         }
         let mut no_giver: HashMap<String, usize> = HashMap::new();
@@ -506,6 +514,7 @@ impl Graph {
             }
         }
         Report {
+            depth,
             nodes: self.nodes.len(),
             doable: doable.iter().filter(|d| **d).count(),
             stuck: doable.iter().enumerate().filter(|(_, d)| !**d).map(|(i, _)| i).collect(),
@@ -910,8 +919,48 @@ impl Graph {
 /// A quest's facts: the quest, how many, how many each kind of giver gives, those none gives.
 pub type Coverage = (String, usize, HashMap<&'static str, usize>, Vec<String>);
 
+impl Graph {
+    /// The story's order as the graph has it: for each world, the round its world-map entry
+    /// is first given (it can be travelled to); for each main quest, the rounds its facts are
+    /// first given, earliest and latest.
+    pub fn timeline(&self, r: &Report) -> (Vec<(String, usize)>, Vec<(String, usize, usize)>) {
+        let first = |pred: &dyn Fn(&Node) -> bool| {
+            self.nodes.iter().enumerate().filter(|(_, n)| pred(n)).filter_map(|(i, _)| r.depth[i]).min()
+        };
+        let mut worlds: Vec<String> = self.nodes.iter().map(|n| n.world.clone()).collect();
+        worlds.sort();
+        worlds.dedup();
+        let mut opened: Vec<(String, usize)> = worlds
+            .into_iter()
+            .map(|w| {
+                let fact = format!("WMA_{w}_Travel_WorldLocation");
+                let at = first(&|n: &Node| n.gives_tags.iter().any(|t| t.starts_with(&fact))).unwrap_or(0);
+                (w, at)
+            })
+            .collect();
+        opened.sort_by_key(|x| x.1);
+        let mut quests: Vec<(String, usize, usize)> = (1..=6)
+            .filter_map(|q| {
+                let key = format!("Quest0{q}");
+                let rounds: Vec<usize> = self
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, n)| n.gives_tags.iter().any(|t| t.contains(&key)))
+                    .filter_map(|(i, _)| r.depth[i])
+                    .collect();
+                Some((key, *rounds.iter().min()?, *rounds.iter().max()?))
+            })
+            .collect();
+        quests.sort_by_key(|x| x.1);
+        (opened, quests)
+    }
+}
+
 /// What `reach` found.
 pub struct Report {
+    /// Each node's round from the start (`None`: never).
+    pub depth: Vec<Option<usize>>,
     pub nodes: usize,
     pub doable: usize,
     /// The nodes that cannot be reached from nothing known.

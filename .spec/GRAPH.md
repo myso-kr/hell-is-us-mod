@@ -124,7 +124,23 @@ given are entries' details (Info/Desc, 74), names, locations and quest ties: cut
 sequences), the drone's talks and the quests' scripts give them, and a few are decoys never given
 (`…_Dummy01_Name`).
 
-## 8. Next
+## 8. The order, and what it is not (2026-10-05)
+
+`reach` runs in rounds (what a round makes doable counts from the next), so each node has a depth
+from the start; `doctor graph` prints, per world, the round its world-map entry is first given, and
+per main quest the rounds of its facts. Measured: depths reach 7 at most (Marastan's entry after
+Talju's departing truck, Auriga's after Jeljin's key scroll), and every main quest's first facts
+are at round 0. That is the graph's local "this before that", not the story's order: the story
+moves on by the quests' scripts and the conversations' topics, which are blueprint logic, not data.
+
+Tried and dropped: gating a world on its world-map entry (`WMA_<world>_Travel_Identity_DA`).
+The entry is map knowledge given on arriving or talking there (Acasa's by Jova's herbalist, who is
+in Acasa), not the way in: as a gate every world waited on itself.
+
+So the guide keeps the game's own journal for the story's order (which quest, which step: read
+live) and the graph for what a step needs first.
+
+## 9. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items

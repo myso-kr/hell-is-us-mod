@@ -351,6 +351,13 @@ fn graph() -> R {
     for (what, n) in &missing {
         out += &format!("  {n:3}  {what}\n");
     }
+    // The story's order: when each world can be travelled to, when each main quest's facts.
+    let (worlds, quests) = g.timeline(&r);
+    out += "order (round from the start):\n  worlds: ";
+    out += &worlds.iter().map(|(w, d)| format!("{w} {d}")).collect::<Vec<_>>().join(" → ");
+    out += "\n  main quests' facts: ";
+    out += &quests.iter().map(|(q, a, b)| format!("{q} {a}–{b}")).collect::<Vec<_>>().join(", ");
+    out += "\n";
     // Each quest's Datapad facts, and what gives them.
     let facts: Vec<String> = std::fs::read_to_string(hiumod::paths::data_dir().join("locale").join("facts.tsv"))
         .unwrap_or_default()
