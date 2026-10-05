@@ -363,10 +363,11 @@ impl Panel {
                 super::deep::puzzles_hero(t, snap);
                 // This region's puzzles two columns wide, the locks beside; the choice
                 // puzzles and the vaults across the page.
-                tw::spans(t, cols, &[2, 1, 3, 3], |t, i| match i {
+                tw::spans(t, cols, &[2, 1, 3, 3, 3], |t, i| match i {
                     0 => self.puzzles_card(t, guard, snap),
                     1 => self.locks_card(t, guard, snap),
-                    2 => self.slot_puzzles_card(t, guard, snap),
+                    2 => self.logic_card(t, guard, snap),
+                    3 => self.slot_puzzles_card(t, guard, snap),
                     _ => self.vaults_card(t, guard, snap),
                 })
             }

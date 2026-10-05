@@ -507,6 +507,19 @@ class Survey(DefaultFileProvider provider)
             if (vault) rec["vault"] = true;
             if (travel != null) rec["travel"] = travel;
             if (activators.Count > 0) rec["activators"] = new JArray(activators);
+            // How the activators must be used (`MultiActivatorsActivationAction`: in the order
+            // listed, all of them, within a time; `MultiActivatorsStateAction`: each turned to
+            // its position): the answer of an order or position puzzle.
+            foreach (var c in comps)
+            {
+                var cp = Props(c);
+                var logic = new JObject();
+                if (cp["HasOrder"] is { } ord) logic["order"] = ord;
+                if (cp["Wait for All Activators"] is { } all) logic["all"] = all;
+                if (cp["HasTimer"]?.Value<bool>() == true && cp["TimerDuration"] is { } secs) logic["timer"] = secs;
+                if (cp["ActivatorSolution"] is JArray sol && sol.Count > 0) logic["solution"] = sol;
+                if (logic.Count > 0) rec["logic"] = logic;
+            }
             // When it can be used (`ActionCondition` on its actions): the other end of the
             // graph's state edges — another interactable used, a fact or tag known.
             var conds = new JArray();

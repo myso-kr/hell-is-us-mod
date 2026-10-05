@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	{place}에 필요
 GRAPH_FIRST	먼저: {chain}
 GRAPH_STEP_FOR	먼저 할 일: {chain}
 GRAPH_FLOODED	물에 잠김: 먼저 물을 빼야 합니다
+GRAPH_LYMBIC_ACTIVATOR	림빅 활성화기 (림빅 에너지로 맞히기)
+GRAPH_KEYPAD	키패드
+GRAPH_DIAL	다이얼 퍼즐
+GRAPH_LEVER	레버
+GRAPH_LOCKED_DOOR	잠긴 문
+GRAPH_PANEL	열리는 패널
+GRAPH_IN_ORDER	활성화기 {n}개를 순서대로
+GRAPH_POSITIONS	{n}개를 정해진 위치로
+GRAPH_ALL_OF	활성화기 {n}개 모두
+GRAPH_WITHIN	, 제한 {s}초
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: 위치 {p}
+LOGIC_PUZZLES	순서·위치 퍼즐 · 남은 {left}
+NO_LOGIC_PUZZLES_HERE	이 지역에는 순서·위치 퍼즐이 없습니다.
+LOGIC_PUZZLES_HINT	게임 데이터에서 읽은 정답: 어떤 장치를 어떤 순서로, 어떤 위치로. 누르기 전까지 숨겨져 있습니다.

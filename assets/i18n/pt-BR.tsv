@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	necessário para {place}
 GRAPH_FIRST	primeiro: {chain}
 GRAPH_STEP_FOR	vem primeiro: {chain}
 GRAPH_FLOODED	debaixo d'água: drene primeiro
+GRAPH_LYMBIC_ACTIVATOR	Ativador límbico (atinja com energia límbica)
+GRAPH_KEYPAD	Teclado
+GRAPH_DIAL	Quebra-cabeça de discos
+GRAPH_LEVER	Alavanca
+GRAPH_LOCKED_DOOR	Porta trancada
+GRAPH_PANEL	Painel que se abre
+GRAPH_IN_ORDER	{n} ativadores em ordem
+GRAPH_POSITIONS	{n} para posicionar
+GRAPH_ALL_OF	todos os {n} ativadores
+GRAPH_WITHIN	, em {s} s
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: posição {p}
+LOGIC_PUZZLES	Quebra-cabeças de ordem e posição · faltam {left}
+NO_LOGIC_PUZZLES_HERE	Nenhum quebra-cabeça de ordem ou posição nesta região.
+LOGIC_PUZZLES_HINT	Dos dados do jogo: quais dispositivos, em que ordem, em que posição. Oculto até você pedir.

@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	serve per {place}
 GRAPH_FIRST	prima: {chain}
 GRAPH_STEP_FOR	viene prima: {chain}
 GRAPH_FLOODED	sott'acqua: prima svuotala
+GRAPH_LYMBIC_ACTIVATOR	Attivatore lymbico (colpiscilo con energia lymbica)
+GRAPH_KEYPAD	Tastierino
+GRAPH_DIAL	Enigma a quadranti
+GRAPH_LEVER	Leva
+GRAPH_LOCKED_DOOR	Porta chiusa
+GRAPH_PANEL	Pannello che si apre
+GRAPH_IN_ORDER	{n} attivatori in ordine
+GRAPH_POSITIONS	{n} da mettere in posizione
+GRAPH_ALL_OF	tutti i {n} attivatori
+GRAPH_WITHIN	, entro {s} s
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: posizione {p}
+LOGIC_PUZZLES	Enigmi di ordine e posizione · {left} rimasti
+NO_LOGIC_PUZZLES_HERE	Nessun enigma di ordine o posizione in questa regione.
+LOGIC_PUZZLES_HINT	Dai dati del gioco: quali dispositivi, in che ordine, in quale posizione. Nascosto finché non chiedi.

@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	needed for {place}
 GRAPH_FIRST	first: {chain}
 GRAPH_STEP_FOR	comes first: {chain}
 GRAPH_FLOODED	under water: drain it first
+GRAPH_LYMBIC_ACTIVATOR	Lymbic activator (hit it with Lymbic energy)
+GRAPH_KEYPAD	Keypad
+GRAPH_DIAL	Dial puzzle
+GRAPH_LEVER	Lever
+GRAPH_LOCKED_DOOR	Locked door
+GRAPH_PANEL	Opening panel
+GRAPH_IN_ORDER	{n} activators in order
+GRAPH_POSITIONS	{n} to set to their positions
+GRAPH_ALL_OF	all {n} activators
+GRAPH_WITHIN	, within {s} s
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: position {p}
+LOGIC_PUZZLES	Order and position puzzles · {left} left
+NO_LOGIC_PUZZLES_HERE	No order or position puzzle in this region.
+LOGIC_PUZZLES_HINT	From the game's own data: which devices, in what order, to which position. Hidden until you ask.

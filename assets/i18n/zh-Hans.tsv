@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	{place}需要
 GRAPH_FIRST	先：{chain}
 GRAPH_STEP_FOR	先做：{chain}
 GRAPH_FLOODED	被水淹没：需先排水
+GRAPH_LYMBIC_ACTIVATOR	林比克激活器（用林比克能量击中）
+GRAPH_KEYPAD	键盘
+GRAPH_DIAL	转盘谜题
+GRAPH_LEVER	拉杆
+GRAPH_LOCKED_DOOR	上锁的门
+GRAPH_PANEL	可开启的面板
+GRAPH_IN_ORDER	按顺序激活{n}个
+GRAPH_POSITIONS	将{n}个调到正确位置
+GRAPH_ALL_OF	全部{n}个激活器
+GRAPH_WITHIN	，限时{s}秒
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}：位置{p}
+LOGIC_PUZZLES	顺序与位置谜题 · 剩余{left}
+NO_LOGIC_PUZZLES_HERE	本区域没有顺序或位置谜题。
+LOGIC_PUZZLES_HINT	来自游戏数据：哪些装置、什么顺序、什么位置。点击前隐藏。

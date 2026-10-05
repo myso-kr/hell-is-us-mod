@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	{place}に必要
 GRAPH_FIRST	先に：{chain}
 GRAPH_STEP_FOR	先にやること：{chain}
 GRAPH_FLOODED	水没中：先に水を抜く必要があります
+GRAPH_LYMBIC_ACTIVATOR	リンビック起動装置（リンビックエネルギーを当てる）
+GRAPH_KEYPAD	キーパッド
+GRAPH_DIAL	ダイヤルパズル
+GRAPH_LEVER	レバー
+GRAPH_LOCKED_DOOR	施錠された扉
+GRAPH_PANEL	開くパネル
+GRAPH_IN_ORDER	起動装置{n}個を順番に
+GRAPH_POSITIONS	{n}個を正しい位置に
+GRAPH_ALL_OF	起動装置{n}個すべて
+GRAPH_WITHIN	、制限{s}秒
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}：位置{p}
+LOGIC_PUZZLES	順番・位置パズル · 残り{left}
+NO_LOGIC_PUZZLES_HERE	この地域に順番・位置パズルはありません。
+LOGIC_PUZZLES_HINT	ゲームのデータから：どの装置を、どの順番で、どの位置に。押すまで隠れています。

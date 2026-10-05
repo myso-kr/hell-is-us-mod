@@ -471,6 +471,49 @@ impl Panel {
         });
     }
 
+    /// The order and position puzzles of this region (graph.rs): Lymbic locks to hit in an
+    /// order within a time, statues and sconces to turn to their positions. Each with its
+    /// kind and distance; its answer (each device in order, its way and distance from the
+    /// puzzle, the position it must be at) on asking.
+    pub(super) fn logic_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
+        let list = snap.map(|s| s.logic_puzzles.clone()).unwrap_or_default();
+        let goals = snap.map(|s| s.goals.clone()).unwrap_or_default();
+        let here = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let left = list.iter().filter(|p| !p.solved).count();
+        card(t, &trf!("LOGIC_PUZZLES", left = left), |t| {
+            if list.is_empty() {
+                note(t, tr!("NO_LOGIC_PUZZLES_HERE"));
+                return;
+            }
+            note(t, tr!("LOGIC_PUZZLES_HINT"));
+            for p in list.iter() {
+                let far = here.map_or(String::new(), |h| crate::raster::span(h, p.at));
+                let head = format!("{} · {} ({far}){}", p.label, p.kind, if p.solved { " ✓" } else { "" });
+                let head = RichText::new(head).color(if p.solved { DIM } else { super::super::theme::TEXT });
+                let icon = |ui: &mut egui::Ui| {
+                    crate::ui::svg::sort(ui, crate::actors::Sub::Puzzle, 18.0);
+                };
+                let on = (!p.solved).then(|| state.track_colour(p.id));
+                if tw::track_line(t, on, icon, head, |t| reveal(t, &mut self.revealed, p.id, tr!("SHOW_ANSWER"))) {
+                    let x = crate::survey::Need {
+                        world: p.world.clone(),
+                        id: p.id,
+                        label: p.label.clone(),
+                        what: String::new(),
+                        at: p.at,
+                        done: false,
+                    };
+                    guide_to(state, &goals, &x);
+                }
+                if self.revealed.contains(&p.id) {
+                    for line in &p.answer {
+                        text(t, RichText::new(format!("    {line}")).color(OK));
+                    }
+                }
+            }
+        });
+    }
+
     /// The choice puzzles (slots.rs): items into one of several slots, the Watcher's Nest's
     /// ceramic flowers and the Eye of God's orbs. Each with its sets and how they stand,
     /// the game's riddle on asking; per set, on asking, the game's clue to it (a research

@@ -44,6 +44,25 @@ pub struct Node {
     pub gives_items: Vec<String>,
     pub gives_tags: Vec<String>,
     pub needs: Vec<Need>,
+    /// Its activators, in the order the level lists them (the order to use them in, when
+    /// `logic.order`).
+    pub activators: Vec<String>,
+    /// How its activators must be used, when it says (an order or position puzzle).
+    pub logic: Option<Logic>,
+}
+
+/// How a receiver's activators must be used (`MultiActivatorsActivationAction`,
+/// `MultiActivatorsStateAction`).
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct Logic {
+    /// In the order listed.
+    pub order: bool,
+    /// Every one of them, not any.
+    pub all: bool,
+    /// Within this long (s).
+    pub timer: Option<f32>,
+    /// The position each must be turned to.
+    pub solution: Vec<i64>,
 }
 
 /// What the hero has done and holds: the save's state.
@@ -87,6 +106,8 @@ fn need_of(c: &Value) -> Option<Need> {
             (!t.is_empty()).then(|| Need::All(t.into_iter().map(|x| Need::Fact(x, true)).collect()))
         }
         t if t.starts_with("IsSingleUseInteractableNotActivated") => None,
+        // An object brought to a place (pushed, carried, turned there): that object used.
+        t if t.starts_with("IsAnotherSceneComponentAtLocation") => actor().map(Need::Used),
         t if t.starts_with("IsSingleUseInteractableActivated")
             || t == "InteractableStateCondition"
             || t.contains("OtherElementActivated") =>
@@ -169,8 +190,18 @@ impl Graph {
         let at = at.filter(|x| x.len() == 3).map_or([0.0; 3], |x| [x[0], x[1], x[2]]);
         let mut needs = Vec::new();
         let acts = strs(&a["activators"]);
+        let l = &a["logic"];
+        let logic = (!l.is_null()).then(|| Logic {
+            order: l["order"].as_bool().unwrap_or(false),
+            all: l["all"].as_bool().unwrap_or(false),
+            timer: l["timer"].as_f64().map(|t| t as f32),
+            solution: l["solution"].as_array().into_iter().flatten().filter_map(|x| x.as_i64()).collect(),
+        });
         if !acts.is_empty() {
-            needs.push(Need::Any(acts.into_iter().map(Need::Used).collect()));
+            // In order, all of them, or each to its position: every one; else any one.
+            let every = logic.as_ref().is_some_and(|l| l.order || l.all || !l.solution.is_empty());
+            let each: Vec<Need> = acts.iter().cloned().map(Need::Used).collect();
+            needs.push(if every { Need::All(each) } else { Need::Any(each) });
         }
         for c in a["conditions"].as_array().into_iter().flatten() {
             needs.extend(need_of(c));
@@ -192,6 +223,8 @@ impl Graph {
             gives_items: strs(&a["payload"]["items"]),
             gives_tags,
             needs,
+            activators: acts,
+            logic,
         });
     }
 
@@ -365,6 +398,95 @@ impl Graph {
     }
 }
 
+/// A compass word for the way from `from` to `to` (north is −Y in Hell Is Us).
+fn bearing(from: [f32; 3], to: [f32; 3]) -> &'static str {
+    let (east, north) = (to[0] - from[0], -(to[1] - from[1]));
+    let deg = east.atan2(north).to_degrees().rem_euclid(360.0);
+    ["N", "NE", "E", "SE", "S", "SW", "W", "NW"][((deg + 22.5) / 45.0) as usize % 8]
+}
+
+impl Graph {
+    /// What kind of puzzle node `i` is, without its answer: "in order, 4 activators,
+    /// 20 s" — for the guide, which keeps answers to the Puzzles page.
+    pub fn puzzle_kind(&self, i: usize) -> Option<String> {
+        let n = &self.nodes[i];
+        let l = n.logic.as_ref()?;
+        let count = n.activators.len();
+        let mut s = if l.order {
+            trf!("GRAPH_IN_ORDER", n = count)
+        } else if !l.solution.is_empty() {
+            trf!("GRAPH_POSITIONS", n = count)
+        } else if l.all {
+            trf!("GRAPH_ALL_OF", n = count)
+        } else {
+            return None;
+        };
+        if let Some(t) = l.timer {
+            s += &trf!("GRAPH_WITHIN", s = t.round() as u32);
+        }
+        Some(s)
+    }
+
+    /// The answer of an order or position puzzle: each activator, numbered in its order,
+    /// with its way and distance from the receiver, and the position it must be at.
+    pub fn answer(&self, i: usize) -> Option<Vec<String>> {
+        let n = &self.nodes[i];
+        let l = n.logic.as_ref()?;
+        if !(l.order || !l.solution.is_empty()) {
+            return None;
+        }
+        Some(
+            n.activators
+                .iter()
+                .enumerate()
+                .map(|(k, a)| {
+                    let at = self.node(&n.world, a).map(|j| self.nodes[j].at).unwrap_or(n.at);
+                    let m = ((at[0] - n.at[0]).hypot(at[1] - n.at[1]) / 100.0).round() as u32;
+                    let place = format!("{} {}m", bearing(n.at, at), m);
+                    match l.solution.get(k) {
+                        Some(p) => trf!("GRAPH_ANSWER_POSITION", k = k + 1, place = place, p = p),
+                        None => trf!("GRAPH_ANSWER_STEP", k = k + 1, place = place),
+                    }
+                })
+                .collect(),
+        )
+    }
+}
+
+/// An order or position puzzle of a world (the Puzzles page): where, what kind, solved,
+/// and its answer (shown on asking).
+#[derive(Clone, Debug, PartialEq)]
+pub struct LogicPuzzle {
+    pub id: u64,
+    pub world: String,
+    pub at: [f32; 3],
+    pub label: String,
+    pub kind: String,
+    pub answer: Vec<String>,
+    pub solved: bool,
+}
+
+impl Graph {
+    /// The order and position puzzles of `world`.
+    pub fn logic_puzzles(&self, world: &str, s: &State) -> Vec<LogicPuzzle> {
+        (0..self.nodes.len())
+            .filter(|&i| self.nodes[i].world == world)
+            .filter_map(|i| {
+                let n = &self.nodes[i];
+                Some(LogicPuzzle {
+                    id: step_id(n),
+                    world: n.world.clone(),
+                    at: n.at,
+                    label: crate::goals::readable(&n.class),
+                    kind: self.puzzle_kind(i)?,
+                    answer: self.answer(i)?,
+                    solved: self.used(i, s),
+                })
+            })
+            .collect()
+    }
+}
+
 /// How a node reads to the player: what it gives, what goes there, or its class's words.
 pub fn label(n: &Node) -> String {
     if let Some(it) = n.gives_items.first() {
@@ -385,8 +507,23 @@ pub fn label(n: &Node) -> String {
     if !takes.is_empty() {
         return trf!("REQ_PUT_HERE", items = takes.join(", "));
     }
-    crate::goals::readable(&n.class)
+    // What kind of thing it is, in words, where the class says it; else its class's words.
+    let kind = KINDS.iter().find(|(part, _)| n.class.contains(part)).map(|(_, key)| crate::i18n::text(key));
+    kind.unwrap_or_else(|| crate::goals::readable(&n.class))
 }
+
+/// What a class's name says a thing is (the first that fits), and its words' key.
+const KINDS: [(&str, &str); 9] = [
+    ("1stGenLymbicActivator", "GRAPH_LYMBIC_ACTIVATOR"),
+    ("LymbicLockPanel", "LYMBIC_LOCK"),
+    ("DroneTranslation", "DRONE_TRANSLATION"),
+    ("Keypad", "GRAPH_KEYPAD"),
+    ("DialPuzzle", "GRAPH_DIAL"),
+    ("Lever", "GRAPH_LEVER"),
+    ("KeyLocked", "GRAPH_LOCKED_DOOR"),
+    ("Door", "DOOR"),
+    ("Panel", "GRAPH_PANEL"),
+];
 
 impl Graph {
     /// Each goal in `world` whose place needs something first (`chain`) is held back —
@@ -404,7 +541,13 @@ impl Graph {
             if chain.len() < 2 {
                 continue;
             }
-            let names: Vec<String> = chain.iter().map(|&k| label(&self.nodes[k])).collect();
+            let names: Vec<String> = chain
+                .iter()
+                .map(|&k| match self.puzzle_kind(k) {
+                    Some(kind) => format!("{} ({kind})", label(&self.nodes[k])),
+                    None => label(&self.nodes[k]),
+                })
+                .collect();
             let text = names.iter().rev().cloned().collect::<Vec<_>>().join(" → ");
             g.gate = Gate::Conditional;
             g.detail = format!("{} · {}", g.detail, trf!("GRAPH_FIRST", chain = text));

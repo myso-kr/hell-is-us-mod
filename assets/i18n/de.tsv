@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	gebraucht für {place}
 GRAPH_FIRST	zuerst: {chain}
 GRAPH_STEP_FOR	kommt zuerst: {chain}
 GRAPH_FLOODED	unter Wasser: erst ablassen
+GRAPH_LYMBIC_ACTIVATOR	Lymbischer Aktivator (mit Lymbischer Energie treffen)
+GRAPH_KEYPAD	Tastenfeld
+GRAPH_DIAL	Drehrätsel
+GRAPH_LEVER	Hebel
+GRAPH_LOCKED_DOOR	Verschlossene Tür
+GRAPH_PANEL	Öffnende Platte
+GRAPH_IN_ORDER	{n} Aktivatoren der Reihe nach
+GRAPH_POSITIONS	{n} in ihre Stellung bringen
+GRAPH_ALL_OF	alle {n} Aktivatoren
+GRAPH_WITHIN	, in {s} s
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: Stellung {p}
+LOGIC_PUZZLES	Reihenfolge- und Stellungsrätsel · {left} offen
+NO_LOGIC_PUZZLES_HERE	In dieser Region kein Reihenfolge- oder Stellungsrätsel.
+LOGIC_PUZZLES_HINT	Aus den Spieldaten: welche Geräte, in welcher Reihenfolge, in welche Stellung. Verborgen, bis du fragst.

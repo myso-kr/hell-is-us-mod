@@ -49,6 +49,8 @@ struct Guide {
     survey: Option<crate::survey::Survey>,
     /// The requirement graph of the whole game (graph.rs), from the survey, read once.
     graph: Option<crate::graph::Graph>,
+    /// The order and position puzzles of the hero's world (graph.rs), as of the last step.
+    logic_puzzles: Vec<crate::graph::LogicPuzzle>,
     /// The game's spawner and vault tables (Mods\survey), read once.
     tables: Option<crate::tables::Tables>,
     /// `gamedata::generation` when those two were read: new files read again.
@@ -410,6 +412,7 @@ impl Attached {
             // Under deadly water now: held back, the drain's chain guided to instead.
             let pools = g.obstacles.done.pools.clone();
             graph.flood(&mut goals, w, &pools, &state);
+            g.logic_puzzles = graph.logic_puzzles(w, &state);
         }
         Ok((goals, k))
     }
@@ -442,6 +445,11 @@ impl Attached {
             *out.entry(name).or_insert(0) += count;
         }
         out
+    }
+
+    /// The order and position puzzles of the hero's world (the Puzzles page).
+    pub fn logic_puzzles(&self) -> Vec<crate::graph::LogicPuzzle> {
+        self.guide.borrow().logic_puzzles.clone()
     }
 
     /// The ways out of `world` the survey knows: the APC's door and the save points.

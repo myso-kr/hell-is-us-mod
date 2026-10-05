@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	нужно для: {place}
 GRAPH_FIRST	сначала: {chain}
 GRAPH_STEP_FOR	сначала: {chain}
 GRAPH_FLOODED	под водой: сначала слейте воду
+GRAPH_LYMBIC_ACTIVATOR	Лимбический активатор (ударьте лимбической энергией)
+GRAPH_KEYPAD	Кодовая панель
+GRAPH_DIAL	Головоломка с дисками
+GRAPH_LEVER	Рычаг
+GRAPH_LOCKED_DOOR	Запертая дверь
+GRAPH_PANEL	Открывающаяся панель
+GRAPH_IN_ORDER	{n} активаторов по порядку
+GRAPH_POSITIONS	{n} поставить в положение
+GRAPH_ALL_OF	все {n} активаторов
+GRAPH_WITHIN	, за {s} с
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: положение {p}
+LOGIC_PUZZLES	Головоломки порядка и положения · осталось {left}
+NO_LOGIC_PUZZLES_HERE	В этом регионе нет головоломок порядка или положения.
+LOGIC_PUZZLES_HINT	Из данных игры: какие устройства, в каком порядке, в какое положение. Скрыто, пока не спросите.

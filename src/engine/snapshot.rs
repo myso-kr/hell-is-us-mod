@@ -38,6 +38,8 @@ pub struct Snapshot {
     pub paused: bool,
     /// What stands in the way, and the ground, for the route.
     pub obstacles: Arc<Scene>,
+    /// The order and position puzzles of the hero's world (graph.rs).
+    pub logic_puzzles: Arc<Vec<crate::graph::LogicPuzzle>>,
     /// The ways out of the hero's world (the survey): the APC's door, the save points.
     pub exits: Arc<Vec<(crate::actors::Sub, [f32; 3])>>,
     /// The game's navmesh: the route's first choice.

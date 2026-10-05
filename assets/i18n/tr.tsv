@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	{place} için gerekli
 GRAPH_FIRST	önce: {chain}
 GRAPH_STEP_FOR	önce yapılacak: {chain}
 GRAPH_FLOODED	su altında: önce suyu boşalt
+GRAPH_LYMBIC_ACTIVATOR	Limbik etkinleştirici (limbik enerjiyle vur)
+GRAPH_KEYPAD	Tuş takımı
+GRAPH_DIAL	Kadran bulmacası
+GRAPH_LEVER	Kol
+GRAPH_LOCKED_DOOR	Kilitli kapı
+GRAPH_PANEL	Açılan panel
+GRAPH_IN_ORDER	sırayla {n} etkinleştirici
+GRAPH_POSITIONS	{n} tanesini doğru konuma
+GRAPH_ALL_OF	{n} etkinleştiricinin hepsi
+GRAPH_WITHIN	, {s} sn içinde
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: konum {p}
+LOGIC_PUZZLES	Sıra ve konum bulmacaları · {left} kaldı
+NO_LOGIC_PUZZLES_HERE	Bu bölgede sıra ya da konum bulmacası yok.
+LOGIC_PUZZLES_HINT	Oyunun verisinden: hangi cihazlar, hangi sırayla, hangi konuma. Sorana kadar gizli.

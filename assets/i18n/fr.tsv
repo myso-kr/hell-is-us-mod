@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	nécessaire pour {place}
 GRAPH_FIRST	d'abord : {chain}
 GRAPH_STEP_FOR	vient d'abord : {chain}
 GRAPH_FLOODED	sous l'eau : vidangez d'abord
+GRAPH_LYMBIC_ACTIVATOR	Activateur lymbique (frappez-le d'énergie lymbique)
+GRAPH_KEYPAD	Pavé numérique
+GRAPH_DIAL	Énigme à cadrans
+GRAPH_LEVER	Levier
+GRAPH_LOCKED_DOOR	Porte verrouillée
+GRAPH_PANEL	Panneau qui s'ouvre
+GRAPH_IN_ORDER	{n} activateurs dans l'ordre
+GRAPH_POSITIONS	{n} à mettre en position
+GRAPH_ALL_OF	les {n} activateurs
+GRAPH_WITHIN	, en {s} s
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place} : position {p}
+LOGIC_PUZZLES	Énigmes d'ordre et de position · {left} restantes
+NO_LOGIC_PUZZLES_HERE	Pas d'énigme d'ordre ou de position dans cette région.
+LOGIC_PUZZLES_HINT	Des données du jeu : quels dispositifs, dans quel ordre, dans quelle position. Caché tant que vous ne demandez pas.

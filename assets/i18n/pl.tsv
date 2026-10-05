@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	potrzebne do: {place}
 GRAPH_FIRST	najpierw: {chain}
 GRAPH_STEP_FOR	najpierw: {chain}
 GRAPH_FLOODED	pod wodą: najpierw ją spuść
+GRAPH_LYMBIC_ACTIVATOR	Aktywator lymbiczny (traf go energią lymbiczną)
+GRAPH_KEYPAD	Klawiatura
+GRAPH_DIAL	Zagadka z tarczami
+GRAPH_LEVER	Dźwignia
+GRAPH_LOCKED_DOOR	Zamknięte drzwi
+GRAPH_PANEL	Otwierany panel
+GRAPH_IN_ORDER	{n} aktywatorów po kolei
+GRAPH_POSITIONS	{n} ustawić w pozycji
+GRAPH_ALL_OF	wszystkie {n} aktywatory
+GRAPH_WITHIN	, w {s} s
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: pozycja {p}
+LOGIC_PUZZLES	Zagadki kolejności i pozycji · zostało {left}
+NO_LOGIC_PUZZLES_HERE	Brak zagadek kolejności lub pozycji w tym regionie.
+LOGIC_PUZZLES_HINT	Z danych gry: które urządzenia, w jakiej kolejności, w jakiej pozycji. Ukryte, dopóki nie zapytasz.

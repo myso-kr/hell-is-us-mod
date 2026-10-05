@@ -763,3 +763,18 @@ REQ_NEEDED_FOR	necesario para {place}
 GRAPH_FIRST	primero: {chain}
 GRAPH_STEP_FOR	va primero: {chain}
 GRAPH_FLOODED	bajo el agua: drénala primero
+GRAPH_LYMBIC_ACTIVATOR	Activador lýmbico (golpéalo con energía lýmbica)
+GRAPH_KEYPAD	Teclado
+GRAPH_DIAL	Puzle de diales
+GRAPH_LEVER	Palanca
+GRAPH_LOCKED_DOOR	Puerta cerrada
+GRAPH_PANEL	Panel que se abre
+GRAPH_IN_ORDER	{n} activadores en orden
+GRAPH_POSITIONS	{n} a su posición
+GRAPH_ALL_OF	los {n} activadores
+GRAPH_WITHIN	, en {s} s
+GRAPH_ANSWER_STEP	{k}. {place}
+GRAPH_ANSWER_POSITION	{k}. {place}: posición {p}
+LOGIC_PUZZLES	Puzles de orden y posición · quedan {left}
+NO_LOGIC_PUZZLES_HERE	No hay puzles de orden o posición en esta región.
+LOGIC_PUZZLES_HINT	De los datos del juego: qué dispositivos, en qué orden, a qué posición. Oculto hasta que lo pidas.

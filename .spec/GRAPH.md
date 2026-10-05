@@ -58,7 +58,27 @@ chain. Measured by the Forge: the two keys under water held back; the axle gear 
 "the wall panel ← the first-generation Lymbic activator", the activator made the story's goal.
 Whether a drained box goes from the live pass is to be seen once drained.
 
-## 4. Next
+## 4. Order and position puzzles, objects moved (2026-10-05)
+
+Asked: "devices to strike in an order" and "interactions with objects" in the graph too. In the
+receivers' actions:
+
+- `MultiActivatorsActivationAction` (and `LymbicLock1stGenAction`): `HasOrder` (the order is the
+  `Activators` list's), `Wait for All Activators`, `HasTimer`/`TimerDuration`.
+- `MultiActivatorsStateAction` (`…MultiPositionsLogicAction`): `ActivatorSolution`, the position each
+  activator must be turned to.
+
+The survey records them as `logic` {order, all, timer, solution}. Found: 2 order puzzles (the
+first-generation Lymbic locks of Acasa and Lake Cynon: 4 and 5 activators, 300 s), 14 position
+puzzles (the Hermit's secret, the Sconces of Knowledge's 10, Jeljin's mausoleums, the Eye of God,
+the Forge foyer, the museum's statue heads…), 2 all-of. Such a receiver needs every activator (not
+any). The guide's chains say what kind of puzzle a step is ("5 activators in order, within 300 s");
+the answer — each device numbered in its order, its way and distance from the puzzle, the position
+it must be at — is on the Puzzles page's "Order and position puzzles" card, behind Show answer.
+
+An object brought to a place (`IsAnotherSceneComponentAtLocationCondition`, 14) is that object used.
+
+## 5. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items
