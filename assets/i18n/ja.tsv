@@ -811,7 +811,7 @@ MAP3D_ROUNDS	ストーリー段階
 MAP3D_ROUND	段階 {round}
 MAP3D_NEVER	到達不可
 MAP3D_BELOW	地下 {m} m
-MAP3D_HINT	ドラッグ: 回転 · 右ドラッグ: 移動 · ホイール: 拡大 · クリック: 場所
+MAP3D_HINT	ドラッグ: 回転 · 右ドラッグ: 移動 · Ctrl+ホイール: 拡大 · クリック: 場所
 MAP3D_LOADING	地域を読み込み中…
 MAP3D_MISSING	この地域の地図データがまだありません。`hiumod doctor map3d` を一度実行してください（数分）。
 MAP3D_NORTH	北を上に
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	近くのマーカー (敵・アイテム・NPC)
 SCREEN3D_NOTE	壁や地形に隠れると見えません。表示する種類はミニマップの設定に従います。
 MAP_SETTINGS	地図の設定
 LEGEND_SHARED	ミニマップ・大きい地図・3D 地図・ゲーム画面で共通です。
+SORT_LEVER	レバー・スイッチ
+SORT_INSPECT	調べるもの
+SORT_TIMELOOP	タイムループ

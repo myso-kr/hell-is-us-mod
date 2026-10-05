@@ -106,10 +106,16 @@ pub enum Sub {
     Puzzle,
     /// A Vault of Forbidden Knowledge's door not opened yet.
     Vault,
+    /// A lever, a switch, a statue or a light to turn: what sets something else going.
+    Lever,
+    /// Something to look at or read: a sign, a portrait, a display, a computer.
+    Inspect,
+    /// A time loop to close.
+    TimeLoop,
 }
 
 impl Sub {
-    pub const ALL: [Sub; 31] = [
+    pub const ALL: [Sub; 34] = [
         Sub::Feral,
         Sub::Primeval,
         Sub::Negator,
@@ -141,6 +147,9 @@ impl Sub {
         Sub::EnemyGroup,
         Sub::Puzzle,
         Sub::Vault,
+        Sub::Lever,
+        Sub::Inspect,
+        Sub::TimeLoop,
     ];
 
     pub fn kind(self) -> Kind {
@@ -151,7 +160,7 @@ impl Sub {
             | OtherItem => Kind::Item,
             Loot => Kind::Loot,
             Npc | NpcTalk | NpcSecret | NpcQuest => Kind::Npc,
-            Door | LymbicLock | Translation | Puzzle | Vault => Kind::Interact,
+            Door | LymbicLock | Translation | Puzzle | Vault | Lever | Inspect | TimeLoop => Kind::Interact,
             SavePoint | SavePointLocal | Apc => Kind::Save,
         }
     }
@@ -191,6 +200,9 @@ impl Sub {
             EnemyGroup => "enemy.group",
             Puzzle => "interact.puzzle",
             Vault => "interact.vault",
+            Lever => "interact.lever",
+            Inspect => "interact.inspect",
+            TimeLoop => "interact.timeloop",
         }
     }
 
@@ -228,6 +240,9 @@ impl Sub {
             EnemyGroup => tr!("ENEMY_GROUP_LEFT"),
             Puzzle => tr!("UNSOLVED_PUZZLE"),
             Vault => tr!("VAULT_DOOR"),
+            Lever => tr!("SORT_LEVER"),
+            Inspect => tr!("SORT_INSPECT"),
+            TimeLoop => tr!("SORT_TIMELOOP"),
         }
     }
 }
@@ -310,6 +325,27 @@ pub fn classify(lineage: &[String]) -> Option<Sub> {
         Some(Sub::Translation)
     } else if has("InteractableDoorActor") {
         Some(Sub::Door)
+    } else {
+        by_class(own)
+    }
+}
+
+/// The sorts known by the class's own name alone (as named on build 24045435): what the player
+/// turns, reads or closes, and the locks a key opens. The graph's places have only this name, so
+/// the 3D map sorts by it too. Everything else — triggers, sounds, effects, cinematics, the
+/// receivers that answer a lever — is not a place the player sees, and has no sort.
+pub fn by_class(c: &str) -> Option<Sub> {
+    let has = |p: &str| c.contains(p);
+    if has("Inactive") || has("Receiver") || has("Trigger") || has("Tutorial") || has("Tuto") {
+        None
+    } else if has("Timeloop") || has("TimeLoop") {
+        Some(Sub::TimeLoop)
+    } else if has("Observation") || has("ItemDisplay") || has("Computer_Interact") {
+        Some(Sub::Inspect)
+    } else if has("KeyLock") || has("OneSidedLock") || has("KeycardReader") {
+        Some(Sub::Door)
+    } else if has("Activator") || has("Lever") || has("MoveToPoint_Interactable") || has("DualSide_Interact") {
+        Some(Sub::Lever)
     } else {
         None
     }

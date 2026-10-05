@@ -811,7 +811,7 @@ MAP3D_ROUNDS	Etap fabuły
 MAP3D_ROUND	etap {round}
 MAP3D_NEVER	nigdy
 MAP3D_BELOW	{m} m pod ziemią
-MAP3D_HINT	Przeciągnij: obrót · prawym: przesuń · kółko: zoom · klik: miejsce
+MAP3D_HINT	Przeciągnij: obrót · prawym: przesuń · Ctrl+kółko: zoom · klik: miejsce
 MAP3D_LOADING	Wczytywanie regionu…
 MAP3D_MISSING	Brak danych mapy tego regionu: uruchom raz `hiumod doctor map3d` (kilka minut).
 MAP3D_NORTH	Północ u góry
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	Ikony nad tym, co blisko (wrogowie, przedmioty, ludzie)
 SCREEN3D_NOTE	Ukryte tam, gdzie zasłaniają je ściany lub teren; pokazywane rodzaje jak na minimapie.
 MAP_SETTINGS	Ustawienia mapy
 LEGEND_SHARED	Taka sama na minimapie, dużej mapie, mapie 3D i w widoku gry.
+SORT_LEVER	Dźwignia, przełącznik
+SORT_INSPECT	Do obejrzenia
+SORT_TIMELOOP	Pętla czasu

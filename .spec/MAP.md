@@ -469,3 +469,21 @@ The game view's 3D layer (screenroute.rs) has two switches in `MapState`, `scree
 `screen_marks`. The band is 0.28 m wide and starts 4 m ahead (under the camera it filled the
 view). The icons are the maps' at `icon_px`, over things within 50 m (40 at most), each tested
 against the obstacles and terrain like the band, gated by the HUD consent.
+
+### 16.3 Places without a sort (2026-10-05)
+
+Of the graph's 2996 places, 1363 had no map sort and showed as grey dots. By class: 878 are not
+places the player sees (`Say`, `Trade`, `CodeGives`, `WorldFirstEntered`, trigger volumes,
+`…_TriggerNoActions`, `…PayloadInactive`, SFX/FX players, camera shakes, level-sequence and
+cinematic callers, quest listeners, receivers, tutorials); the rest are what the player turns, reads
+or closes. `actors::by_class` sorts these by their own class name, for the live scan (after the
+lineage rules) and the 3D map alike, into three new `Interact` sorts with icons of their own:
+`interact.lever` (`…Activator…`, levers, `MoveToPoint` cells, dual-side shelves: 228),
+`interact.inspect` (`…Observation…`, item displays, computers: ~64) and `interact.timeloop`
+(`Timeloop…`: 85); key locks, one-sided locks and keycard readers are doors. Anything still without
+a sort is not loaded into the 3D map at all. Each place keeps a 2–4 px depth-tested dot at its true
+spot under its icon, which the X-ray shows through the ground.
+
+The 3D view no longer zooms on the plain wheel: scrolling the page past it zoomed it. Ctrl+wheel
+(egui's `zoom_delta`, which takes the event from the page's scroll) and pinch zoom, as over an
+embedded map.

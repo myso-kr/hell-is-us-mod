@@ -76,7 +76,7 @@ fn sort_of(class: &str) -> Option<crate::actors::Sub> {
         } else {
             Sub::SavePoint
         }
-    } else if has("APC_Enter") {
+    } else if has("APC_") {
         Sub::Apc
     } else if has("LymbicLock") {
         Sub::LymbicLock
@@ -90,12 +90,12 @@ fn sort_of(class: &str) -> Option<crate::actors::Sub> {
         Sub::Puzzle
     } else if has("Door") || has("Gate") || has("KeyLocked") {
         Sub::Door
-    } else if has("Gather") {
+    } else if has("Gather") || class.starts_with("Cons_") {
         crate::actors::item(class)
     } else if has("Chest") || has("Stash") {
         Sub::Stash
     } else {
-        return None;
+        return crate::actors::by_class(class);
     })
 }
 
@@ -234,10 +234,12 @@ pub fn load(world: &str, graph: &Graph, rounds: &[Option<usize>]) -> Option<Scen
         if crate::survey::Survey::world_of(&n.world) != world || n.at == [0.0; 3] {
             continue;
         }
+        // only what the maps have a sort for: a trigger, a sound or a line said is no place
+        let Some(sub) = sort_of(&n.class) else { continue };
         let below = ground(n.at[0], n.at[1]).map_or(0.0, |g| ((g - n.at[2]) / 100.0).max(0.0));
         s.nodes.push(Node {
             at: s.to_scene(n.at),
-            sub: sort_of(&n.class),
+            sub: Some(sub),
             round: rounds.get(i).copied().flatten().map_or(-1, |r| r as i32),
             label: n.class.trim_end_matches("_C").to_string(),
             below,
@@ -444,9 +446,13 @@ impl Map3d {
             self.target[1] += d.y;
             self.follow = false;
         }
+        // The wheel scrolls the page, as over an embedded map; Ctrl+wheel (or a pinch) zooms,
+        // which egui hands over as a zoom and not a scroll, so the page stays put.
         if resp.hovered() {
-            let scroll = ui.input(|i| i.smooth_scroll_delta.y);
-            self.dist = (self.dist * (1.0 - scroll * 0.0015)).clamp(20.0, scene.extent * 3.0);
+            let zoom = ui.input(|i| i.zoom_delta());
+            if zoom != 1.0 {
+                self.dist = (self.dist / zoom).clamp(20.0, scene.extent * 3.0);
+            }
         }
         let hero_at = hero.map(|(h, yaw)| (scene.to_scene(h), yaw));
         if self.follow {
@@ -937,7 +943,7 @@ void main(){
 const FLAT_VS: &str = r#"
 layout(location=0) in vec3 aPos; layout(location=1) in vec3 aCol;
 uniform mat4 uVP; uniform float uSize; out vec3 vC;
-void main(){ vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); gl_PointSize = clamp(uSize * 900.0 / max(gl_Position.w, 1.0), 3.0, 14.0); }
+void main(){ vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); gl_PointSize = clamp(uSize * 900.0 / max(gl_Position.w, 1.0), 2.0, 4.0); }
 "#;
 
 const FLAT_FS: &str = r#"
@@ -1076,9 +1082,9 @@ impl Gpu {
             let data: Vec<f32> = s
                 .nodes
                 .iter()
-                // what has an icon is drawn as its icon (over the scene); the rest — levers,
-                // triggers, lines said — as small grey dots
-                .filter(|n| n.round >= 0 && n.round <= round && n.sub.is_none())
+                // a small dot at each place's true spot, under its icon: depth-tested, so the
+                // X-ray shows it through the ground
+                .filter(|n| n.round >= 0 && n.round <= round)
                 .flat_map(|n| [n.at[0], n.at[1] + 1.5, n.at[2], 0.62, 0.68, 0.66])
                 .collect();
             let (a, b) = Self::upload(gl, &data, &[3, 3]);

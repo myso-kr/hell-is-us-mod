@@ -811,7 +811,7 @@ MAP3D_ROUNDS	Ronda de la historia
 MAP3D_ROUND	ronda {round}
 MAP3D_NEVER	nunca
 MAP3D_BELOW	{m} m bajo tierra
-MAP3D_HINT	Arrastrar: girar · arrastrar con derecho: mover · rueda: zoom · clic: lugar
+MAP3D_HINT	Arrastrar: girar · arrastrar con derecho: mover · Ctrl+rueda: zoom · clic: lugar
 MAP3D_LOADING	Cargando la región…
 MAP3D_MISSING	Faltan los datos de mapa de esta región: ejecuta `hiumod doctor map3d` una vez (unos minutos).
 MAP3D_NORTH	Norte arriba
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	Iconos sobre lo cercano (enemigos, objetos, gente)
 SCREEN3D_NOTE	Ocultos donde muros o el suelo los tapan; los tipos mostrados son los del minimapa.
 MAP_SETTINGS	Ajustes del mapa
 LEGEND_SHARED	Igual en el minimapa, el mapa grande, el mapa 3D y la vista del juego.
+SORT_LEVER	Palanca, interruptor
+SORT_INSPECT	Para examinar
+SORT_TIMELOOP	Bucle temporal

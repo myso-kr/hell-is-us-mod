@@ -14,12 +14,17 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   shows kinds and sorts, at its icon size), the white hero arrow, the goal's diamond and the route
   in the goal's colour, the red north; places on another floor faint with an up or down badge, far
   ones faint as the big map's edge, under the icons' layer opacity. One legend for every map.
+- Three map sorts, on every map and in the legend: levers and switches, things to look at
+  (signs, displays, computers) and time loops. Key locks show as doors. The 3D map no longer draws
+  what the player cannot see (triggers, sounds, effects, receivers, lines said).
 - The game view's 3D layer can be turned on and off apart: the route on the floor (now a narrower
   band starting a few metres ahead) and the maps' icons over what is near, hidden behind walls
   and ground.
 
 ### Changed
 
+- The 3D map zooms with Ctrl+wheel (or the + and − buttons): the wheel scrolls the page, as over
+  an embedded map, so scrolling past it no longer moves its camera.
 - The Map page's settings (minimap, big map, terrain, layer opacity, the game view's 3D layer,
   keys) are one card with a tab each, beside the previews.
 

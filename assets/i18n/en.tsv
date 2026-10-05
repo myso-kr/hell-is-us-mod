@@ -811,7 +811,7 @@ MAP3D_ROUNDS	Story round
 MAP3D_ROUND	round {round}
 MAP3D_NEVER	never
 MAP3D_BELOW	{m} m below ground
-MAP3D_HINT	Drag: turn · right drag: move · wheel: zoom · click: a place
+MAP3D_HINT	Drag: turn · right drag: move · Ctrl+wheel: zoom · click: a place
 MAP3D_LOADING	Loading the region…
 MAP3D_MISSING	This region's map data is not extracted yet: run `hiumod doctor map3d` once (a few minutes).
 MAP3D_NORTH	North up
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	Icons over what is near (enemies, items, people)
 SCREEN3D_NOTE	Hidden where walls or the ground hide them; the kinds and sorts shown are the minimap's.
 MAP_SETTINGS	Map settings
 LEGEND_SHARED	The same on the minimap, the big map, the 3D map and the game view.
+SORT_LEVER	Lever, switch
+SORT_INSPECT	To look at
+SORT_TIMELOOP	Time loop

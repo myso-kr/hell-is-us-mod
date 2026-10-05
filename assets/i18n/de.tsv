@@ -811,7 +811,7 @@ MAP3D_ROUNDS	Story-Runde
 MAP3D_ROUND	Runde {round}
 MAP3D_NEVER	nie
 MAP3D_BELOW	{m} m unter dem Boden
-MAP3D_HINT	Ziehen: drehen · rechts ziehen: verschieben · Rad: Zoom · Klick: Ort
+MAP3D_HINT	Ziehen: drehen · rechts ziehen: verschieben · Ctrl+Rad: Zoom · Klick: Ort
 MAP3D_LOADING	Region wird geladen…
 MAP3D_MISSING	Die Kartendaten dieser Region fehlen noch: einmal `hiumod doctor map3d` ausführen (einige Minuten).
 MAP3D_NORTH	Norden oben
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	Symbole über Nahem (Gegner, Gegenstände, Leute)
 SCREEN3D_NOTE	Verborgen, wo Wände oder Boden sie verdecken; die gezeigten Arten sind die der Minikarte.
 MAP_SETTINGS	Karteneinstellungen
 LEGEND_SHARED	Gleich auf Minikarte, großer Karte, 3D-Karte und im Spielbild.
+SORT_LEVER	Hebel, Schalter
+SORT_INSPECT	Zum Ansehen
+SORT_TIMELOOP	Zeitschleife

@@ -811,7 +811,7 @@ MAP3D_ROUNDS	Étape de l'histoire
 MAP3D_ROUND	étape {round}
 MAP3D_NEVER	jamais
 MAP3D_BELOW	{m} m sous terre
-MAP3D_HINT	Glisser : tourner · clic droit glissé : déplacer · molette : zoom · clic : lieu
+MAP3D_HINT	Glisser : tourner · clic droit glissé : déplacer · Ctrl+molette : zoom · clic : lieu
 MAP3D_LOADING	Chargement de la région…
 MAP3D_MISSING	Les données de carte de cette région manquent : lancez `hiumod doctor map3d` une fois (quelques minutes).
 MAP3D_NORTH	Nord en haut
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	Icônes sur ce qui est proche (ennemis, objets, gens)
 SCREEN3D_NOTE	Cachés là où murs ou sol les masquent ; les types affichés sont ceux de la mini-carte.
 MAP_SETTINGS	Réglages de la carte
 LEGEND_SHARED	Identique sur la mini-carte, la grande carte, la carte 3D et la vue du jeu.
+SORT_LEVER	Levier, interrupteur
+SORT_INSPECT	À examiner
+SORT_TIMELOOP	Boucle temporelle

@@ -811,7 +811,7 @@ MAP3D_ROUNDS	剧情回合
 MAP3D_ROUND	回合 {round}
 MAP3D_NEVER	无法到达
 MAP3D_BELOW	地下 {m} 米
-MAP3D_HINT	拖动: 旋转 · 右键拖动: 平移 · 滚轮: 缩放 · 点击: 地点
+MAP3D_HINT	拖动: 旋转 · 右键拖动: 平移 · Ctrl+滚轮: 缩放 · 点击: 地点
 MAP3D_LOADING	正在加载地区…
 MAP3D_MISSING	此地区的地图数据尚未提取：请运行一次 `hiumod doctor map3d`（几分钟）。
 MAP3D_NORTH	北向上
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	附近的标记 (怪物·物品·NPC)
 SCREEN3D_NOTE	被墙或地形遮挡时隐藏；显示的种类与小地图相同。
 MAP_SETTINGS	地图设置
 LEGEND_SHARED	小地图、大地图、3D 地图和游戏画面通用。
+SORT_LEVER	拉杆·开关
+SORT_INSPECT	可查看
+SORT_TIMELOOP	时间循环

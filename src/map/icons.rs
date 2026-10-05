@@ -50,6 +50,9 @@ pub fn source(s: Sub) -> &'static str {
         EnemyGroup => include_str!("../../assets/icons/enemy_group.svg"),
         Puzzle => include_str!("../../assets/icons/interact_puzzle.svg"),
         Vault => include_str!("../../assets/icons/interact_vault.svg"),
+        Lever => include_str!("../../assets/icons/interact_lever.svg"),
+        Inspect => include_str!("../../assets/icons/interact_inspect.svg"),
+        TimeLoop => include_str!("../../assets/icons/interact_timeloop.svg"),
     }
 }
 

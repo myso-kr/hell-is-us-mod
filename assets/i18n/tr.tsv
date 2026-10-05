@@ -811,7 +811,7 @@ MAP3D_ROUNDS	Hikâye turu
 MAP3D_ROUND	tur {round}
 MAP3D_NEVER	asla
 MAP3D_BELOW	yerin {m} m altında
-MAP3D_HINT	Sürükle: döndür · sağ sürükle: kaydır · tekerlek: yakınlaş · tıkla: yer
+MAP3D_HINT	Sürükle: döndür · sağ sürükle: kaydır · Ctrl+tekerlek: yakınlaş · tıkla: yer
 MAP3D_LOADING	Bölge yükleniyor…
 MAP3D_MISSING	Bu bölgenin harita verisi yok: bir kez `hiumod doctor map3d` çalıştırın (birkaç dakika).
 MAP3D_NORTH	Kuzey yukarı
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	Yakındakilerin üstünde simgeler (düşman, eşya, kişi)
 SCREEN3D_NOTE	Duvar ya da zemin gizlediğinde gizlenir; gösterilen türler mini haritanınkilerdir.
 MAP_SETTINGS	Harita ayarları
 LEGEND_SHARED	Mini harita, büyük harita, 3D harita ve oyun görünümünde aynı.
+SORT_LEVER	Kol, şalter
+SORT_INSPECT	İncelenecek
+SORT_TIMELOOP	Zaman döngüsü

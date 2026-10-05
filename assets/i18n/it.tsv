@@ -811,7 +811,7 @@ MAP3D_ROUNDS	Turno della storia
 MAP3D_ROUND	turno {round}
 MAP3D_NEVER	mai
 MAP3D_BELOW	{m} m sottoterra
-MAP3D_HINT	Trascina: ruota · trascina col destro: sposta · rotella: zoom · clic: luogo
+MAP3D_HINT	Trascina: ruota · trascina col destro: sposta · Ctrl+rotella: zoom · clic: luogo
 MAP3D_LOADING	Caricamento della regione…
 MAP3D_MISSING	Mancano i dati della mappa di questa regione: esegui `hiumod doctor map3d` una volta (qualche minuto).
 MAP3D_NORTH	Nord in alto
@@ -822,3 +822,6 @@ SCREEN3D_MARKS	Icone su ciò che è vicino (nemici, oggetti, persone)
 SCREEN3D_NOTE	Nascosti dove muri o terreno li coprono; i tipi mostrati sono quelli della minimappa.
 MAP_SETTINGS	Impostazioni mappa
 LEGEND_SHARED	Uguale su minimappa, mappa grande, mappa 3D e vista di gioco.
+SORT_LEVER	Leva, interruttore
+SORT_INSPECT	Da osservare
+SORT_TIMELOOP	Loop temporale
