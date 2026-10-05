@@ -848,3 +848,4 @@ SAFE_COLOURS	Colour-blind friendly colours
 HIGH_CONTRAST	High contrast: solid backs behind the overlays’ text
 REDUCED_MOTION	Reduce motion (no drifting backdrop)
 ACCESSIBILITY_NOTE	Colours apply to the minimap, the big map, the 3D map and the game view alike.
+OVERLAY_SCALE	Overlay size

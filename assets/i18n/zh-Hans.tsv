@@ -848,3 +848,4 @@ SAFE_COLOURS	色盲友好配色
 HIGH_CONTRAST	高对比度：文字背景不透明
 REDUCED_MOTION	减少动态（背景静止）
 ACCESSIBILITY_NOTE	颜色适用于小地图、大地图、3D 地图和游戏画面。
+OVERLAY_SCALE	叠加层大小

@@ -848,3 +848,4 @@ SAFE_COLOURS	색각 이상 친화 색상
 HIGH_CONTRAST	고대비: 오버레이 글자 뒤 배경을 불투명하게
 REDUCED_MOTION	움직임 줄이기 (배경 애니메이션 끄기)
 ACCESSIBILITY_NOTE	색상은 미니맵·큰 지도·3D 지도·게임 화면에 모두 적용됩니다.
+OVERLAY_SCALE	오버레이 크기

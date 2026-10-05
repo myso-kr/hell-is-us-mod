@@ -443,6 +443,8 @@ impl Panel {
                     // what is told apart by colour, how solid the cards are, what moves
                     tw::switch(t, &mut state.safe_colours, tr!("SAFE_COLOURS"));
                     tw::switch(t, &mut state.high_contrast, tr!("HIGH_CONTRAST"));
+                    let (lo, hi) = crate::minimap::OVERLAY_PCT;
+                    field(t, tr!("OVERLAY_SCALE"), |t| tw::slider(t, &mut state.overlay_pct, lo..=hi, 5.0, " %"));
                     let mut still = !self.motion;
                     if tw::switch(t, &mut still, tr!("REDUCED_MOTION")).changed() {
                         self.motion = !still;

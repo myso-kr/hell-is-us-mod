@@ -848,3 +848,4 @@ SAFE_COLOURS	Renk körlüğüne uygun renkler
 HIGH_CONTRAST	Yüksek kontrast: metnin arkasında opak zemin
 REDUCED_MOTION	Hareketi azalt (sabit arka plan)
 ACCESSIBILITY_NOTE	Renkler mini harita, büyük harita, 3D harita ve oyun görünümünde geçerli.
+OVERLAY_SCALE	Kaplama boyutu

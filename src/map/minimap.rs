@@ -23,6 +23,9 @@ pub type Point = [f32; 3];
 
 /// The largest radius either map draws (m): past about this the game has not loaded the
 /// land, and a wider map shows its edge cut off.
+/// The overlay scale's range (%).
+pub const OVERLAY_PCT: (u32, u32) = (75, 150);
+
 pub const RADIUS_MAX: f32 = 400.0;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -113,6 +116,8 @@ pub struct MapState {
     /// Accessibility: colours colour-blind players tell apart, solid backs (settings.rs).
     pub safe_colours: bool,
     pub high_contrast: bool,
+    /// The minimap, compass, tracker, notices and markers at this size (%, `OVERLAY_PCT`).
+    pub overlay_pct: u32,
     /// The maps' icons over what is near in the game's view (enemies, items, people…), as the
     /// minimap's kinds and sorts are shown.
     pub screen_marks: bool,
@@ -173,6 +178,7 @@ impl MapState {
             streamer: self.streamer,
             safe_colours: self.safe_colours,
             high_contrast: self.high_contrast,
+            overlay_pct: self.overlay_pct,
             auto: self.auto,
             trails: self
                 .trails
@@ -232,6 +238,7 @@ impl Default for MapState {
             streamer: false,
             safe_colours: false,
             high_contrast: false,
+            overlay_pct: 100,
             screen_marks: true,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
@@ -322,8 +329,13 @@ impl MapState {
             self.tracker
         );
         out += &format!(
-            "screen_route {}\nscreen_marks {}\nstreamer {}\nsafe_colours {}\nhigh_contrast {}\n",
-            self.screen_route, self.screen_marks, self.streamer, self.safe_colours, self.high_contrast
+            "screen_route {}\nscreen_marks {}\nstreamer {}\nsafe_colours {}\nhigh_contrast {}\noverlay_scale {}\n",
+            self.screen_route,
+            self.screen_marks,
+            self.streamer,
+            self.safe_colours,
+            self.high_contrast,
+            self.overlay_pct
         );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
@@ -394,6 +406,11 @@ impl MapState {
                 ["streamer", v] => s.streamer = v == "true",
                 ["safe_colours", v] => s.safe_colours = v == "true",
                 ["high_contrast", v] => s.high_contrast = v == "true",
+                ["overlay_scale", v] => {
+                    if let Ok(n) = v.parse::<u32>() {
+                        s.overlay_pct = n.clamp(OVERLAY_PCT.0, OVERLAY_PCT.1);
+                    }
+                }
                 ["north_yaw", v] => {
                     if let Some(n) = v.parse::<f32>().ok().filter(|n| (0.0..360.0).contains(n)) {
                         s.north_yaw = n;

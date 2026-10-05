@@ -47,6 +47,11 @@ const MAP_PX: i32 = 240;
 /// The compass strip.
 const COMPASS_W: i32 = 560;
 const COMPASS_H: i32 = 60;
+
+/// `n` drawing pixels at the overlay scale `k`: where a scaled window goes.
+fn sc(n: i32, k: f32) -> i32 {
+    (n as f32 * k).round() as i32
+}
 /// How far above the screen's middle the game's right-middle notices reach, on its
 /// 1080-tall layout (`HUD_SecretStarted…`, `HUD_CombatItemPickUp…`: anchored at the
 /// right edge's middle): the tracker ends above it.
@@ -204,6 +209,8 @@ pub fn run(shared: Arc<Shared>) {
     let mut banner_shown: Option<(String, String)> = None;
     let mut banner_until = Instant::now();
     let mut banner_used = 0;
+    // The overlay scale the windows were made at (%), and as a factor.
+    let (mut scale_pct, mut k) = (100u32, 1.0f32);
     // What the deadlines' alert said last, so a new one shows again.
     let mut alerted = String::new();
     // Where the last session left off: shown once, on the first frame in play.
@@ -390,6 +397,21 @@ pub fn run(shared: Arc<Shared>) {
         crate::ui::layered::HIDE_FROM_CAPTURE.store(state.streamer, Ordering::Relaxed);
         crate::settings::SAFE_COLOURS.store(state.safe_colours, Ordering::Relaxed);
         crate::settings::HIGH_CONTRAST.store(state.high_contrast, Ordering::Relaxed);
+        // A new overlay scale: the small windows made again at it (the big map and the route
+        // cover the game's window and keep their size).
+        if state.overlay_pct != scale_pct {
+            scale_pct = state.overlay_pct;
+            k = scale_pct as f32 / 100.0;
+            if let Some(w) = Layered::new_scaled("hiumod-minimap", "Hell Is Us Minimap", MAP_PX, MAP_PX, k) {
+                map_window = w;
+            }
+            if let Some(w) = Layered::new_scaled("hiumod-compass", "Hell Is Us Compass", COMPASS_W, COMPASS_H, k) {
+                compass_window = w;
+            }
+            tracker_window = Layered::new_scaled("hiumod-tracker", "Hell Is Us Quests", tracker::W, tracker::H, k);
+            banner_window = Layered::new_scaled("hiumod-banner", "Hell Is Us Notice", banner::W, banner::H, k);
+            marker_windows.clear();
+        }
         if state.haze_links != *haze_links {
             state.haze_links = (*haze_links).clone();
         }
@@ -885,7 +907,7 @@ pub fn run(shared: Arc<Shared>) {
                         drop(t);
                         let _t = crate::prof::span("mini.present");
                         crate::prof::timed("present.mini", || {
-                            map_window.present(&map_cv, r.right - MAP_PX - MARGIN, r.top + MARGIN + 24)
+                            map_window.present(&map_cv, r.right - sc(MAP_PX, k) - MARGIN, r.top + MARGIN + 24)
                         });
                     } else {
                         map_window.hide();
@@ -915,7 +937,13 @@ pub fn run(shared: Arc<Shared>) {
                     })
                     .collect();
                 while marker_windows.len() < marks.len() {
-                    marker_windows.push(Layered::new("hiumod-marker", "Hell Is Us Marker", marker::W, marker::H));
+                    marker_windows.push(Layered::new_scaled(
+                        "hiumod-marker",
+                        "Hell Is Us Marker",
+                        marker::W,
+                        marker::H,
+                        k,
+                    ));
                 }
                 for (i, w) in marker_windows.iter_mut().enumerate() {
                     let Some(w) = w.as_mut() else { continue };
@@ -923,7 +951,7 @@ pub fn run(shared: Arc<Shared>) {
                         Some(&(x, y, far, colour, focus)) => {
                             marker::draw(&mut marker_cv, far, colour, focus);
                             crate::prof::timed("present.marker", || {
-                                w.present(&marker_cv, x - marker::CX, y - marker::CY)
+                                w.present(&marker_cv, x - sc(marker::CX, k), y - sc(marker::CY, k))
                             });
                         }
                         None => w.hide(),
@@ -980,7 +1008,7 @@ pub fn run(shared: Arc<Shared>) {
                 if state.compass {
                     let pins = hud::compass_pins(&goals, &state, world, p, &drawn);
                     draw_compass(&mut compass_cv, yaw - state.north_yaw, &pins);
-                    let x = r.left + (r.right - r.left - COMPASS_W) / 2;
+                    let x = r.left + (r.right - r.left - sc(COMPASS_W, k)) / 2;
                     crate::prof::timed("present.compass", || compass_window.present(&compass_cv, x, r.top + 12));
                 } else {
                     compass_window.hide();
@@ -1035,7 +1063,7 @@ pub fn run(shared: Arc<Shared>) {
                     // band where the game opens its notices (the right middle: secrets
                     // started, items picked up), on the game's 1080-tall layout scaled.
                     let top = r.top + MARGIN + 24;
-                    let y = if state.display == Display::Mini { top + MAP_PX + 12 } else { top };
+                    let y = if state.display == Display::Mini { top + sc(MAP_PX, k) + 12 } else { top };
                     let scale = (r.bottom - r.top) as f32 / 1080.0;
                     let band = r.top + (r.bottom - r.top) / 2 - (NOTICE_HALF * scale) as i32;
                     let max_h = band - y;
@@ -1066,7 +1094,7 @@ pub fn run(shared: Arc<Shared>) {
                     }
                     if tracker_used > 0 {
                         crate::prof::timed("present.tracker", || {
-                            w.present(&tracker_cv, r.right - tracker::W - MARGIN, y)
+                            w.present(&tracker_cv, r.right - sc(tracker::W, k) - MARGIN, y)
                         });
                     } else {
                         w.hide();
@@ -1124,8 +1152,8 @@ pub fn run(shared: Arc<Shared>) {
                             };
                             banner_used = banner::draw(&mut banner_cv, bp, title, body, colour);
                         }
-                        let x = r.left + (r.right - r.left - banner::W) / 2;
-                        let y = r.top + 12 + if state.compass { COMPASS_H + 6 } else { 0 };
+                        let x = r.left + (r.right - r.left - sc(banner::W, k)) / 2;
+                        let y = r.top + 12 + if state.compass { sc(COMPASS_H, k) + 6 } else { 0 };
                         w.present(&banner_cv, x, y);
                     }
                     (Some(w), ..) => {

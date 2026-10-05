@@ -10,6 +10,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- Overlay size (Accessibility tab, 75–150 %): the minimap, compass, quest tracker, notices and
+  markers shown smaller or larger, placed by their new size.
 - Accessibility (Map page, a tab of its own): colour-blind friendly colours (Okabe–Ito) for
   markers, goals, tracks, drops and shortcuts on every map and in the game view; high contrast
   (solid backs behind the tracker, notices and compass); reduced motion (no drifting backdrop).

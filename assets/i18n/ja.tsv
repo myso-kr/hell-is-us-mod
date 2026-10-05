@@ -848,3 +848,4 @@ SAFE_COLOURS	色覚多様性に配慮した色
 HIGH_CONTRAST	ハイコントラスト: 文字の背景を不透明に
 REDUCED_MOTION	動きを減らす（背景アニメーションを止める）
 ACCESSIBILITY_NOTE	色はミニマップ・大きい地図・3D地図・ゲーム画面すべてに適用されます。
+OVERLAY_SCALE	オーバーレイの大きさ

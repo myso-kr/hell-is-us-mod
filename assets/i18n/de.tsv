@@ -848,3 +848,4 @@ SAFE_COLOURS	Farbenblind-freundliche Farben
 HIGH_CONTRAST	Hoher Kontrast: undurchsichtiger Hintergrund hinter Overlay-Text
 REDUCED_MOTION	Bewegung reduzieren (kein bewegter Hintergrund)
 ACCESSIBILITY_NOTE	Die Farben gelten für Minikarte, große Karte, 3D-Karte und Spielbild.
+OVERLAY_SCALE	Overlay-Größe
