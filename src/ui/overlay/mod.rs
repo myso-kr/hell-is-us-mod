@@ -190,8 +190,7 @@ pub fn run(shared: Arc<Shared>) {
     let mut marker_windows: Vec<Option<Layered>> = Vec::new();
     let mut marker_cv = Canvas::new(marker::W as usize, marker::H as usize);
     // The route in focus on the game's view (screenroute.rs), at most this often.
-    let mut screen_route = screenroute::ScreenRoute::default();
-    let mut screen_route_at = Instant::now();
+    let screen_route = screenroute::Painter::spawn();
     let mut tracker_cv = Canvas::new(tracker::W as usize, tracker::H as usize);
     let mut pen = Pen::new(tracker::W, tracker::H);
     let mut tracked: Option<Tracked> = None;
@@ -871,14 +870,15 @@ pub fn run(shared: Arc<Shared>) {
                 }
                 // The route in focus laid on the floor in the game's view, hidden where the
                 // world hides it.
-                if screen_route_at.elapsed() >= Duration::from_millis(33) {
-                    screen_route_at = Instant::now();
+                // Drawn on a thread of its own from the camera as it is (screenroute::Painter):
+                // handed here what to draw, at this loop's pace.
+                {
                     let (route, route_colour) = shared.route3d.lock().unwrap().clone();
-                    let route: &[[f32; 3]] =
+                    let route: Vec<[f32; 3]> =
                         if state.route && state.screen_route && consent.has(crate::settings::Consent::GUIDE) {
-                            &route
+                            route
                         } else {
-                            &[]
+                            Vec::new()
                         };
                     // the maps' icons over what is near, as the minimap shows its kinds and sorts
                     let marks: Vec<crate::actors::Thing> =
@@ -887,15 +887,28 @@ pub fn run(shared: Arc<Shared>) {
                         } else {
                             Vec::new()
                         };
-                    match (cam.as_ref(), client) {
-                        // shown when the maps are (the map key's "off" hides it with them)
-                        (Some(cam), Some(c))
-                            if state.display != Display::Off && (route.len() > 1 || !marks.is_empty()) =>
+                    // shown when the maps are (the map key's "off" hides it with them), while
+                    // the camera can be read and the game is not paused
+                    let pid = reader.as_ref().map(|r| r.pid);
+                    let job = match (pose_src.filter(|_| cam.is_some()), pid, client) {
+                        (Some(src), Some(pid), Some(c))
+                            if !paused && state.display != Display::Off && (route.len() > 1 || !marks.is_empty()) =>
                         {
-                            screen_route.draw(cam, c, route, &obstacles, route_colour, p, &marks, state.icon_px);
+                            Some(screenroute::Job {
+                                src,
+                                pid,
+                                client: c,
+                                route,
+                                scene: obstacles.clone(),
+                                colour: route_colour,
+                                hero: p,
+                                things: marks,
+                                icon_px: state.icon_px,
+                            })
                         }
-                        _ => screen_route.hide(),
-                    }
+                        _ => None,
+                    };
+                    screen_route.set(job);
                 }
 
                 if state.compass {
@@ -1064,13 +1077,13 @@ pub fn run(shared: Arc<Shared>) {
                     for w in marker_windows.iter().flatten() {
                         w.keep_on_top(panel);
                     }
-                    screen_route.keep_on_top(panel);
+                    screen_route.keep_under(panel);
                 }
             }
             _ => {
                 map_window.hide();
                 compass_window.hide();
-                screen_route.hide();
+                screen_route.set(None);
                 for w in marker_windows.iter_mut().flatten() {
                     w.hide();
                 }

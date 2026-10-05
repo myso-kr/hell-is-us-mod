@@ -23,6 +23,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Changed
 
+- The game view's 3D layer draws on a thread of its own at 60 frames a second from the camera as
+  it is, instead of at the overlay's 20: the band no longer jerks as the view turns. What is seen
+  from the camera is worked out again only when the camera moves 25 cm or after 120 ms.
+- The Map page's settings card has real tabs: the open one lit with an underline, the rest dim.
 - Routes are drawn with round bends on the minimap, the big map, the 3D map and in the game view
   (corners cut twice, at most 1.2 m, so a bend by a doorway does not cross the wall); the 3D map's
   ribbon is one strip with mitred joins, not a chain of plates.

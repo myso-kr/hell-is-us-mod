@@ -11,7 +11,10 @@ use super::marker;
 use crate::obstacles::{Obstacle, Scene};
 use crate::raster::Canvas;
 use crate::ui::layered::Layered;
-use std::sync::Arc;
+use std::collections::HashMap;
+use std::sync::atomic::{AtomicIsize, Ordering};
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
 
 /// How far ahead of the hero the band goes (cm), its width, how often it is sampled.
 const AHEAD: f32 = 8000.0;
@@ -28,6 +31,13 @@ const LIFT: f32 = 8.0;
 const NEAR_END: f32 = 120.0;
 /// The window grows and shrinks in steps this big (px), not every frame.
 const BUCKET: i32 = 128;
+/// The layer's own pace: the camera turns between the overlay's frames (50 ms), and a band on the
+/// floor that lags the view by that much jerks.
+const PAINT_EVERY: Duration = Duration::from_millis(16);
+/// What is seen from the camera is worked out again when the camera has moved this far (cm), or
+/// this long after: the costly part (rays against the obstacles and the ground), not the drawing.
+const SEEN_MOVED: f32 = 25.0;
+const SEEN_FOR: Duration = Duration::from_millis(120);
 
 /// A piece of the band on the screen: its corners, its opacity, whether a chevron.
 type Quad = ([(f32, f32); 4], f32, bool);
@@ -45,13 +55,96 @@ pub struct ScreenRoute {
     canvas: Canvas,
     index: Option<Indexed>,
     /// The maps' icons, rasterised at each size a distance gives them (px → set).
-    icons: std::collections::HashMap<usize, crate::icons::Icons>,
+    icons: HashMap<usize, crate::icons::Icons>,
     icons_px: u8,
+    /// Whether a point (on a 25 cm grid) is seen from the camera at `seen_eye`, as of `seen_at`.
+    seen: HashMap<[i32; 3], bool>,
+    seen_eye: [f32; 3],
+    seen_at: Option<Instant>,
 }
 
 impl Default for ScreenRoute {
     fn default() -> Self {
-        ScreenRoute { window: None, canvas: Canvas::new(1, 1), index: None, icons: Default::default(), icons_px: 0 }
+        ScreenRoute {
+            window: None,
+            canvas: Canvas::new(1, 1),
+            index: None,
+            icons: Default::default(),
+            icons_px: 0,
+            seen: HashMap::new(),
+            seen_eye: [0.0; 3],
+            seen_at: None,
+        }
+    }
+}
+
+/// What the game view's layer is to draw, as the overlay last worked it out (at its pace).
+pub struct Job {
+    /// Where the camera is read from, in the game's process `pid`: the layer reads it itself.
+    pub src: crate::player::PoseSource,
+    pub pid: u32,
+    pub client: (i32, i32, i32, i32),
+    pub route: Vec<[f32; 3]>,
+    pub scene: Arc<Scene>,
+    pub colour: [u8; 3],
+    pub hero: [f32; 3],
+    pub things: Vec<crate::actors::Thing>,
+    pub icon_px: u8,
+}
+
+/// The game view's layer on a thread of its own, drawn every `PAINT_EVERY` from the camera as it
+/// is then: the overlay hands it what to draw (`set`) at its own, slower pace.
+pub struct Painter {
+    job: Arc<Mutex<Option<Arc<Job>>>>,
+    panel: Arc<AtomicIsize>,
+}
+
+impl Painter {
+    pub fn spawn() -> Painter {
+        let job: Arc<Mutex<Option<Arc<Job>>>> = Arc::new(Mutex::new(None));
+        let panel = Arc::new(AtomicIsize::new(0));
+        let (j, p) = (job.clone(), panel.clone());
+        let _ = std::thread::Builder::new().name("screen3d".into()).spawn(move || paint(j, p));
+        Painter { job, panel }
+    }
+
+    /// What to draw from now on; `None` hides the layer.
+    pub fn set(&self, job: Option<Job>) {
+        *self.job.lock().unwrap() = job.map(Arc::new);
+    }
+
+    /// Kept under the panel while it shows (`Some`), else on top.
+    pub fn keep_under(&self, panel: Option<windows_sys::Win32::Foundation::HWND>) {
+        self.panel.store(panel.map_or(0, |h| h as isize), Ordering::Relaxed);
+    }
+}
+
+fn paint(job: Arc<Mutex<Option<Arc<Job>>>>, panel: Arc<AtomicIsize>) {
+    let mut layer = ScreenRoute::default();
+    let mut reader: Option<crate::game::process::Reader> = None;
+    let mut tick = 0u32;
+    loop {
+        let start = Instant::now();
+        crate::ui::layered::pump();
+        let now = job.lock().unwrap().clone();
+        match now {
+            Some(j) => {
+                if reader.as_ref().map(|r| r.pid) != Some(j.pid) {
+                    reader = crate::game::process::Reader::open(j.pid);
+                }
+                match reader.as_ref().and_then(|r| j.src.camera(r)) {
+                    Some(cam) => layer.draw(&cam, j.client, &j.route, &j.scene, j.colour, j.hero, &j.things, j.icon_px),
+                    None => layer.hide(),
+                }
+            }
+            None => layer.hide(),
+        }
+        if tick % 30 == 0 {
+            let p = panel.load(Ordering::Relaxed);
+            layer.keep_on_top((p != 0).then_some(p as windows_sys::Win32::Foundation::HWND));
+        }
+        tick = tick.wrapping_add(1);
+        std::thread::sleep(PAINT_EVERY.saturating_sub(start.elapsed()).max(Duration::from_millis(2)));
     }
 }
 
@@ -94,6 +187,18 @@ impl ScreenRoute {
         let index = self.index.as_ref().unwrap();
         let (left, top, w, h) = client;
         let eye = [cam.at[0] as f32, cam.at[1] as f32, cam.at[2] as f32];
+        // what is seen, kept while the camera stays put: the view may turn, the rays are the same
+        let moved = (0..3).map(|k| (eye[k] - self.seen_eye[k]).powi(2)).sum::<f32>().sqrt();
+        if moved > SEEN_MOVED || self.seen_at.is_none_or(|t| t.elapsed() > SEEN_FOR) {
+            self.seen.clear();
+            self.seen_eye = eye;
+            self.seen_at = Some(Instant::now());
+        }
+        let cache = &mut self.seen;
+        let mut seen_from = |at: [f32; 3]| {
+            let key = [(at[0] / 25.0).round() as i32, (at[1] / 25.0).round() as i32, (at[2] / 25.0).round() as i32];
+            *cache.entry(key).or_insert_with(|| visible(eye, at, scene, &index.boxes))
+        };
         let samples = resample(route, STEP, AHEAD);
         // each sample: seen?, and its band's two edges on the screen
         let mut quads: Vec<Quad> = Vec::new();
@@ -102,7 +207,7 @@ impl ScreenRoute {
             let (p, dir, along) = (s.0, s.1, s.2);
             let side = [-dir[1] * HALF, dir[0] * HALF];
             let at = [p[0], p[1], p[2] + LIFT];
-            let seen = visible(eye, at, scene, &index.boxes);
+            let seen = seen_from(at);
             let l = marker::project(cam, [at[0] + side[0], at[1] + side[1], at[2]], w as f32, h as f32);
             let r = marker::project(cam, [at[0] - side[0], at[1] - side[1], at[2]], w as f32, h as f32);
             let cur = match (l, r) {
@@ -135,7 +240,7 @@ impl ScreenRoute {
             }
             // over the thing's head, seen from the camera
             let at = [t.at[0], t.at[1], t.at[2] + 120.0];
-            if !visible(eye, at, scene, &index.boxes) {
+            if !seen_from(at) {
                 continue;
             }
             let Some(p) = marker::project(cam, at, w as f32, h as f32) else { continue };

@@ -511,3 +511,21 @@ The game view's icons take the compass's look (`compass::pin_look`: 115% near to
 to 35%, on a log scale over 10–200 m), rasterised per size in 2 px steps and drawn far first. The
 layer is hidden whenever the maps are (game not in front, a menu open, no map consent) and when the
 map key is at "off".
+
+### 16.6 The game view's layer at the game's pace (2026-10-06)
+
+The layer was drawn in the overlay's loop, which runs a frame every 50 ms (`FRAME`) with a 33 ms
+throttle of its own: 20 frames a second for a band laid on the floor, which lags the camera by up
+to 50 ms and jerks as the view turns. Each frame also cast up to 200 rays (route samples and
+icons), each stepping the ground every metre and testing every obstacle's bounds.
+
+`screenroute::Painter` now runs the layer on a thread of its own (`screen3d`) every 16 ms: the
+overlay hands it a `Job` (the route, the scene, the hero, the icons, the camera's `PoseSource` and
+the game's pid) at its pace, and the thread reads the camera itself (one read of MinimalViewInfo)
+and draws. The rays are cached on a 25 cm grid while the camera stays within 25 cm and for at most
+120 ms: turning the view projects again but casts nothing. The overlay hides it by handing it
+`None`, and keeps it under the panel with `keep_under`.
+
+The Map page's settings card uses `tw::tabs`: a tab bar (the open tab on a tinted top with an
+accent underline and bright text, the others dim, a rule under the row), exposed to UI Automation
+as selectable items.
