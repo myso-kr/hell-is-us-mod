@@ -347,6 +347,7 @@ impl MapState {
                 gate: Gate::Open,
                 named: true,
                 reveals: Default::default(),
+                first: None,
             })
             .collect()
     }
@@ -438,6 +439,7 @@ mod tests {
             gate: Gate::Open,
             named: true,
             reveals: Default::default(),
+            first: None,
         }
     }
 

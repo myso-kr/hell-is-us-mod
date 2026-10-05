@@ -692,9 +692,12 @@ impl Graph {
             let f = &self.nodes[first];
             // The goal there, or one made for the step (not put in the goals: only taken up
             // when a route runs through the barrier).
-            let goal = match goals.iter().find(|g| (g.at[0] - f.at[0]).hypot(g.at[1] - f.at[1]) <= NEAR) {
+            // Not a goal there that is held back itself (it waits on this same step).
+            let goal = match goals.iter().find(|g| {
+                g.gate != crate::goals::Gate::Conditional && (g.at[0] - f.at[0]).hypot(g.at[1] - f.at[1]) <= NEAR
+            }) {
                 // A one-sided door: to the side it opens from.
-                Some(g) => crate::goals::Goal { at: f.opens_from.unwrap_or(g.at), ..g.clone() },
+                Some(g) => crate::goals::Goal { at: self.stand(first), ..g.clone() },
                 None => crate::goals::Goal {
                     tier: crate::goals::Tier::Quest,
                     id: step_id(f),
@@ -705,13 +708,14 @@ impl Graph {
                         }
                         None => trf!("GRAPH_STEP_FOR", chain = text),
                     },
-                    at: f.opens_from.unwrap_or(f.at),
+                    at: self.stand(first),
                     quests: vec![],
                     tags: vec![],
                     keys: vec![],
                     gate: crate::goals::Gate::Open,
                     named: true,
                     reveals: Default::default(),
+                    first: None,
                 },
             };
             out.push(DoorStep { at: n.at, label: label(n), goal, chain: text, opens_from: n.opens_from });
@@ -883,7 +887,10 @@ impl Graph {
             }
         }
         for (first, of, text) in firsts {
-            self.step(goals, first, &of, &text);
+            let step = self.step(goals, first, &of, &text);
+            if let Some(g) = goals.iter_mut().find(|g| g.id == of.id) {
+                g.first = Some(step);
+            }
         }
         chains
     }
@@ -892,17 +899,22 @@ impl Graph {
 impl Graph {
     /// The first thing of a chain made a goal of `of`'s quest (or a goal already there
     /// taking its quest on).
-    fn step(&self, goals: &mut Vec<crate::goals::Goal>, first: usize, of: &crate::goals::Goal, text: &str) {
+    fn step(&self, goals: &mut Vec<crate::goals::Goal>, first: usize, of: &crate::goals::Goal, text: &str) -> u64 {
         use crate::goals::{Gate, Goal};
         let n = &self.nodes[first];
-        match goals.iter_mut().find(|g| (g.at[0] - n.at[0]).hypot(g.at[1] - n.at[1]) <= NEAR) {
+        let stand = self.stand(first);
+        // A goal already there, unless it is held back itself (a quest's payload beside the
+        // puzzle that gives it: then the step would point at what waits on it).
+        match goals.iter_mut().find(|g| {
+            g.id != of.id && g.gate != Gate::Conditional && (g.at[0] - n.at[0]).hypot(g.at[1] - n.at[1]) <= NEAR
+        }) {
             Some(g) => {
-                // A one-sided door: to the side it opens from.
-                if let Some(from) = n.opens_from {
-                    if g.at != from {
-                        g.at = from;
+                // Where the hero works it: a one-sided door's side, a puzzle's devices.
+                if g.at != stand {
+                    if n.opens_from.is_some() {
                         g.detail = format!("{} · {}", g.detail, tr!("GRAPH_OPENS_FROM_OTHER_SIDE"));
                     }
+                    g.at = stand;
                 }
                 for k in &of.keys {
                     if !g.keys.contains(k) {
@@ -918,28 +930,65 @@ impl Graph {
                 if g.tier > of.tier {
                     g.tier = of.tier;
                 }
+                g.id
             }
-            None => goals.push(Goal {
-                tier: of.tier,
-                id: step_id(n),
-                label: label(n),
-                detail: match n.opens_from {
-                    Some(_) => {
-                        format!("{} · {}", trf!("GRAPH_STEP_FOR", chain = text), tr!("GRAPH_OPENS_FROM_OTHER_SIDE"))
-                    }
-                    None => trf!("GRAPH_STEP_FOR", chain = text),
-                },
-                at: n.opens_from.unwrap_or(n.at),
-                quests: of.quests.clone(),
-                tags: of.tags.clone(),
-                keys: of.keys.clone(),
-                gate: Gate::Open,
-                named: true,
-                // An order or position puzzle's device gives its answer away; else what the
-                // goal it is for gives away.
-                reveals: if self.puzzle_kind(first).is_some() { crate::goals::Reveal::Answers } else { of.reveals },
-            }),
+            None => {
+                let id = step_id(n);
+                if let Some(g) = goals.iter().find(|g| g.id == id) {
+                    return g.id;
+                }
+                goals.push(Goal {
+                    tier: of.tier,
+                    id: step_id(n),
+                    label: label(n),
+                    detail: match n.opens_from {
+                        Some(_) => {
+                            format!("{} · {}", trf!("GRAPH_STEP_FOR", chain = text), tr!("GRAPH_OPENS_FROM_OTHER_SIDE"))
+                        }
+                        None => trf!("GRAPH_STEP_FOR", chain = text),
+                    },
+                    at: stand,
+                    quests: of.quests.clone(),
+                    tags: of.tags.clone(),
+                    keys: of.keys.clone(),
+                    gate: Gate::Open,
+                    named: true,
+                    // An order or position puzzle's device gives its answer away; else what the
+                    // goal it is for gives away.
+                    reveals: if self.puzzle_kind(first).is_some() { crate::goals::Reveal::Answers } else { of.reveals },
+                    first: None,
+                });
+                id
+            }
         }
+    }
+
+    /// Where the hero stands to work node `i`: a one-sided door's open side; a receiver
+    /// worked through its devices (levers, statues, slots), among them on their floor —
+    /// not the receiver itself, which can hang in the air above the room (the Forge
+    /// Foyer's, 4 m over its six levers: its ring was off the top of the screen); else
+    /// where it is.
+    pub fn stand(&self, i: usize) -> [f32; 3] {
+        let n = &self.nodes[i];
+        if let Some(from) = n.opens_from {
+            return from;
+        }
+        let parts: Vec<[f32; 3]> =
+            n.activators.iter().filter_map(|a| self.node(&n.world, a)).map(|j| self.nodes[j].at).collect();
+        if parts.is_empty() {
+            return n.at;
+        }
+        let k = parts.len() as f32;
+        let mid = parts.iter().fold([0.0; 3], |s, p| [s[0] + p[0] / k, s[1] + p[1] / k, s[2] + p[2] / k]);
+        // Too far apart to be one room (devices across a region): the nearest to the middle.
+        let spread = parts.iter().map(|p| (p[0] - mid[0]).hypot(p[1] - mid[1])).fold(0.0, f32::max);
+        if spread > STAND_SPREAD {
+            return *parts
+                .iter()
+                .min_by(|a, b| (a[0] - mid[0]).hypot(a[1] - mid[1]).total_cmp(&(b[0] - mid[0]).hypot(b[1] - mid[1])))
+                .unwrap();
+        }
+        mid
     }
 
     /// Each goal under deadly water now (`pools`, from the live pass) is held back, and the
@@ -976,7 +1025,8 @@ impl Graph {
                 let mut names: Vec<String> = chain.iter().map(|&k| label(&self.nodes[k])).collect();
                 names.insert(0, of.label.clone());
                 let text = names.iter().rev().cloned().collect::<Vec<_>>().join(" → ");
-                self.step(goals, *chain.last().unwrap(), &of, &text);
+                let step = self.step(goals, *chain.last().unwrap(), &of, &text);
+                goals[i].first = Some(step);
             }
         }
         under.len()
@@ -985,6 +1035,8 @@ impl Graph {
 
 /// How near a goal and a node must be to be the same place (cm).
 const NEAR: f32 = 150.0;
+/// A receiver's devices further apart than this from their middle (cm) are not one room.
+const STAND_SPREAD: f32 = 2_500.0;
 
 /// A step goal's id: its node, apart from the survey's and the live ids.
 fn step_id(n: &Node) -> u64 {
@@ -1154,6 +1206,7 @@ mod tests {
             gate: Gate::Open,
             named: true,
             reveals: Default::default(),
+            first: None,
         }];
         let pool = crate::obstacles::Pool {
             hull: vec![[4000.0, -1000.0], [6000.0, -1000.0], [6000.0, 1000.0], [4000.0, 1000.0]],
@@ -1188,6 +1241,22 @@ mod tests {
         assert_eq!(g.passable("W", &s), [([0.0, 0.0, 0.0], None)]);
         let s = State { used: &none, known: &none, held: &none };
         assert_eq!(g.passable("W", &s), [([0.0, 0.0, 0.0], Some([-150.0, 0.0, 100.0]))], "shut: one way");
+    }
+
+    #[test]
+    fn a_receiver_is_worked_among_its_devices_on_their_floor() {
+        let mut g = Graph::default();
+        for a in [
+            json!({"name": "L1", "class": "Lever", "at": [0, 0, 0], "guid": "1"}),
+            json!({"name": "L2", "class": "Lever", "at": [400, 0, 0], "guid": "2"}),
+            json!({"name": "Foyer", "class": "ForgeFoyerMultiActivatorsReceiver_BP_C", "at": [200, 0, 400],
+                "guid": "f", "activators": ["L1", "L2"], "logic": {"solution": [1, 0]}}),
+        ] {
+            g.add("W", &a, &Value::Null);
+        }
+        g.index();
+        let foyer = g.node("W", "Foyer").unwrap();
+        assert_eq!(g.stand(foyer), [200.0, 0.0, 0.0], "between the levers, on their floor, not 4 m up");
     }
 
     #[test]

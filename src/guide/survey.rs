@@ -510,6 +510,7 @@ impl Survey {
                     } else {
                         crate::goals::Reveal::Places
                     },
+                    first: None,
                 })
             })
             .collect()

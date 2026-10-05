@@ -81,6 +81,9 @@ pub struct Goal {
     /// What guiding there gives away, beyond the way: a place the player agreed to keep
     /// hidden, or a puzzle's answer (the Settings page's questions; `Consent`).
     pub reveals: Reveal,
+    /// Held back by the requirement graph: the goal of its chain's first step, where the
+    /// auto guide goes for it (graph.rs `gate`, `flood`; target.rs).
+    pub first: Option<u64>,
 }
 
 /// What a goal gives away if guided to (`Goal::reveals`): nothing beyond the story's way, a
@@ -905,6 +908,7 @@ impl Goals {
                 gate: p.gate,
                 // A story goal shows the way; a secret's or a clue's place is a hidden thing's.
                 reveals: if tier == Tier::Quest { Reveal::Nothing } else { Reveal::Places },
+                first: None,
             });
         }
         out
@@ -941,6 +945,7 @@ mod tests {
             gate: Gate::Open,
             named,
             reveals: Reveal::Nothing,
+            first: None,
         };
         let mut goals = [goal("Acasa Hermit Tomb · opened", false), goal("Hermit's Key", true)];
         name_by_secrets(&mut goals, &secrets);
@@ -964,6 +969,7 @@ mod tests {
             gate: Gate::Open,
             named: false,
             reveals: Default::default(),
+            first: None,
         };
         let places = |k: &str| match k {
             "ArcasSpire" => Some("아르카스 첨탑".to_string()),
@@ -1014,6 +1020,7 @@ mod tests {
             gate: Gate::Open,
             named: false,
             reveals: Default::default(),
+            first: None,
         }];
         name_by_secrets(&mut goals, &secrets);
         assert!(goals[0].label.starts_with("이웃을 사랑하라 · "), "{}", goals[0].label);
@@ -1037,6 +1044,7 @@ mod tests {
             gate: Gate::Open,
             named: false,
             reveals: Default::default(),
+            first: None,
         }];
         name_by_secrets(&mut goals, &secrets);
         assert!(goals[0].label.starts_with("어둠 속의 빛"), "{}", goals[0].label);

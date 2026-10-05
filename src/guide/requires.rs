@@ -72,6 +72,7 @@ pub fn placement_goals(survey: &Survey, world: &str, saved: &HashSet<String>, he
                 gate: Gate::Open,
                 named: true,
                 reveals: Default::default(),
+                first: None,
             }
         })
         .collect()

@@ -23,6 +23,19 @@ fn reachable(g: &Goal, journal: &[Quest]) -> bool {
         && !g.keys.iter().any(|k| journal.iter().any(|q| &q.key == k && q.status == crate::quests::Status::NotStarted))
 }
 
+/// Whether `g` is a place of the followed quest (or, with none of its places loaded, of
+/// the main story), held back or not: an objective the graph may say comes later.
+fn objective(g: &Goal, goals: &[Goal], followed: Option<&Quest>, journal: &[Quest]) -> bool {
+    if g.keys.iter().any(|k| journal.iter().any(|q| &q.key == k && q.status == crate::quests::Status::NotStarted)) {
+        return false;
+    }
+    match followed {
+        Some(q) if goals.iter().any(|x| x.serves(q)) => g.serves(q),
+        Some(q) if !matches!(q.kind, crate::quests::Kind::Main(_)) => false,
+        _ => g.tier == Tier::Quest,
+    }
+}
+
 /// Whether `g` is what auto guiding wants: a reachable place that moves the followed
 /// quest along — or, following the main story with none of its places loaded, any
 /// reachable quest goal.
@@ -80,7 +93,26 @@ pub fn next_goal(
     let near = |a: &&Goal, b: &&Goal| flat(a.at, here).total_cmp(&flat(b.at, here));
     let wanted_all: Vec<&Goal> =
         goals.iter().filter(|g| !skipped.contains(&g.id) && wanted(g, goals, followed, journal)).collect();
-    let open = wanted_all.iter().copied().filter(|g| !blocked.contains(&g.id)).min_by(near);
+    // In the graph's order: the quest's objectives, nearest first, each by what comes
+    // first for it (a held-back one by its chain's first step), not merely the nearest
+    // place any chain leads through.
+    let mut objectives: Vec<&Goal> =
+        goals.iter().filter(|g| !skipped.contains(&g.id) && objective(g, goals, followed, journal)).collect();
+    objectives.sort_by(near);
+    let by_graph: Vec<&Goal> = objectives
+        .iter()
+        .filter_map(|o| match (o.gate, o.first) {
+            (Gate::Conditional, Some(f)) => goals.iter().find(|g| g.id == f && g.gate != Gate::Conditional),
+            (Gate::Conditional, None) => None,
+            _ => Some(*o),
+        })
+        .filter(|g| !skipped.contains(&g.id) && reachable(g, journal))
+        .collect();
+    let open = by_graph
+        .iter()
+        .copied()
+        .find(|g| !blocked.contains(&g.id))
+        .or_else(|| wanted_all.iter().copied().filter(|g| !blocked.contains(&g.id)).min_by(near));
     let pick = open.or_else(|| {
         let stuck = wanted_all.iter().copied().min_by(near)?;
         let helper = goals
@@ -97,7 +129,10 @@ pub fn next_goal(
     // blocked (nearness alone does not make the guide hop between goals).
     let keep = now.filter(|t| {
         Some(*t) == pick.map(|g| g.id)
-            || wanted_all.iter().any(|g| g.id == *t) && !blocked.contains(t) && open.is_some()
+            || by_graph.first().is_none_or(|g| g.id == *t)
+                && wanted_all.iter().any(|g| g.id == *t)
+                && !blocked.contains(t)
+                && open.is_some()
     });
     keep.or(pick.map(|g| g.id))
 }
@@ -131,6 +166,7 @@ mod tests {
             gate: Gate::Open,
             named: true,
             reveals: Default::default(),
+            first: None,
         }
     }
 
@@ -187,6 +223,21 @@ mod tests {
         s.held = true;
         settle_target(&mut s, &goals, [0.0; 3], Some(&deed), &[], &Default::default());
         assert_eq!(s.auto, Some(3), "picked by hand: kept");
+    }
+
+    #[test]
+    fn auto_goes_by_the_graph_not_to_the_nearest_place() {
+        // The story's nearest objective (1) is held back; its chain starts at 3, far off.
+        // Another story place (2) is nearer than that step: the graph's order wins.
+        let mut held = goal(1, Tier::Quest, 1000.0);
+        held.gate = Gate::Conditional;
+        held.first = Some(3);
+        let goals = [held, goal(2, Tier::Quest, 2000.0), goal(3, Tier::Quest, 9000.0)];
+        let none = std::collections::HashSet::new();
+        assert_eq!(next_goal(&goals, [0.0; 3], None, &[], &none, &none, None), Some(3));
+        // The step blocked: the next objective in the order.
+        let blocked: std::collections::HashSet<u64> = [3].into();
+        assert_eq!(next_goal(&goals, [0.0; 3], None, &[], &blocked, &none, None), Some(2));
     }
 
     #[test]

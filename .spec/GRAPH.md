@@ -157,7 +157,26 @@ graph steps to, stand there instead of at the door, with "opens from the other s
 route goes round to the side it opens from rather than to the face that cannot open it. Once used, it
 is an opened door like any other (ROUTES.md §8). Test: `a_one_sided_door_is_guided_to_from_the_side_it_opens`.
 
-## 10. Next
+## 10. The auto guide in the graph's order; where a step is worked (2026-10-05)
+
+The user: the auto guide should follow the graph, not go to whatever is nearest. Before, held-back
+goals dropped out of the auto guide's choice and their chains' first steps were goals like any other,
+so it went to the nearest place any chain led through. Now each held-back goal keeps the goal of its
+chain's first step (`Goal::first`, set by `gate` and `flood`), and the auto guide takes the followed
+quest's objectives nearest first, each by what comes first for it: a held-back one by its first step,
+an open one itself (`target::next_goal`). A step whose way is blocked gives way to the next objective;
+with none, it falls back to the nearest wanted goal as before. Test:
+`auto_goes_by_the_graph_not_to_the_nearest_place`.
+
+A step no longer takes over a goal beside it that is held back itself: at the forge, the step "Child"
+(a receiver) took the quest's payload 1 m away, which waited on that same receiver, so the guide
+pointed at the payload. And a step stands where the hero works it (`Graph::stand`): a one-sided
+door's open side; a receiver worked through devices among them, on their floor (devices more than
+25 m from their middle: the nearest to it). The user saw no ring at the Forge Foyer's puzzle: its
+receiver hangs 4 m over the room's six levers, off the top of the screen. Test:
+`a_receiver_is_worked_among_its_devices_on_their_floor`.
+
+## 11. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items
