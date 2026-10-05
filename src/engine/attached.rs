@@ -419,7 +419,9 @@ impl Attached {
                     }
                 }
             }
+            let t = crate::prof::span("survey.goals");
             goals.extend(survey.goals(w, &known, &g.goals.loaded, &g.fact_keys, &mut g.met, &g.empty));
+            drop(t);
             // What must come first (requires.rs): the place to put items held, and what
             // gives an item a placement still takes.
             goals.extend(crate::requires::placement_goals(survey, w, &g.saved, &g.held));
@@ -441,10 +443,10 @@ impl Attached {
             // Only when the player asked for it (Settings: what must come first).
             let steps = crate::settings::live(crate::settings::Consent::STEPS);
             if steps {
-                graph.gate(&mut goals, w, &state);
+                crate::prof::timed("graph.gate", || graph.gate(&mut goals, w, &state));
                 // Under deadly water now: held back, the drain's chain guided to instead.
                 let done = g.obstacles.done.clone();
-                graph.flood(&mut goals, w, &done.pools, &state);
+                crate::prof::timed("graph.flood", || graph.flood(&mut goals, w, &done.pools, &state));
             }
             if fresh {
                 g.logic_puzzles = graph.logic_puzzles(w, &state);
@@ -452,7 +454,17 @@ impl Attached {
                 g.one_way = graph.one_way(w, &state);
                 g.graph_for = Some(key);
             }
-            g.doors = if steps { graph.door_steps(&goals, w, &state) } else { Vec::new() };
+            g.doors =
+                crate::prof::timed(
+                    "graph.doors",
+                    || {
+                        if steps {
+                            graph.door_steps(&goals, w, &state)
+                        } else {
+                            Vec::new()
+                        }
+                    },
+                );
         }
         Ok((goals, k))
     }

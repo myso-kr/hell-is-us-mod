@@ -317,7 +317,7 @@ pub fn run(shared: Arc<Shared>) {
             deadlines,
             puzzle_near,
             slot_puzzles,
-        ) = match shared.snap.lock().unwrap().as_ref() {
+        ) = match crate::prof::timed("lock.snap", || shared.snap.lock().unwrap()).as_ref() {
             Some(s) => (
                 s.pose_src,
                 s.pose,
@@ -373,7 +373,7 @@ pub fn run(shared: Arc<Shared>) {
         let here = fast.map(to_f32).or(glided);
 
         let haze_links = shared.snap.lock().unwrap().as_ref().map(|s| s.haze_links.clone()).unwrap_or_default();
-        let mut state = shared.map.lock().unwrap();
+        let mut state = crate::prof::timed("lock.map", || shared.map.lock().unwrap());
         if state.haze_links != *haze_links {
             state.haze_links = (*haze_links).clone();
         }
@@ -829,7 +829,9 @@ pub fn run(shared: Arc<Shared>) {
                         state.dots = dots;
                         drop(t);
                         let _t = crate::prof::span("mini.present");
-                        map_window.present(&map_cv, r.right - MAP_PX - MARGIN, r.top + MARGIN + 24);
+                        crate::prof::timed("present.mini", || {
+                            map_window.present(&map_cv, r.right - MAP_PX - MARGIN, r.top + MARGIN + 24)
+                        });
                     } else {
                         map_window.hide();
                     }
@@ -863,7 +865,9 @@ pub fn run(shared: Arc<Shared>) {
                     match marks.get(i) {
                         Some(&(x, y, far, colour, focus)) => {
                             marker::draw(&mut marker_cv, far, colour, focus);
-                            w.present(&marker_cv, x - marker::CX, y - marker::CY);
+                            crate::prof::timed("present.marker", || {
+                                w.present(&marker_cv, x - marker::CX, y - marker::CY)
+                            });
                         }
                         None => w.hide(),
                     }
@@ -915,7 +919,7 @@ pub fn run(shared: Arc<Shared>) {
                     let pins = hud::compass_pins(&goals, &state, world, p, &drawn);
                     draw_compass(&mut compass_cv, yaw - state.north_yaw, &pins);
                     let x = r.left + (r.right - r.left - COMPASS_W) / 2;
-                    compass_window.present(&compass_cv, x, r.top + 12);
+                    crate::prof::timed("present.compass", || compass_window.present(&compass_cv, x, r.top + 12));
                 } else {
                     compass_window.hide();
                 }
@@ -990,7 +994,9 @@ pub fn run(shared: Arc<Shared>) {
                         tracked = Some(now);
                     }
                     if tracker_used > 0 {
-                        w.present(&tracker_cv, r.right - tracker::W - MARGIN, y);
+                        crate::prof::timed("present.tracker", || {
+                            w.present(&tracker_cv, r.right - tracker::W - MARGIN, y)
+                        });
                     } else {
                         w.hide();
                     }

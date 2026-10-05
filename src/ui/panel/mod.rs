@@ -1109,7 +1109,7 @@ impl eframe::App for Panel {
         if let Some((ok, text)) = self.shared.reply.lock().unwrap().take() {
             self.reply = Some((ok, text, Instant::now()));
         }
-        let snap = self.shared.snap.lock().unwrap().clone();
+        let snap = crate::prof::timed("snap.clone", || self.shared.snap.lock().unwrap().clone());
         if let Some(s) = &snap {
             self.resume(s);
             self.follow(s);

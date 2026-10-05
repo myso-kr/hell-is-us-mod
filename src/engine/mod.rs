@@ -177,11 +177,13 @@ impl Engine {
         } else {
             let a = self.attached.as_ref().unwrap();
             snap.game = Ok((a.game.pid, a.version.clone()));
+            let head = crate::prof::span("head");
             snap.gate = a.gate();
             snap.pose = a.pose().ok();
             snap.pose_src = a.chain().ok().and_then(|c| c.pose_source(&a.game, &a.anchors).ok());
             snap.paused = a.paused().unwrap_or(false);
             snap.world = a.chain().ok().and_then(|c| c.world(&a.game, &a.anchors).ok());
+            drop(head);
             // A closed gate pauses the toggles rather than ending them: it closes on
             // every loading screen, and the player expects god mode to survive one.
             if snap.gate.is_ok() {

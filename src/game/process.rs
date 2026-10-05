@@ -49,6 +49,7 @@ impl Drop for Game {
 
 impl Memory for Game {
     fn read(&self, addr: u64, buf: &mut [u8]) -> bool {
+        crate::prof::count_read();
         let mut n = 0usize;
         let ok = unsafe {
             ReadProcessMemory(self.handle, addr as *const c_void, buf.as_mut_ptr().cast(), buf.len(), &mut n)
@@ -86,6 +87,7 @@ impl Drop for Reader {
 
 impl Memory for Reader {
     fn read(&self, addr: u64, buf: &mut [u8]) -> bool {
+        crate::prof::count_read();
         let mut n = 0usize;
         let ok = unsafe {
             ReadProcessMemory(self.handle, addr as *const c_void, buf.as_mut_ptr().cast(), buf.len(), &mut n)

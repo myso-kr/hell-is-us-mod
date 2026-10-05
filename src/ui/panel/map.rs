@@ -322,7 +322,7 @@ impl Panel {
     /// key, the game's menus.
     pub(super) fn map_tab(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         let shared = self.shared.clone();
-        let mut guard = shared.map.lock().unwrap();
+        let mut guard = crate::prof::timed("lock.map", || shared.map.lock().unwrap());
         let before = guard.clone();
         // The page's cards in masonry columns (tw::masonry), as many as fit.
         let cols = self.columns;
