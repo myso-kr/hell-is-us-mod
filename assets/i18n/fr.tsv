@@ -804,7 +804,6 @@ MOVED_BACK	Revenu où vous étiez avant la téléportation.
 NOTHING_TO_GO_BACK_TO	Aucune position d'avant téléportation n'est gardée.
 GRAPH_OPENS_FROM_OTHER_SIDE	ne s'ouvre que de l'autre côté : guidé vers ce côté
 MAP3D	Carte 3D
-ABOUT_MAP3D	La région en 3D, sous-sol compris
 MAP3D_XRAY	Rayons X
 MAP3D_HOLE	Trou autour du point visé
 MAP3D_KEEP	Sol
@@ -817,3 +816,9 @@ MAP3D_LOADING	Chargement de la région…
 MAP3D_MISSING	Les données de carte de cette région manquent : lancez `hiumod doctor map3d` une fois (quelques minutes).
 MAP3D_NORTH	Nord en haut
 MAP3D_ME	Me suivre
+SCREEN3D	Dans la vue du jeu
+SCREEN3D_ROUTE	L'itinéraire au sol
+SCREEN3D_MARKS	Icônes sur ce qui est proche (ennemis, objets, gens)
+SCREEN3D_NOTE	Cachés là où murs ou sol les masquent ; les types affichés sont ceux de la mini-carte.
+MAP_SETTINGS	Réglages de la carte
+LEGEND_SHARED	Identique sur la mini-carte, la grande carte, la carte 3D et la vue du jeu.

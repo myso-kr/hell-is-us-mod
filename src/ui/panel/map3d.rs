@@ -38,7 +38,9 @@ pub struct Scene {
 #[derive(Clone)]
 struct Node {
     at: [f32; 3],
-    colour: [f32; 3],
+    /// Its marker, as the maps draw the same sort (assets/icons); none for what has no place on
+    /// a map of its own (a lever, a trigger, a line said).
+    sub: Option<crate::actors::Sub>,
     round: i32,
     label: String,
     below: f32,
@@ -50,29 +52,51 @@ impl Scene {
     }
 }
 
-/// The kinds of places, by class, and their colours (as the prototype has them).
-fn kind_colour(class: &str) -> [f32; 3] {
-    let c = |h: u32| [((h >> 16) & 255) as f32 / 255.0, ((h >> 8) & 255) as f32 / 255.0, (h & 255) as f32 / 255.0];
-    if class == "Say" {
-        c(0x7fb0de)
-    } else if class.starts_with("Convo_") || class.contains("Quickchat") {
-        c(0x5fd0e6)
-    } else if class.contains("Door") || class.contains("Gate") || class.contains("KeyLocked") {
-        c(0xc9a46a)
-    } else if ["Placement", "Puzzle", "Keypad", "Dial", "LymbicLock", "Receiver", "Activator", "Lever"]
-        .iter()
-        .any(|k| class.contains(k))
-    {
-        c(0xe0b14e)
-    } else if class.contains("Gather") || class.contains("Chest") {
-        c(0x9cc464)
-    } else if class.ends_with("_Spawner_C") || class.contains("Fight") {
-        c(0xef6b6b)
-    } else if class.contains("SavePoint") || class.contains("APC") {
-        c(0xf2f2f2)
+/// The map's sort of a graph node, by its class alone (the maps classify by the class's lineage,
+/// which the survey does not keep): a person, a door, a save point, a puzzle, an item…
+fn sort_of(class: &str) -> Option<crate::actors::Sub> {
+    use crate::actors::Sub;
+    let has = |p: &str| class.contains(p);
+    let lower = class.to_ascii_lowercase();
+    Some(if class == "Say" || class == "CodeGives" || class == "StoryGives" || class == "Trade" {
+        return None;
+    } else if class.starts_with("Convo_") {
+        Sub::NpcTalk
+    } else if lower.starts_with("quickchat") {
+        if lower.contains("_secret_") {
+            Sub::NpcSecret
+        } else if lower.contains("_quest_") {
+            Sub::NpcQuest
+        } else {
+            Sub::Npc
+        }
+    } else if has("SavePoint") {
+        if has("NoTravel") {
+            Sub::SavePointLocal
+        } else {
+            Sub::SavePoint
+        }
+    } else if has("APC_Enter") {
+        Sub::Apc
+    } else if has("LymbicLock") {
+        Sub::LymbicLock
+    } else if has("DroneTranslation") {
+        Sub::Translation
+    } else if class.starts_with("VOFK_") {
+        Sub::Vault
+    } else if has("_Spawner_C") || class == "FightWon" || class == "BossFightWon" {
+        Sub::EnemyGroup
+    } else if has("Placement") || has("Puzzle") || has("Keypad") || has("Dial") {
+        Sub::Puzzle
+    } else if has("Door") || has("Gate") || has("KeyLocked") {
+        Sub::Door
+    } else if has("Gather") {
+        crate::actors::item(class)
+    } else if has("Chest") || has("Stash") {
+        Sub::Stash
     } else {
-        c(0x8a9690)
-    }
+        return None;
+    })
 }
 
 /// Plain base64 (the terrain file's heights).
@@ -213,7 +237,7 @@ pub fn load(world: &str, graph: &Graph, rounds: &[Option<usize>]) -> Option<Scen
         let below = ground(n.at[0], n.at[1]).map_or(0.0, |g| ((g - n.at[2]) / 100.0).max(0.0));
         s.nodes.push(Node {
             at: s.to_scene(n.at),
-            colour: kind_colour(&n.class),
+            sub: sort_of(&n.class),
             round: rounds.get(i).copied().flatten().map_or(-1, |r| r as i32),
             label: n.class.trim_end_matches("_C").to_string(),
             below,
@@ -392,7 +416,15 @@ impl Map3d {
     /// round along the bottom, the picked place's card. The hero is a dot with a cone the way
     /// they face and a pulse, the route's end a pin. Drag turns, a right drag moves, the wheel
     /// zooms; following, the view keeps the hero in its middle.
-    pub fn view(&mut self, ui: &mut egui::Ui, height: f32, hero: Option<([f32; 3], f32)>, route: &[[f32; 3]]) {
+    pub fn view(
+        &mut self,
+        ui: &mut egui::Ui,
+        height: f32,
+        hero: Option<([f32; 3], f32)>,
+        route: &[[f32; 3]],
+        colour: [u8; 3],
+        state: &crate::minimap::MapState,
+    ) {
         let size = egui::vec2(ui.available_width(), height);
         let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click_and_drag());
         let Some(scene) = self.scene.clone() else {
@@ -455,7 +487,7 @@ impl Map3d {
             round: self.round,
             hero: None,
             picked: self.picked,
-            route: ribbon(&route),
+            route: ribbon(&route, colour),
         };
         let gpu = self.gpu.clone();
         let drawn = scene.clone();
@@ -472,10 +504,59 @@ impl Map3d {
         let painter = ui.painter_at(rect);
         painter.add(egui::PaintCallback { rect, callback: Arc::new(cb) });
 
+        // the places as the maps draw them: their icons, the nearest first, none over another
+        let eye_at = eye;
+        // as the 2D maps fade them (raster.rs): another floor faint with an arrow up or down
+        // (compass::floor_alpha, floor_badge), far from the hero faint as the big map's edge,
+        // and the icons' layer opacity over all
+        let here = hero_at.map(|(h, _)| h);
+        let marks = state.opacity[2] as f32 / 100.0;
+        let fade = |at: [f32; 3], target: bool| -> (f32, f32) {
+            let Some(h) = here else { return (marks, 0.0) };
+            let dz = at[1] - h[1];
+            let floor = crate::map::compass::floor_alpha(dz);
+            let floor = if target { floor.max(190) } else { floor } as f32 / 255.0;
+            (floor * edge_fade(at, h, state.big_radius_m) * marks, dz)
+        };
+        let mut shown: Vec<(f32, egui::Pos2, crate::actors::Sub, [f32; 3])> = scene
+            .nodes
+            .iter()
+            .filter(|n| n.round >= 0 && n.round <= self.round)
+            .filter_map(|n| {
+                let p = project(&vp, n.at, rect)?;
+                let d = ((n.at[0] - eye_at[0]).powi(2) + (n.at[1] - eye_at[1]).powi(2) + (n.at[2] - eye_at[2]).powi(2))
+                    .sqrt();
+                let sub = n.sub.filter(|s| state.shows(*s))?;
+                rect.contains(p).then_some((d, p, sub, n.at))
+            })
+            .collect();
+        shown.sort_by(|a, b| a.0.total_cmp(&b.0));
+        let mut placed: Vec<egui::Pos2> = Vec::new();
+        let size = state.icon_px as f32;
+        for (_, p, sub, at) in shown {
+            if placed.len() >= ICONS_MAX || placed.iter().any(|q| q.distance(p) < size + 2.0) {
+                continue;
+            }
+            placed.push(p);
+            let px = (size * ui.ctx().pixels_per_point()).round() as u32;
+            if let Some(t) = crate::ui::svg::texture(ui.ctx(), crate::icons::source(sub), px) {
+                let r = egui::Rect::from_center_size(p, egui::vec2(size, size));
+                let (alpha, dz) = fade(at, false);
+                painter.image(
+                    t.id(),
+                    r,
+                    egui::Rect::from_min_max(egui::pos2(0.0, 0.0), egui::pos2(1.0, 1.0)),
+                    Color32::WHITE.gamma_multiply(alpha),
+                );
+                floor_badge(&painter, p, size / 2.0, dz);
+            }
+        }
         // markers over the scene: the route's end, the picked place, the hero
-        let time = ui.input(|i| i.time) as f32;
-        if let Some(end) = route.last().and_then(|&q| project(&vp, q, rect)) {
-            pin(&painter, end, Color32::from_rgb(239, 107, 107));
+        let [cr, cg, cb] = colour;
+        if let Some((end, at)) = route.last().and_then(|&q| project(&vp, q, rect).map(|e| (e, q))) {
+            let (alpha, dz) = fade(at, true);
+            diamond(&painter, end, 7.0, Color32::from_rgb(cr, cg, cb), alpha);
+            floor_badge(&painter, end, 8.5, dz);
         }
         if let Some(p) = self.picked.and_then(|i| scene.nodes.get(i)).and_then(|n| project(&vp, n.at, rect)) {
             painter.circle_stroke(p, 9.0, egui::Stroke::new(2.0, Color32::from_rgb(255, 210, 122)));
@@ -486,24 +567,13 @@ impl Map3d {
                 let (s, co) = yaw.to_radians().sin_cos();
                 let ahead = [h[0] + s * 8.0, h[1], h[2] - co * 8.0];
                 let dir = project(&vp, ahead, rect).map(|a| (a - c).normalized()).unwrap_or(egui::vec2(0.0, -1.0));
-                let blue = Color32::from_rgb(66, 133, 244);
-                let cone = [c, c + dir.rot90() * 14.0 + dir * 30.0, c - dir.rot90() * 14.0 + dir * 30.0];
-                painter.add(egui::Shape::convex_polygon(
-                    cone.to_vec(),
-                    Color32::from_rgba_unmultiplied(66, 133, 244, 70),
-                    egui::Stroke::NONE,
-                ));
-                let pulse = (time * 1.4).fract();
-                painter.circle_stroke(
-                    c,
-                    8.0 + pulse * 18.0,
-                    egui::Stroke::new(
-                        2.0,
-                        Color32::from_rgba_unmultiplied(66, 133, 244, ((1.0 - pulse) * 160.0) as u8),
-                    ),
-                );
-                painter.circle_filled(c, 8.0, Color32::WHITE);
-                painter.circle_filled(c, 6.0, blue);
+                // the maps' arrow (raster.rs): white, 11 px ahead, 7 back and aside, outlined
+                let side = dir.rot90();
+                let tri = |k: f32| {
+                    vec![c + dir * 11.0 * k, c - dir * 7.0 * k + side * 7.0 * k, c - dir * 7.0 * k - side * 7.0 * k]
+                };
+                painter.add(egui::Shape::convex_polygon(tri(1.3), OUTLINE, egui::Stroke::NONE));
+                painter.add(egui::Shape::convex_polygon(tri(1.0), Color32::WHITE, egui::Stroke::NONE));
             }
         }
 
@@ -520,8 +590,8 @@ impl Map3d {
             ui.horizontal(|ui| {
                 glass.show(ui, |ui| {
                     ui.horizontal(|ui| {
-                        ui.toggle_value(&mut self.xray, tr!("MAP3D_XRAY"));
-                        ui.toggle_value(&mut self.hole, tr!("MAP3D_HOLE"));
+                        chip(ui, &mut self.xray, tr!("MAP3D_XRAY"));
+                        chip(ui, &mut self.hole, tr!("MAP3D_HOLE"));
                         ui.label(RichText::new(tr!("MAP3D_KEEP")).small());
                         ui.add(egui::Slider::new(&mut self.keep, 0.0..=1.0).show_value(false));
                     });
@@ -562,17 +632,9 @@ impl Map3d {
             egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 22)),
         );
         let north = egui::vec2(-self.yaw.sin(), -self.yaw.cos());
-        let (c, side) = (compass.center(), north.rot90() * 6.0);
-        painter.add(egui::Shape::convex_polygon(
-            vec![c + north * 15.0, c + side, c - side],
-            Color32::from_rgb(239, 107, 107),
-            egui::Stroke::NONE,
-        ));
-        painter.add(egui::Shape::convex_polygon(
-            vec![c - north * 15.0, c - side, c + side],
-            Color32::from_rgb(220, 226, 223),
-            egui::Stroke::NONE,
-        ));
+        let (c, side) = (compass.center(), north.rot90() * 4.0);
+        painter.add(egui::Shape::convex_polygon(vec![c + north * 6.0, c + side, c - side], NORTH, egui::Stroke::NONE));
+        painter.text(c + north * 13.0, egui::Align2::CENTER_CENTER, "N", egui::FontId::proportional(13.0), NORTH);
         if cr.on_hover_text(tr!("MAP3D_NORTH")).clicked() {
             self.yaw = 0.0;
         }
@@ -584,13 +646,19 @@ impl Map3d {
         ui.scope_builder(egui::UiBuilder::new().max_rect(br), |ui| {
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Max), |ui| {
                 glass.show(ui, |ui| {
+                    // following: the button lit in the accent, as a map app's "my location" is
+                    let accent = Color32::from_rgb(108, 188, 174);
                     let me = ui.add(
-                        egui::Button::new(RichText::new("◎").size(18.0))
-                            .selected(self.follow)
-                            .min_size(egui::vec2(28.0, 28.0)),
+                        egui::Button::new(RichText::new("◎").size(18.0).color(if self.follow {
+                            Color32::from_rgb(8, 20, 18)
+                        } else {
+                            Color32::from_rgb(170, 182, 178)
+                        }))
+                        .fill(if self.follow { accent } else { Color32::TRANSPARENT })
+                        .min_size(egui::vec2(28.0, 28.0)),
                     );
                     if me.on_hover_text(tr!("MAP3D_ME")).clicked() {
-                        self.follow = true;
+                        self.follow = !self.follow;
                     }
                 });
                 ui.add_space(6.0);
@@ -664,9 +732,9 @@ struct Frame {
     route: Vec<f32>,
 }
 
-/// The route as a flat band 2.4 m wide, 0.6 m over the floor it runs on, its colour going from
-/// gold at the hero to white at the goal.
-fn ribbon(pts: &[[f32; 3]]) -> Vec<f32> {
+/// The route as a flat band 2.4 m wide, 0.6 m over the floor it runs on, in the goal's colour as
+/// the maps draw it.
+fn ribbon(pts: &[[f32; 3]], colour: [u8; 3]) -> Vec<f32> {
     let mut out = Vec::new();
     let n = pts.len();
     for k in 0..n.saturating_sub(1) {
@@ -674,8 +742,8 @@ fn ribbon(pts: &[[f32; 3]]) -> Vec<f32> {
         let (dx, dz) = (b[0] - a[0], b[2] - a[2]);
         let l = (dx * dx + dz * dz).sqrt().max(1e-3);
         let (ox, oz) = (-dz / l * 1.2, dx / l * 1.2);
-        let c = |t: f32| [1.0, 0.82 + 0.18 * t, 0.42 + 0.58 * t];
-        let (ca, cb) = (c(k as f32 / n as f32), c((k + 1) as f32 / n as f32));
+        let c = colour.map(|v| v as f32 / 255.0);
+        let (ca, cb) = (c, c);
         let v = |p: [f32; 3], s: f32, col: [f32; 3]| [p[0] + ox * s, p[1] + 0.6, p[2] + oz * s, col[0], col[1], col[2]];
         for q in [v(a, -1.0, ca), v(a, 1.0, ca), v(b, 1.0, cb), v(a, -1.0, ca), v(b, 1.0, cb), v(b, -1.0, cb)] {
             out.extend(q);
@@ -684,16 +752,83 @@ fn ribbon(pts: &[[f32; 3]]) -> Vec<f32> {
     out
 }
 
-/// A map pin standing on `at`: a teardrop with a white dot.
-fn pin(painter: &egui::Painter, at: egui::Pos2, colour: Color32) {
-    let head = at - egui::vec2(0.0, 22.0);
+/// At most this many icons, none over another: the nearest win.
+const ICONS_MAX: usize = 220;
+
+/// A toggle chip, on or off at a glance: on, filled in the accent with a check; off, an outline
+/// with dim text.
+fn chip(ui: &mut egui::Ui, on: &mut bool, label: &str) -> egui::Response {
+    let accent = Color32::from_rgb(108, 188, 174);
+    let text = if *on { format!("✓ {label}") } else { label.to_string() };
+    let galley = ui.painter().layout_no_wrap(text, egui::FontId::proportional(13.0), Color32::WHITE);
+    let size = galley.size() + egui::vec2(20.0, 10.0);
+    let (rect, mut resp) = ui.allocate_exact_size(size, egui::Sense::click());
+    if resp.clicked() {
+        *on = !*on;
+        resp.mark_changed();
+    }
+    let hover = resp.hovered();
+    let (fill, stroke, colour) = if *on {
+        (
+            if hover { accent.gamma_multiply(1.15) } else { accent },
+            egui::Stroke::new(1.0, accent),
+            Color32::from_rgb(8, 20, 18),
+        )
+    } else {
+        (
+            Color32::from_rgba_unmultiplied(255, 255, 255, if hover { 18 } else { 0 }),
+            egui::Stroke::new(1.0, Color32::from_rgba_unmultiplied(255, 255, 255, 70)),
+            Color32::from_rgb(170, 182, 178),
+        )
+    };
+    ui.painter().rect(rect, 99.0, fill, stroke, egui::StrokeKind::Inside);
+    ui.painter().galley(rect.center() - galley.size() / 2.0, galley, colour);
+    resp
+}
+
+/// The maps' colours (raster.rs): the north mark, the marks' outline.
+const NORTH: Color32 = Color32::from_rgb(255, 110, 90);
+const OUTLINE: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 200);
+
+/// A goal as the maps draw it: a diamond `s` px from its middle to a corner, outlined, `alpha`
+/// opaque.
+fn diamond(painter: &egui::Painter, at: egui::Pos2, s: f32, colour: Color32, alpha: f32) {
+    let d = |s: f32| {
+        vec![at - egui::vec2(0.0, s), at + egui::vec2(s, 0.0), at + egui::vec2(0.0, s), at - egui::vec2(s, 0.0)]
+    };
+    painter.add(egui::Shape::convex_polygon(d(s + 1.5), OUTLINE.gamma_multiply(alpha), egui::Stroke::NONE));
+    painter.add(egui::Shape::convex_polygon(d(s), colour.gamma_multiply(alpha), egui::Stroke::NONE));
+}
+
+/// The maps' floor badge (compass::floor_badge) for a mark centred at `c`, `half` across: on
+/// another floor (3 m or more up or down), a sky blue (up) or amber (down) disc on a dark rim at
+/// the mark's bottom right, a white chevron in it.
+fn floor_badge(painter: &egui::Painter, c: egui::Pos2, half: f32, dz_m: f32) {
+    if dz_m.abs() < crate::map::compass::FLOOR_DZ {
+        return;
+    }
+    let up = dz_m > 0.0;
+    let fill = if up { Color32::from_rgb(70, 160, 235) } else { Color32::from_rgb(230, 140, 40) };
+    let r = (half * 0.42).clamp(4.0, 6.5);
+    let b = c + egui::vec2(half * 0.72, half * 0.72);
+    painter.circle_filled(b, r + 1.3, Color32::from_rgba_unmultiplied(14, 17, 22, 230));
+    painter.circle_filled(b, r, fill);
+    let (w, h) = (r * 0.6, r * 0.42);
+    let (tip, base) = if up { (b.y - h, b.y + h) } else { (b.y + h, b.y - h) };
     painter.add(egui::Shape::convex_polygon(
-        vec![at, head + egui::vec2(-8.0, 3.0), head + egui::vec2(8.0, 3.0)],
-        colour,
+        vec![egui::pos2(b.x, tip), egui::pos2(b.x - w, base), egui::pos2(b.x + w, base)],
+        Color32::WHITE,
         egui::Stroke::NONE,
     ));
-    painter.circle_filled(head, 10.0, colour);
-    painter.circle_filled(head, 4.0, Color32::WHITE);
+}
+
+/// The big map's soft edge (raster::fade_edges) around the hero: full out to 45% of its radius
+/// (m), fading to a quarter at it and beyond — a quarter, not nothing, as the 3D map shows the
+/// whole region. Scene points are in metres.
+fn edge_fade(at: [f32; 3], hero: [f32; 3], radius_m: f32) -> f32 {
+    const INNER: f32 = 0.45;
+    let d = (at[0] - hero[0]).hypot(at[2] - hero[2]) / radius_m.max(1.0);
+    1.0 - 0.75 * ((d - INNER) / (1.0 - INNER)).clamp(0.0, 1.0)
 }
 
 fn project(vp: &[f32; 16], p: [f32; 3], rect: egui::Rect) -> Option<egui::Pos2> {
@@ -941,8 +1076,10 @@ impl Gpu {
             let data: Vec<f32> = s
                 .nodes
                 .iter()
-                .filter(|n| n.round >= 0 && n.round <= round)
-                .flat_map(|n| [n.at[0], n.at[1] + 1.5, n.at[2], n.colour[0], n.colour[1], n.colour[2]])
+                // what has an icon is drawn as its icon (over the scene); the rest — levers,
+                // triggers, lines said — as small grey dots
+                .filter(|n| n.round >= 0 && n.round <= round && n.sub.is_none())
+                .flat_map(|n| [n.at[0], n.at[1] + 1.5, n.at[2], 0.62, 0.68, 0.66])
                 .collect();
             let (a, b) = Self::upload(gl, &data, &[3, 3]);
             self.nodes = Some((a, b, (data.len() / 6) as i32));
@@ -1085,16 +1222,21 @@ impl Gpu {
 }
 
 impl super::Panel {
-    /// The page: the controls, then the view as tall as the page allows; what to run when the
+    /// The 3D map as the Map page's first card: the view as tall as fits; what to run when the
     /// region's files are not there yet.
-    pub(super) fn map3d_tab(&mut self, t: &mut egui_taffy::Tui, snap: Option<&crate::engine::Snapshot>) {
+    pub(super) fn map3d_card(
+        &mut self,
+        t: &mut egui_taffy::Tui,
+        state: &crate::minimap::MapState,
+        snap: Option<&crate::engine::Snapshot>,
+    ) {
         use crate::ui::tw::{self, card, note};
         let world = snap
             .and_then(|s| s.world.clone())
             .map(|w| crate::survey::Survey::world_of(&w).to_string())
             .unwrap_or_default();
         let hero = snap.and_then(|s| s.pose).map(|(p, yaw)| ([p[0] as f32, p[1] as f32, p[2] as f32], yaw as f32));
-        let route = self.shared.route3d.lock().unwrap().clone();
+        let (route, colour) = self.shared.route3d.lock().unwrap().clone();
         self.map3d.want(&world);
         card(t, &format!("{} · {}", tr!("MAP3D"), if world.is_empty() { "—" } else { world.as_str() }), |t| {
             if self.map3d.missing() {
@@ -1105,11 +1247,20 @@ impl super::Panel {
                 note(t, tr!("MAP3D_LOADING"));
             }
             tw::block(t, |ui| {
-                let height = (ui.ctx().content_rect().height() - 230.0).max(360.0);
-                self.map3d.view(ui, height, hero, &route);
+                let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
+                self.map3d.view(ui, height, hero, &route, colour, state);
                 ui.ctx().request_repaint_after(std::time::Duration::from_millis(33));
             });
         });
+    }
+
+    /// The game view's 3D layer (overlay/screenroute.rs): the route laid on the floor and the
+    /// maps' icons over what is near, each hidden where the world hides it.
+    pub(super) fn screen3d_body(&mut self, t: &mut egui_taffy::Tui, state: &mut crate::minimap::MapState) {
+        use crate::ui::tw::{self, note};
+        tw::switch(t, &mut state.screen_route, tr!("SCREEN3D_ROUTE"));
+        tw::switch(t, &mut state.screen_marks, tr!("SCREEN3D_MARKS"));
+        note(t, tr!("SCREEN3D_NOTE"));
     }
 }
 

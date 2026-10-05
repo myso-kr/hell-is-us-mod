@@ -195,7 +195,6 @@ enum Tool {
     Help,
     Settings,
     Map,
-    Map3d,
     Guide,
     Quests,
     Clues,
@@ -206,12 +205,11 @@ enum Tool {
 }
 
 impl Tool {
-    const ALL: [Tool; 12] = [
+    const ALL: [Tool; 11] = [
         Tool::Now,
         Tool::Help,
         Tool::Settings,
         Tool::Map,
-        Tool::Map3d,
         Tool::Guide,
         Tool::Quests,
         Tool::Clues,
@@ -227,7 +225,7 @@ impl Tool {
     /// The sidebar's groups: their names (i18n keys) and pages.
     const GROUPS: [(&'static str, &'static [Tool]); 3] = [
         ("NAV_PLAY", &[Tool::Quests, Tool::Clues, Tool::Puzzles, Tool::Collect]),
-        ("NAV_WAY", &[Tool::Guide, Tool::Map, Tool::Map3d]),
+        ("NAV_WAY", &[Tool::Guide, Tool::Map]),
         ("NAV_SYSTEM", &[Tool::Saves, Tool::Debug]),
     ];
 
@@ -238,7 +236,6 @@ impl Tool {
             Tool::Help => "help",
             Tool::Settings => "settings",
             Tool::Map => "map",
-            Tool::Map3d => "map3d",
             Tool::Guide => "guide",
             Tool::Quests => "quests",
             Tool::Clues => "clues",
@@ -255,7 +252,6 @@ impl Tool {
             Tool::Help => tr!("HELP"),
             Tool::Settings => tr!("SETTINGS"),
             Tool::Map => tr!("MAP"),
-            Tool::Map3d => tr!("MAP3D"),
             Tool::Guide => tr!("GUIDE"),
             Tool::Quests => tr!("QUESTS"),
             Tool::Clues => tr!("CLUES_TAB"),
@@ -273,7 +269,6 @@ impl Tool {
             Tool::Help => "",
             Tool::Settings => tr!("ABOUT_SETTINGS"),
             Tool::Map => tr!("ABOUT_MAP"),
-            Tool::Map3d => tr!("ABOUT_MAP3D"),
             Tool::Guide => tr!("ABOUT_GUIDE"),
             Tool::Quests => tr!("ABOUT_QUESTS"),
             Tool::Clues => tr!("ABOUT_CLUES"),
@@ -307,6 +302,8 @@ pub struct Panel {
     went: bool,
     /// The 3D map page's scene and view (map3d.rs).
     map3d: map3d::Map3d,
+    /// The Map page's settings card: which tab is open.
+    map_settings: u8,
     reply: Option<(bool, String, Instant)>,
     /// The console at the foot of the window, and whether the window was showing on
     /// the last frame (to put the cursor in the console as it opens).
@@ -444,6 +441,7 @@ impl Panel {
             sent: None,
             went: false,
             map3d: Default::default(),
+            map_settings: 0,
             reply: None,
             console: Default::default(),
             was_visible: false,
@@ -530,7 +528,7 @@ impl Panel {
     fn allowed(&self, tool: Tool) -> bool {
         use crate::settings::Consent;
         match tool {
-            Tool::Map | Tool::Map3d => self.grants(Consent::MAP),
+            Tool::Map => self.grants(Consent::MAP),
             Tool::Guide => self.grants(Consent::GUIDE),
             Tool::Puzzles => self.grants(Consent::ANSWERS),
             _ => true,
@@ -827,7 +825,6 @@ impl Panel {
                     _ => self.slots_card(t),
                 })
             }
-            _ if self.tool == Some(Tool::Map3d) => self.map3d_tab(t, snap),
             _ if self.tool.is_some() => self.map_tab(t, snap),
             // A group's cheats two columns wide, what is on (every group's) beside them;
             // Movement adds the teleport to what is followed and the saved positions.

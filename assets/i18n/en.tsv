@@ -804,7 +804,6 @@ MOVED_BACK	Back where you stood before the teleport.
 NOTHING_TO_GO_BACK_TO	No position before a teleport is kept.
 GRAPH_OPENS_FROM_OTHER_SIDE	opens from the other side only: guided to that side
 MAP3D	3D map
-ABOUT_MAP3D	The region in 3D, underground included
 MAP3D_XRAY	X-ray
 MAP3D_HOLE	Hole around the focus
 MAP3D_KEEP	Ground
@@ -817,3 +816,9 @@ MAP3D_LOADING	Loading the region…
 MAP3D_MISSING	This region's map data is not extracted yet: run `hiumod doctor map3d` once (a few minutes).
 MAP3D_NORTH	North up
 MAP3D_ME	Follow me
+SCREEN3D	In the game view
+SCREEN3D_ROUTE	The route on the floor
+SCREEN3D_MARKS	Icons over what is near (enemies, items, people)
+SCREEN3D_NOTE	Hidden where walls or the ground hide them; the kinds and sorts shown are the minimap's.
+MAP_SETTINGS	Map settings
+LEGEND_SHARED	The same on the minimap, the big map, the 3D map and the game view.

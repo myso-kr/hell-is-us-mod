@@ -106,6 +106,11 @@ pub struct MapState {
     pub hide_in_menus: bool,
     /// Draw a walking route (A*) to the guide's goal, not just a straight line.
     pub route: bool,
+    /// The route in focus laid in the game's view (overlay/screenroute.rs).
+    pub screen_route: bool,
+    /// The maps' icons over what is near in the game's view (enemies, items, people…), as the
+    /// minimap's kinds and sorts are shown.
+    pub screen_marks: bool,
     /// The auto guide's pick, by actor (guide/target.rs). Not kept across runs: actors are
     /// new each time.
     pub auto: Option<u64>,
@@ -156,6 +161,8 @@ impl Default for MapState {
             opacity: [100, 100, 100],
             hide_in_menus: true,
             route: true,
+            screen_route: true,
+            screen_marks: true,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
             pin_kind: PinKind::Mark,
@@ -244,6 +251,7 @@ impl MapState {
             self.north_yaw,
             self.tracker
         );
+        out += &format!("screen_route {}\nscreen_marks {}\n", self.screen_route, self.screen_marks);
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
         }
@@ -308,6 +316,8 @@ impl MapState {
                 ["compass", v] => s.compass = v == "true",
                 ["hide_in_menus", v] => s.hide_in_menus = v == "true",
                 ["route", v] => s.route = v == "true",
+                ["screen_route", v] => s.screen_route = v == "true",
+                ["screen_marks", v] => s.screen_marks = v == "true",
                 ["north_yaw", v] => {
                     if let Some(n) = v.parse::<f32>().ok().filter(|n| (0.0..360.0).contains(n)) {
                         s.north_yaw = n;

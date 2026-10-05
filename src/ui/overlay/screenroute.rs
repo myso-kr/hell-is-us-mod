@@ -15,7 +15,12 @@ use std::sync::Arc;
 
 /// How far ahead of the hero the band goes (cm), its width, how often it is sampled.
 const AHEAD: f32 = 8000.0;
-const HALF: f32 = 35.0;
+const HALF: f32 = 14.0;
+/// The band starts this far along (cm): under the camera it would fill the view.
+const FROM: f32 = 400.0;
+/// Icons over things this near the hero (cm), at most this many, this big (px).
+const MARKS_NEAR: f32 = 5000.0;
+const MARKS_MAX: usize = 40;
 const STEP: f32 = 50.0;
 /// Over the floor it lies on (cm): clear of it, not floating.
 const LIFT: f32 = 8.0;
@@ -39,11 +44,12 @@ pub struct ScreenRoute {
     window: Option<Layered>,
     canvas: Canvas,
     index: Option<Indexed>,
+    icons: Option<crate::icons::Icons>,
 }
 
 impl Default for ScreenRoute {
     fn default() -> Self {
-        ScreenRoute { window: None, canvas: Canvas::new(1, 1), index: None }
+        ScreenRoute { window: None, canvas: Canvas::new(1, 1), index: None, icons: None }
     }
 }
 
@@ -62,6 +68,7 @@ impl ScreenRoute {
 
     /// Draw `route` (cm, from the hero's feet) as seen from `cam` into the game's client area
     /// `client` (left, top, width, height on the screen), in `colour`.
+    #[allow(clippy::too_many_arguments)]
     pub fn draw(
         &mut self,
         cam: &crate::player::Camera,
@@ -69,7 +76,14 @@ impl ScreenRoute {
         route: &[[f32; 3]],
         scene: &Arc<Scene>,
         colour: [u8; 3],
+        hero: [f32; 3],
+        things: &[crate::actors::Thing],
+        icon_px: u8,
     ) {
+        // the maps' icons at the maps' size (MapState::icon_px), made again when it changes
+        if self.icons.as_ref().is_none_or(|i| i.0.first().map(|i| i.size) != Some(icon_px as usize)) {
+            self.icons = crate::icons::Icons::new(icon_px as usize).ok();
+        }
         if !self.index.as_ref().is_some_and(|i| Arc::ptr_eq(&i.scene, scene)) {
             let boxes = scene.obstacles.iter().map(bounds).collect();
             self.index = Some(Indexed { scene: scene.clone(), boxes });
@@ -93,21 +107,58 @@ impl ScreenRoute {
                 _ => None,
             };
             if let (Some((pl, pr, ps)), Some((cl, cr, cs))) = (prev, cur) {
-                if ps && cs && k > 2 {
+                if ps && cs && k > 0 && along > FROM {
                     // fading out ahead, a brighter chevron every 3 m
                     let fade = 1.0 - (along / AHEAD).clamp(0.0, 1.0) * 0.7;
                     let chevron = (along / 300.0).fract() < 0.2;
-                    quads.push(([pl, pr, cr, cl], fade * if chevron { 1.0 } else { 0.62 }, chevron));
+                    quads.push(([pl, pr, cr, cl], fade * if chevron { 0.85 } else { 0.5 }, chevron));
                 }
             }
             prev = cur;
         }
-        if quads.is_empty() {
+        // the maps' icons over what is near and seen, the nearest first
+        let mut near: Vec<(f32, &crate::actors::Thing)> = things
+            .iter()
+            .map(|t| {
+                (((t.at[0] - hero[0]).powi(2) + (t.at[1] - hero[1]).powi(2) + (t.at[2] - hero[2]).powi(2)).sqrt(), t)
+            })
+            .filter(|(d, _)| *d < MARKS_NEAR && *d > 150.0)
+            .collect();
+        near.sort_by(|a, b| a.0.total_cmp(&b.0));
+        let mut marks: Vec<((f32, f32), crate::actors::Sub, f32)> = Vec::new();
+        for (d, t) in near {
+            if marks.len() >= MARKS_MAX {
+                break;
+            }
+            // over the thing's head, seen from the camera
+            let at = [t.at[0], t.at[1], t.at[2] + 120.0];
+            if !visible(eye, at, scene, &index.boxes) {
+                continue;
+            }
+            let Some(p) = marker::project(cam, at, w as f32, h as f32) else { continue };
+            if p.0 < 0.0
+                || p.1 < 0.0
+                || p.0 > w as f32
+                || p.1 > h as f32
+                || marks.iter().any(|m| (m.0 .0 - p.0).hypot(m.0 .1 - p.1) < 20.0)
+            {
+                continue;
+            }
+            marks.push(((p.0, p.1), t.sub, 1.0 - (d / MARKS_NEAR) * 0.55));
+        }
+        if quads.is_empty() && marks.is_empty() {
             self.hide();
             return;
         }
-        // the window over the band's bounds, on the client area, in buckets
+        // the window over the band's and the icons' bounds, on the client area, in buckets
         let (mut x0, mut y0, mut x1, mut y1) = (f32::MAX, f32::MAX, f32::MIN, f32::MIN);
+        let half = icon_px as f32 / 2.0 + 2.0;
+        for (p, _, _) in &marks {
+            x0 = x0.min(p.0 - half);
+            y0 = y0.min(p.1 - half);
+            x1 = x1.max(p.0 + half);
+            y1 = y1.max(p.1 + half);
+        }
         for (q, _, _) in &quads {
             for p in q {
                 x0 = x0.min(p.0);
@@ -140,6 +191,12 @@ impl ScreenRoute {
                 crate::map::canvas::Rgba(colour[0], colour[1], colour[2], alpha)
             };
             self.canvas.polygon(&pts, c);
+        }
+        if let Some(icons) = self.icons.as_ref() {
+            for (p, sub, a) in &marks {
+                let icon = icons.get(*sub);
+                self.canvas.blit_alpha(p.0 - ox, p.1 - oy, icon.size, &icon.px, (a * 255.0) as u32);
+            }
         }
         win.present(&self.canvas, left + x0, top + y0);
     }

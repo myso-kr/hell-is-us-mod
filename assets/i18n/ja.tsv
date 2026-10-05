@@ -804,7 +804,6 @@ MOVED_BACK	テレポート前の位置に戻りました。
 NOTHING_TO_GO_BACK_TO	テレポート前の位置が保存されていません。
 GRAPH_OPENS_FROM_OTHER_SIDE	反対側からのみ開く：開けられる側へ案内
 MAP3D	3Dマップ
-ABOUT_MAP3D	地下まで見える地域の3D
 MAP3D_XRAY	X線
 MAP3D_HOLE	注視点の周りに穴
 MAP3D_KEEP	地形
@@ -817,3 +816,9 @@ MAP3D_LOADING	地域を読み込み中…
 MAP3D_MISSING	この地域の地図データがまだありません。`hiumod doctor map3d` を一度実行してください（数分）。
 MAP3D_NORTH	北を上に
 MAP3D_ME	自分を追う
+SCREEN3D	ゲーム画面 3D
+SCREEN3D_ROUTE	床に経路
+SCREEN3D_MARKS	近くのマーカー (敵・アイテム・NPC)
+SCREEN3D_NOTE	壁や地形に隠れると見えません。表示する種類はミニマップの設定に従います。
+MAP_SETTINGS	地図の設定
+LEGEND_SHARED	ミニマップ・大きい地図・3D 地図・ゲーム画面で共通です。

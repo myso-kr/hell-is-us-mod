@@ -682,7 +682,7 @@ pub fn run(shared: Arc<Shared>) {
                         let r = routes.entry(f.id).or_default();
                         r.follow(Some(g), p, trail, &obstacles, &nav, !f.focus);
                         if f.focus {
-                            *shared.route3d.lock().unwrap() = r.drawn3d(p);
+                            *shared.route3d.lock().unwrap() = (r.drawn3d(p), f.colour.unwrap_or(g.tier.rgb()));
                         }
                         r.drawn(p)
                     } else {
@@ -873,14 +873,23 @@ pub fn run(shared: Arc<Shared>) {
                 // world hides it.
                 if screen_route_at.elapsed() >= Duration::from_millis(33) {
                     screen_route_at = Instant::now();
-                    let route = shared.route3d.lock().unwrap().clone();
+                    let (route, route_colour) = shared.route3d.lock().unwrap().clone();
+                    let route: &[[f32; 3]] =
+                        if state.route && state.screen_route && consent.has(crate::settings::Consent::GUIDE) {
+                            &route
+                        } else {
+                            &[]
+                        };
+                    // the maps' icons over what is near, as the minimap shows its kinds and sorts
+                    let marks: Vec<crate::actors::Thing> =
+                        if state.screen_marks && consent.has(crate::settings::Consent::HUD) {
+                            things.iter().filter(|t| state.shows(t.sub)).copied().collect()
+                        } else {
+                            Vec::new()
+                        };
                     match (cam.as_ref(), client) {
-                        (Some(cam), Some(c))
-                            if state.route && route.len() > 1 && consent.has(crate::settings::Consent::GUIDE) =>
-                        {
-                            let colour =
-                                followed.iter().find(|f| f.focus).and_then(|f| f.colour).unwrap_or([224, 177, 78]);
-                            screen_route.draw(cam, c, &route, &obstacles, colour);
+                        (Some(cam), Some(c)) if route.len() > 1 || !marks.is_empty() => {
+                            screen_route.draw(cam, c, route, &obstacles, route_colour, p, &marks, state.icon_px);
                         }
                         _ => screen_route.hide(),
                     }

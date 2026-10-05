@@ -225,6 +225,9 @@ impl Panel {
     /// What each line and area on the maps is, as drawn with the settings now.
     pub(super) fn legend_card(&mut self, t: &mut Tui, state: &crate::minimap::MapState) {
         card(t, tr!("LEGEND"), |t| {
+            // One legend: the minimap, the big map, the 3D map and the game view draw the same
+            // icons, hero, goals and route.
+            note(t, tr!("LEGEND_SHARED"));
             let outline = state.mini_outline && state.big_outline;
             // What each line and colour is, as drawn now.
             let entries = crate::raster::legend(state, outline);
@@ -400,18 +403,13 @@ impl Panel {
             // How the maps look: both previews across the top with the presets, then the
             // minimap's, the big map's and the terrain's settings side by side, the legend
             // two columns wide with the keys beside it.
-            _ => tw::spans(t, cols, &[3, 1, 1, 1, 2, 1], |t, i| match i {
-                0 => self.preview_card(t, guard),
-                1 => self.map_card(t, guard, 0),
-                2 => self.map_card(t, guard, 2),
-                3 => {
-                    tw::stack(t, 2, |t| {
-                        self.map_card(t, guard, 1);
-                        self.map_card(t, guard, 3);
-                    });
-                }
-                4 => self.legend_card(t, guard),
-                _ => self.keys_card(t, guard),
+            // The region in 3D across the top (map3d.rs); both previews with every setting
+            // beside them in one card, a tab each; the legend, the same for every map, under.
+            _ => tw::spans(t, cols, &[3, 2, 1, 3], |t, i| match i {
+                0 => self.map3d_card(t, guard, snap),
+                1 => self.preview_card(t, guard),
+                2 => self.settings_card(t, guard),
+                _ => self.legend_card(t, guard),
             }),
         }
         if *guard != before {
@@ -419,12 +417,37 @@ impl Panel {
         }
     }
 
+    /// The maps' settings in one card, a tab each (the minimap, the big map, the terrain, the
+    /// layers' opacity, the game view's 3D layer, the keys), so the page is not a wall of cards.
+    pub(super) fn settings_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
+        card(t, tr!("MAP_SETTINGS"), |t| {
+            let tabs =
+                [tr!("MINIMAP"), tr!("BIG_MAP"), tr!("TERRAIN"), tr!("LAYER_OPACITY"), tr!("SCREEN3D"), tr!("KEYS")];
+            tw::choices(t, |t| {
+                for (k, name) in tabs.into_iter().enumerate() {
+                    // whole words: the row wraps, not the tab's name
+                    if w(t, |ui| ui.selectable_label(self.map_settings == k as u8, name)).clicked() {
+                        self.map_settings = k as u8;
+                    }
+                }
+            });
+            match self.map_settings {
+                0 => self.map_card(t, state, 0),
+                1 => self.map_card(t, state, 2),
+                2 => self.map_card(t, state, 1),
+                3 => self.map_card(t, state, 3),
+                4 => self.screen3d_body(t, state),
+                _ => self.keys_card(t, state),
+            }
+        });
+    }
+
     /// One of the map page's cards, by `which`: the minimap (0), the terrain (1), the big
     /// map (2), the layers' opacity (3). Each a card of its own so the page's columns can
     /// even out (as one column of four, they made one column three times the others).
     pub(super) fn map_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, which: usize) {
         if which == 0 {
-            card(t, tr!("MINIMAP"), |t| {
+            bare(t, |t| {
                 field(t, tr!("DISPLAY"), |t| {
                     for d in crate::minimap::Display::ALL {
                         w(t, |ui| ui.selectable_value(&mut state.display, d, d.label()));
@@ -451,7 +474,7 @@ impl Panel {
         }
 
         if which == 1 {
-            card(t, tr!("TERRAIN"), |t| {
+            bare(t, |t| {
                 field(t, tr!("TERRAIN_VIEW"), |t| {
                     // One control on one line: as separate items they wrapped one by one in a
                     // narrow card.
@@ -493,7 +516,7 @@ impl Panel {
         }
 
         if which == 2 {
-            card(t, tr!("BIG_MAP"), |t| {
+            bare(t, |t| {
                 field(t, tr!("RADIUS"), |t| {
                     tw::slider(t, &mut state.big_radius_m, 50.0..=crate::minimap::RADIUS_MAX, 25.0, " m")
                 });
@@ -512,7 +535,7 @@ impl Panel {
 
         if which == 3 {
             // Each layer's opacity, for both maps, and presets that set the three at once.
-            card(t, tr!("LAYER_OPACITY"), |t| {
+            bare(t, |t| {
                 let presets: [(&str, [u8; 3]); 4] = [
                     (tr!("PRESET_SOLID"), [100, 100, 100]),
                     (tr!("PRESET_BALANCED"), [60, 90, 100]),
@@ -699,7 +722,7 @@ impl Panel {
 
     /// The overlay's keys.
     pub(super) fn keys_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
-        card(t, tr!("KEYS"), |t| {
+        bare(t, |t| {
             for (label, id) in [
                 (tr!("SWITCH_MAP_DISPLAY"), "toggle_key"),
                 (tr!("PLACE_OR_REMOVE_A_MARKER"), "marker_key"),
@@ -733,4 +756,9 @@ fn keycap_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
         ui.visuals_mut().widgets.inactive.weak_bg_fill = super::super::theme::CONTROL;
         key_picker(ui, id, key, taken);
     });
+}
+
+/// A settings tab's body: what was a card of its own, now under the settings card's tabs.
+fn bare<T>(t: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
+    body(t)
 }

@@ -10,6 +10,19 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- The 3D map is part of the Map page and reads as the 2D maps do: their icons (as the minimap
+  shows kinds and sorts, at its icon size), the white hero arrow, the goal's diamond and the route
+  in the goal's colour, the red north; places on another floor faint with an up or down badge, far
+  ones faint as the big map's edge, under the icons' layer opacity. One legend for every map.
+- The game view's 3D layer can be turned on and off apart: the route on the floor (now a narrower
+  band starting a few metres ahead) and the maps' icons over what is near, hidden behind walls
+  and ground.
+
+### Changed
+
+- The Map page's settings (minimap, big map, terrain, layer opacity, the game view's 3D layer,
+  keys) are one card with a tab each, beside the previews.
+
 - Context lines at the top of the quest tracker, each only when it applies: what is left within
   120 m, a Lymbic rod just picked up and the locks it opens, someone near who wants an item held
   or tells a secret, a Haze keeping Walkers alive in a fight, and at the APC the regions with the

@@ -442,3 +442,30 @@ faint bottom left. The hero is a blue dot with a white rim, a cone the way they 
 projected) and a pulse; the route's end is a pin. Following (on by default, a right drag lets go,
 "follow me" takes it back), the view eases after the hero. Places are drawn 3–14 px whatever the
 distance, as a map's icons are.
+
+### 16.2 One page, one legend (2026-10-05)
+
+The 3D map left its own tab for the top of the Map page, and the page's settings cards became one
+card with a tab each (minimap, big map, terrain, layer opacity, game view 3D, keys) beside the
+previews; the legend sits under them and says it holds for every map.
+
+The 3D map draws what the 2D maps draw, the same way (raster.rs is the reference):
+
+- Places: the `assets/icons` SVG of their sort. The graph keeps only a node's own class, not its
+  lineage, so `map3d::sort_of` maps class names onto `actors::Sub` (`Convo_` → talk, `Quickchat`
+  secret/quest, save points, APC, locks, translations, vaults, spawners, puzzles, doors, gathered
+  items through `actors::item`); what has no sort (levers, triggers, lines said) stays a small
+  grey dot. Shown as the minimap shows (`MapState::shows`), at `icon_px`, nearest first, none
+  over another.
+- Hero: the white arrow (11 px ahead, 7 back and aside), outlined. Goal: the diamond, in the
+  followed goal's colour, which the route ribbon also takes (`Shared::route3d` carries it).
+  North: the red `N`.
+- Fading: `compass::floor_alpha` by the height from the hero (190 at least for the goal),
+  `compass::floor_badge`'s up/down badge from 3 m, the big map's edge fade around the hero
+  (full to 45% of `big_radius_m`, a quarter at it — not nothing, the 3D map shows the region),
+  times the icons' layer opacity.
+
+The game view's 3D layer (screenroute.rs) has two switches in `MapState`, `screen_route` and
+`screen_marks`. The band is 0.28 m wide and starts 4 m ahead (under the camera it filled the
+view). The icons are the maps' at `icon_px`, over things within 50 m (40 at most), each tested
+against the obstacles and terrain like the band, gated by the HUD consent.

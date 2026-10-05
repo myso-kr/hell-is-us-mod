@@ -804,7 +804,6 @@ MOVED_BACK	Tornato dove eri prima del teletrasporto.
 NOTHING_TO_GO_BACK_TO	Nessuna posizione precedente al teletrasporto salvata.
 GRAPH_OPENS_FROM_OTHER_SIDE	si apre solo dall'altro lato: guida verso quel lato
 MAP3D	Mappa 3D
-ABOUT_MAP3D	La regione in 3D, sottosuolo incluso
 MAP3D_XRAY	Raggi X
 MAP3D_HOLE	Foro attorno al fuoco
 MAP3D_KEEP	Terreno
@@ -817,3 +816,9 @@ MAP3D_LOADING	Caricamento della regione…
 MAP3D_MISSING	Mancano i dati della mappa di questa regione: esegui `hiumod doctor map3d` una volta (qualche minuto).
 MAP3D_NORTH	Nord in alto
 MAP3D_ME	Seguimi
+SCREEN3D	Nella vista di gioco
+SCREEN3D_ROUTE	Il percorso a terra
+SCREEN3D_MARKS	Icone su ciò che è vicino (nemici, oggetti, persone)
+SCREEN3D_NOTE	Nascosti dove muri o terreno li coprono; i tipi mostrati sono quelli della minimappa.
+MAP_SETTINGS	Impostazioni mappa
+LEGEND_SHARED	Uguale su minimappa, mappa grande, mappa 3D e vista di gioco.

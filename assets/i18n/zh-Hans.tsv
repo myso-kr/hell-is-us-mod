@@ -804,7 +804,6 @@ MOVED_BACK	已回到传送前的位置。
 NOTHING_TO_GO_BACK_TO	没有保存传送前的位置。
 GRAPH_OPENS_FROM_OTHER_SIDE	只能从另一侧打开：引导至可开启的一侧
 MAP3D	3D 地图
-ABOUT_MAP3D	包含地下的地区 3D 地图
 MAP3D_XRAY	X 光
 MAP3D_HOLE	焦点周围开洞
 MAP3D_KEEP	地形
@@ -817,3 +816,9 @@ MAP3D_LOADING	正在加载地区…
 MAP3D_MISSING	此地区的地图数据尚未提取：请运行一次 `hiumod doctor map3d`（几分钟）。
 MAP3D_NORTH	北向上
 MAP3D_ME	跟随我
+SCREEN3D	游戏画面 3D
+SCREEN3D_ROUTE	地面上的路线
+SCREEN3D_MARKS	附近的标记 (怪物·物品·NPC)
+SCREEN3D_NOTE	被墙或地形遮挡时隐藏；显示的种类与小地图相同。
+MAP_SETTINGS	地图设置
+LEGEND_SHARED	小地图、大地图、3D 地图和游戏画面通用。

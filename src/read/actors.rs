@@ -233,7 +233,7 @@ impl Sub {
 }
 
 /// The finer sort of an item, by its class name, as named on build 24045435.
-fn item(name: &str) -> Sub {
+pub fn item(name: &str) -> Sub {
     let name = name.strip_prefix("Tutorial_").unwrap_or(name);
     let has = |p: &str| name.contains(p);
     if name.starts_with("LymbicSkill") {

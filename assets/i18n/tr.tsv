@@ -804,7 +804,6 @@ MOVED_BACK	Işınlanmadan önceki yerine döndün.
 NOTHING_TO_GO_BACK_TO	Işınlanmadan önceki konum saklanmadı.
 GRAPH_OPENS_FROM_OTHER_SIDE	yalnızca diğer taraftan açılır: o tarafa yönlendirir
 MAP3D	3B harita
-ABOUT_MAP3D	Bölge 3B, yeraltı dahil
 MAP3D_XRAY	Röntgen
 MAP3D_HOLE	Odak çevresinde delik
 MAP3D_KEEP	Zemin
@@ -817,3 +816,9 @@ MAP3D_LOADING	Bölge yükleniyor…
 MAP3D_MISSING	Bu bölgenin harita verisi yok: bir kez `hiumod doctor map3d` çalıştırın (birkaç dakika).
 MAP3D_NORTH	Kuzey yukarı
 MAP3D_ME	Beni takip et
+SCREEN3D	Oyun görünümünde
+SCREEN3D_ROUTE	Zeminde rota
+SCREEN3D_MARKS	Yakındakilerin üstünde simgeler (düşman, eşya, kişi)
+SCREEN3D_NOTE	Duvar ya da zemin gizlediğinde gizlenir; gösterilen türler mini haritanınkilerdir.
+MAP_SETTINGS	Harita ayarları
+LEGEND_SHARED	Mini harita, büyük harita, 3D harita ve oyun görünümünde aynı.

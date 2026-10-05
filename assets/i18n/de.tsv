@@ -804,7 +804,6 @@ MOVED_BACK	Zurück am Standort vor dem Teleport.
 NOTHING_TO_GO_BACK_TO	Kein Standort vor einem Teleport gemerkt.
 GRAPH_OPENS_FROM_OTHER_SIDE	öffnet nur von der anderen Seite: zu dieser Seite geführt
 MAP3D	3D-Karte
-ABOUT_MAP3D	Die Region in 3D, mit Untergrund
 MAP3D_XRAY	Röntgen
 MAP3D_HOLE	Loch um den Fokus
 MAP3D_KEEP	Boden
@@ -817,3 +816,9 @@ MAP3D_LOADING	Region wird geladen…
 MAP3D_MISSING	Die Kartendaten dieser Region fehlen noch: einmal `hiumod doctor map3d` ausführen (einige Minuten).
 MAP3D_NORTH	Norden oben
 MAP3D_ME	Mir folgen
+SCREEN3D	Im Spielbild
+SCREEN3D_ROUTE	Route auf dem Boden
+SCREEN3D_MARKS	Symbole über Nahem (Gegner, Gegenstände, Leute)
+SCREEN3D_NOTE	Verborgen, wo Wände oder Boden sie verdecken; die gezeigten Arten sind die der Minikarte.
+MAP_SETTINGS	Karteneinstellungen
+LEGEND_SHARED	Gleich auf Minikarte, großer Karte, 3D-Karte und im Spielbild.

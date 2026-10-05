@@ -804,7 +804,6 @@ MOVED_BACK	Wrócono na miejsce sprzed teleportacji.
 NOTHING_TO_GO_BACK_TO	Brak zapisanej pozycji sprzed teleportacji.
 GRAPH_OPENS_FROM_OTHER_SIDE	otwiera się tylko z drugiej strony: prowadzi na tę stronę
 MAP3D	Mapa 3D
-ABOUT_MAP3D	Region w 3D, z podziemiami
 MAP3D_XRAY	Rentgen
 MAP3D_HOLE	Otwór wokół celu
 MAP3D_KEEP	Teren
@@ -817,3 +816,9 @@ MAP3D_LOADING	Wczytywanie regionu…
 MAP3D_MISSING	Brak danych mapy tego regionu: uruchom raz `hiumod doctor map3d` (kilka minut).
 MAP3D_NORTH	Północ u góry
 MAP3D_ME	Śledź mnie
+SCREEN3D	W widoku gry
+SCREEN3D_ROUTE	Trasa na podłodze
+SCREEN3D_MARKS	Ikony nad tym, co blisko (wrogowie, przedmioty, ludzie)
+SCREEN3D_NOTE	Ukryte tam, gdzie zasłaniają je ściany lub teren; pokazywane rodzaje jak na minimapie.
+MAP_SETTINGS	Ustawienia mapy
+LEGEND_SHARED	Taka sama na minimapie, dużej mapie, mapie 3D i w widoku gry.
