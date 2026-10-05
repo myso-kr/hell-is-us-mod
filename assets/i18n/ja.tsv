@@ -826,3 +826,4 @@ SORT_LEVER	レバー・スイッチ
 SORT_INSPECT	調べるもの
 SORT_TIMELOOP	タイムループ
 FULLSCREEN_HIDES_OVERLAYS	ゲームが排他的フルスクリーンで動作しているため、地図とコンパスを重ねて表示できません。ボーダーレスウィンドウに切り替えてください。
+CTX_DOOR	この扉（{door}）は次の後に開きます: {steps}

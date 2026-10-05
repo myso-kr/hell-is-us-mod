@@ -65,6 +65,10 @@ pub fn lines(
     if let Some(note) = key_note {
         out.push(Line { text: note.to_string(), colour: KEY });
     }
+    // Standing at a shut door: what opens it (graph.rs `door_here`).
+    if let Some((door, first)) = &s.door_here {
+        out.push(Line { text: door_line(door, first), colour: KEY });
+    }
     if places {
         // Someone near who wants an item the hero holds.
         for x in s.handovers.iter().filter(|x| !x.done && flat(x.at, here) <= NEAR_M).take(2) {
@@ -127,6 +131,15 @@ pub fn lines(
         });
     }
     out
+}
+
+/// "This door (…) opens after: A → B → C …", the first three steps, first thing first.
+pub fn door_line(door: &str, first: &[String]) -> String {
+    let mut steps: Vec<&str> = first.iter().map(String::as_str).take(3).collect();
+    if first.len() > 3 {
+        steps.push("…");
+    }
+    trf!("CTX_DOOR", door = door, steps = steps.join(" → "))
 }
 
 /// The rods held now (their data asset names), from the locks' lists: to tell when one is

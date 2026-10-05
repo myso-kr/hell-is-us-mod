@@ -109,6 +109,8 @@ struct Guide {
     /// from (`gated_key`): the same goals, knowledge and scene give the same answer, which
     /// cost 3 ms of every step (measured) for inputs that change every 2 s.
     gated: Option<(u64, Vec<Goal>, Vec<crate::graph::DoorStep>)>,
+    /// The shut door the hero stands at: its name, and what opens it, first thing first.
+    door_here: Option<(String, Vec<String>)>,
     /// The game's spawner and vault tables (Mods\survey), read once.
     tables: Option<crate::tables::Tables>,
     /// `gamedata::generation` when those two were read: new files read again.
@@ -532,6 +534,16 @@ impl Attached {
                     g.gated = Some((gk, goals.clone(), g.doors.clone()));
                 }
             }
+            // Standing at a shut door: what opens it, first thing first.
+            g.door_here = steps
+                .then(|| chain.pose(m, &self.anchors).ok())
+                .flatten()
+                .map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32])
+                .and_then(|p| graph.door_here(w, p, &state))
+                .map(|(door, c)| {
+                    let name = crate::graph::label(&graph.nodes[door]);
+                    (name, c[1..].iter().rev().map(|&j| crate::graph::label(&graph.nodes[j])).collect())
+                });
         }
         Ok((goals, k))
     }
@@ -569,6 +581,11 @@ impl Attached {
     /// The shut barriers of the hero's world, with what opens each first (the guide).
     pub fn doors(&self) -> Vec<crate::graph::DoorStep> {
         self.guide.borrow().doors.clone()
+    }
+
+    /// The shut door the hero stands at, and what opens it (graph.rs `door_here`).
+    pub fn door_here(&self) -> Option<(String, Vec<String>)> {
+        self.guide.borrow().door_here.clone()
     }
 
     /// The order and position puzzles of the hero's world (the Puzzles page).

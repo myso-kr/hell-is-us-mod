@@ -673,6 +673,24 @@ impl Graph {
             .map(|(i, _)| i)
     }
 
+    /// The shut door the hero stands at (within `DOOR_HERE` across and `DOOR_HERE_DZ` up or
+    /// down), and the chain of what opens it: the door first, the first thing to do last. A
+    /// door is told by its name; one already used, or that needs nothing now, is none. The
+    /// guide names a door only when a route runs into it; standing at one, the player was told
+    /// nothing of what it takes (seen in play: a door that takes a hammer from a boss's tomb).
+    pub fn door_here(&self, world: &str, at: [f32; 3], s: &State) -> Option<(usize, Vec<usize>)> {
+        self.nodes
+            .iter()
+            .enumerate()
+            .filter(|(_, n)| n.world == world && n.class.contains("Door"))
+            .map(|(i, n)| (i, (n.at[0] - at[0]).hypot(n.at[1] - at[1]), (n.at[2] - at[2]).abs()))
+            .filter(|&(_, d, dz)| d <= DOOR_HERE && dz <= DOOR_HERE_DZ)
+            .filter(|&(i, ..)| !self.used(i, s))
+            .filter_map(|(i, d, _)| self.chain(i, s).filter(|c| c.len() > 1).map(|c| (d, i, c)))
+            .min_by(|a, b| a.0.total_cmp(&b.0))
+            .map(|(_, i, c)| (i, c))
+    }
+
     fn used(&self, i: usize, s: &State) -> bool {
         self.nodes[i].guid.as_ref().is_some_and(|g| s.used.contains(g))
     }
@@ -1022,6 +1040,10 @@ impl Graph {
 }
 
 /// How a node reads to the player: what it gives, what goes there, or its class's words.
+/// How near a door the hero stands for `door_here` (cm): across, and up or down.
+const DOOR_HERE: f32 = 400.0;
+const DOOR_HERE_DZ: f32 = 300.0;
+
 pub fn label(n: &Node) -> String {
     if n.class == "FightWon" {
         return tr!("GRAPH_FIGHT").to_string();

@@ -201,6 +201,11 @@ impl Panel {
         let goals = s.goals.clone();
         card(t, tr!("DOABLE_NOW"), |t| {
             let mut any = false;
+            // Standing at a shut door: what opens it.
+            if let Some((door, first)) = &s.door_here {
+                any = true;
+                note(t, crate::ui::overlay::context::door_line(door, first));
+            }
             let mut gives: Vec<&crate::survey::Need> =
                 s.handovers.iter().filter(|n| n.world == world && !n.done).collect();
             gives.sort_by(|a, b| dist(a.at).total_cmp(&dist(b.at)));

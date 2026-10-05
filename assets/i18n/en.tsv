@@ -826,3 +826,4 @@ SORT_LEVER	Lever, switch
 SORT_INSPECT	To look at
 SORT_TIMELOOP	Time loop
 FULLSCREEN_HIDES_OVERLAYS	The game runs in exclusive fullscreen: the maps and the compass cannot show over it. Set the game to borderless (windowed fullscreen).
+CTX_DOOR	This door ({door}) opens after: {steps}

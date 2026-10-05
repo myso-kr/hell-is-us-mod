@@ -32,6 +32,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added (2026-10-06)
 
+- Standing at a shut door, the quest tracker and the Now page say what opens it, first thing
+  first (graph.rs `door_here`; with the "what must come first" consent). The guide named a door
+  only when a route ran into it.
 - The Now page says when the game runs in exclusive fullscreen, where nothing can show over it.
 - The game view's 3D layer draws on a thread of its own at 60 frames a second from the camera as
   it is, instead of at the overlay's 20: the band no longer jerks as the view turns. What is seen

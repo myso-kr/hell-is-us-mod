@@ -826,3 +826,4 @@ SORT_LEVER	Hebel, Schalter
 SORT_INSPECT	Zum Ansehen
 SORT_TIMELOOP	Zeitschleife
 FULLSCREEN_HIDES_OVERLAYS	Das Spiel läuft im exklusiven Vollbild: Karten und Kompass können darüber nicht erscheinen. Stelle das Spiel auf randloses Fenster.
+CTX_DOOR	Diese Tür ({door}) öffnet sich nach: {steps}

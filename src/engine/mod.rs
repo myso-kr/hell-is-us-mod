@@ -169,6 +169,7 @@ impl Engine {
             exits: Arc::default(),
             logic_puzzles: Arc::default(),
             doors: Arc::default(),
+            door_here: None,
             slots: self.slots.clone(),
         };
         if let Err(e) = self.refresh() {
@@ -273,6 +274,7 @@ impl Engine {
                         snap.exits = Arc::new(snap.world.as_deref().map(|w| a.exits(w)).unwrap_or_default());
                         snap.logic_puzzles = Arc::new(a.logic_puzzles());
                         snap.doors = Arc::new(a.doors());
+                        snap.door_here = a.door_here();
                         snap.nav = a.nav();
                     }
                     Err(e) => snap.notice = Some(trf!("MINIMAP_ERROR", e = e)),

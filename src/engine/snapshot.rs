@@ -40,6 +40,9 @@ pub struct Snapshot {
     pub obstacles: Arc<Scene>,
     /// The shut barriers of the hero's world, with what opens each first (graph.rs).
     pub doors: Arc<Vec<crate::graph::DoorStep>>,
+    /// The shut door the hero stands at, and what opens it, first thing first (graph.rs
+    /// `door_here`): only with the steps consent.
+    pub door_here: Option<(String, Vec<String>)>,
     /// The order and position puzzles of the hero's world (graph.rs).
     pub logic_puzzles: Arc<Vec<crate::graph::LogicPuzzle>>,
     /// The ways out of the hero's world (the survey): the APC's door, the save points.

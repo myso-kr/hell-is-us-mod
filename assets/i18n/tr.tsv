@@ -826,3 +826,4 @@ SORT_LEVER	Kol, şalter
 SORT_INSPECT	İncelenecek
 SORT_TIMELOOP	Zaman döngüsü
 FULLSCREEN_HIDES_OVERLAYS	Oyun özel tam ekranda çalışıyor: haritalar ve pusula üstünde görünemez. Oyunu kenarlıksız pencereye alın.
+CTX_DOOR	Bu kapı ({door}) şunlardan sonra açılır: {steps}
