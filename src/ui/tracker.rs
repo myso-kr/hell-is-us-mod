@@ -21,6 +21,15 @@ const OTHERS: usize = 5;
 
 /// The panel's palette (theme.rs) as the raster's colours.
 const CARD: Rgba = Rgba(0x13, 0x18, 0x1F, 210);
+
+/// A card's back: as it is, or solid with high contrast on (settings.rs).
+pub fn back(c: Rgba) -> Rgba {
+    if crate::settings::high_contrast() {
+        Rgba(c.0, c.1, c.2, 250)
+    } else {
+        c
+    }
+}
 const EDGE: Rgba = Rgba(0x2A, 0x32, 0x3D, 255);
 const TITLE: Rgba = Rgba(0xE6, 0xEE, 0xF7, 255);
 const TEXT: Rgba = Rgba(0xD9, 0xE1, 0xEA, 255);
@@ -160,7 +169,7 @@ pub fn draw(
     }
     let used = (y + PAD - 4).min(max_h);
     let card = (0, 0, W, used);
-    under(cv, card, 8.0, CARD);
+    under(cv, card, 8.0, back(CARD));
     edge(cv, card, 8.0, EDGE);
     used
 }

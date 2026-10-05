@@ -822,6 +822,33 @@ const DROP_MAX: f32 = 1200.0;
 /// from 9 m more, up to 70 % at 12 m (ScaledDamageStartHeight, ScaledDamageMaxHeight).
 pub const DROP_HURTS: f32 = 450.0;
 pub const DROP_HURTS_MORE: f32 = 900.0;
+/// A drop's colour by what the fall does (none, some, much), and the shortcut's: cyan, amber,
+/// red; for colour-blind players sky blue, orange, vermillion (Okabe–Ito).
+pub fn drop_rgb(h: f32) -> [u8; 3] {
+    let safe = crate::settings::safe_colours();
+    if h <= DROP_HURTS {
+        if safe {
+            [86, 180, 233]
+        } else {
+            [90, 215, 235]
+        }
+    } else if h <= DROP_HURTS_MORE {
+        if safe {
+            [230, 159, 0]
+        } else {
+            [240, 170, 60]
+        }
+    } else if safe {
+        [213, 94, 0]
+    } else {
+        [235, 80, 70]
+    }
+}
+
+pub fn shortcut_rgb() -> [u8; 3] {
+    drop_rgb(0.0)
+}
+
 /// How far out from a ledge the landing is looked for (cm), and how far apart along a ledge.
 const DROP_OUT: [f32; 3] = [80.0, 160.0, 260.0];
 const DROP_ALONG: f32 = 200.0;

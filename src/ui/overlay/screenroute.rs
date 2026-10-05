@@ -60,8 +60,7 @@ enum Piece {
     Shortcut,
 }
 
-/// The shortcut: its colour (the maps'), its width against the route's, its dashes (cm).
-const SHORTCUT: [u8; 3] = [90, 215, 235];
+/// The shortcut: its width against the route's, its dashes (cm); its colour the maps' (navmesh.rs).
 const SHORTCUT_WIDTH: f32 = 0.7;
 const DASH: f32 = 150.0;
 /// A band is drawn this wide at most and at least (half, px) — a floor decal narrows with
@@ -429,7 +428,7 @@ fn paint_band(
                 let (rgb, mut alpha, mut dash) = match g.kind {
                     Piece::Band if (along / 300.0).fract() < 0.18 => ([255, 244, 214], 0.75 * fade, None),
                     Piece::Band => (colour, 0.6 * fade, None),
-                    Piece::Shortcut => (SHORTCUT, 0.55 * fade, Some(DASH)),
+                    Piece::Shortcut => (crate::navmesh::shortcut_rgb(), 0.55 * fade, Some(DASH)),
                 };
                 if !g.seen {
                     alpha *= HIDDEN_ALPHA;

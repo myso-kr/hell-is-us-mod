@@ -843,3 +843,8 @@ GLYPH_RING	pierścień otwarty u góry
 GLYPH_CLAWS	ślady pazurów
 ENEMY_HEALTH_SHARE_DEFAULT_1	Zdrowie wrogów, udział (1 = bez zmian)
 STREAMER_MODE	Tryb streamera: ukryj nakładki w nagraniach i transmisjach
+ACCESSIBILITY	Dostępność
+SAFE_COLOURS	Kolory przyjazne daltonistom
+HIGH_CONTRAST	Wysoki kontrast: nieprzezroczyste tło pod tekstem
+REDUCED_MOTION	Ogranicz ruch (bez animowanego tła)
+ACCESSIBILITY_NOTE	Kolory dotyczą minimapy, dużej mapy, mapy 3D i widoku gry.

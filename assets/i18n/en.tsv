@@ -843,3 +843,8 @@ GLYPH_RING	ring open at the top
 GLYPH_CLAWS	claw marks
 ENEMY_HEALTH_SHARE_DEFAULT_1	Enemy health share (1 = as it is)
 STREAMER_MODE	Streamer mode: hide the overlays from recordings and streams
+ACCESSIBILITY	Accessibility
+SAFE_COLOURS	Colour-blind friendly colours
+HIGH_CONTRAST	High contrast: solid backs behind the overlays’ text
+REDUCED_MOTION	Reduce motion (no drifting backdrop)
+ACCESSIBILITY_NOTE	Colours apply to the minimap, the big map, the 3D map and the game view alike.

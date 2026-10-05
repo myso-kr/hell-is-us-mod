@@ -110,6 +110,9 @@ pub struct MapState {
     pub screen_route: bool,
     /// Streamer mode: the overlays kept out of recordings and streams (layered.rs).
     pub streamer: bool,
+    /// Accessibility: colours colour-blind players tell apart, solid backs (settings.rs).
+    pub safe_colours: bool,
+    pub high_contrast: bool,
     /// The maps' icons over what is near in the game's view (enemies, items, people…), as the
     /// minimap's kinds and sorts are shown.
     pub screen_marks: bool,
@@ -168,6 +171,8 @@ impl MapState {
             screen_route: self.screen_route,
             screen_marks: self.screen_marks,
             streamer: self.streamer,
+            safe_colours: self.safe_colours,
+            high_contrast: self.high_contrast,
             auto: self.auto,
             trails: self
                 .trails
@@ -225,6 +230,8 @@ impl Default for MapState {
             route: true,
             screen_route: true,
             streamer: false,
+            safe_colours: false,
+            high_contrast: false,
             screen_marks: true,
             trails: BTreeMap::new(),
             markers: BTreeMap::new(),
@@ -315,8 +322,8 @@ impl MapState {
             self.tracker
         );
         out += &format!(
-            "screen_route {}\nscreen_marks {}\nstreamer {}\n",
-            self.screen_route, self.screen_marks, self.streamer
+            "screen_route {}\nscreen_marks {}\nstreamer {}\nsafe_colours {}\nhigh_contrast {}\n",
+            self.screen_route, self.screen_marks, self.streamer, self.safe_colours, self.high_contrast
         );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
@@ -385,6 +392,8 @@ impl MapState {
                 ["screen_route", v] => s.screen_route = v == "true",
                 ["screen_marks", v] => s.screen_marks = v == "true",
                 ["streamer", v] => s.streamer = v == "true",
+                ["safe_colours", v] => s.safe_colours = v == "true",
+                ["high_contrast", v] => s.high_contrast = v == "true",
                 ["north_yaw", v] => {
                     if let Some(n) = v.parse::<f32>().ok().filter(|n| (0.0..360.0).contains(n)) {
                         s.north_yaw = n;

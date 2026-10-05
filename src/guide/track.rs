@@ -17,6 +17,9 @@ pub const MAX: usize = 5;
 
 /// Their colours, by `Track::colour`: none a goal tier's (the auto guide's pick keeps its
 /// tier's colour).
+/// `COLOURS` for colour-blind players (Okabe–Ito): sky blue, orange, bluish green, vermillion,
+/// reddish purple.
+pub const SAFE_COLOURS: [[u8; 3]; MAX] = [[86, 180, 233], [230, 159, 0], [0, 158, 115], [213, 94, 0], [204, 121, 167]];
 pub const COLOURS: [[u8; 3]; MAX] = [[90, 200, 255], [255, 120, 200], [140, 230, 120], [255, 165, 70], [185, 145, 255]];
 
 /// A goal followed whose goal is gone this long is let go: taken, talked to, done. Not at
@@ -70,6 +73,9 @@ impl Track {
     }
 
     pub fn rgb(&self) -> [u8; 3] {
+        if crate::settings::safe_colours() {
+            return SAFE_COLOURS[self.colour as usize % MAX];
+        }
         COLOURS[self.colour as usize % MAX]
     }
 

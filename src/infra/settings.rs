@@ -33,6 +33,20 @@ pub struct Consent(pub u8);
 /// panel): set by the panel whenever it changes.
 pub static LIVE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
 
+/// Accessibility (the Map page's tab, kept in the map settings): colours told apart by
+/// colour-blind players (Okabe–Ito), and the overlays' cards and text on solid backs. Set by
+/// the overlay and the panel from the map settings; read wherever a colour is chosen.
+pub static SAFE_COLOURS: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+pub static HIGH_CONTRAST: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+pub fn safe_colours() -> bool {
+    SAFE_COLOURS.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+pub fn high_contrast() -> bool {
+    HIGH_CONTRAST.load(std::sync::atomic::Ordering::Relaxed)
+}
+
 /// Whether the consent now grants `bit`.
 pub fn live(bit: u8) -> bool {
     LIVE.load(std::sync::atomic::Ordering::Relaxed) & bit != 0

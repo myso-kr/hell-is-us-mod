@@ -843,3 +843,8 @@ GLYPH_RING	anneau ouvert en haut
 GLYPH_CLAWS	traces de griffes
 ENEMY_HEALTH_SHARE_DEFAULT_1	Santé ennemie, part (1 = inchangée)
 STREAMER_MODE	Mode streamer : masquer les surcouches dans les enregistrements et diffusions
+ACCESSIBILITY	Accessibilité
+SAFE_COLOURS	Couleurs adaptées au daltonisme
+HIGH_CONTRAST	Contraste élevé : fond opaque derrière le texte
+REDUCED_MOTION	Réduire les animations (fond fixe)
+ACCESSIBILITY_NOTE	Les couleurs s’appliquent à la mini-carte, la grande carte, la carte 3D et la vue du jeu.

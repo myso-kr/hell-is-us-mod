@@ -538,7 +538,7 @@ impl Map3d {
             hero: None,
             picked: self.picked,
             route: ribbon(&route, colour),
-            shortcut: ribbon(&cut, SHORTCUT_RGB),
+            shortcut: ribbon(&cut, crate::navmesh::shortcut_rgb()),
         };
         let gpu = self.gpu.clone();
         let drawn = scene.clone();
@@ -612,13 +612,8 @@ impl Map3d {
         // the shortcut's drops: ↓ and how far, coloured by what the fall does
         for &(top, h) in &shortcut.1 {
             if let Some(q) = project(&vp, scene.to_scene(top), rect) {
-                let c = if h <= crate::navmesh::DROP_HURTS {
-                    Color32::from_rgb(90, 215, 235)
-                } else if h <= crate::navmesh::DROP_HURTS_MORE {
-                    Color32::from_rgb(240, 170, 60)
-                } else {
-                    Color32::from_rgb(235, 80, 70)
-                };
+                let [r, g, b] = crate::navmesh::drop_rgb(h);
+                let c = Color32::from_rgb(r, g, b);
                 painter.circle_filled(q, 7.0, OUTLINE);
                 painter.add(egui::Shape::convex_polygon(
                     vec![q + egui::vec2(0.0, 4.5), q + egui::vec2(-4.5, -2.5), q + egui::vec2(4.5, -2.5)],
@@ -898,9 +893,6 @@ fn ribbon(pts: &[[f32; 3]], colour: [u8; 3]) -> Vec<f32> {
 
 /// Floats a ribbon vertex: position, across, along, colour.
 const RIBBON_FLOATS: usize = 8;
-
-/// The shortcut's colour (the maps'), as the shader takes it.
-const SHORTCUT_RGB: [u8; 3] = [90, 215, 235];
 
 /// The route ribbon's height over the floor (m).
 const RIBBON_LIFT: f32 = 0.15;

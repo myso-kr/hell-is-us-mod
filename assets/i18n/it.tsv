@@ -843,3 +843,8 @@ GLYPH_RING	anello aperto in alto
 GLYPH_CLAWS	segni di artigli
 ENEMY_HEALTH_SHARE_DEFAULT_1	Salute nemici, quota (1 = invariata)
 STREAMER_MODE	Modalità streamer: nascondi gli overlay in registrazioni e dirette
+ACCESSIBILITY	Accessibilità
+SAFE_COLOURS	Colori adatti ai daltonici
+HIGH_CONTRAST	Alto contrasto: sfondo opaco dietro il testo
+REDUCED_MOTION	Riduci il movimento (sfondo fermo)
+ACCESSIBILITY_NOTE	I colori valgono per minimappa, mappa grande, mappa 3D e vista di gioco.

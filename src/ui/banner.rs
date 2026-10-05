@@ -24,7 +24,7 @@ pub fn draw(cv: &mut Canvas, pen: &mut Pen, title: &str, body: &str, colour: Rgb
     y += pen.write(cv, x, y, width, body, 12, false, TEXT, 3);
     let used = (y + PAD).min(H);
     let card = (0, 0, W, used);
-    super::tracker::under(cv, card, 8.0, CARD);
+    super::tracker::under(cv, card, 8.0, super::tracker::back(CARD));
     super::tracker::edge(cv, card, 8.0, Rgba(colour.0, colour.1, colour.2, 160));
     cv.rect(PAD - 2, PAD, PAD + 1, used - PAD, colour);
     used

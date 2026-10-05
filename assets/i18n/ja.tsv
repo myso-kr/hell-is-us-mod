@@ -843,3 +843,8 @@ GLYPH_RING	上が開いた輪
 GLYPH_CLAWS	爪痕
 ENEMY_HEALTH_SHARE_DEFAULT_1	敵の体力の割合（1 = そのまま）
 STREAMER_MODE	配信モード: 録画・配信からオーバーレイを隠す
+ACCESSIBILITY	アクセシビリティ
+SAFE_COLOURS	色覚多様性に配慮した色
+HIGH_CONTRAST	ハイコントラスト: 文字の背景を不透明に
+REDUCED_MOTION	動きを減らす（背景アニメーションを止める）
+ACCESSIBILITY_NOTE	色はミニマップ・大きい地図・3D地図・ゲーム画面すべてに適用されます。

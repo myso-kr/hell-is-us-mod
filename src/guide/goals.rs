@@ -49,6 +49,14 @@ impl Tier {
     }
 
     pub fn rgb(self) -> [u8; 3] {
+        // colour-blind safe (Okabe–Ito): orange, sky blue, yellow
+        if crate::settings::safe_colours() {
+            return match self {
+                Tier::Quest => [230, 159, 0],
+                Tier::Secret => [86, 180, 233],
+                Tier::Clue => [240, 228, 66],
+            };
+        }
         match self {
             Tier::Quest => [255, 90, 200],
             Tier::Secret => [120, 230, 230],

@@ -136,13 +136,15 @@ pub fn lines(
 /// "A shortcut: a 6 m drop — 10 % of health", by the game's fall damage (navmesh.rs).
 pub fn drop_line(h: f32) -> Line {
     let m = format!("{:.0}", h / 100.0);
-    let (text, colour) = if h <= crate::navmesh::DROP_HURTS {
-        (trf!("CTX_DROP_SAFE", m = m), Rgba(90, 215, 235, 255))
+    let key = if h <= crate::navmesh::DROP_HURTS {
+        "CTX_DROP_SAFE"
     } else if h <= crate::navmesh::DROP_HURTS_MORE {
-        (trf!("CTX_DROP_HURTS", m = m), Rgba(240, 170, 60, 255))
+        "CTX_DROP_HURTS"
     } else {
-        (trf!("CTX_DROP_HURTS_MORE", m = m), Rgba(235, 80, 70, 255))
+        "CTX_DROP_HURTS_MORE"
     };
+    let [r, g, b] = crate::navmesh::drop_rgb(h);
+    let (text, colour) = (crate::i18n::text(key).replace("{m}", &m), Rgba(r, g, b, 255));
     Line { text, colour }
 }
 

@@ -843,3 +843,8 @@ GLYPH_RING	上方开口的环
 GLYPH_CLAWS	爪痕
 ENEMY_HEALTH_SHARE_DEFAULT_1	敌人生命比例（1 = 不变）
 STREAMER_MODE	主播模式：在录制和直播中隐藏叠加层
+ACCESSIBILITY	无障碍
+SAFE_COLOURS	色盲友好配色
+HIGH_CONTRAST	高对比度：文字背景不透明
+REDUCED_MOTION	减少动态（背景静止）
+ACCESSIBILITY_NOTE	颜色适用于小地图、大地图、3D 地图和游戏画面。

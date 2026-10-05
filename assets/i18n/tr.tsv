@@ -843,3 +843,8 @@ GLYPH_RING	üstü açık halka
 GLYPH_CLAWS	pençe izleri
 ENEMY_HEALTH_SHARE_DEFAULT_1	Düşman canı oranı (1 = olduğu gibi)
 STREAMER_MODE	Yayıncı modu: kayıt ve yayında kaplamaları gizle
+ACCESSIBILITY	Erişilebilirlik
+SAFE_COLOURS	Renk körlüğüne uygun renkler
+HIGH_CONTRAST	Yüksek kontrast: metnin arkasında opak zemin
+REDUCED_MOTION	Hareketi azalt (sabit arka plan)
+ACCESSIBILITY_NOTE	Renkler mini harita, büyük harita, 3D harita ve oyun görünümünde geçerli.

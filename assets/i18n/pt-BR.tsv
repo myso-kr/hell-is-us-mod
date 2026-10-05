@@ -843,3 +843,8 @@ GLYPH_RING	anel aberto em cima
 GLYPH_CLAWS	marcas de garras
 ENEMY_HEALTH_SHARE_DEFAULT_1	Vida dos inimigos, fração (1 = igual)
 STREAMER_MODE	Modo streamer: ocultar as sobreposições em gravações e transmissões
+ACCESSIBILITY	Acessibilidade
+SAFE_COLOURS	Cores para daltônicos
+HIGH_CONTRAST	Alto contraste: fundo opaco atrás do texto
+REDUCED_MOTION	Reduzir movimento (fundo parado)
+ACCESSIBILITY_NOTE	As cores valem para o minimapa, mapa grande, mapa 3D e visão do jogo.

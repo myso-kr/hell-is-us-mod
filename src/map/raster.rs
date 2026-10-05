@@ -434,10 +434,9 @@ pub struct Drawn {
 
 /// A shortcut's line, and its drops' marks by the harm the fall does (FallDamageConfig):
 /// none, some, much.
-const SHORTCUT: Rgba = Rgba(90, 215, 235, 235);
-const DROP_SAFE: Rgba = Rgba(90, 215, 235, 255);
-const DROP_HURTS: Rgba = Rgba(240, 170, 60, 255);
-const DROP_HURTS_MORE: Rgba = Rgba(235, 80, 70, 255);
+fn rgba([r, g, b]: [u8; 3], a: u8) -> Rgba {
+    Rgba(r, g, b, a)
+}
 
 /// The map's radius on a canvas (px): a full-screen map's circle leaves `FULL_FILL` of the
 /// short side's half, so the screen keeps a margin above and below it.
@@ -937,7 +936,7 @@ pub fn draw_above(
                         let e = (t + 4.0).min(len);
                         let (p0, p1) = ((cx + a.0 + ux * t, cy + a.1 + uy * t), (cx + a.0 + ux * e, cy + a.1 + uy * e));
                         cv.line(p0, p1, outer - 0.6, faded(Rgba(0, 0, 0, 150), lines));
-                        cv.line(p0, p1, inner - 0.3, faded(SHORTCUT, lines));
+                        cv.line(p0, p1, inner - 0.3, faded(rgba(crate::navmesh::shortcut_rgb(), 235), lines));
                         t += 7.0;
                     }
                 }
@@ -946,13 +945,7 @@ pub fn draw_above(
                     if !inside(q) {
                         continue;
                     }
-                    let c = if h <= crate::navmesh::DROP_HURTS {
-                        DROP_SAFE
-                    } else if h <= crate::navmesh::DROP_HURTS_MORE {
-                        DROP_HURTS
-                    } else {
-                        DROP_HURTS_MORE
-                    };
+                    let c = rgba(crate::navmesh::drop_rgb(h), 255);
                     let (x, y) = (cx + q.0, cy + q.1);
                     cv.disc(x, y, 6.5, faded(OUTLINE, marks));
                     cv.triangle([(x, y + 4.0), (x - 4.0, y - 2.5), (x + 4.0, y - 2.5)], faded(c, marks));

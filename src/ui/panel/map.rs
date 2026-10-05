@@ -323,6 +323,8 @@ impl Panel {
     pub(super) fn map_tab(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         let shared = self.shared.clone();
         let mut guard = crate::prof::timed("lock.map", || shared.map.lock().unwrap());
+        crate::settings::SAFE_COLOURS.store(guard.safe_colours, std::sync::atomic::Ordering::Relaxed);
+        crate::settings::HIGH_CONTRAST.store(guard.high_contrast, std::sync::atomic::Ordering::Relaxed);
         let before = guard.clone();
         // The page's cards in masonry columns (tw::masonry), as many as fit.
         let cols = self.columns;
@@ -421,8 +423,15 @@ impl Panel {
     /// layers' opacity, the game view's 3D layer, the keys), so the page is not a wall of cards.
     pub(super) fn settings_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
         card(t, tr!("MAP_SETTINGS"), |t| {
-            let tabs =
-                [tr!("MINIMAP"), tr!("BIG_MAP"), tr!("TERRAIN"), tr!("LAYER_OPACITY"), tr!("SCREEN3D"), tr!("KEYS")];
+            let tabs = [
+                tr!("MINIMAP"),
+                tr!("BIG_MAP"),
+                tr!("TERRAIN"),
+                tr!("LAYER_OPACITY"),
+                tr!("SCREEN3D"),
+                tr!("ACCESSIBILITY"),
+                tr!("KEYS"),
+            ];
             tw::tabs(t, &mut self.map_settings, &tabs);
             match self.map_settings {
                 0 => self.map_card(t, state, 0),
@@ -430,6 +439,16 @@ impl Panel {
                 2 => self.map_card(t, state, 1),
                 3 => self.map_card(t, state, 3),
                 4 => self.screen3d_body(t, state),
+                5 => {
+                    // what is told apart by colour, how solid the cards are, what moves
+                    tw::switch(t, &mut state.safe_colours, tr!("SAFE_COLOURS"));
+                    tw::switch(t, &mut state.high_contrast, tr!("HIGH_CONTRAST"));
+                    let mut still = !self.motion;
+                    if tw::switch(t, &mut still, tr!("REDUCED_MOTION")).changed() {
+                        self.motion = !still;
+                    }
+                    note(t, tr!("ACCESSIBILITY_NOTE"));
+                }
                 _ => self.keys_card(t, state),
             }
         });

@@ -40,7 +40,16 @@ fn wrap(a: f32) -> f32 {
 
 /// The panel's palette (ui/theme.rs) as the raster's colours: the strip's wash, its
 /// letters and ticks, and Lymbic blue for north and the guided target.
-const WASH: Rgba = Rgba(0x0E, 0x12, 0x17, 168);
+const WASH_DIM: Rgba = Rgba(0x0E, 0x12, 0x17, 168);
+
+/// The compass's back: see-through, or near solid with high contrast on (settings.rs).
+fn wash() -> Rgba {
+    if crate::settings::high_contrast() {
+        Rgba(WASH_DIM.0, WASH_DIM.1, WASH_DIM.2, 240)
+    } else {
+        WASH_DIM
+    }
+}
 const TITLE: Rgba = Rgba(0xE6, 0xEE, 0xF7, 255);
 const DIM: Rgba = Rgba(0x9A, 0xA6, 0xB3, 255);
 const ACCENT: Rgba = Rgba(0x5A, 0x9C, 0xE6, 255);
@@ -105,7 +114,7 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
         let t = ((x - 8.0).min(w - 8.0 - x) / 56.0).clamp(0.0, 1.0);
         t * t * (3.0 - 2.0 * t)
     };
-    round_box(cv, (8.0, bar_top, w - 8.0, bar_bottom), 10.0, WASH, feather);
+    round_box(cv, (8.0, bar_top, w - 8.0, bar_bottom), 10.0, wash(), feather);
     let fade = |x: f32| (1.0 - ((x - cx).abs() / (w / 2.0 - 10.0)).powi(3)).clamp(0.0, 1.0);
     // Ticks every 15°, letters on the eight winds.
     for step in 0..24 {
@@ -164,7 +173,7 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
                 // A diamond in the goal's colour, ringed in the accent, on a dark halo.
                 let s = 6.5 * k;
                 let diamond = |s: f32| [(x, y - s), (x + s, y), (x, y + s), (x - s, y)];
-                cv.polygon(&diamond(s + 3.2), faded(WASH, 1.2 * a));
+                cv.polygon(&diamond(s + 3.2), faded(wash(), 1.2 * a));
                 cv.polygon(&diamond(s + 1.8), faded(ACCENT, a));
                 cv.polygon(&diamond(s), colour);
                 if p.dz_m.abs() >= FLOOR_DZ {
@@ -177,7 +186,7 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
                 // A smaller diamond in its own colour, on a dark halo.
                 let s = 5.0 * k;
                 let diamond = |s: f32| [(x, y - s), (x + s, y), (x, y + s), (x - s, y)];
-                cv.polygon(&diamond(s + 2.2), faded(WASH, 1.2 * a));
+                cv.polygon(&diamond(s + 2.2), faded(wash(), 1.2 * a));
                 cv.polygon(&diamond(s), Rgba(r, g, b, 255));
                 if p.dz_m.abs() >= FLOOR_DZ {
                     floor_tick(cv, x + s + 6.0, y, p.dz_m, a);
@@ -185,7 +194,7 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
             } else {
                 // A dot, quieter with distance, on a faint dark halo for bright scenes.
                 let s = 3.0 * k;
-                cv.disc(x, y, s + 1.5, faded(WASH, 0.8 * a));
+                cv.disc(x, y, s + 1.5, faded(wash(), 0.8 * a));
                 cv.disc(x, y, s, faded(colour, 0.9));
                 if p.dz_m.abs() >= FLOOR_DZ {
                     floor_tick(cv, x + s + 4.0, y, p.dz_m, 0.8 * a);
@@ -196,7 +205,7 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
             let side = d.signum();
             let x = cx + side * (w / 2.0 - 14.0);
             let chevron = |s: f32| [(x + side * s, y), (x - side * s * 0.4, y - s), (x - side * s * 0.4, y + s)];
-            cv.triangle(chevron(8.5), faded(WASH, 1.2));
+            cv.triangle(chevron(8.5), faded(wash(), 1.2));
             cv.triangle(chevron(6.5), ACCENT);
             target_label(cv, x - side * 4.0, bar_bottom + 12.0, p);
         } else if p.followed {
@@ -204,7 +213,7 @@ pub fn draw_compass(cv: &mut Canvas, yaw: f32, pins: &[Pin]) {
             let side = d.signum();
             let x = cx + side * (w / 2.0 - 30.0);
             let chevron = |s: f32| [(x + side * s, y), (x - side * s * 0.4, y - s), (x - side * s * 0.4, y + s)];
-            cv.triangle(chevron(6.5), faded(WASH, 1.2));
+            cv.triangle(chevron(6.5), faded(wash(), 1.2));
             cv.triangle(chevron(4.8), Rgba(r, g, b, 255));
         }
     }

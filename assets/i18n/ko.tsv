@@ -843,3 +843,8 @@ GLYPH_RING	위가 트인 고리
 GLYPH_CLAWS	발톱 자국
 ENEMY_HEALTH_SHARE_DEFAULT_1	적 체력 배율 (1 = 원래대로)
 STREAMER_MODE	스트리머 모드: 녹화·방송 화면에서 오버레이 숨기기
+ACCESSIBILITY	접근성
+SAFE_COLOURS	색각 이상 친화 색상
+HIGH_CONTRAST	고대비: 오버레이 글자 뒤 배경을 불투명하게
+REDUCED_MOTION	움직임 줄이기 (배경 애니메이션 끄기)
+ACCESSIBILITY_NOTE	색상은 미니맵·큰 지도·3D 지도·게임 화면에 모두 적용됩니다.

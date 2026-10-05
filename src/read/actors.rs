@@ -51,6 +51,16 @@ impl Kind {
 
     /// Its colour on the map and in the panel.
     pub fn rgb(self) -> [u8; 3] {
+        if crate::settings::safe_colours() {
+            return match self {
+                Kind::Enemy => [213, 94, 0],
+                Kind::Item => [0, 158, 115],
+                Kind::Loot => [230, 159, 0],
+                Kind::Npc => [86, 180, 233],
+                Kind::Interact => [204, 121, 167],
+                Kind::Save => [240, 228, 66],
+            };
+        }
         match self {
             Kind::Enemy => [235, 60, 50],
             Kind::Item => [90, 220, 110],

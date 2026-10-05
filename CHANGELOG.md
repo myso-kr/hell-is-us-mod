@@ -10,6 +10,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- Accessibility (Map page, a tab of its own): colour-blind friendly colours (Okabe–Ito) for
+  markers, goals, tracks, drops and shortcuts on every map and in the game view; high contrast
+  (solid backs behind the tracker, notices and compass); reduced motion (no drifting backdrop).
 - Streamer mode (Map page, the game view tab): every overlay is kept out of recordings and streams
   (Windows 10 2004 and later), so the player sees the maps and the viewers see the game.
 - A cheat for enemies' health share (10–100 %): each enemy's health is cut to that share of what
