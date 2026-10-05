@@ -825,3 +825,4 @@ LEGEND_SHARED	Identique sur la mini-carte, la grande carte, la carte 3D et la vu
 SORT_LEVER	Levier, interrupteur
 SORT_INSPECT	À examiner
 SORT_TIMELOOP	Boucle temporelle
+FULLSCREEN_HIDES_OVERLAYS	Le jeu est en plein écran exclusif : les cartes et la boussole ne peuvent pas s’afficher par-dessus. Passez le jeu en fenêtre sans bordure.

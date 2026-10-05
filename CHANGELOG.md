@@ -23,6 +23,16 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Changed
 
+- The game view's 3D layer is paced by the compositor (DwmFlush): the camera is read right after
+  the screen turns over, so the band no longer swims against the game.
+- The worker reads the game's memory about half as often (13,500 → 6,500 reads a step): one
+  census of the live objects for the obstacle and quest passes, one walk of the levels' actors,
+  the attribute layout and the graph's gating kept while their inputs are the same. The maps draw
+  with the map lock let go, and an overlay window is not presented again when nothing changed.
+
+### Added (2026-10-06)
+
+- The Now page says when the game runs in exclusive fullscreen, where nothing can show over it.
 - The game view's 3D layer draws on a thread of its own at 60 frames a second from the camera as
   it is, instead of at the overlay's 20: the band no longer jerks as the view turns. What is seen
   from the camera is worked out again only when the camera moves 25 cm or after 120 ms.

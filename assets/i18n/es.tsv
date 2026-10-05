@@ -825,3 +825,4 @@ LEGEND_SHARED	Igual en el minimapa, el mapa grande, el mapa 3D y la vista del ju
 SORT_LEVER	Palanca, interruptor
 SORT_INSPECT	Para examinar
 SORT_TIMELOOP	Bucle temporal
+FULLSCREEN_HIDES_OVERLAYS	El juego está en pantalla completa exclusiva: los mapas y la brújula no pueden mostrarse encima. Pon el juego en ventana sin bordes.

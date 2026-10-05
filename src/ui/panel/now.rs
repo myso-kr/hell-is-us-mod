@@ -16,6 +16,10 @@ impl Panel {
     pub(super) fn now_tab(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState, snap: Option<&Snapshot>) {
         use egui_taffy::taffy::{AlignItems, Style};
         self.hero(t, snap);
+        // Exclusive fullscreen: nothing drawn over the game shows (overlay `fullscreen`).
+        if self.shared.fullscreen.load(std::sync::atomic::Ordering::Relaxed) {
+            tw::chip(t, tr!("FULLSCREEN_HIDES_OVERLAYS"), tw::Tone::Bad);
+        }
         let cols = self.columns.clamp(1, 3);
         // Cards in a row as tall as each other: no hole beside a short one.
         let grid = Style { align_items: Some(AlignItems::Stretch), ..tw::grid(cols, tw::GAP) };

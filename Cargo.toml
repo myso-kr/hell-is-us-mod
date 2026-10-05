@@ -22,6 +22,8 @@ sha2 = { version = "0.10", default-features = false }
 windows-sys = { version = "0.59", features = [
     "Win32_Foundation",
     "Win32_Graphics_Gdi",
+    # screenroute.rs: the game view's layer paced by the compositor (DwmFlush).
+    "Win32_Graphics_Dwm",
     "Win32_System_LibraryLoader",
     "Win32_System_Memory",
     "Win32_UI_WindowsAndMessaging",

@@ -825,3 +825,4 @@ LEGEND_SHARED	Taka sama na minimapie, dużej mapie, mapie 3D i w widoku gry.
 SORT_LEVER	Dźwignia, przełącznik
 SORT_INSPECT	Do obejrzenia
 SORT_TIMELOOP	Pętla czasu
+FULLSCREEN_HIDES_OVERLAYS	Gra działa w trybie wyłącznego pełnego ekranu: mapy i kompas nie mogą się nad nią pojawić. Ustaw grę na okno bez ramki.

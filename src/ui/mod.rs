@@ -68,6 +68,9 @@ pub type Frame = Option<(usize, usize, Vec<u32>, u64)>;
 /// What the threads share. Each field has one writer.
 #[derive(Default)]
 pub struct Shared {
+    /// overlay: a program runs in exclusive fullscreen (Direct3D), where no window shows over
+    /// it — the overlays cannot be seen; the panel says to switch the game to borderless.
+    pub fullscreen: AtomicBool,
     /// worker: the last step.
     pub snap: Mutex<Option<Snapshot>>,
     /// worker: what the last request came to — (succeeded, text).

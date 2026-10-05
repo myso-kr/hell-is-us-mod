@@ -825,3 +825,4 @@ LEGEND_SHARED	Igual no minimapa, no mapa grande, no mapa 3D e na visão do jogo.
 SORT_LEVER	Alavanca, interruptor
 SORT_INSPECT	Para examinar
 SORT_TIMELOOP	Loop temporal
+FULLSCREEN_HIDES_OVERLAYS	O jogo está em tela cheia exclusiva: os mapas e a bússola não podem aparecer por cima. Coloque o jogo em janela sem bordas.

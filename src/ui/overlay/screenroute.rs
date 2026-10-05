@@ -34,6 +34,8 @@ const BUCKET: i32 = 128;
 /// The layer's own pace: the camera turns between the overlay's frames (50 ms), and a band on the
 /// floor that lags the view by that much jerks.
 const PAINT_EVERY: Duration = Duration::from_millis(16);
+/// How long before a frame is due the layer stops sleeping and waits for the compositor.
+const VSYNC_EARLY: Duration = Duration::from_millis(5);
 /// What is seen from the camera is worked out again when the camera has moved this far (cm), or
 /// this long after: the costly part (rays against the obstacles and the ground), not the drawing.
 const SEEN_MOVED: f32 = 25.0;
@@ -144,7 +146,16 @@ fn paint(job: Arc<Mutex<Option<Arc<Job>>>>, panel: Arc<AtomicIsize>) {
             layer.keep_on_top((p != 0).then_some(p as windows_sys::Win32::Foundation::HWND));
         }
         tick = tick.wrapping_add(1);
-        std::thread::sleep(PAINT_EVERY.saturating_sub(start.elapsed()).max(Duration::from_millis(2)));
+        // Paced by the compositor: sleep to just before the next frame is due, then wait for
+        // the composition itself (DwmFlush), so the camera is read right after the screen
+        // turns over and the band is presented with that frame. A timer alone beats against
+        // the display's refresh and the band swims against the game. No composition (the
+        // call fails): the timer alone.
+        std::thread::sleep(PAINT_EVERY.saturating_sub(start.elapsed() + VSYNC_EARLY));
+        // SAFETY: no arguments; blocks this thread until the next composition pass.
+        if unsafe { windows_sys::Win32::Graphics::Dwm::DwmFlush() } < 0 {
+            std::thread::sleep(VSYNC_EARLY);
+        }
     }
 }
 

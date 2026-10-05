@@ -825,3 +825,4 @@ LEGEND_SHARED	小地图、大地图、3D 地图和游戏画面通用。
 SORT_LEVER	拉杆·开关
 SORT_INSPECT	可查看
 SORT_TIMELOOP	时间循环
+FULLSCREEN_HIDES_OVERLAYS	游戏正以独占全屏运行，地图和指南针无法显示在其上。请将游戏切换为无边框窗口。

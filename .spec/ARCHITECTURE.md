@@ -269,3 +269,15 @@ array's data and count are unchanged (for at most `LEVEL_FOR`, 5 s: an actor rep
 shows within it), and the goals take the scanner's pairs (`Scanner::all_actors`). Measured, 30 s
 in play: things 4,186 → 2,079 reads a step, goals.refresh 1,503 → 37, the step's reads 10,011 →
 6,501 (13,538 at phase 1).
+
+### Phase 5 (partly, 2026-10-06)
+
+- The game view's layer (`screenroute::paint`) sleeps to 5 ms before a frame is due, then waits for
+  the composition (`DwmFlush`) and reads the camera right after: a 16 ms timer alone beats against
+  the display's refresh. No composition: the timer alone.
+- Exclusive fullscreen is asked of the shell once a second (`SHQueryUserNotificationState`,
+  `QUNS_RUNNING_D3D_FULL_SCREEN`, as Discord does); the Now page then says to switch the game to
+  borderless. Borderless and windowed games are not reported.
+- Not done: presenting through DirectComposition (a swap chain on a `WS_EX_NOREDIRECTIONBITMAP`
+  window) instead of UpdateLayeredWindow. It needs the COM interfaces of the `windows` crate, a new
+  dependency; the measured gain is the big map's present (4.6 ms a frame at 30 fps).

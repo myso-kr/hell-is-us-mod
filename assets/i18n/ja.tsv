@@ -825,3 +825,4 @@ LEGEND_SHARED	ミニマップ・大きい地図・3D 地図・ゲーム画面で
 SORT_LEVER	レバー・スイッチ
 SORT_INSPECT	調べるもの
 SORT_TIMELOOP	タイムループ
+FULLSCREEN_HIDES_OVERLAYS	ゲームが排他的フルスクリーンで動作しているため、地図とコンパスを重ねて表示できません。ボーダーレスウィンドウに切り替えてください。

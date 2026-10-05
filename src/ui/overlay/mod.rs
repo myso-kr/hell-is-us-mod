@@ -292,6 +292,15 @@ pub fn run(shared: Arc<Shared>) {
         }
         let _frame = crate::prof::span("frame");
         tick = tick.wrapping_add(1);
+        // Exclusive fullscreen, once a second: the shell knows (as Discord asks it), and only
+        // then — borderless and windowed games are not reported.
+        if tick % 20 == 1 {
+            let mut state = 0;
+            // SAFETY: writes the one value it is given.
+            let full = unsafe { windows_sys::Win32::UI::Shell::SHQueryUserNotificationState(&mut state) } >= 0
+                && state == windows_sys::Win32::UI::Shell::QUNS_RUNNING_D3D_FULL_SCREEN;
+            shared.fullscreen.store(full && shared.game_pid.load(Ordering::SeqCst) != 0, Ordering::Relaxed);
+        }
 
         let game = shared.game_pid.load(Ordering::SeqCst);
         let focus = pid_of(unsafe { GetForegroundWindow() });
