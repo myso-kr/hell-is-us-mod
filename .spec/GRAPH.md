@@ -176,7 +176,30 @@ door's open side; a receiver worked through devices among them, on their floor (
 receiver hangs 4 m over the room's six levers, off the top of the screen. Test:
 `a_receiver_is_worked_among_its_devices_on_their_floor`.
 
-## 11. Next
+## 11. Audit of the whole graph (2026-10-05)
+
+The user: draw the graph and audit it all for what is cut off or in the wrong order. `hiumod doctor
+graph` now also writes `Mods\doctor\graph.json` (each node: world, name, class, place, whether it has
+a save GUID, its needs as a tree, what it gives, its round); local data, never committed. Over the
+2598 nodes and 1061 edges (a need's leaf to what meets it; items and facts to their three earliest
+givers):
+
+| Check | Found | Meaning |
+|---|---|---|
+| Dangling reference (a need names an actor not in the graph) | 1 | a level-instance floor (`AS_DirFloor_01_Cut_PLI`): the need reads as met |
+| Untracked link (the actor needed has no save GUID) | 11 edges, 7 actors | always met: the edge holds nothing back (6 in Senedra) |
+| Cycles over "used" | 5 (14 nodes) | every one an elevator: its call levers need its state, it needs them |
+| Order inverted (needs what comes only in a later round) | 0 | |
+| Needed, given by nothing | 0 | |
+| "Not known yet" windows | 10 | a fact that must not be known, given somewhere: the window can close |
+| No edge in or out, giving nothing | 937 | doors with no condition (257), pickups whose payload is not read (122), activators of receivers in other cells, quick chats |
+
+**The story order is not in the graph.** Of the places that give each main quest's facts, 94–97 %
+are doable in round 0 (Quest05: 294 of 307), because nothing the graph knows gates them: the quests'
+steps (StoryUnits) that do are not nodes yet. The rounds order places by their puzzles and keys, not
+by the story. This is the first thing to add (§12).
+
+## 12. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items

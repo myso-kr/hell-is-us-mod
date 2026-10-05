@@ -399,7 +399,36 @@ fn graph() -> R {
     print!("{out}");
     let dir = hiumod::paths::data_dir().join("doctor");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    std::fs::write(dir.join("graph.txt"), &out).map_err(|e| e.to_string())
+    std::fs::write(dir.join("graph.txt"), &out).map_err(|e| e.to_string())?;
+    // The graph itself, for looking into offline (GRAPH.md §12): each node, what it needs
+    // as a tree, what it gives, its round. Local data from the game: never committed.
+    fn need(n: &hiumod::graph::Need) -> serde_json::Value {
+        use hiumod::graph::Need;
+        match n {
+            Need::Used(a) => serde_json::json!({"used": a}),
+            Need::Fact(t, has) => serde_json::json!({"fact": t, "has": has}),
+            Need::Item(it) => serde_json::json!({"item": it}),
+            Need::All(v) => serde_json::json!({"all": v.iter().map(need).collect::<Vec<_>>()}),
+            Need::Any(v) => serde_json::json!({"any": v.iter().map(need).collect::<Vec<_>>()}),
+        }
+    }
+    let nodes: Vec<serde_json::Value> = g
+        .nodes
+        .iter()
+        .enumerate()
+        .map(|(i, n)| {
+            serde_json::json!({
+                "world": n.world, "name": n.name, "class": n.class, "at": n.at,
+                "guid": n.guid.is_some(), "scripted": n.scripted,
+                "needs": n.needs.iter().map(need).collect::<Vec<_>>(),
+                "gives_items": n.gives_items, "gives_tags": n.gives_tags,
+                "activators": n.activators, "logic": n.logic.is_some(),
+                "round": r.depth[i],
+            })
+        })
+        .collect();
+    std::fs::write(dir.join("graph.json"), serde_json::to_string(&nodes).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())
 }
 
 /// `doctor inspect|find|dump|watch|scan|usmap|survey` (probe.rs): reads only.
