@@ -803,3 +803,15 @@ TELEPORT_BACK	最後の位置へ移動
 MOVED_BACK	テレポート前の位置に戻りました。
 NOTHING_TO_GO_BACK_TO	テレポート前の位置が保存されていません。
 GRAPH_OPENS_FROM_OTHER_SIDE	反対側からのみ開く：開けられる側へ案内
+MAP3D	3Dマップ
+ABOUT_MAP3D	地下まで見える地域の3D
+MAP3D_XRAY	X線
+MAP3D_HOLE	注視点の周りに穴
+MAP3D_KEEP	地形
+MAP3D_ROUNDS	ストーリー段階
+MAP3D_ROUND	段階 {round}
+MAP3D_NEVER	到達不可
+MAP3D_BELOW	地下 {m} m
+MAP3D_HINT	ドラッグ: 回転 · 右ドラッグ: 移動 · ホイール: 拡大 · クリック: 場所
+MAP3D_LOADING	地域を読み込み中…
+MAP3D_MISSING	この地域の地図データがまだありません。`hiumod doctor map3d` を一度実行してください（数分）。

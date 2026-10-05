@@ -803,3 +803,15 @@ TELEPORT_BACK	Revenir à la dernière position
 MOVED_BACK	Revenu où vous étiez avant la téléportation.
 NOTHING_TO_GO_BACK_TO	Aucune position d'avant téléportation n'est gardée.
 GRAPH_OPENS_FROM_OTHER_SIDE	ne s'ouvre que de l'autre côté : guidé vers ce côté
+MAP3D	Carte 3D
+ABOUT_MAP3D	La région en 3D, sous-sol compris
+MAP3D_XRAY	Rayons X
+MAP3D_HOLE	Trou autour du point visé
+MAP3D_KEEP	Sol
+MAP3D_ROUNDS	Étape de l'histoire
+MAP3D_ROUND	étape {round}
+MAP3D_NEVER	jamais
+MAP3D_BELOW	{m} m sous terre
+MAP3D_HINT	Glisser : tourner · clic droit glissé : déplacer · molette : zoom · clic : lieu
+MAP3D_LOADING	Chargement de la région…
+MAP3D_MISSING	Les données de carte de cette région manquent : lancez `hiumod doctor map3d` une fois (quelques minutes).

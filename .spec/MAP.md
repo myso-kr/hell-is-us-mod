@@ -385,3 +385,30 @@ Cynon: 1663 tiles, 29930 polys, 93 % of the tiles a live read of the same place 
 Acasa Marshes: 10965 tile records. Each floor poly is then on the ground, under it (more than 3 m below
 the landscape) or indoors with no landscape. The prototype's ant-farm view thins the ground, shows the
 floors under it, and cuts away everything above a chosen height.
+
+## 16. The 3D map page (2026-10-05)
+
+`hiumod doctor map3d` runs the survey tool's `--terrain` and `--navmesh` for every world into
+`Mods\terrain` and `Mods\navmesh` (`<World>.navmesh.bin`: [u32 length][tile] in the live layout; the C#
+scanner gives Lake Cynon's 1663 tiles byte for byte as the prototype did; every world has floors,
+interiors included: Lethe Library 111 tiles, Lethe Propaganda 1780, Auriga 268).
+
+The panel's 3D map page (`panel/map3d.rs`, in the Wayfinding group, behind the map consent) loads the
+hero's world off the panel's thread — the landscape (none for an interior: the floors' bounds centre
+the view), the floors split into on the ground, under it (coloured by depth) and indoors, and the
+requirement graph's places with their rounds — and draws it with OpenGL in an egui paint callback (the
+window now asks for a 24-bit depth and an 8-bit stencil buffer; the callback scissors to its own rect
+and puts egui's blend state back). The techniques are the prototype's, from the research on seeing the
+ground and the underground at once:
+
+- the ground opaque, pixels dropped by a screen-door dither (interleaved gradient noise) in a keyhole
+  along the line from the eye to the point looked at, and everywhere by "Ground" (Cesium's ground
+  translucency, BG3-style occluder fading, without blending's sorting trouble);
+- X-ray: floors and places drawn again with the depth test GREATER as faint silhouettes, one layer per
+  pixel by the stencil;
+- contour lines (5 m, 25 m), hillshade, distance fog;
+- the route in focus (`Shared::route3d`, the overlay's route with its heights: the navmesh's floor, or
+  the ground on the grid's way) as a band over the floors, faint where it is hidden.
+
+Drag turns, a right drag moves, the wheel zooms, a click picks the nearest place (its class, round and
+depth). Story round filters the places.

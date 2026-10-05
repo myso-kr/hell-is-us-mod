@@ -445,6 +445,29 @@ fn graph() -> R {
         .map_err(|e| e.to_string())
 }
 
+/// `doctor map3d`: each region's landscape and walkable floors for the 3D map page (MAP.md §15),
+/// read from the game's files by the survey tool into `Mods\terrain` and `Mods\navmesh`. The game
+/// need not run; the survey's mappings (`doctor survey`, once) must be there.
+fn map3d() -> R {
+    let tool = survey_tool()
+        .ok_or("tools/survey is not built: run `dotnet build -c Release` in tools/survey (needs the .NET 8 SDK)")?;
+    let data = hiumod::paths::data_dir();
+    let game = data.parent().ok_or("no game folder")?.to_path_buf();
+    let dotnet = hiumod::runtime::dotnet().ok_or(tr!("THE_SURVEY_NEEDS_THE_NET_8_RUNTIME"))?;
+    for (mode, dir) in [("--terrain", "terrain"), ("--navmesh", "navmesh")] {
+        let out = data.join(dir);
+        let mut cmd = std::process::Command::new(&dotnet);
+        cmd.arg(&tool).arg("--game").arg(&game).args(["--world", "all", mode]).arg(&out);
+        log!("{}", trf!("RUNNING", tool = tool.display(), args = format!("{mode} {}", out.display())));
+        let status = cmd.status().map_err(|e| format!("dotnet: {e}"))?;
+        if !status.success() {
+            return Err(format!("the survey tool failed ({status})"));
+        }
+        log!("{}", trf!("WRITTEN_TO", path = out.display()));
+    }
+    Ok(())
+}
+
 /// `doctor inspect|find|dump|watch|scan|usmap|survey` (probe.rs): reads only.
 fn probe(args: &[String]) -> R {
     use hiumod::mem::{self, Memory};
@@ -454,6 +477,9 @@ fn probe(args: &[String]) -> R {
     }
     if args.first().map(String::as_str) == Some("graph") {
         return graph();
+    }
+    if args.first().map(String::as_str) == Some("map3d") {
+        return map3d();
     }
     let a = attach()?;
     let (m, n) = (&a.game, &a.anchors.names);
@@ -680,7 +706,7 @@ fn probe(args: &[String]) -> R {
             save("scan.txt", &rows.join("\n"))
         }
         _ => {
-            Err("doctor takes: inspect, find, dump, watch, scan, usmap, survey, locale, tables (see `hiumod help`)"
+            Err("doctor takes: inspect, find, dump, watch, scan, usmap, survey, locale, tables, graph, nav, map3d (see `hiumod help`)"
                 .into())
         }
     }

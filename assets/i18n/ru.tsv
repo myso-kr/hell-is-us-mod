@@ -803,3 +803,15 @@ TELEPORT_BACK	К последней позиции
 MOVED_BACK	Вы вернулись туда, где стояли до телепортации.
 NOTHING_TO_GO_BACK_TO	Позиция до телепортации не сохранена.
 GRAPH_OPENS_FROM_OTHER_SIDE	открывается только с другой стороны: ведёт на ту сторону
+MAP3D	3D-карта
+ABOUT_MAP3D	Регион в 3D вместе с подземельем
+MAP3D_XRAY	Рентген
+MAP3D_HOLE	Отверстие вокруг цели
+MAP3D_KEEP	Земля
+MAP3D_ROUNDS	Этап сюжета
+MAP3D_ROUND	этап {round}
+MAP3D_NEVER	никогда
+MAP3D_BELOW	{m} м под землёй
+MAP3D_HINT	Тянуть: поворот · правой: сдвиг · колесо: масштаб · клик: место
+MAP3D_LOADING	Загрузка региона…
+MAP3D_MISSING	Данных карты этого региона ещё нет: запустите `hiumod doctor map3d` один раз (несколько минут).

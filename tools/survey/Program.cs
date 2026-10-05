@@ -174,6 +174,35 @@ if (opts.TryGetValue("terrain", out var terrainOut))
     }
     return;
 }
+// --navmesh <out dir> [--world W]: each world's walkable floors, underground included, from
+// its cooked navmesh chunks (`<World>.navmesh.bin`: [u32 length][tile] in the live layout
+// navmesh.rs reads; MAP.md §15.1). Game data: kept on the player's PC.
+if (opts.TryGetValue("navmesh", out var navOut))
+{
+    Directory.CreateDirectory(navOut);
+    foreach (var w in worlds)
+    {
+        var seen = new HashSet<(ushort, int, int)>();
+        var tiles = new List<byte[]>();
+        var packages = 0;
+        foreach (var map in survey.Maps(w))
+        {
+            try
+            {
+                if (!provider.LoadPackage(map).GetExports().Any(e => e.Class?.Name == "RecastNavMeshDataChunk")) continue;
+                if (!provider.TrySaveAsset(map, out var bytes)) continue;
+                packages++;
+                foreach (var t in NavTiles.Scan(bytes))
+                    if (seen.Add((BitConverter.ToUInt16(t, 2), BitConverter.ToInt32(t, 8), BitConverter.ToInt32(t, 12)))) tiles.Add(t);
+            }
+            catch (Exception e) { Console.Error.WriteLine($"  {map}: {e.Message}"); }
+        }
+        using var f = File.Create(Path.Combine(navOut, $"{w}.navmesh.bin"));
+        foreach (var t in tiles) { f.Write(BitConverter.GetBytes((uint)t.Length)); f.Write(t); }
+        Console.Error.WriteLine($"{w}: {packages} packages, {tiles.Count} tiles");
+    }
+    return;
+}
 if (opts.TryGetValue("refs", out var refsOf))
 {
     foreach (var w in worlds)
@@ -222,6 +251,64 @@ if (File.Exists(flowsFile))
 File.WriteAllText(flowsFile, flows.ToString(Formatting.Indented));
 Console.Error.WriteLine($"flows: {flows.Count}");
 Tables.Write(provider, outDir);
+
+/// Detour tiles in a cooked package's bytes (MAP.md §15.1): the chunk's header is written field by
+/// field (u16 version 7, i32 x, i32 y, u16 layer, u16 polys, u16 verts, …, bmin/bmax as six
+/// doubles ending 8 bytes before the vertices, which start 87 bytes after the header); vertices
+/// (double[3]) and polys (32 bytes) are as the live tiles have them. Rebuilt in the live layout:
+/// a 0x58-byte header (version, layer, polys, verts, x, y, …, bmin/bmax at 0x28), then those.
+static class NavTiles
+{
+    const int HeadToVerts = 87;
+
+    public static IEnumerable<byte[]> Scan(byte[] r)
+    {
+        var i = 0;
+        while (true)
+        {
+            i = Array.IndexOf(r, (byte)7, i);
+            if (i < 0 || i + HeadToVerts > r.Length) yield break;
+            var j = i++;
+            if (r[j + 1] != 0) continue;
+            int x = BitConverter.ToInt32(r, j + 2), y = BitConverter.ToInt32(r, j + 6);
+            int layer = BitConverter.ToUInt16(r, j + 10), pc = BitConverter.ToUInt16(r, j + 12), vc = BitConverter.ToUInt16(r, j + 14);
+            if (Math.Abs((long)x) >= 100000 || Math.Abs((long)y) >= 100000 || layer >= 64 || pc < 1 || pc > 4096 || vc < 3 || vc > 8192) continue;
+            int vo = j + HeadToVerts, po = vo + vc * 24;
+            if (po + pc * 32 > r.Length) continue;
+            var b = new double[6];
+            for (var k = 0; k < 6; k++) b[k] = BitConverter.ToDouble(r, vo - 56 + k * 8);
+            if (!(b[0] <= b[3] && b[1] <= b[4] && b[2] <= b[5]) || b.Any(v => !double.IsFinite(v) || Math.Abs(v) > 1e7)) continue;
+            var ok = true;
+            for (var k = 0; k < vc && ok; k++)
+                for (var a = 0; a < 3; a++)
+                {
+                    var v = BitConverter.ToDouble(r, vo + k * 24 + a * 8);
+                    if (!(v >= b[a] - 1 && v <= b[3 + a] + 1)) { ok = false; break; }
+                }
+            for (var k = 0; k < pc && ok; k++)
+            {
+                var q = po + k * 32;
+                if (r[q + 31] >> 6 == 1) continue;
+                int cnt = r[q + 30];
+                if (cnt < 3 || cnt > 6) { ok = false; break; }
+                for (var m = 0; m < cnt; m++)
+                    if (BitConverter.ToUInt16(r, q + 4 + 2 * m) >= vc) { ok = false; break; }
+            }
+            if (!ok) continue;
+            var tile = new byte[0x58 + (po + pc * 32 - vo)];
+            BitConverter.TryWriteBytes(tile.AsSpan(0, 2), (ushort)7);
+            BitConverter.TryWriteBytes(tile.AsSpan(2, 2), (ushort)layer);
+            BitConverter.TryWriteBytes(tile.AsSpan(4, 2), (ushort)pc);
+            BitConverter.TryWriteBytes(tile.AsSpan(6, 2), (ushort)vc);
+            BitConverter.TryWriteBytes(tile.AsSpan(8, 4), x);
+            BitConverter.TryWriteBytes(tile.AsSpan(12, 4), y);
+            for (var k = 0; k < 6; k++) BitConverter.TryWriteBytes(tile.AsSpan(0x28 + k * 8, 8), b[k]);
+            Array.Copy(r, vo, tile, 0x58, po + pc * 32 - vo);
+            yield return tile;
+            i = po + pc * 32;
+        }
+    }
+}
 
 /// The game's own tables the guide reads as they are (.spec/FEATURES.md §3):
 /// spawners.json — every world's spawners (`<World>_Root_WP_Spawner_DT`): the save GUID,

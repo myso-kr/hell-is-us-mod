@@ -1,0 +1,975 @@
+//! The 3D map page (.spec/MAP.md §16): the hero's region as the game's own data has it — its
+//! landscape (`Mods\terrain`, `survey --terrain`) and walkable floors underground included
+//! (`Mods\navmesh`, `survey --navmesh`) — with the requirement graph's places on them, drawn with
+//! OpenGL in the panel (an egui paint callback on the panel's own context).
+//!
+//! Seeing the ground and what is under it at once (research in MAP.md §16): the ground stays
+//! opaque and drops pixels instead of blending (screen-door dither) along the line from the eye to
+//! the point looked at and, if asked, everywhere ("keep"); with X-ray on, what the ground or other
+//! floors hide is drawn again as a faint silhouette (depth test GREATER, one layer per pixel by the
+//! stencil). Floors under the ground take their colour from their depth: cyan just under it,
+//! violet deep down.
+
+use crate::graph::Graph;
+use eframe::egui::{self, Color32};
+use eframe::{egui_glow, glow};
+use glow::HasContext;
+use std::sync::{Arc, Mutex};
+
+/// A region's scene, ready for the GPU: positions in metres, x east, y up, z south, from the
+/// landscape's middle and its lowest point.
+#[derive(Default)]
+pub struct Scene {
+    world: String,
+    /// x, y, z, nx, ny, nz per vertex; triangles by index.
+    terrain: Vec<f32>,
+    terrain_idx: Vec<u32>,
+    /// x, y, z, r, g, b per vertex, three to a triangle: floors on the ground, under it, indoors.
+    floors: [Vec<f32>; 3],
+    /// The graph's places: position, colour, round, label.
+    nodes: Vec<Node>,
+    /// The landscape's height span (m), for the colour ramp.
+    span: f32,
+    /// Unreal → scene: the landscape's middle (cm) and lowest point (cm).
+    origin: [f32; 3],
+    extent: f32,
+}
+
+#[derive(Clone)]
+struct Node {
+    at: [f32; 3],
+    colour: [f32; 3],
+    round: i32,
+    label: String,
+    below: f32,
+}
+
+impl Scene {
+    fn to_scene(&self, p: [f32; 3]) -> [f32; 3] {
+        [(p[1] - self.origin[1]) / 100.0, (p[2] - self.origin[2]) / 100.0, -(p[0] - self.origin[0]) / 100.0]
+    }
+}
+
+/// The kinds of places, by class, and their colours (as the prototype has them).
+fn kind_colour(class: &str) -> [f32; 3] {
+    let c = |h: u32| [((h >> 16) & 255) as f32 / 255.0, ((h >> 8) & 255) as f32 / 255.0, (h & 255) as f32 / 255.0];
+    if class == "Say" {
+        c(0x7fb0de)
+    } else if class.starts_with("Convo_") || class.contains("Quickchat") {
+        c(0x5fd0e6)
+    } else if class.contains("Door") || class.contains("Gate") || class.contains("KeyLocked") {
+        c(0xc9a46a)
+    } else if ["Placement", "Puzzle", "Keypad", "Dial", "LymbicLock", "Receiver", "Activator", "Lever"]
+        .iter()
+        .any(|k| class.contains(k))
+    {
+        c(0xe0b14e)
+    } else if class.contains("Gather") || class.contains("Chest") {
+        c(0x9cc464)
+    } else if class.ends_with("_Spawner_C") || class.contains("Fight") {
+        c(0xef6b6b)
+    } else if class.contains("SavePoint") || class.contains("APC") {
+        c(0xf2f2f2)
+    } else {
+        c(0x8a9690)
+    }
+}
+
+/// Plain base64 (the terrain file's heights).
+fn base64(s: &str) -> Vec<u8> {
+    let val = |c: u8| match c {
+        b'A'..=b'Z' => Some(c - b'A'),
+        b'a'..=b'z' => Some(c - b'a' + 26),
+        b'0'..=b'9' => Some(c - b'0' + 52),
+        b'+' => Some(62),
+        b'/' => Some(63),
+        _ => None,
+    };
+    let mut out = Vec::with_capacity(s.len() * 3 / 4);
+    let (mut acc, mut bits) = (0u32, 0);
+    for v in s.bytes().filter_map(val) {
+        acc = acc << 6 | v as u32;
+        bits += 6;
+        if bits >= 8 {
+            bits -= 8;
+            out.push((acc >> bits) as u8);
+        }
+    }
+    out
+}
+
+/// The scene of `world` from the files the survey tool wrote and the requirement graph.
+pub fn load(world: &str, graph: &Graph, rounds: &[Option<usize>]) -> Option<Scene> {
+    let dir = crate::paths::data_dir();
+    let tiles = std::fs::read(dir.join("navmesh").join(format!("{world}.navmesh.bin"))).unwrap_or_default();
+    let land = Land::read(&dir.join("terrain").join(format!("{world}.terrain.json")));
+    if land.is_none() && tiles.is_empty() {
+        return None;
+    }
+    // Where the scene is centred: the landscape, or (an interior) the floors' bounds.
+    let (origin, extent, span) = match &land {
+        Some(l) => (
+            [l.x0 + l.w as f32 * l.cell / 2.0, l.y0 + l.h as f32 * l.cell / 2.0, l.lo],
+            l.w.max(l.h) as f32 * l.cell / 100.0,
+            (l.hi - l.lo) / 100.0,
+        ),
+        None => {
+            let pts = tile_points(&tiles);
+            if pts.is_empty() {
+                return None;
+            }
+            let (mut lo, mut hi) = ([f32::MAX; 3], [f32::MIN; 3]);
+            for p in &pts {
+                for k in 0..3 {
+                    lo[k] = lo[k].min(p[k]);
+                    hi[k] = hi[k].max(p[k]);
+                }
+            }
+            (
+                [(lo[0] + hi[0]) / 2.0, (lo[1] + hi[1]) / 2.0, lo[2]],
+                (hi[0] - lo[0]).max(hi[1] - lo[1]) / 100.0,
+                (hi[2] - lo[2]) / 100.0,
+            )
+        }
+    };
+    let mut s = Scene { world: world.to_string(), origin, span, extent: extent.max(50.0), ..Default::default() };
+    let ground = |x: f32, y: f32| land.as_ref().and_then(|l| l.at(x, y));
+    if let Some(l) = &land {
+        let (w, h) = (l.w, l.h);
+        let z = |i: usize, j: usize| l.heights[j.min(h - 1) * w + i.min(w - 1)].unwrap_or(l.lo);
+        for j in 0..h {
+            for i in 0..w {
+                let p = s.to_scene([l.x0 + (i as f32 + 0.5) * l.cell, l.y0 + (j as f32 + 0.5) * l.cell, z(i, j)]);
+                let (dx, dy) = (
+                    (z(i + 1, j) - z(i.saturating_sub(1), j)) / (2.0 * l.cell),
+                    (z(i, j + 1) - z(i, j.saturating_sub(1))) / (2.0 * l.cell),
+                );
+                // Unreal gradient (x, y) → scene normal: x east is +y, z south is −x.
+                let n = [-dy, 1.0, dx];
+                let len = (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]).sqrt();
+                s.terrain.extend([p[0], p[1], p[2], n[0] / len, n[1] / len, n[2] / len]);
+            }
+        }
+        for j in 0..h - 1 {
+            for i in 0..w - 1 {
+                let (a, b, c, d) = (j * w + i, j * w + i + 1, (j + 1) * w + i, (j + 1) * w + i + 1);
+                if [a, b, c, d].iter().any(|&k| l.heights[k].is_none()) {
+                    continue;
+                }
+                s.terrain_idx.extend([a as u32, c as u32, b as u32, b as u32, c as u32, d as u32]);
+            }
+        }
+    }
+    // the floors, from the cooked navmesh tiles
+    {
+        let bytes = &tiles;
+        let mut o = 0;
+        while o + 4 <= bytes.len() {
+            let n = u32::from_le_bytes(bytes[o..o + 4].try_into().unwrap()) as usize;
+            let Some(tile) = bytes.get(o + 4..o + 4 + n) else { break };
+            o += 4 + n;
+            if tile.len() < 0x58 {
+                continue;
+            }
+            let (pc, vc) =
+                (u16::from_le_bytes([tile[4], tile[5]]) as usize, u16::from_le_bytes([tile[6], tile[7]]) as usize);
+            let vert = |k: usize| -> Option<[f32; 3]> {
+                let b = tile.get(0x58 + k * 24..0x58 + k * 24 + 24)?;
+                let d = |q: usize| f64::from_le_bytes(b[q..q + 8].try_into().unwrap()) as f32;
+                Some([-d(0), -d(16), d(8)])
+            };
+            let po = 0x58 + vc * 24;
+            for p in 0..pc {
+                let Some(q) = tile.get(po + p * 32..po + p * 32 + 32) else { break };
+                if q[31] >> 6 == 1 {
+                    continue;
+                }
+                let cnt = q[30] as usize;
+                let ids: Vec<usize> =
+                    (0..cnt.min(6)).map(|m| u16::from_le_bytes([q[4 + 2 * m], q[5 + 2 * m]]) as usize).collect();
+                let Some(pts) = ids.iter().map(|&k| vert(k)).collect::<Option<Vec<_>>>() else { continue };
+                let c = pts.iter().fold([0.0; 3], |a, v| {
+                    [a[0] + v[0] / cnt as f32, a[1] + v[1] / cnt as f32, a[2] + v[2] / cnt as f32]
+                });
+                let (kind, colour) = match ground(c[0], c[1]) {
+                    None => (2, [0.50, 0.69, 0.87]),
+                    Some(g) if c[2] < g - 300.0 => (1, depth_colour((g - c[2]) / 100.0)),
+                    Some(_) => (0, [0.55, 0.52, 0.40]),
+                };
+                for m in 1..cnt.saturating_sub(1) {
+                    for v in [pts[0], pts[m], pts[m + 1]] {
+                        let sp = s.to_scene(v);
+                        s.floors[kind].extend([sp[0], sp[1] + 0.25, sp[2], colour[0], colour[1], colour[2]]);
+                    }
+                }
+            }
+        }
+    }
+    // the graph's places of the world
+    for (i, n) in graph.nodes.iter().enumerate() {
+        if crate::survey::Survey::world_of(&n.world) != world || n.at == [0.0; 3] {
+            continue;
+        }
+        let below = ground(n.at[0], n.at[1]).map_or(0.0, |g| ((g - n.at[2]) / 100.0).max(0.0));
+        s.nodes.push(Node {
+            at: s.to_scene(n.at),
+            colour: kind_colour(&n.class),
+            round: rounds.get(i).copied().flatten().map_or(-1, |r| r as i32),
+            label: n.class.trim_end_matches("_C").to_string(),
+            below,
+        });
+    }
+    Some(s)
+}
+
+/// A region's landscape as `survey --terrain` wrote it (cm).
+struct Land {
+    w: usize,
+    h: usize,
+    cell: f32,
+    x0: f32,
+    y0: f32,
+    lo: f32,
+    hi: f32,
+    heights: Vec<Option<f32>>,
+}
+
+impl Land {
+    fn read(path: &std::path::Path) -> Option<Land> {
+        let t: serde_json::Value = serde_json::from_str(&std::fs::read_to_string(path).ok()?).ok()?;
+        let (w, h) = (t["w"].as_u64()? as usize, t["h"].as_u64()? as usize);
+        // An interior's landscape is a sliver (a few cells): no ground worth drawing.
+        if w < 4 || h < 4 {
+            return None;
+        }
+        let raw = base64(t["heights"].as_str()?);
+        let heights: Vec<Option<f32>> = raw
+            .chunks_exact(2)
+            .map(|b| i16::from_le_bytes([b[0], b[1]]))
+            .map(|v| (v != i16::MIN).then_some(v as f32 * 10.0))
+            .collect();
+        if heights.len() != w * h {
+            return None;
+        }
+        let lo = heights.iter().flatten().fold(f32::MAX, |a, &b| a.min(b));
+        let hi = heights.iter().flatten().fold(f32::MIN, |a, &b| a.max(b));
+        Some(Land {
+            w,
+            h,
+            cell: t["cell"].as_f64()? as f32,
+            x0: t["x0"].as_f64()? as f32,
+            y0: t["y0"].as_f64()? as f32,
+            lo,
+            hi,
+            heights,
+        })
+    }
+
+    fn at(&self, x: f32, y: f32) -> Option<f32> {
+        let (i, j) = (((x - self.x0) / self.cell).floor(), ((y - self.y0) / self.cell).floor());
+        if i < 0.0 || j < 0.0 || i as usize >= self.w || j as usize >= self.h {
+            return None;
+        }
+        self.heights[j as usize * self.w + i as usize]
+    }
+}
+
+/// Every vertex of the tiles (Unreal, cm): an interior's bounds.
+fn tile_points(bytes: &[u8]) -> Vec<[f32; 3]> {
+    let mut out = Vec::new();
+    let mut o = 0;
+    while o + 4 <= bytes.len() {
+        let n = u32::from_le_bytes(bytes[o..o + 4].try_into().unwrap()) as usize;
+        let Some(tile) = bytes.get(o + 4..o + 4 + n) else { break };
+        o += 4 + n;
+        if tile.len() < 0x58 {
+            continue;
+        }
+        let vc = u16::from_le_bytes([tile[6], tile[7]]) as usize;
+        for k in 0..vc {
+            let Some(b) = tile.get(0x58 + k * 24..0x58 + k * 24 + 24) else { break };
+            let d = |q: usize| f64::from_le_bytes(b[q..q + 8].try_into().unwrap()) as f32;
+            out.push([-d(0), -d(16), d(8)]);
+        }
+    }
+    out
+}
+
+/// Under the ground: cyan just under it, violet 30 m down.
+fn depth_colour(below_m: f32) -> [f32; 3] {
+    let t = ((below_m - 3.0) / 30.0).clamp(0.0, 1.0);
+    [0.37 + t * (0.65 - 0.37), 0.88 + t * (0.48 - 0.88), 0.82 + t * (1.0 - 0.82)]
+}
+
+/// The page's state: the scene (loaded off the panel's thread), the GPU's copy, the view.
+pub struct Map3d {
+    scene: Option<Arc<Scene>>,
+    loading: Option<std::thread::JoinHandle<Option<Scene>>>,
+    /// The world asked for, and whether it had no files (`doctor map3d` not run).
+    asked: String,
+    missing: bool,
+    gpu: Arc<Mutex<Option<Gpu>>>,
+    yaw: f32,
+    pitch: f32,
+    dist: f32,
+    target: [f32; 3],
+    pub xray: bool,
+    pub hole: bool,
+    pub hole_m: f32,
+    pub keep: f32,
+    pub round: i32,
+    picked: Option<usize>,
+}
+
+impl Default for Map3d {
+    fn default() -> Self {
+        Map3d {
+            scene: None,
+            loading: None,
+            asked: String::new(),
+            missing: false,
+            gpu: Arc::new(Mutex::new(None)),
+            yaw: 0.6,
+            pitch: 0.75,
+            dist: 600.0,
+            target: [0.0; 3],
+            xray: true,
+            hole: true,
+            hole_m: 80.0,
+            keep: 1.0,
+            round: i32::MAX,
+            picked: None,
+        }
+    }
+}
+
+impl Map3d {
+    /// Load `world`'s scene when it is not the one shown (off this thread).
+    pub fn want(&mut self, world: &str) {
+        if let Some(h) = self.loading.take_if(|h| h.is_finished()) {
+            match h.join().ok().flatten() {
+                Some(s) => {
+                    self.target = [0.0; 3];
+                    self.dist = s.extent * 0.9;
+                    self.scene = Some(Arc::new(s));
+                    self.missing = false;
+                    if let Some(g) = self.gpu.lock().unwrap().as_mut() {
+                        g.stale = true;
+                    }
+                }
+                None => self.missing = true,
+            }
+        }
+        if world.is_empty() || self.asked == world || self.loading.is_some() {
+            return;
+        }
+        self.asked = world.to_string();
+        let w = world.to_string();
+        self.loading = Some(std::thread::spawn(move || {
+            let g = Graph::load(&crate::paths::data_dir().join("survey"));
+            let r = g.reach();
+            load(&w, &g, &r.depth)
+        }));
+    }
+
+    pub fn loading(&self) -> bool {
+        self.loading.is_some()
+    }
+
+    pub fn missing(&self) -> bool {
+        self.missing
+    }
+
+    pub fn scene(&self) -> Option<&Arc<Scene>> {
+        self.scene.as_ref()
+    }
+
+    /// The view: a rect of the panel the scene is drawn into, orbited by dragging, panned by
+    /// dragging with the right button, zoomed by the wheel; a click picks the nearest place.
+    pub fn view(&mut self, ui: &mut egui::Ui, height: f32, hero: Option<[f32; 3]>, route: &[[f32; 3]]) {
+        let size = egui::vec2(ui.available_width(), height);
+        let (rect, resp) = ui.allocate_exact_size(size, egui::Sense::click_and_drag());
+        let Some(scene) = self.scene.clone() else {
+            ui.painter().rect_filled(rect, 6.0, Color32::from_rgb(10, 16, 18));
+            return;
+        };
+        if resp.dragged_by(egui::PointerButton::Primary) {
+            let d = resp.drag_delta();
+            self.yaw -= d.x * 0.006;
+            self.pitch = (self.pitch + d.y * 0.006).clamp(-1.4, 1.48);
+        }
+        if resp.dragged_by(egui::PointerButton::Secondary) {
+            let d = resp.drag_delta() * self.dist / rect.height();
+            let (s, c) = self.yaw.sin_cos();
+            self.target[0] -= d.x * c;
+            self.target[2] += d.x * s;
+            self.target[1] += d.y;
+        }
+        if resp.hovered() {
+            let scroll = ui.input(|i| i.smooth_scroll_delta.y);
+            self.dist = (self.dist * (1.0 - scroll * 0.0015)).clamp(20.0, scene.extent * 3.0);
+        }
+        let aspect = rect.width() / rect.height().max(1.0);
+        let eye = self.eye();
+        let view = look_at(eye, self.target);
+        let proj = perspective(50f32.to_radians(), aspect, 1.0, scene.extent * 8.0);
+        let vp = mul(&proj, &view);
+        let hero_at = hero.map(|h| scene.to_scene(h));
+        let route: Vec<[f32; 3]> = route.iter().map(|&q| scene.to_scene(q)).collect();
+        if resp.clicked() {
+            if let Some(pos) = resp.interact_pointer_pos() {
+                self.picked = scene
+                    .nodes
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, n)| n.round <= self.round)
+                    .filter_map(|(i, n)| project(&vp, n.at, rect).map(|p| (i, p.distance(pos))))
+                    .filter(|(_, d)| *d < 14.0)
+                    .min_by(|a, b| a.1.total_cmp(&b.1))
+                    .map(|(i, _)| i);
+            }
+        }
+        let frame = Frame {
+            vp,
+            eye,
+            target: self.target,
+            span: scene.span,
+            xray: self.xray,
+            hole: if self.hole { self.hole_m } else { 0.0 },
+            keep: self.keep,
+            round: self.round,
+            hero: hero_at,
+            picked: self.picked,
+            route: ribbon(&route),
+        };
+        let gpu = self.gpu.clone();
+        let cb = egui_glow::CallbackFn::new(move |info, painter| {
+            let gl = painter.gl();
+            let mut g = gpu.lock().unwrap();
+            if g.is_none() {
+                *g = Gpu::new(gl);
+            }
+            if let Some(g) = g.as_mut() {
+                g.draw(gl, &scene, &frame, &info);
+            }
+        });
+        ui.painter().add(egui::PaintCallback { rect, callback: Arc::new(cb) });
+        // the picked place's line, over the view
+        if let Some(n) = self.picked.and_then(|i| self.scene.as_ref()?.nodes.get(i)) {
+            let text = format!(
+                "{}  ·  {}  ·  {}",
+                n.label,
+                if n.round < 0 { tr!("MAP3D_NEVER").to_string() } else { trf!("MAP3D_ROUND", round = n.round) },
+                if n.below > 3.0 { trf!("MAP3D_BELOW", m = format!("{:.0}", n.below)) } else { String::new() }
+            );
+            ui.painter().text(
+                rect.left_bottom() + egui::vec2(10.0, -10.0),
+                egui::Align2::LEFT_BOTTOM,
+                text,
+                egui::FontId::monospace(12.0),
+                Color32::from_rgb(255, 214, 140),
+            );
+        }
+    }
+
+    fn eye(&self) -> [f32; 3] {
+        let (sp, cp) = self.pitch.sin_cos();
+        let (sy, cy) = self.yaw.sin_cos();
+        [self.target[0] + self.dist * cp * sy, self.target[1] + self.dist * sp, self.target[2] + self.dist * cp * cy]
+    }
+
+    /// The controls above the view.
+    pub fn controls(&mut self, ui: &mut egui::Ui, max_round: i32) {
+        ui.horizontal_wrapped(|ui| {
+            ui.checkbox(&mut self.xray, tr!("MAP3D_XRAY"));
+            ui.checkbox(&mut self.hole, tr!("MAP3D_HOLE"));
+            ui.add_enabled(self.hole, egui::Slider::new(&mut self.hole_m, 10.0..=250.0).suffix(" m"));
+            ui.label(tr!("MAP3D_KEEP"));
+            ui.add(egui::Slider::new(&mut self.keep, 0.0..=1.0).show_value(false));
+            ui.label(tr!("MAP3D_ROUNDS"));
+            let mut r = self.round.min(max_round);
+            if ui.add(egui::Slider::new(&mut r, 0..=max_round.max(0))).changed() {
+                self.round = if r >= max_round { i32::MAX } else { r };
+            }
+        });
+    }
+
+    pub fn max_round(&self) -> i32 {
+        self.scene.as_ref().map_or(0, |s| s.nodes.iter().map(|n| n.round).max().unwrap_or(0))
+    }
+}
+
+/// What a frame draws with.
+struct Frame {
+    vp: [f32; 16],
+    eye: [f32; 3],
+    target: [f32; 3],
+    span: f32,
+    xray: bool,
+    hole: f32,
+    keep: f32,
+    round: i32,
+    hero: Option<[f32; 3]>,
+    picked: Option<usize>,
+    /// The route as a ribbon: x, y, z, r, g, b per vertex, in triangles.
+    route: Vec<f32>,
+}
+
+/// The route as a flat band 2.4 m wide, 0.6 m over the floor it runs on, its colour going from
+/// gold at the hero to white at the goal.
+fn ribbon(pts: &[[f32; 3]]) -> Vec<f32> {
+    let mut out = Vec::new();
+    let n = pts.len();
+    for k in 0..n.saturating_sub(1) {
+        let (a, b) = (pts[k], pts[k + 1]);
+        let (dx, dz) = (b[0] - a[0], b[2] - a[2]);
+        let l = (dx * dx + dz * dz).sqrt().max(1e-3);
+        let (ox, oz) = (-dz / l * 1.2, dx / l * 1.2);
+        let c = |t: f32| [1.0, 0.82 + 0.18 * t, 0.42 + 0.58 * t];
+        let (ca, cb) = (c(k as f32 / n as f32), c((k + 1) as f32 / n as f32));
+        let v = |p: [f32; 3], s: f32, col: [f32; 3]| [p[0] + ox * s, p[1] + 0.6, p[2] + oz * s, col[0], col[1], col[2]];
+        for q in [v(a, -1.0, ca), v(a, 1.0, ca), v(b, 1.0, cb), v(a, -1.0, ca), v(b, 1.0, cb), v(b, -1.0, cb)] {
+            out.extend(q);
+        }
+    }
+    out
+}
+
+fn project(vp: &[f32; 16], p: [f32; 3], rect: egui::Rect) -> Option<egui::Pos2> {
+    let c = [
+        vp[0] * p[0] + vp[4] * p[1] + vp[8] * p[2] + vp[12],
+        vp[1] * p[0] + vp[5] * p[1] + vp[9] * p[2] + vp[13],
+        vp[3] * p[0] + vp[7] * p[1] + vp[11] * p[2] + vp[15],
+    ];
+    if c[2] <= 0.0 {
+        return None;
+    }
+    let (x, y) = (c[0] / c[2], c[1] / c[2]);
+    Some(egui::pos2(rect.left() + (x * 0.5 + 0.5) * rect.width(), rect.top() + (0.5 - y * 0.5) * rect.height()))
+}
+
+// column-major 4×4 matrices
+fn perspective(fovy: f32, aspect: f32, near: f32, far: f32) -> [f32; 16] {
+    let f = 1.0 / (fovy / 2.0).tan();
+    let mut m = [0.0; 16];
+    m[0] = f / aspect;
+    m[5] = f;
+    m[10] = (far + near) / (near - far);
+    m[11] = -1.0;
+    m[14] = 2.0 * far * near / (near - far);
+    m
+}
+
+fn look_at(eye: [f32; 3], at: [f32; 3]) -> [f32; 16] {
+    let sub = |a: [f32; 3], b: [f32; 3]| [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+    let norm = |a: [f32; 3]| {
+        let l = (a[0] * a[0] + a[1] * a[1] + a[2] * a[2]).sqrt().max(1e-6);
+        [a[0] / l, a[1] / l, a[2] / l]
+    };
+    let cross =
+        |a: [f32; 3], b: [f32; 3]| [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+    let dot = |a: [f32; 3], b: [f32; 3]| a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+    let f = norm(sub(at, eye));
+    let s = norm(cross(f, [0.0, 1.0, 0.0]));
+    let u = cross(s, f);
+    [
+        s[0],
+        u[0],
+        -f[0],
+        0.0,
+        s[1],
+        u[1],
+        -f[1],
+        0.0,
+        s[2],
+        u[2],
+        -f[2],
+        0.0,
+        -dot(s, eye),
+        -dot(u, eye),
+        dot(f, eye),
+        1.0,
+    ]
+}
+
+fn mul(a: &[f32; 16], b: &[f32; 16]) -> [f32; 16] {
+    let mut m = [0.0; 16];
+    for c in 0..4 {
+        for r in 0..4 {
+            m[c * 4 + r] = (0..4).map(|k| a[k * 4 + r] * b[c * 4 + k]).sum();
+        }
+    }
+    m
+}
+
+const TERRAIN_VS: &str = r#"
+layout(location=0) in vec3 aPos; layout(location=1) in vec3 aNormal;
+uniform mat4 uVP; out vec3 vW; out vec3 vN;
+void main(){ vW = aPos; vN = aNormal; gl_Position = uVP * vec4(aPos, 1.0); }
+"#;
+
+const TERRAIN_FS: &str = r#"
+in vec3 vW; in vec3 vN; out vec4 o;
+uniform float uSpan, uHole, uKeep; uniform vec3 uEye, uFocus;
+float ign(vec2 p){ return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+vec3 ramp(float t){
+  vec3 a = vec3(0.035,0.075,0.07), b = vec3(0.09,0.15,0.08), c = vec3(0.22,0.22,0.12), d = vec3(0.42,0.37,0.26);
+  return t < 0.35 ? mix(a,b,t/0.35) : t < 0.7 ? mix(b,c,(t-0.35)/0.35) : mix(c,d,(t-0.7)/0.3);
+}
+void main(){
+  vec3 ab = uFocus - uEye; float tt = clamp(dot(vW - uEye, ab)/max(dot(ab,ab),1e-3), 0.0, 1.0);
+  float dd = length(vW - (uEye + tt*ab));
+  float keep = min(uHole > 0.0 ? smoothstep(uHole*0.7, uHole, dd) : 1.0, uKeep);
+  if (keep < ign(gl_FragCoord.xy)) discard;
+  vec3 n = normalize(vN); if (!gl_FrontFacing) n = -n;
+  vec3 sun = normalize(vec3(-0.6, 0.55, 0.4));
+  float diff = max(dot(n, sun), 0.0);
+  vec3 base = ramp(clamp(vW.y / max(uSpan, 1.0), 0.0, 1.0));
+  base = mix(base, vec3(0.42,0.40,0.37), smoothstep(0.25, 0.6, 1.0 - n.y));
+  vec3 col = base * (0.28 + 1.25*diff);
+  float h = vW.y;
+  float m5 = abs(fract(h/5.0 - 0.5) - 0.5) / max(fwidth(h/5.0), 1e-4);
+  float m25 = abs(fract(h/25.0 - 0.5) - 0.5) / max(fwidth(h/25.0), 1e-4);
+  col = mix(col, col*0.62, (1.0 - min(m5, 1.0))*0.55);
+  col = mix(col, vec3(0.47,0.40,0.25), (1.0 - min(m25, 1.0))*0.6);
+  if (!gl_FrontFacing) col = vec3(0.16,0.11,0.07) * (0.6 + 0.4*diff);
+  float fog = 1.0 - exp(-pow(length(vW - uEye) * 0.0006, 2.0));
+  o = vec4(mix(col, vec3(0.07,0.10,0.11), fog), 1.0);
+}
+"#;
+
+const FLAT_VS: &str = r#"
+layout(location=0) in vec3 aPos; layout(location=1) in vec3 aCol;
+uniform mat4 uVP; uniform float uSize; out vec3 vC;
+void main(){ vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); gl_PointSize = uSize * 900.0 / max(gl_Position.w, 1.0); }
+"#;
+
+const FLAT_FS: &str = r#"
+in vec3 vC; out vec4 o; uniform float uAlpha; uniform int uRound;
+void main(){
+  if (uRound == 1){ vec2 q = gl_PointCoord*2.0 - 1.0; float r = dot(q,q); if (r > 1.0) discard; o = vec4(vC * (1.15 - 0.45*r), uAlpha); return; }
+  o = vec4(vC, uAlpha);
+}
+"#;
+
+/// The GPU's copy of a scene and the programs that draw it.
+struct Gpu {
+    terrain_prog: glow::Program,
+    flat_prog: glow::Program,
+    terrain: Option<(glow::VertexArray, glow::Buffer, glow::Buffer, i32)>,
+    floors: Vec<(glow::VertexArray, glow::Buffer, i32, usize)>,
+    nodes: Option<(glow::VertexArray, glow::Buffer, i32)>,
+    marks: Option<(glow::VertexArray, glow::Buffer)>,
+    world: String,
+    round: i32,
+    stale: bool,
+}
+
+impl Gpu {
+    fn new(gl: &glow::Context) -> Option<Gpu> {
+        let version = if egui_glow::ShaderVersion::get(gl).is_embedded() {
+            "#version 300 es\nprecision highp float;\n"
+        } else {
+            "#version 330 core\n"
+        };
+        let compile = |vs: &str, fs: &str| -> Option<glow::Program> {
+            // SAFETY: GL calls on the context egui hands the callback, on its thread.
+            unsafe {
+                let p = gl.create_program().ok()?;
+                for (kind, src) in [(glow::VERTEX_SHADER, vs), (glow::FRAGMENT_SHADER, fs)] {
+                    let sh = gl.create_shader(kind).ok()?;
+                    gl.shader_source(sh, &format!("{version}{src}"));
+                    gl.compile_shader(sh);
+                    if !gl.get_shader_compile_status(sh) {
+                        crate::logfile::line(&format!("map3d shader: {}", gl.get_shader_info_log(sh)));
+                        return None;
+                    }
+                    gl.attach_shader(p, sh);
+                }
+                gl.link_program(p);
+                gl.get_program_link_status(p).then_some(p)
+            }
+        };
+        Some(Gpu {
+            terrain_prog: compile(TERRAIN_VS, TERRAIN_FS)?,
+            flat_prog: compile(FLAT_VS, FLAT_FS)?,
+            terrain: None,
+            floors: Vec::new(),
+            nodes: None,
+            marks: None,
+            world: String::new(),
+            round: i32::MIN,
+            stale: true,
+        })
+    }
+
+    /// A vertex array of interleaved floats, `layout` the size of each attribute.
+    fn upload(gl: &glow::Context, data: &[f32], layout: &[i32]) -> (glow::VertexArray, glow::Buffer) {
+        // SAFETY: as above; the slice outlives the call, GL copies it.
+        unsafe {
+            let vao = gl.create_vertex_array().unwrap();
+            let vbo = gl.create_buffer().unwrap();
+            gl.bind_vertex_array(Some(vao));
+            gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
+            let bytes = std::slice::from_raw_parts(data.as_ptr() as *const u8, std::mem::size_of_val(data));
+            gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, bytes, glow::STATIC_DRAW);
+            let stride = layout.iter().sum::<i32>() * 4;
+            let mut off = 0;
+            for (k, &n) in layout.iter().enumerate() {
+                gl.enable_vertex_attrib_array(k as u32);
+                gl.vertex_attrib_pointer_f32(k as u32, n, glow::FLOAT, false, stride, off);
+                off += n * 4;
+            }
+            gl.bind_vertex_array(None);
+            (vao, vbo)
+        }
+    }
+
+    fn free(&mut self, gl: &glow::Context) {
+        // SAFETY: as above.
+        unsafe {
+            if let Some((a, b, c, _)) = self.terrain.take() {
+                gl.delete_vertex_array(a);
+                gl.delete_buffer(b);
+                gl.delete_buffer(c);
+            }
+            for (a, b, _, _) in self.floors.drain(..) {
+                gl.delete_vertex_array(a);
+                gl.delete_buffer(b);
+            }
+            if let Some((a, b, _)) = self.nodes.take() {
+                gl.delete_vertex_array(a);
+                gl.delete_buffer(b);
+            }
+        }
+    }
+
+    fn sync(&mut self, gl: &glow::Context, s: &Scene, round: i32) {
+        if self.stale || self.world != s.world {
+            self.free(gl);
+            let (vao, vbo) = Self::upload(gl, &s.terrain, &[3, 3]);
+            // SAFETY: as above.
+            let ibo = unsafe {
+                gl.bind_vertex_array(Some(vao));
+                let ibo = gl.create_buffer().unwrap();
+                gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(ibo));
+                let bytes = std::slice::from_raw_parts(s.terrain_idx.as_ptr() as *const u8, s.terrain_idx.len() * 4);
+                gl.buffer_data_u8_slice(glow::ELEMENT_ARRAY_BUFFER, bytes, glow::STATIC_DRAW);
+                gl.bind_vertex_array(None);
+                ibo
+            };
+            self.terrain = Some((vao, vbo, ibo, s.terrain_idx.len() as i32));
+            for (k, f) in s.floors.iter().enumerate() {
+                if !f.is_empty() {
+                    let (a, b) = Self::upload(gl, f, &[3, 3]);
+                    self.floors.push((a, b, (f.len() / 6) as i32, k));
+                }
+            }
+            self.world = s.world.clone();
+            self.stale = false;
+            self.round = i32::MIN;
+        }
+        if self.round != round {
+            if let Some((a, b, _)) = self.nodes.take() {
+                // SAFETY: as above.
+                unsafe {
+                    gl.delete_vertex_array(a);
+                    gl.delete_buffer(b);
+                }
+            }
+            let data: Vec<f32> = s
+                .nodes
+                .iter()
+                .filter(|n| n.round >= 0 && n.round <= round)
+                .flat_map(|n| [n.at[0], n.at[1] + 1.5, n.at[2], n.colour[0], n.colour[1], n.colour[2]])
+                .collect();
+            let (a, b) = Self::upload(gl, &data, &[3, 3]);
+            self.nodes = Some((a, b, (data.len() / 6) as i32));
+            self.round = round;
+        }
+    }
+
+    fn draw(&mut self, gl: &glow::Context, s: &Scene, f: &Frame, info: &egui::PaintCallbackInfo) {
+        self.sync(gl, s, f.round);
+        let vp = info.viewport_in_pixels();
+        let clip = info.clip_rect_in_pixels();
+        // SAFETY: as above; every state changed here is put back for egui at the end.
+        unsafe {
+            // Only the view's own rect, inside what egui clips it to: clearing more would wipe
+            // the rest of the panel.
+            let x0 = vp.left_px.max(clip.left_px);
+            let y0 = vp.from_bottom_px.max(clip.from_bottom_px);
+            let x1 = (vp.left_px + vp.width_px).min(clip.left_px + clip.width_px);
+            let y1 = (vp.from_bottom_px + vp.height_px).min(clip.from_bottom_px + clip.height_px);
+            if x1 <= x0 || y1 <= y0 {
+                return;
+            }
+            gl.enable(glow::SCISSOR_TEST);
+            gl.scissor(x0, y0, x1 - x0, y1 - y0);
+            gl.viewport(vp.left_px, vp.from_bottom_px, vp.width_px, vp.height_px);
+            gl.clear_color(0.03, 0.06, 0.07, 1.0);
+            gl.clear_depth_f32(1.0);
+            gl.clear_stencil(0);
+            gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT | glow::STENCIL_BUFFER_BIT);
+            gl.enable(glow::DEPTH_TEST);
+            gl.depth_func(glow::LEQUAL);
+            gl.depth_mask(true);
+            gl.disable(glow::CULL_FACE);
+            gl.enable(glow::PROGRAM_POINT_SIZE);
+
+            // the ground
+            if let Some((vao, _, _, n)) = self.terrain {
+                gl.disable(glow::BLEND);
+                gl.use_program(Some(self.terrain_prog));
+                let u = |name: &str| gl.get_uniform_location(self.terrain_prog, name);
+                gl.uniform_matrix_4_f32_slice(u("uVP").as_ref(), false, &f.vp);
+                gl.uniform_1_f32(u("uSpan").as_ref(), f.span);
+                gl.uniform_1_f32(u("uHole").as_ref(), f.hole);
+                gl.uniform_1_f32(u("uKeep").as_ref(), f.keep);
+                gl.uniform_3_f32(u("uEye").as_ref(), f.eye[0], f.eye[1], f.eye[2]);
+                gl.uniform_3_f32(u("uFocus").as_ref(), f.target[0], f.target[1], f.target[2]);
+                gl.bind_vertex_array(Some(vao));
+                gl.draw_elements(glow::TRIANGLES, n, glow::UNSIGNED_INT, 0);
+            }
+
+            // floors and places, then (X-ray) what is hidden of them
+            gl.use_program(Some(self.flat_prog));
+            let u = |name: &str| gl.get_uniform_location(self.flat_prog, name);
+            gl.uniform_matrix_4_f32_slice(u("uVP").as_ref(), false, &f.vp);
+            gl.enable(glow::BLEND);
+            gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+            let floors = |alpha: f32| {
+                gl.uniform_1_i32(u("uRound").as_ref(), 0);
+                for &(vao, _, n, k) in &self.floors {
+                    if k == 0 && f.xray {
+                        continue;
+                    }
+                    gl.uniform_1_f32(u("uAlpha").as_ref(), if k == 0 { alpha * 0.45 } else { alpha });
+                    gl.bind_vertex_array(Some(vao));
+                    gl.draw_arrays(glow::TRIANGLES, 0, n);
+                }
+            };
+            let nodes = |alpha: f32, size: f32| {
+                if let Some((vao, _, n)) = self.nodes {
+                    gl.uniform_1_i32(u("uRound").as_ref(), 1);
+                    gl.uniform_1_f32(u("uAlpha").as_ref(), alpha);
+                    gl.uniform_1_f32(u("uSize").as_ref(), size);
+                    gl.bind_vertex_array(Some(vao));
+                    gl.draw_arrays(glow::POINTS, 0, n);
+                }
+            };
+            gl.enable(glow::STENCIL_TEST);
+            gl.stencil_func(glow::ALWAYS, 1, 0xff);
+            gl.stencil_op(glow::KEEP, glow::KEEP, glow::REPLACE);
+            floors(0.9);
+            nodes(1.0, 3.0);
+            if f.xray {
+                gl.depth_func(glow::GREATER);
+                gl.depth_mask(false);
+                gl.stencil_func(glow::NOTEQUAL, 1, 0xff);
+                floors(0.25);
+                nodes(0.45, 3.0);
+                gl.depth_mask(true);
+                gl.depth_func(glow::LEQUAL);
+            }
+            gl.disable(glow::STENCIL_TEST);
+            // the route: solid where seen, faint where the ground or floors hide it
+            if !f.route.is_empty() {
+                let (a, b) = Self::upload(gl, &f.route, &[3, 3]);
+                gl.uniform_1_i32(u("uRound").as_ref(), 0);
+                gl.bind_vertex_array(Some(a));
+                let n = (f.route.len() / 6) as i32;
+                gl.uniform_1_f32(u("uAlpha").as_ref(), 0.95);
+                gl.draw_arrays(glow::TRIANGLES, 0, n);
+                gl.depth_func(glow::GREATER);
+                gl.depth_mask(false);
+                gl.uniform_1_f32(u("uAlpha").as_ref(), 0.3);
+                gl.draw_arrays(glow::TRIANGLES, 0, n);
+                gl.depth_mask(true);
+                gl.depth_func(glow::LEQUAL);
+                gl.delete_vertex_array(a);
+                gl.delete_buffer(b);
+            }
+            // the hero and the picked place, on top
+            let mut marks = Vec::new();
+            if let Some(h) = f.hero {
+                marks.extend([h[0], h[1] + 2.0, h[2], 1.0, 0.82, 0.48]);
+            }
+            if let Some(n) = f.picked.and_then(|i| s.nodes.get(i)) {
+                marks.extend([n.at[0], n.at[1] + 1.5, n.at[2], 1.0, 1.0, 1.0]);
+            }
+            if !marks.is_empty() {
+                if let Some((a, b)) = self.marks.take() {
+                    gl.delete_vertex_array(a);
+                    gl.delete_buffer(b);
+                }
+                let (a, b) = Self::upload(gl, &marks, &[3, 3]);
+                gl.disable(glow::DEPTH_TEST);
+                gl.uniform_1_i32(u("uRound").as_ref(), 1);
+                gl.uniform_1_f32(u("uAlpha").as_ref(), 1.0);
+                gl.uniform_1_f32(u("uSize").as_ref(), 6.0);
+                gl.bind_vertex_array(Some(a));
+                gl.draw_arrays(glow::POINTS, 0, (marks.len() / 6) as i32);
+                self.marks = Some((a, b));
+            }
+
+            gl.bind_vertex_array(None);
+            gl.use_program(None);
+            gl.disable(glow::DEPTH_TEST);
+            gl.disable(glow::PROGRAM_POINT_SIZE);
+            gl.enable(glow::BLEND);
+            gl.blend_func_separate(glow::ONE, glow::ONE_MINUS_SRC_ALPHA, glow::ONE_MINUS_DST_ALPHA, glow::ONE);
+        }
+    }
+}
+
+impl super::Panel {
+    /// The page: the controls, then the view as tall as the page allows; what to run when the
+    /// region's files are not there yet.
+    pub(super) fn map3d_tab(&mut self, t: &mut egui_taffy::Tui, snap: Option<&crate::engine::Snapshot>) {
+        use crate::ui::tw::{self, card, note};
+        let world = snap
+            .and_then(|s| s.world.clone())
+            .map(|w| crate::survey::Survey::world_of(&w).to_string())
+            .unwrap_or_default();
+        let hero = snap.and_then(|s| s.pose).map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+        let route = self.shared.route3d.lock().unwrap().clone();
+        self.map3d.want(&world);
+        card(t, &format!("{} · {}", tr!("MAP3D"), if world.is_empty() { "—" } else { world.as_str() }), |t| {
+            if self.map3d.missing() {
+                note(t, tr!("MAP3D_MISSING"));
+                return;
+            }
+            if self.map3d.loading() && self.map3d.scene().is_none() {
+                note(t, tr!("MAP3D_LOADING"));
+            }
+            let max = self.map3d.max_round();
+            tw::block(t, |ui| self.map3d.controls(ui, max));
+            note(t, tr!("MAP3D_HINT"));
+            tw::block(t, |ui| {
+                let height = (ui.ctx().content_rect().height() - 330.0).max(320.0);
+                self.map3d.view(ui, height, hero, &route);
+                ui.ctx().request_repaint_after(std::time::Duration::from_millis(33));
+            });
+        });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn base64_reads_back() {
+        assert_eq!(base64("AAH/fw=="), vec![0x00, 0x01, 0xff, 0x7f]);
+    }
+
+    #[test]
+    fn the_view_sees_what_is_in_front() {
+        let vp = mul(&perspective(1.0, 1.0, 1.0, 1000.0), &look_at([0.0, 0.0, 10.0], [0.0; 3]));
+        let rect = egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(100.0, 100.0));
+        let p = project(&vp, [0.0; 3], rect).unwrap();
+        assert!((p.x - 50.0).abs() < 0.01 && (p.y - 50.0).abs() < 0.01, "the target in the middle");
+        assert!(project(&vp, [0.0, 0.0, 20.0], rect).is_none(), "behind the eye");
+    }
+}

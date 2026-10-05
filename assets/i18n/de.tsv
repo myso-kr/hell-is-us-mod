@@ -803,3 +803,15 @@ TELEPORT_BACK	Zur letzten Position
 MOVED_BACK	Zurück am Standort vor dem Teleport.
 NOTHING_TO_GO_BACK_TO	Kein Standort vor einem Teleport gemerkt.
 GRAPH_OPENS_FROM_OTHER_SIDE	öffnet nur von der anderen Seite: zu dieser Seite geführt
+MAP3D	3D-Karte
+ABOUT_MAP3D	Die Region in 3D, mit Untergrund
+MAP3D_XRAY	Röntgen
+MAP3D_HOLE	Loch um den Fokus
+MAP3D_KEEP	Boden
+MAP3D_ROUNDS	Story-Runde
+MAP3D_ROUND	Runde {round}
+MAP3D_NEVER	nie
+MAP3D_BELOW	{m} m unter dem Boden
+MAP3D_HINT	Ziehen: drehen · rechts ziehen: verschieben · Rad: Zoom · Klick: Ort
+MAP3D_LOADING	Region wird geladen…
+MAP3D_MISSING	Die Kartendaten dieser Region fehlen noch: einmal `hiumod doctor map3d` ausführen (einige Minuten).

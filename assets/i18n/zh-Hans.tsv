@@ -803,3 +803,15 @@ TELEPORT_BACK	回到上一个位置
 MOVED_BACK	已回到传送前的位置。
 NOTHING_TO_GO_BACK_TO	没有保存传送前的位置。
 GRAPH_OPENS_FROM_OTHER_SIDE	只能从另一侧打开：引导至可开启的一侧
+MAP3D	3D 地图
+ABOUT_MAP3D	包含地下的地区 3D 地图
+MAP3D_XRAY	X 光
+MAP3D_HOLE	焦点周围开洞
+MAP3D_KEEP	地形
+MAP3D_ROUNDS	剧情回合
+MAP3D_ROUND	回合 {round}
+MAP3D_NEVER	无法到达
+MAP3D_BELOW	地下 {m} 米
+MAP3D_HINT	拖动: 旋转 · 右键拖动: 平移 · 滚轮: 缩放 · 点击: 地点
+MAP3D_LOADING	正在加载地区…
+MAP3D_MISSING	此地区的地图数据尚未提取：请运行一次 `hiumod doctor map3d`（几分钟）。

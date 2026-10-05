@@ -24,12 +24,14 @@ const GOAL_FEET: f32 = 50.0;
 #[derive(Default)]
 pub struct Route {
     path: Path,
+    /// The height of each of `path`'s points (cm): the navmesh's floor, or the ground.
+    heights: Vec<f32>,
     goal: Option<u64>,
     from: [f32; 2],
     at: Option<Instant>,
     /// A route being worked out off this thread (it can take a few hundred ms), and
     /// the goal it is for.
-    pending: Option<std::thread::JoinHandle<(Path, u64)>>,
+    pending: Option<std::thread::JoinHandle<(Path, Vec<f32>, u64)>>,
     /// Goals whose last route had to go through something.
     pub blocked: HashSet<u64>,
     /// What each route worked out since last asked said of its goal: blocked or not
@@ -64,7 +66,7 @@ impl Route {
         let (every, far) = if slow { (SLOW_EVERY, SLOW_MOVED) } else { (ROUTE_EVERY, ROUTE_MOVED) };
         let due = self.goal != Some(g.id) || moved > far || self.at.is_none_or(|t| t.elapsed() >= every);
         if self.pending.as_ref().is_some_and(|h| h.is_finished()) {
-            if let Ok((path, id)) = self.pending.take().unwrap().join() {
+            if let Ok((path, heights, id)) = self.pending.take().unwrap().join() {
                 // Whether it can be walked to at all: a route that has to go through
                 // (a locked door, a puzzle) marks its goal blocked.
                 if path.uncertain() {
@@ -80,6 +82,7 @@ impl Route {
                         || crate::pathfind::better(&self.path, &path, [p[0], p[1]], ROUTE_AHEAD))
                 {
                     self.path = path;
+                    self.heights = heights;
                 }
             }
         }
@@ -89,21 +92,44 @@ impl Route {
                 ([p[0], p[1]], [g.at[0], g.at[1]], p[2] - 90.0, g.id, scene.clone(), nav.clone());
             let goal_feet = g.at[2] - GOAL_FEET;
             self.pending = Some(std::thread::spawn(move || {
-                let path = nav
-                    .route([from[0], from[1], feet], [to[0], to[1], goal_feet])
-                    .map(|(path, _)| path)
-                    .unwrap_or_else(|| {
-                        crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail)
+                let (path, heights) =
+                    nav.route([from[0], from[1], feet], [to[0], to[1], goal_feet]).unwrap_or_else(|| {
+                        let path = crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail);
+                        // The grid's way knows no floors: the ground under it, or the hero's feet.
+                        let heights =
+                            path.points.iter().map(|q| scene.terrain.height(q[0], q[1]).unwrap_or(feet)).collect();
+                        (path, heights)
                     });
-                (path, id)
+                (path, heights, id)
             }));
             if self.goal != Some(g.id) {
                 self.path = Default::default();
+                self.heights.clear();
             }
             self.goal = Some(g.id);
             self.from = [p[0], p[1]];
             self.at = Some(Instant::now());
         }
+    }
+
+    /// The route in 3D (cm), from the hero's feet: for the 3D map and the route drawn into the
+    /// game's view. Points without a height (a path kept from before heights) take the hero's.
+    pub fn drawn3d(&self, p: [f32; 3]) -> Vec<[f32; 3]> {
+        let feet = p[2] - 90.0;
+        self.path
+            .points
+            .iter()
+            .enumerate()
+            .map(
+                |(k, q)| {
+                    if k == 0 {
+                        [p[0], p[1], feet]
+                    } else {
+                        [q[0], q[1], self.heights.get(k).copied().unwrap_or(feet)]
+                    }
+                },
+            )
+            .collect()
     }
 
     /// The route as drawn: starting at the hero.

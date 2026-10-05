@@ -677,6 +677,9 @@ pub fn run(shared: Arc<Shared>) {
                         };
                         let r = routes.entry(f.id).or_default();
                         r.follow(Some(g), p, trail, &obstacles, &nav, !f.focus);
+                        if f.focus {
+                            *shared.route3d.lock().unwrap() = r.drawn3d(p);
+                        }
                         r.drawn(p)
                     } else {
                         Default::default()

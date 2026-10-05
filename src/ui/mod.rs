@@ -110,6 +110,8 @@ pub struct Shared {
     /// panel: where the last session left off (session.rs), read once at start: the
     /// overlay's "previously" banner.
     pub previous: Mutex<Option<crate::session::Session>>,
+    /// overlay: the route in focus in 3D (cm), from the hero's feet: the 3D map draws it.
+    pub route3d: Mutex<Vec<[f32; 3]>>,
     /// overlay: the goals left out of the guide by the consent: (hidden places, answers).
     pub withheld: Mutex<(usize, usize)>,
     /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
@@ -335,6 +337,9 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
             .with_decorations(false)
             .with_resizable(false)
             .with_always_on_top(),
+        // The 3D map page draws with depth and a stencil (panel/map3d.rs).
+        depth_buffer: 24,
+        stencil_buffer: 8,
         ..Default::default()
     };
 

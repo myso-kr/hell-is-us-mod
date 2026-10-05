@@ -803,3 +803,15 @@ TELEPORT_BACK	Son konuma dön
 MOVED_BACK	Işınlanmadan önceki yerine döndün.
 NOTHING_TO_GO_BACK_TO	Işınlanmadan önceki konum saklanmadı.
 GRAPH_OPENS_FROM_OTHER_SIDE	yalnızca diğer taraftan açılır: o tarafa yönlendirir
+MAP3D	3B harita
+ABOUT_MAP3D	Bölge 3B, yeraltı dahil
+MAP3D_XRAY	Röntgen
+MAP3D_HOLE	Odak çevresinde delik
+MAP3D_KEEP	Zemin
+MAP3D_ROUNDS	Hikâye turu
+MAP3D_ROUND	tur {round}
+MAP3D_NEVER	asla
+MAP3D_BELOW	yerin {m} m altında
+MAP3D_HINT	Sürükle: döndür · sağ sürükle: kaydır · tekerlek: yakınlaş · tıkla: yer
+MAP3D_LOADING	Bölge yükleniyor…
+MAP3D_MISSING	Bu bölgenin harita verisi yok: bir kez `hiumod doctor map3d` çalıştırın (birkaç dakika).
