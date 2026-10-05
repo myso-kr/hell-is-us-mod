@@ -165,7 +165,73 @@ fn facts_of(n: &Need) -> Vec<String> {
     }
 }
 
+/// A condition of a conversation's way to a payload, as the survey writes it (`Flows` in the
+/// survey tool): a fact or tag known or not, a topic's identity known, all or any of them.
+fn need_of_flow(v: &Value) -> Option<Need> {
+    if let Some(f) = v["fact"].as_str() {
+        return Some(Need::Fact(f.to_string(), v["has"].as_bool().unwrap_or(true)));
+    }
+    // A topic's question names its subject (the portrait it shows), it does not gate it: the
+    // topic opens on its `Conversation.TopicsUnlock…` tag (checked in the flow itself).
+    if v["identity"].is_string() {
+        return None;
+    }
+    for (key, all) in [("all", true), ("any", false)] {
+        if let Some(xs) = v[key].as_array() {
+            let each: Vec<Need> = xs.iter().filter_map(need_of_flow).collect();
+            return (!each.is_empty()).then_some(if all { Need::All(each) } else { Need::Any(each) });
+        }
+    }
+    None
+}
+
+/// A conversation's payloads, each with what must hold on the way to it from the start,
+/// through its topics and sub-graphs. A survey from before the conditions were read has
+/// none: every payload as if always given.
+fn flow_gated(flows: &Value, root: &str) -> Vec<(Value, Option<Need>)> {
+    let mut out = Vec::new();
+    let mut stack = vec![(root.to_string(), None::<Need>)];
+    // The person's introduction, said first: the actor names only the conversation's root,
+    // and the introduction sits beside it (`X_ConvoRoot_FA` → `X_ConvoIntro_FA`, V2 too).
+    let intro = root.replace("_ConvoRoot", "_ConvoIntro");
+    if intro != root && !flows[intro.as_str()].is_null() {
+        stack.push((intro, None));
+    }
+    let mut seen = HashSet::new();
+    while let Some((f, on_way)) = stack.pop() {
+        if !seen.insert(f.clone()) || seen.len() > 400 {
+            continue;
+        }
+        let node = &flows[f.as_str()];
+        let both = |a: &Option<Need>, b: Option<Need>| match (a.clone(), b) {
+            (None, b) => b,
+            (a, None) => a,
+            (Some(a), Some(b)) => Some(Need::All(vec![a, b])),
+        };
+        match node["gated"].as_array() {
+            Some(gated) => {
+                for g in gated {
+                    out.push((g["payload"].clone(), both(&on_way, need_of_flow(&g["need"]))));
+                }
+                for s in node["gated_subgraphs"].as_array().into_iter().flatten() {
+                    if let Some(a) = s["asset"].as_str() {
+                        stack.push((a.to_string(), both(&on_way, need_of_flow(&s["need"]))));
+                    }
+                }
+            }
+            None => {
+                out.extend(node["payloads"].as_array().into_iter().flatten().map(|p| (p.clone(), on_way.clone())));
+                for s in node["subgraphs"].as_array().into_iter().flatten().filter_map(|x| x.as_str()) {
+                    stack.push((s.to_string(), on_way.clone()));
+                }
+            }
+        }
+    }
+    out
+}
+
 /// A conversation's payloads, through its sub-graphs (survey.rs reads them the same way).
+#[allow(dead_code)]
 fn flow_payloads(flows: &Value, root: &str) -> Vec<Value> {
     let mut out = Vec::new();
     let mut stack = vec![root.to_string()];
@@ -242,14 +308,55 @@ impl Graph {
             }
             for a in v["actors"].as_array().into_iter().flatten() {
                 g.add(world, a, &identities);
-                if let (Some(flow), Some(last)) = (a["flow"].as_str(), g.nodes.last_mut()) {
-                    if last.name == a["name"].as_str().unwrap_or("") {
-                        for p in flow_payloads(&flows, flow) {
-                            last.gives_items.extend(strs(&p["items"]));
-                            last.gives_tags.extend(payload_facts(&p, &identities));
+                // What a person says: a node for each thing their conversation gives, needing
+                // what must hold on the way to it (a quest begun, a topic known, a tag), not
+                // everything at once from the start (GRAPH.md §13).
+                let Some(flow) = a["flow"].as_str() else { continue };
+                let Some(last) = g.nodes.last().cloned() else { continue };
+                if last.name != a["name"].as_str().unwrap_or("") {
+                    continue;
+                }
+                let mut said = HashSet::new();
+                for (p, need) in flow_gated(&flows, flow) {
+                    if !said.insert(format!("{p}{need:?}")) {
+                        continue;
+                    }
+                    let name = format!("{}#say{}", last.name, said.len() - 1);
+                    // A topic opened by a tag is marked spoken once talked through (the game's
+                    // conversations set `<tag>.Spoken`; later topics ask for it).
+                    let mut gives_tags = payload_facts(&p, &identities);
+                    for t in need.as_ref().map(facts_of).unwrap_or_default() {
+                        if t.starts_with("Conversation.TopicsUnlock.") && !t.contains(".Spoken") {
+                            gives_tags.push(format!("{t}.Spoken"));
                         }
                     }
+                    g.by_name.insert((world.to_string(), name.clone()), g.nodes.len());
+                    g.nodes.push(Node {
+                        world: world.to_string(),
+                        name,
+                        class: "Say".into(),
+                        at: last.at,
+                        gives_items: strs(&p["items"]),
+                        gives_tags,
+                        needs: need.into_iter().collect(),
+                        ..Default::default()
+                    });
                 }
+            }
+        }
+        // A region is travelled to by the APC once its transition is known (the region's
+        // `WMA_<world>_Travel_BifrostTransitionFact`, a base fact of its travel identity that
+        // conversations and notes give): until then nothing in it can be done. A region with
+        // no such fact given anywhere (the first one, those walked into) has no gate.
+        let given: HashSet<String> = g.nodes.iter().flat_map(|n| n.gives_tags.iter().cloned()).collect();
+        let worlds: HashSet<String> = g.nodes.iter().map(|n| n.world.clone()).collect();
+        for w in worlds {
+            let travel = format!("WMA_{w}_Travel_BifrostTransitionFact_DA");
+            if !given.contains(&travel) {
+                continue;
+            }
+            for n in g.nodes.iter_mut().filter(|n| n.world == w) {
+                n.needs.push(Need::Fact(travel.clone(), true));
             }
         }
         g.index();
@@ -331,6 +438,28 @@ impl Graph {
     }
 
     fn index(&mut self) {
+        // A device that needs the state of the receiver it sets off (an elevator's call lever
+        // needs the elevator at the other floor): where the receiver is, not what comes
+        // first. Kept, it closes a loop (lever → elevator → lever) no chain gets out of.
+        let mut drop: Vec<(usize, String)> = Vec::new();
+        for (i, n) in self.nodes.iter().enumerate() {
+            for r in self.nodes.iter().filter(|r| r.world == n.world && r.activators.contains(&n.name)) {
+                drop.push((i, r.name.clone()));
+            }
+        }
+        for (i, receiver) in drop {
+            fn strip(need: &mut Need, receiver: &str) -> bool {
+                match need {
+                    Need::Used(a) => a == receiver,
+                    Need::All(v) | Need::Any(v) => {
+                        v.retain_mut(|x| !strip(x, receiver));
+                        v.is_empty()
+                    }
+                    _ => false,
+                }
+            }
+            self.nodes[i].needs.retain_mut(|x| !strip(x, &receiver));
+        }
         // A fight's outcome no place gives (`…EncounterKilled`, `…Encounter.Completed`, a
         // boss killed): the fight's script sets it. A node for it where it is needed, so a
         // chain reads "win the fight", not a dead end.
@@ -362,6 +491,34 @@ impl Graph {
                 class: "StoryGives".into(),
                 at,
                 gives_items: vec![item],
+                scripted: true,
+                ..Default::default()
+            });
+        }
+        // What is still needed and given by nothing in the game's data: the game's code gives
+        // it (a lore entry's topic opened, `LoreTopic.…`). A node of its own, so no chain stops
+        // there unexplained; `doctor graph` lists them (GRAPH.md §13).
+        let fight_tags: HashSet<&String> = fights.iter().map(|f| &f.2).collect();
+        let mut by_code: Vec<(String, [f32; 3], String)> = Vec::new();
+        for n in &self.nodes {
+            for t in n.needs.iter().flat_map(facts_of) {
+                if !given.contains(&t)
+                    && !fight_tags.contains(&t)
+                    && !by_code.iter().any(|f| f.0 == n.world && f.2 == t)
+                {
+                    by_code.push((n.world.clone(), n.at, t));
+                }
+            }
+        }
+        for (world, at, tag) in by_code {
+            let name = format!("{world}:code:{tag}");
+            self.by_name.insert((world.clone(), name.clone()), self.nodes.len());
+            self.nodes.push(Node {
+                world,
+                name,
+                class: "CodeGives".into(),
+                at,
+                gives_tags: vec![tag],
                 scripted: true,
                 ..Default::default()
             });
@@ -1257,6 +1414,45 @@ mod tests {
         g.index();
         let foyer = g.node("W", "Foyer").unwrap();
         assert_eq!(g.stand(foyer), [200.0, 0.0, 0.0], "between the levers, on their floor, not 4 m up");
+    }
+
+    #[test]
+    fn the_story_order_comes_from_what_is_said_and_where_one_can_travel() {
+        // Region A: a note gives "Clue"; a person, once "Clue" is known, opens the way to B.
+        // Region B: a lever, reachable only once B can be travelled to.
+        let dir = std::env::temp_dir().join(format!("hiumod-graph-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let w = |name: &str, v: Value| std::fs::write(dir.join(name), v.to_string()).unwrap();
+        w(
+            "A.json",
+            json!({"world": "A", "actors": [
+                {"name": "Note", "class": "Note_Gather", "at": [0, 0, 0], "guid": "n", "payload": {"tags": ["Clue"]}},
+                {"name": "Person", "class": "Convo_Person_BP_C", "at": [500, 0, 0], "flow": "/Game/P/Person_ConvoRoot_FA"}
+            ]}),
+        );
+        w(
+            "B.json",
+            json!({"world": "B", "actors": [
+                {"name": "Lever", "class": "Lever_Activator", "at": [0, 0, 0], "guid": "l", "payload": {"tags": ["Pulled"]}}
+            ]}),
+        );
+        w(
+            "flows.json",
+            json!({
+                "/Game/P/Person_ConvoRoot_FA": {"payloads": [], "subgraphs": [], "gated": [],
+                    "gated_subgraphs": [{"asset": "/Game/P/Person_Topic_FA", "need": {"fact": "Clue", "has": true}}]},
+                "/Game/P/Person_Topic_FA": {"payloads": [], "subgraphs": [], "gated_subgraphs": [],
+                    "gated": [{"payload": {"tags": ["WMA_B_Travel_BifrostTransitionFact_DA"]}, "need": null}]}
+            }),
+        );
+        let g = Graph::load(&dir);
+        let _ = std::fs::remove_dir_all(&dir);
+        let r = g.reach();
+        let round = |name: &str| r.depth[g.nodes.iter().position(|n| n.name.starts_with(name)).unwrap()];
+        assert_eq!(round("Note"), Some(0));
+        assert_eq!(round("Person#say"), Some(1), "said once the clue is known");
+        assert_eq!(round("Lever"), Some(2), "in B, once B can be travelled to");
+        assert!(r.stuck.is_empty());
     }
 
     #[test]

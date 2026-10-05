@@ -510,7 +510,14 @@ class Survey(DefaultFileProvider provider)
             var linked = activators.Count > 0
                 || new[] { "Activator", "Receiver", "Trigger", "Door", "Caller", "DroneTranslation", "_Interact_BP", "QuestListener" }
                     .Any(k => cls.Contains(k));
-            if (travel == null && !linked && !comps.Any(c => Wanted.Contains(c.Class?.Name))) continue;
+            // A spawner: its enemies defeated give its guaranteed drop (a fight's outcome:
+            // `Quest.Facts.MarastanMarketCleared`, a wave stopped), and it wakes on tags.
+            var spawner = cls.EndsWith("_Spawner_C") ? Props(actor) : null;
+            var drop = spawner == null ? null : Payload(spawner["GuaranteedDropSpawnerPayload"]);
+            var wakes = Tags(spawner?["ActivationRequiredTags"]).ToList();
+            var sleeps = Tags(spawner?["ActivationBlockedTags"]).ToList();
+            var fight = drop != null && (!Empty(drop) || wakes.Count > 0);
+            if (travel == null && !linked && !fight && !comps.Any(c => Wanted.Contains(c.Class?.Name))) continue;
             var rec = new JObject { ["name"] = actor.Name, ["class"] = actor.Class?.Name ?? "", ["cell"] = cell };
             // Where: the root component in world space — through what it is attached to.
             var actorProps = Props(actor);
@@ -580,6 +587,7 @@ class Survey(DefaultFileProvider provider)
             var vault = rec["class"]!.ToString().StartsWith("VOFK_") && rec["class"]!.ToString().Contains("DialPuzzle");
             if (vault) rec["vault"] = true;
             if (travel != null) rec["travel"] = travel;
+
             // A door that opens from one side only ("locked from the other side"): where the
             // hero must stand to open it, its `TriggerUnlockable` box — the placed copy's, or
             // the blueprint's under the actor's root.
@@ -623,8 +631,15 @@ class Survey(DefaultFileProvider provider)
             foreach (var c in comps)
                 if (Resolve(exports, Props(c)["ActionCondition"]?["Condition"]) is { } cond)
                     conds.Add(Condition(exports, cond, 0));
+            if (fight)
+            {
+                if (!Empty(drop!)) rec["payload"] = drop;
+                if (wakes.Count > 0) conds.Add(new JObject { ["type"] = "DoesHeroHasFactCondition_BP_C", ["tags"] = new JArray(wakes) });
+                if (sleeps.Count > 0) conds.Add(new JObject { ["type"] = "DoesHeroHasNotFactCondition_BP_C", ["tags"] = new JArray(sleeps) });
+                rec["fight"] = true;
+            }
             if (conds.Count > 0) rec["conditions"] = conds;
-            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null || vault || puzzle != null || travel != null || linked) found.Add(rec);
+            if (rec["payload"] != null || rec["flow"] != null || rec["trades"] != null || vault || puzzle != null || travel != null || linked || fight) found.Add(rec);
         }
         return found;
     }
@@ -634,39 +649,213 @@ class Survey(DefaultFileProvider provider)
     {
         var done = new JObject();
         var queue = new Queue<string>(flowsToRead);
+        // A person's introduction, said before the topics, beside the root the actor names
+        // (`X_ConvoRoot_FA` → `X_ConvoIntro_FA`, `…RootV2…` → `…IntroV2…`).
+        foreach (var root in flowsToRead.ToList())
+        {
+            var intro = root.Replace("_ConvoRoot", "_ConvoIntro");
+            if (intro != root && provider.Files.Keys.Any(k => k.EndsWith(intro.Replace("/Game/", "Content/") + ".uasset", StringComparison.OrdinalIgnoreCase)))
+                queue.Enqueue(intro);
+        }
         while (queue.Count > 0)
         {
             var path = queue.Dequeue();
             if (done[path] != null) continue;
             var payloads = new JArray();
             var subs = new List<string>();
+            var gated = new JArray();
+            var gatedSubs = new JArray();
             try
             {
-                foreach (var e in provider.LoadPackage(path).GetExports())
+                var exports = provider.LoadPackage(path).GetExports().ToList();
+                var main = path.Split('/').Last();
+                // What must hold to reach each node of the conversation from its start (GRAPH.md §13).
+                var reach = Reach(exports.Where(e => e.Outer?.Name == main).ToList(), path);
+                foreach (var e in exports.Where(e => e.Outer?.Name == main))
                 {
                     var cls = e.Class?.Name ?? "";
+                    var guid = (string?)Props(e)["NodeGuid"] ?? "";
                     if (cls == "FlowNode_Payload")
                     {
                         var p = Payload(Props(e)["PayloadData"]);
-                        if (!Empty(p)) payloads.Add(p);
+                        if (Empty(p)) continue;
+                        payloads.Add(p);
+                        gated.Add(new JObject { ["payload"] = p, ["need"] = reach.TryGetValue(guid, out var n) ? n : null, ["reached"] = reach.ContainsKey(guid) });
                     }
-                    else if (cls is "FlowNode_TopicSubGraph" or "FlowNode_SubGraph" or "FlowNode_SubGraphInstanced" or "FlowNode_ConditionSubGraph")
+                    else if (cls is "FlowNode_TopicSubGraph" or "FlowNode_SubGraph" or "FlowNode_SubGraphInstanced")
                     {
                         var props = Props(e);
-                        foreach (var key in new[] { "TopicAsset", "Asset" })
-                        foreach (var a in Paths(props[key]))
+                        foreach (var a in Paths(props["TopicAsset"]).Concat(Paths(props["Asset"])).Distinct())
                         {
                             var asset = a.Contains('.') ? a[..a.LastIndexOf('.')] : a;
                             subs.Add(asset);
+                            gatedSubs.Add(new JObject { ["asset"] = asset, ["need"] = reach.TryGetValue(guid, out var n) ? n : null, ["reached"] = reach.ContainsKey(guid) });
                             if (done[asset] == null) queue.Enqueue(asset);
                         }
                     }
                 }
             }
             catch (Exception ex) { Console.Error.WriteLine($"  flow {path}: {ex.Message}"); }
-            done[path] = new JObject { ["payloads"] = payloads, ["subgraphs"] = new JArray(subs.Distinct()) };
+            done[path] = new JObject
+            {
+                ["payloads"] = payloads,
+                ["subgraphs"] = new JArray(subs.Distinct()),
+                ["gated"] = gated,
+                ["gated_subgraphs"] = gatedSubs,
+            };
         }
         return done;
+    }
+
+    // A condition, as the graph reads it (graph.rs `need_of_flow`): {"all":[…]}, {"any":[…]},
+    // {"fact": name, "has": bool} (a fact or a tag), {"identity": name}; null: none.
+    static JObject? And(JObject? a, JObject? b)
+    {
+        if (a == null) return b;
+        if (b == null) return a;
+        var all = new JArray();
+        foreach (var x in new[] { a, b })
+            if (x["all"] is JArray xs) foreach (var y in xs) all.Add(y.DeepClone());
+            else all.Add(x.DeepClone());
+        return new JObject { ["all"] = all };
+    }
+
+    static JObject? Or(IEnumerable<JObject?> alternatives)
+    {
+        var list = alternatives.ToList();
+        if (list.Count == 0 || list.Any(x => x == null)) return null;
+        var distinct = list.Select(x => x!.ToString(Formatting.None)).Distinct().Select(JObject.Parse).ToList();
+        return distinct.Count == 1 ? distinct[0] : new JObject { ["any"] = new JArray(distinct) };
+    }
+
+    static JObject Fact(string name, bool has) => new() { ["fact"] = name, ["has"] = has };
+
+    /// What leaving `node` by `pin` says holds: a fact check passed or failed, a condition
+    /// sub-graph finished, a topic's identity known.
+    JObject? EdgeCondition(UObject node, string pin, string package)
+    {
+        var cls = node.Class?.Name ?? "";
+        var p = Props(node);
+        var passed = pin is "Passed" or "True" or "Success" or "Finish" or "Out";
+        switch (cls)
+        {
+            case "FlowNode_HasFact":
+            case "FlowNode_DoesNotHaveFact":
+            {
+                var f = Objects(p["Fact"]).FirstOrDefault();
+                if (f == null || !(pin is "Passed" or "Failed")) return null;
+                return Fact(f, (cls == "FlowNode_HasFact") == (pin == "Passed"));
+            }
+            case "FlowNode_HasTagFact":
+            case "FlowNode_DoesNotHaveTagFact":
+            {
+                var t = Tags(p["TagFact"]).FirstOrDefault() ?? (string?)p["TagFact"]?["TagName"];
+                if (t == null || !(pin is "Passed" or "Failed")) return null;
+                return Fact(t, (cls == "FlowNode_HasTagFact") == (pin == "Passed"));
+            }
+            case "FlowNode_ConditionSubGraph":
+            {
+                if (!passed) return null;
+                var asset = (string?)p["Asset"]?["AssetPathName"] ?? "";
+                var sub = (string?)p["Asset"]?["SubPathString"] ?? "";
+                var pkg = asset.Contains('.') ? asset[..asset.LastIndexOf('.')] : asset;
+                return ConditionOf(pkg.Length > 0 ? pkg : package, sub);
+            }
+            case "FlowNode_QuestionSelector":
+            {
+                var id = Objects(p["TopicIdentity"]).FirstOrDefault();
+                return id == null ? null : new JObject { ["identity"] = id };
+            }
+        }
+        return null;
+    }
+
+    /// Forward from a graph's start nodes: for each node, what must hold on some way to it
+    /// (up to four ways), by its NodeGuid.
+    Dictionary<string, JObject?> Reach(List<UObject> graph, string package)
+    {
+        var byGuid = graph.Where(e => Props(e)["NodeGuid"] != null).ToDictionary(e => (string)Props(e)["NodeGuid"]!, e => e);
+        var ways = new Dictionary<string, List<JObject?>>();
+        var queue = new Queue<string>();
+        foreach (var (g, e) in byGuid)
+            if ((e.Class?.Name ?? "") == "FlowNode_Start" && Props(e)["Connections"] is JArray { Count: > 0 })
+            {
+                ways[g] = [null];
+                queue.Enqueue(g);
+            }
+        var steps = 0;
+        while (queue.Count > 0 && steps++ < 20000)
+        {
+            var g = queue.Dequeue();
+            var node = byGuid[g];
+            foreach (var c in Props(node)["Connections"] as JArray ?? [])
+            {
+                var pin = (string?)c["Key"] ?? "";
+                var to = (string?)c["Value"]?["NodeGuid"];
+                if (to == null || !byGuid.ContainsKey(to)) continue;
+                var edge = EdgeCondition(node, pin, package);
+                var list = ways.TryGetValue(to, out var l) ? l : ways[to] = [];
+                var added = false;
+                foreach (var w in ways[g].ToList())
+                {
+                    var next = And(w, edge);
+                    var key = next?.ToString(Formatting.None) ?? "";
+                    if (list.Count >= 4 || list.Any(x => (x?.ToString(Formatting.None) ?? "") == key)) continue;
+                    list.Add(next);
+                    added = true;
+                }
+                if (added) queue.Enqueue(to);
+            }
+        }
+        return ways.ToDictionary(kv => kv.Key, kv => Or(kv.Value));
+    }
+
+    /// A condition flow (`Condition_N` of a package) as an expression: back from its finish,
+    /// each fact check on the way, an AND node all of its inputs.
+    readonly Dictionary<string, JObject?> conditions = new();
+    JObject? ConditionOf(string package, string sub)
+    {
+        var key = package + ":" + sub;
+        if (conditions.TryGetValue(key, out var known)) return known;
+        conditions[key] = null;
+        JObject? result = null;
+        try
+        {
+            var exports = provider.LoadPackage(package).GetExports().ToList();
+            var owner = sub.Length > 0 ? sub : package.Split('/').Last();
+            var nodes = exports.Where(e => e.Outer?.Name == owner && Props(e)["NodeGuid"] != null).ToList();
+            var byGuid = nodes.ToDictionary(e => (string)Props(e)["NodeGuid"]!, e => e);
+            var into = new Dictionary<string, List<(UObject from, string pin, string toPin)>>();
+            foreach (var e in nodes)
+                foreach (var c in Props(e)["Connections"] as JArray ?? [])
+                {
+                    var to = (string?)c["Value"]?["NodeGuid"];
+                    if (to == null) continue;
+                    (into.TryGetValue(to, out var l) ? l : into[to] = []).Add((e, (string?)c["Key"] ?? "", (string?)c["Value"]?["PinName"] ?? ""));
+                }
+            var memo = new Dictionary<string, JObject?>();
+            JObject? In(string g, int depth)
+            {
+                if (depth > 40) return null;
+                if (memo.TryGetValue(g, out var m)) return m;
+                memo[g] = null;
+                var node = byGuid[g];
+                var preds = into.TryGetValue(g, out var l) ? l : [];
+                JObject? r;
+                if ((node.Class?.Name ?? "") == "FlowNode_LogicalAND")
+                    r = preds.GroupBy(x => x.toPin).Select(pin => Or(pin.Select(x => Out(x.from, x.pin, depth + 1)))).Aggregate((JObject?)null, And);
+                else
+                    r = preds.Count == 0 ? null : Or(preds.Select(x => Out(x.from, x.pin, depth + 1)));
+                memo[g] = r;
+                return r;
+            }
+            JObject? Out(UObject from, string pin, int depth) => And(In((string)Props(from)["NodeGuid"]!, depth), EdgeCondition(from, pin, package));
+            var finish = byGuid.Where(kv => (kv.Value.Class?.Name ?? "") == "FlowNode_Finish").Select(kv => kv.Key).ToList();
+            result = Or(finish.Select(f => In(f, 0)));
+        }
+        catch (Exception ex) { Console.Error.WriteLine($"  condition {key}: {ex.Message}"); }
+        conditions[key] = result;
+        return result;
     }
 
     /// The world settings' payloads: `enter` (FirstEnterWorldPayloadData) and `boss`

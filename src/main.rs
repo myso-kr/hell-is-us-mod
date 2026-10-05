@@ -351,6 +351,20 @@ fn graph() -> R {
     for (what, n) in &missing {
         out += &format!("  {n:3}  {what}\n");
     }
+    // Given by the game's code, not by anything in its data (graph.rs `CodeGives`): kept
+    // in sight, they are what the data cannot tell.
+    let code: Vec<&str> = g.nodes.iter().filter(|n| n.class == "CodeGives").map(|n| n.name.as_str()).collect();
+    out += &format!(
+        "given by the game's code ({}):
+",
+        code.len()
+    );
+    for c in &code {
+        out += &format!(
+            "  {c}
+"
+        );
+    }
     // The story's order: when each world can be travelled to, when each main quest's facts.
     let (worlds, quests) = g.timeline(&r);
     out += "order (round from the start):\n  worlds: ";

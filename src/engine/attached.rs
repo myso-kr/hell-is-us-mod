@@ -423,7 +423,10 @@ impl Attached {
             // something not done yet gives way to the first thing of its chain.
             let graph =
                 g.graph.get_or_insert_with(|| crate::graph::Graph::load(&crate::paths::data_dir().join("survey")));
-            let known: HashSet<String> = g.known_facts.union(&g.known_tags).cloned().collect();
+            let mut known: HashSet<String> = g.known_facts.union(&g.known_tags).cloned().collect();
+            // Standing in a region, it is reached, whatever the APC knows (graph.rs: regions
+            // are gated by their travel fact).
+            known.insert(format!("WMA_{}_Travel_BifrostTransitionFact_DA", crate::survey::Survey::world_of(w)));
             let state = crate::graph::State { used: &g.saved, known: &known, held: &g.held };
             // Only when the player asked for it (Settings: what must come first).
             let steps = crate::settings::live(crate::settings::Consent::STEPS);
