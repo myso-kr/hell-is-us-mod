@@ -23,6 +23,11 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Changed
 
+- The route looks cleaner, as games and map apps draw theirs: on the 3D map a bright core with a
+  dark outline and smooth edges, a still chevron every 3 m, just over the floor (0.15 m and a
+  depth offset, not 0.6 m afloat), dotted where hidden; in the game view drawn by each pixel's
+  distance to the line — smooth edges, round joints and ends, a dark outline, narrowing with
+  distance — and dotted and faint where the world hides it, not cut.
 - The game view's 3D layer is paced by the compositor (DwmFlush): the camera is read right after
   the screen turns over, so the band no longer swims against the game.
 - The worker reads the game's memory about half as often (13,500 → 6,500 reads a step): one

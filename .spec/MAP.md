@@ -541,3 +541,20 @@ bend at a right angle: into the wall's corner. `pathfind::cut_at` now cuts each 
 keeps the line across the cut within `SMOOTH_CLEAR` (25 cm) of it — d·cos(θ/2) ≤ 25 cm, θ the
 angle at the corner — at most 4 m and a quarter of either leg: long cuts round a gentle bend, a
 right angle is cut 35 cm.
+
+### 16.8 A cleaner route (2026-10-06)
+
+From research into how games and map apps draw routes (Forza's chevrons, Mapbox's casing, Cesium's
+depth-fail style; common to them: a bright core, a dark outline, direction along it, a dimmer
+dotted style where hidden):
+
+- **3D map** (`ROUTE_VS`/`ROUTE_FS`): each ribbon vertex carries `across` (−1..1) and `along` (m).
+  The edge is smoothed by `fwidth` of |across|; the core (62 % of the width) in the route's colour
+  over an outline at 22 % of it; a chevron every 3 m (still: animated, the scene would be drawn every
+  frame, undoing the frame-buffer cache); a shortcut dashed every 1.5 m; the X-ray pass dotted
+  every 1 m at 40 %. The ribbon lies 0.15 m over the floor with `glPolygonOffset(-1, -4)`.
+- **Game view** (`screenroute::paint_band`): each piece between two samples is a segment on the
+  screen with its half width at each end (the floor's 14 cm projected, 1.6–36 px); every pixel near
+  it is covered by its distance to the segment — smooth edges, round joints and ends — with a dark
+  outline 1.6 px wider; overlaps keep the most covering. Hidden pieces are drawn at 35 % and dotted
+  every 1 m instead of cut, since the occlusion test is an approximation.

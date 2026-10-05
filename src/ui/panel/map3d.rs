@@ -502,7 +502,7 @@ impl Map3d {
             hero: None,
             picked: self.picked,
             route: ribbon(&route, colour),
-            shortcut: dashed(&ribbon(&cut, SHORTCUT_RGB), &cut),
+            shortcut: ribbon(&cut, SHORTCUT_RGB),
         };
         let gpu = self.gpu.clone();
         let drawn = scene.clone();
@@ -806,38 +806,37 @@ fn ribbon(pts: &[[f32; 3]], colour: [u8; 3]) -> Vec<f32> {
                 (None, None) => [0.0, 0.0],
             };
             let p = pts[k];
-            let at = |w: f32| [p[0] + s[0] * w, p[1] + 0.6, p[2] + s[1] * w];
+            // just over the floor (a depth offset keeps it on top): 0.6 m looked afloat
+            let at = |w: f32| [p[0] + s[0] * w, p[1] + RIBBON_LIFT, p[2] + s[1] * w];
             (at(-RIBBON_HALF), at(RIBBON_HALF))
         })
         .collect();
-    let v = |p: [f32; 3]| [p[0], p[1], p[2], c[0], c[1], c[2]];
-    for w in edges.windows(2) {
+    // how far along the way each point is (m), for the shader's chevrons and dashes
+    let mut along = vec![0.0f32; n];
+    for k in 1..n {
+        let (a, b) = (pts[k - 1], pts[k]);
+        along[k] = along[k - 1] + ((b[0] - a[0]).powi(2) + (b[1] - a[1]).powi(2) + (b[2] - a[2]).powi(2)).sqrt();
+    }
+    // each vertex: where, across (−1 left, 1 right), along, colour
+    let v = |p: [f32; 3], across: f32, s: f32| [p[0], p[1], p[2], across, s, c[0], c[1], c[2]];
+    for (k, w) in edges.windows(2).enumerate() {
         let ((l0, r0), (l1, r1)) = (w[0], w[1]);
-        for q in [v(l0), v(r0), v(r1), v(l0), v(r1), v(l1)] {
+        let (s0, s1) = (along[k], along[k + 1]);
+        for q in [v(l0, -1.0, s0), v(r0, 1.0, s0), v(r1, 1.0, s1), v(l0, -1.0, s0), v(r1, 1.0, s1), v(l1, -1.0, s1)] {
             out.extend(q);
         }
     }
     out
 }
 
+/// Floats a ribbon vertex: position, across, along, colour.
+const RIBBON_FLOATS: usize = 8;
+
 /// The shortcut's colour (the maps'), as the shader takes it.
 const SHORTCUT_RGB: [u8; 3] = [90, 215, 235];
 
-/// A ribbon (`ribbon` over `pts`) with every other stretch of `DASH_M` along the way left out:
-/// six vertices of six floats a leg.
-fn dashed(ribbon: &[f32], pts: &[[f32; 3]]) -> Vec<f32> {
-    const DASH_M: f32 = 1.5;
-    let mut out = Vec::with_capacity(ribbon.len() / 2);
-    let mut along = 0.0;
-    for (k, w) in pts.windows(2).enumerate() {
-        let len = ((w[1][0] - w[0][0]).powi(2) + (w[1][2] - w[0][2]).powi(2)).sqrt();
-        if (along / DASH_M) as i64 % 2 == 0 {
-            out.extend_from_slice(&ribbon[k * 36..(k + 1) * 36]);
-        }
-        along += len;
-    }
-    out
-}
+/// The route ribbon's height over the floor (m).
+const RIBBON_LIFT: f32 = 0.15;
 
 /// The route ribbon's half width (m).
 const RIBBON_HALF: f32 = 0.9;
@@ -1046,6 +1045,36 @@ uniform mat4 uVP; uniform float uSize; out vec3 vC;
 void main(){ vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); gl_PointSize = clamp(uSize * 900.0 / max(gl_Position.w, 1.0), 2.0, 4.0); }
 "#;
 
+/// The route's ribbon (Mapbox's and the games' look): a bright core with a dark outline, smooth
+/// edges by the distance across (`fwidth`, no multisampling), a still chevron every 3 m along
+/// it; dashed for a shortcut, dotted where it is hidden (the X-ray pass).
+const ROUTE_VS: &str = r#"
+layout(location=0) in vec3 aPos; layout(location=1) in float aV; layout(location=2) in float aS;
+layout(location=3) in vec3 aCol;
+uniform mat4 uVP; out float vV; out float vS; out vec3 vC;
+void main(){ vV = aV; vS = aS; vC = aCol; gl_Position = uVP * vec4(aPos, 1.0); }
+"#;
+
+const ROUTE_FS: &str = r#"
+in float vV; in float vS; in vec3 vC; out vec4 o;
+uniform float uAlpha; uniform float uDash; uniform float uHidden;
+void main(){
+  float d = abs(vV);
+  float aa = max(fwidth(d), 0.001);
+  float edge = 1.0 - smoothstep(1.0 - aa, 1.0, d);
+  float core = 1.0 - smoothstep(0.62 - aa, 0.62 + aa, d);
+  vec3 col = mix(vC * 0.22, vC, core);
+  float u = fract(vS / 3.0);
+  float chev = 1.0 - smoothstep(0.0, 0.03 + aa, abs(u - 0.4 - d * 0.22) - 0.05);
+  col = mix(col, vec3(1.0, 0.96, 0.86), chev * core * (1.0 - uDash) * 0.8);
+  float dash = mix(1.0, step(0.5, fract(vS / 1.5)), uDash);
+  float hid = mix(1.0, step(0.5, fract(vS / 1.0)), uHidden);
+  float a = uAlpha * edge * dash * hid;
+  if (a < 0.01) discard;
+  o = vec4(col, a);
+}
+"#;
+
 const FLAT_FS: &str = r#"
 in vec3 vC; out vec4 o; uniform float uAlpha; uniform int uRound;
 void main(){
@@ -1058,6 +1087,7 @@ void main(){
 struct Gpu {
     terrain_prog: glow::Program,
     flat_prog: glow::Program,
+    route_prog: glow::Program,
     terrain: Option<(glow::VertexArray, glow::Buffer, glow::Buffer, i32)>,
     floors: Vec<(glow::VertexArray, glow::Buffer, i32, usize)>,
     nodes: Option<(glow::VertexArray, glow::Buffer, i32)>,
@@ -1132,6 +1162,7 @@ impl Gpu {
         Some(Gpu {
             terrain_prog: compile(TERRAIN_VS, TERRAIN_FS)?,
             flat_prog: compile(FLAT_VS, FLAT_FS)?,
+            route_prog: compile(ROUTE_VS, ROUTE_FS)?,
             terrain: None,
             floors: Vec::new(),
             nodes: None,
@@ -1400,26 +1431,36 @@ impl Gpu {
                 gl.depth_func(glow::LEQUAL);
             }
             gl.disable(glow::STENCIL_TEST);
-            // the shortcut, then the route over it: solid where seen, faint where hidden
-            for ribbon in [&f.shortcut, &f.route] {
+            // the shortcut, then the route over it: seen, then (X-ray) dotted where hidden; kept
+            // on the floor it lies on by a depth offset, not by floating it
+            gl.use_program(Some(self.route_prog));
+            let ur = |name: &str| gl.get_uniform_location(self.route_prog, name);
+            gl.uniform_matrix_4_f32_slice(ur("uVP").as_ref(), false, &f.vp);
+            gl.enable(glow::POLYGON_OFFSET_FILL);
+            gl.polygon_offset(-1.0, -4.0);
+            for (ribbon, dash) in [(&f.shortcut, 1.0), (&f.route, 0.0)] {
                 if ribbon.is_empty() {
                     continue;
                 }
-                let (a, b) = Self::upload(gl, ribbon, &[3, 3]);
-                gl.uniform_1_i32(u("uRound").as_ref(), 0);
+                let (a, b) = Self::upload(gl, ribbon, &[3, 1, 1, 3]);
                 gl.bind_vertex_array(Some(a));
-                let n = (ribbon.len() / 6) as i32;
-                gl.uniform_1_f32(u("uAlpha").as_ref(), 0.95);
+                let n = (ribbon.len() / RIBBON_FLOATS) as i32;
+                gl.uniform_1_f32(ur("uDash").as_ref(), dash);
+                gl.uniform_1_f32(ur("uHidden").as_ref(), 0.0);
+                gl.uniform_1_f32(ur("uAlpha").as_ref(), 0.95);
                 gl.draw_arrays(glow::TRIANGLES, 0, n);
                 gl.depth_func(glow::GREATER);
                 gl.depth_mask(false);
-                gl.uniform_1_f32(u("uAlpha").as_ref(), 0.3);
+                gl.uniform_1_f32(ur("uHidden").as_ref(), 1.0);
+                gl.uniform_1_f32(ur("uAlpha").as_ref(), 0.4);
                 gl.draw_arrays(glow::TRIANGLES, 0, n);
                 gl.depth_mask(true);
                 gl.depth_func(glow::LEQUAL);
                 gl.delete_vertex_array(a);
                 gl.delete_buffer(b);
             }
+            gl.disable(glow::POLYGON_OFFSET_FILL);
+            gl.use_program(Some(self.flat_prog));
             // the hero and the picked place, on top
             let mut marks = Vec::new();
             if let Some(h) = f.hero {

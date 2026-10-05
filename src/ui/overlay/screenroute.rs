@@ -41,14 +41,24 @@ const VSYNC_EARLY: Duration = Duration::from_millis(5);
 const SEEN_MOVED: f32 = 25.0;
 const SEEN_FOR: Duration = Duration::from_millis(120);
 
-/// A piece of a band on the screen: its corners, its opacity, what it is.
-type Quad = ([(f32, f32); 4], f32, Piece);
+/// A piece of a band on the screen, between two samples: its ends, its half widths there (px),
+/// how far along the way each is (cm), whether both are seen, and what it is.
+#[derive(Clone, Copy)]
+struct Seg {
+    a: (f32, f32),
+    b: (f32, f32),
+    wa: f32,
+    wb: f32,
+    sa: f32,
+    sb: f32,
+    seen: bool,
+    kind: Piece,
+}
 
-/// What a band's piece is: the route's, one of its chevrons, or the shortcut's (a dash).
+/// What a band is: the route's, or its shortcut's (dashed, its own colour).
 #[derive(Clone, Copy, PartialEq)]
 enum Piece {
     Band,
-    Chevron,
     Shortcut,
 }
 
@@ -56,8 +66,15 @@ enum Piece {
 const SHORTCUT: [u8; 3] = [90, 215, 235];
 const SHORTCUT_WIDTH: f32 = 0.7;
 const DASH: f32 = 150.0;
-/// A sample's band edges on the screen (left, right) and whether it is seen.
-type Edge = ((f32, f32), (f32, f32), bool);
+/// A band is drawn this wide at most and at least (half, px) — a floor decal narrows with
+/// distance; under the camera it would fill the view — with a dark outline this wide (px).
+const HALF_MAX_PX: f32 = 36.0;
+const HALF_MIN_PX: f32 = 1.6;
+const OUTLINE_PX: f32 = 1.6;
+/// What the world hides of a band is drawn faint and dotted, not cut: the tests are rays
+/// against an approximation, and a hard cut flickered as they changed their mind.
+const HIDDEN_ALPHA: f32 = 0.35;
+const HIDDEN_DOT: f32 = 100.0;
 
 /// The obstacles with their outlines' bounds, kept while the scene is the same.
 struct Indexed {
@@ -72,6 +89,9 @@ pub struct ScreenRoute {
     /// The maps' icons, rasterised at each size a distance gives them (px → set).
     icons: HashMap<usize, crate::icons::Icons>,
     icons_px: u8,
+    /// The band's coverage per pixel (outline, core) and its core's colour: kept between
+    /// frames, the canvas's size.
+    cover: Vec<(u8, u8, [u8; 3])>,
     /// Whether a point (on a 25 cm grid) is seen from the camera at `seen_eye`, as of `seen_at`.
     seen: HashMap<[i32; 3], bool>,
     seen_eye: [f32; 3],
@@ -86,6 +106,7 @@ impl Default for ScreenRoute {
             index: None,
             icons: Default::default(),
             icons_px: 0,
+            cover: Vec::new(),
             seen: HashMap::new(),
             seen_eye: [0.0; 3],
             seen_at: None,
@@ -236,49 +257,37 @@ impl ScreenRoute {
             let key = [(at[0] / 25.0).round() as i32, (at[1] / 25.0).round() as i32, (at[2] / 25.0).round() as i32];
             *cache.entry(key).or_insert_with(|| visible(eye, at, scene, &index.boxes))
         };
-        // a band over a way: each sample seen or not, its two edges on the screen
-        let mut band = |way: &[[f32; 3]], half: f32, dashed: bool| -> Vec<Quad> {
-            let samples = resample(way, STEP, AHEAD);
-            let mut quads: Vec<Quad> = Vec::new();
-            let mut prev: Option<Edge> = None;
-            for (k, s) in samples.iter().enumerate() {
-                let (p, dir, along) = (s.0, s.1, s.2);
-                let side = [-dir[1] * half, dir[0] * half];
+        // a band over a way: each sample's middle on the screen, its half width there (the
+        // floor's width projected), how far along, and whether it is seen
+        let mut band = |way: &[[f32; 3]], half: f32, kind: Piece| -> Vec<Seg> {
+            let mut out = Vec::new();
+            let mut prev: Option<((f32, f32), f32, f32, bool)> = None;
+            for (p, dir, along) in resample(way, STEP, AHEAD) {
                 let at = [p[0], p[1], p[2] + LIFT];
-                let seen = seen_from(at);
-                let l = marker::project(cam, [at[0] + side[0], at[1] + side[1], at[2]], w as f32, h as f32);
-                let r = marker::project(cam, [at[0] - side[0], at[1] - side[1], at[2]], w as f32, h as f32);
-                let cur = match (l, r) {
-                    (Some(l), Some(r)) => Some(((l.0, l.1), (r.0, r.1), seen)),
+                let side = [at[0] - dir[1] * half, at[1] + dir[0] * half, at[2]];
+                let cur = match (
+                    marker::project(cam, at, w as f32, h as f32),
+                    marker::project(cam, side, w as f32, h as f32),
+                ) {
+                    (Some(c), Some(e)) => {
+                        let wpx = (e.0 - c.0).hypot(e.1 - c.1).clamp(HALF_MIN_PX, HALF_MAX_PX);
+                        Some(((c.0, c.1), wpx, along, seen_from(at)))
+                    }
                     _ => None,
                 };
-                if let (Some((pl, pr, ps)), Some((cl, cr, cs))) = (prev, cur) {
-                    if ps && cs && k > 0 && along > FROM {
-                        let fade = 1.0 - (along / AHEAD).clamp(0.0, 1.0) * 0.7;
-                        if dashed {
-                            // dashes, every other `DASH`
-                            if (along / DASH).fract() < 0.5 {
-                                quads.push(([pl, pr, cr, cl], fade * 0.6, Piece::Shortcut));
-                            }
-                        } else {
-                            // fading out ahead, a brighter chevron every 3 m
-                            let chevron = (along / 300.0).fract() < 0.2;
-                            let (a, piece) = if chevron { (0.85, Piece::Chevron) } else { (0.5, Piece::Band) };
-                            quads.push(([pl, pr, cr, cl], fade * a, piece));
-                        }
+                if let (Some(a), Some(b)) = (prev, cur) {
+                    if along > FROM {
+                        out.push(Seg { a: a.0, b: b.0, wa: a.1, wb: b.1, sa: a.2, sb: b.2, seen: a.3 && b.3, kind });
                     }
                 }
                 prev = cur;
             }
-            quads
+            out
         };
-        let mut quads = band(route, HALF, false);
-        if shortcut.len() > 1 {
-            // under the route's band where they share the way
-            let mut cut = band(shortcut, HALF * SHORTCUT_WIDTH, true);
-            cut.append(&mut quads);
-            quads = cut;
-        }
+        // the shortcut first, the route over it
+        let mut segs =
+            if shortcut.len() > 1 { band(shortcut, HALF * SHORTCUT_WIDTH, Piece::Shortcut) } else { Vec::new() };
+        segs.extend(band(route, HALF, Piece::Band));
         // the maps' icons over what is near and seen, the nearest first
         let mut near: Vec<(f32, &crate::actors::Thing)> = things
             .iter()
@@ -313,7 +322,7 @@ impl ScreenRoute {
             let size = (((icon_px as f32 * scale) / 2.0).round() as usize * 2).max(8);
             marks.push(((p.0, p.1), t.sub, alpha, size));
         }
-        if quads.is_empty() && marks.is_empty() {
+        if segs.is_empty() && marks.is_empty() {
             self.hide();
             return;
         }
@@ -326,13 +335,12 @@ impl ScreenRoute {
             x1 = x1.max(p.0 + half);
             y1 = y1.max(p.1 + half);
         }
-        for (q, _, _) in &quads {
-            for p in q {
-                x0 = x0.min(p.0);
-                y0 = y0.min(p.1);
-                x1 = x1.max(p.0);
-                y1 = y1.max(p.1);
-            }
+        for g in &segs {
+            let m = g.wa.max(g.wb) + OUTLINE_PX + 1.0;
+            x0 = x0.min(g.a.0.min(g.b.0) - m);
+            y0 = y0.min(g.a.1.min(g.b.1) - m);
+            x1 = x1.max(g.a.0.max(g.b.0) + m);
+            y1 = y1.max(g.a.1.max(g.b.1) + m);
         }
         let (x0, y0) = ((x0.floor() as i32 - 4).clamp(0, w), (y0.floor() as i32 - 4).clamp(0, h));
         let (x1, y1) = ((x1.ceil() as i32 + 4).clamp(0, w), (y1.ceil() as i32 + 4).clamp(0, h));
@@ -349,17 +357,7 @@ impl ScreenRoute {
         let Some(win) = self.window.as_mut() else { return };
         self.canvas.clear();
         let (ox, oy) = (x0 as f32, y0 as f32);
-        for (q, a, piece) in &quads {
-            let pts: Vec<(f32, f32)> = q.iter().map(|p| (p.0 - ox, p.1 - oy)).collect();
-            let alpha = (a * 255.0) as u8;
-            let [r, g, b] = match piece {
-                Piece::Chevron => [255, 244, 214],
-                Piece::Band => colour,
-                Piece::Shortcut => SHORTCUT,
-            };
-            let c = crate::map::canvas::Rgba(r, g, b, alpha);
-            self.canvas.polygon(&pts, c);
-        }
+        paint_band(&mut self.canvas, &mut self.cover, &segs, (ox, oy), colour);
         // the far first, so the near sit on top
         for (p, sub, a, size) in marks.iter().rev() {
             let icons = match self.icons.entry(*size) {
@@ -373,6 +371,74 @@ impl ScreenRoute {
             self.canvas.blit_alpha(p.0 - ox, p.1 - oy, icon.size, &icon.px, (a * 255.0) as u32);
         }
         win.present(&self.canvas, left + x0, top + y0);
+    }
+}
+
+/// The band's pieces into `cv` (its origin at `o` on the screen), each pixel by its distance to
+/// the piece's line: covered where it is within the half width there, the outline a little
+/// wider, every edge and joint smooth and round. Where pieces overlap the most covering wins,
+/// so joints are not drawn twice.
+fn paint_band(cv: &mut Canvas, cover: &mut Vec<(u8, u8, [u8; 3])>, segs: &[Seg], o: (f32, f32), colour: [u8; 3]) {
+    let (w, h) = (cv.w, cv.h);
+    cover.clear();
+    cover.resize(w * h, (0, 0, [0; 3]));
+    for g in segs {
+        let (ax, ay, bx, by) = (g.a.0 - o.0, g.a.1 - o.1, g.b.0 - o.0, g.b.1 - o.1);
+        let m = g.wa.max(g.wb) + OUTLINE_PX + 1.0;
+        let (px0, px1) = (((ax.min(bx) - m).floor().max(0.0)) as usize, ((ax.max(bx) + m).ceil() as usize).min(w));
+        let (py0, py1) = (((ay.min(by) - m).floor().max(0.0)) as usize, ((ay.max(by) + m).ceil() as usize).min(h));
+        let (dx, dy) = (bx - ax, by - ay);
+        let l2 = dx * dx + dy * dy;
+        for y in py0..py1 {
+            for x in px0..px1 {
+                let (fx, fy) = (x as f32 + 0.5, y as f32 + 0.5);
+                let t = if l2 > 1e-6 { (((fx - ax) * dx + (fy - ay) * dy) / l2).clamp(0.0, 1.0) } else { 0.0 };
+                let d = (fx - ax - dx * t).hypot(fy - ay - dy * t);
+                let hw = g.wa + (g.wb - g.wa) * t;
+                if d > hw + OUTLINE_PX + 0.5 {
+                    continue;
+                }
+                let along = g.sa + (g.sb - g.sa) * t;
+                // fading out ahead; a brighter chevron every 3 m on the route
+                let fade = 1.0 - (along / AHEAD).clamp(0.0, 1.0) * 0.7;
+                let (rgb, mut alpha, mut dash) = match g.kind {
+                    Piece::Band if (along / 300.0).fract() < 0.18 => ([255, 244, 214], 0.9 * fade, None),
+                    Piece::Band => (colour, 0.75 * fade, None),
+                    Piece::Shortcut => (SHORTCUT, 0.7 * fade, Some(DASH)),
+                };
+                if !g.seen {
+                    alpha *= HIDDEN_ALPHA;
+                    dash = Some(HIDDEN_DOT);
+                }
+                if dash.is_some_and(|p| (along / p).fract() >= 0.5) {
+                    continue;
+                }
+                let core = ((hw + 0.5 - d).clamp(0.0, 1.0) * alpha * 255.0) as u8;
+                let edge = ((hw + OUTLINE_PX + 0.5 - d).clamp(0.0, 1.0) * alpha * 0.55 * 255.0) as u8;
+                let c = &mut cover[y * w + x];
+                c.0 = c.0.max(edge);
+                if core > c.1 {
+                    c.1 = core;
+                    c.2 = rgb;
+                }
+            }
+        }
+    }
+    for y in 0..h {
+        for x in 0..w {
+            let (edge, core, rgb) = cover[y * w + x];
+            if edge > 0 {
+                cv.blend(x as i32, y as i32, crate::map::canvas::Rgba(0, 0, 0, 255), edge as f32 / 255.0);
+            }
+            if core > 0 {
+                cv.blend(
+                    x as i32,
+                    y as i32,
+                    crate::map::canvas::Rgba(rgb[0], rgb[1], rgb[2], 255),
+                    core as f32 / 255.0,
+                );
+            }
+        }
     }
 }
 
@@ -453,6 +519,22 @@ fn visible(eye: [f32; 3], p: [f32; 3], scene: &Scene, boxes: &[[f32; 4]]) -> boo
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_band_is_solid_inside_smooth_at_its_edge_and_empty_outside() {
+        let mut cv = Canvas::new(60, 30);
+        let mut cover = Vec::new();
+        // a piece along y = 15 from x 10 to 50, 4 px each side, seen, near (no fade to speak of)
+        let g = Seg { a: (10.0, 15.0), b: (50.0, 15.0), wa: 4.0, wb: 4.0, sa: 500.0, sb: 510.0, seen: true, kind: Piece::Band };
+        paint_band(&mut cv, &mut cover, &[g], (0.0, 0.0), [200, 100, 50]);
+        let alpha = |x: usize, y: usize| cv.px[y * 60 + x] >> 24;
+        assert!(alpha(30, 15) > 150, "inside");
+        let rim = alpha(30, 19);
+        assert!(rim > 0 && rim < alpha(30, 15), "the edge in between: {rim}");
+        assert_eq!(alpha(30, 25), 0, "outside");
+        // the end is round: past it by half the width, nothing
+        assert_eq!(alpha(57, 15), 0);
+    }
 
     fn square(x0: f32, y0: f32, s: f32) -> Vec<[f32; 2]> {
         vec![[x0, y0], [x0 + s, y0], [x0 + s, y0 + s], [x0, y0 + s]]
