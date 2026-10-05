@@ -348,3 +348,25 @@ Captured: the Guide page's map had its ground 4 s after launch, before the first
   loads that world's kept scene.
 - The file is made from the game's memory: it stays on the player's machine, never in the repo.
 
+
+## 15. The landscape from the cooked maps (2026-10-05)
+
+The user: draw the requirement graph in 3D over the game's own map, first as an artifact, then as a 3D
+map tab, then routes and pins on the game screen. No map image fits (§3: the country map is not to
+scale, and no region map ships). The landscapes are in the cooked maps instead: each
+`LandscapeComponent` has its own 256×256 `HeightmapTexture` (B8G8R8A8, height = R·256 + G, 32768 is 0,
+128 a unit; `HeightmapScaleBias` picks its part), placed at its `SectionBaseX/Y` (quads) less the
+proxy's `LandscapeSectionOffset`, through the `LandscapeStreamingProxy`'s root transform (scale about
+50 × 50 × 100, a 90° turn). `survey --terrain <dir> [--world W] [--cell cm]` samples every component
+into one grid per world (`<World>.terrain.json`: origin, cell, size, heights as base64 little-endian
+int16 decimetres, −32768 where there is none), kept in `Mods\terrain` on the player's PC. Checked
+against the save points and the APC door of Lake Cynon: within a few centimetres.
+
+Coverage of the graph's nodes by the landscape (nodes within 15 m of the ground): Acasa Marshes 88 %,
+Jeljin 90 %, Talju 84 %, Marastan 79 %, Vyssa Hills 55 %, Plains of Mist 21 %, Lake Cynon 11 % (the
+forge and the Eye of God are interiors and another area), Senedra Forest 1 % (to look into), the Lethe
+buildings and Auriga none (interiors). Interiors need the buildings' meshes or the navmesh.
+
+The prototype (an artifact, Acasa Marshes): the terrain as a shaded mesh, the graph's nodes where they
+stand (a stalk down to the ground for those above or below it), its edges as arcs, and a story-round
+scrubber that lights what can be done by then.

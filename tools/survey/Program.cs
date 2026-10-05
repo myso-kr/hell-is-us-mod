@@ -120,6 +120,51 @@ if (opts.TryGetValue("grep", out var grepFor))
     }
     return;
 }
+// --terrain <out dir> [--world W] [--cell cm]: each world's landscape as one height grid
+// (`<World>.terrain.json`: origin, cell, size, heights as base64 little-endian int16 in
+// decimetres, -32768 where there is no ground), read from every landscape component's
+// heightmap. Game data: kept on the player's PC (.spec/MAP.md §15).
+if (opts.TryGetValue("terrain", out var terrainOut))
+{
+    Directory.CreateDirectory(terrainOut);
+    var cell = opts.TryGetValue("cell", out var cs) ? double.Parse(cs) : 400.0;
+    foreach (var w in worlds)
+    {
+        var started = DateTime.Now;
+        var grid = new Dictionary<(int, int), double>();
+        var raw = new JArray();
+        var comps = 0;
+        foreach (var map in survey.Maps(w))
+        {
+            try { comps += survey.Terrain(map, cell, grid, raw); }
+            catch (Exception e) { Console.Error.WriteLine($"  {map}: {e.Message}"); }
+        }
+        if (grid.Count == 0) { Console.Error.WriteLine($"{w}: no landscape"); continue; }
+        // A stray cell far off (a component placed by a transform not read right) would make
+        // the grid as large as the gap: the bounds of all but the outermost half percent.
+        var xs = grid.Keys.Select(k => k.Item1).OrderBy(v => v).ToList();
+        var ys = grid.Keys.Select(k => k.Item2).OrderBy(v => v).ToList();
+        int Pick(List<int> l, double q) => l[(int)Math.Clamp(Math.Round(q * (l.Count - 1)), 0, l.Count - 1)];
+        int x0 = Pick(xs, 0.005), x1 = Pick(xs, 0.995), y0 = Pick(ys, 0.005), y1 = Pick(ys, 0.995);
+        int gw = x1 - x0 + 1, gh = y1 - y0 + 1;
+        var bytes = new byte[gw * gh * 2];
+        for (var y = 0; y < gh; y++)
+            for (var x = 0; x < gw; x++)
+            {
+                short v = grid.TryGetValue((x + x0, y + y0), out var z) ? (short)Math.Clamp(Math.Round(z / 10.0), -32767, 32767) : short.MinValue;
+                BitConverter.TryWriteBytes(bytes.AsSpan((y * gw + x) * 2, 2), v);
+            }
+        var record = new JObject
+        {
+            ["world"] = w, ["cell"] = cell, ["x0"] = x0 * cell, ["y0"] = y0 * cell,
+            ["w"] = gw, ["h"] = gh, ["components"] = comps, ["heights"] = Convert.ToBase64String(bytes),
+            ["transforms"] = opts.ContainsKey("raw") ? raw : null,
+        };
+        File.WriteAllText(Path.Combine(terrainOut, $"{w}.terrain.json"), record.ToString(Formatting.None));
+        Console.Error.WriteLine($"{w}: {comps} components, {gw}x{gh} cells in {(DateTime.Now - started).TotalSeconds:F0} s");
+    }
+    return;
+}
 if (opts.TryGetValue("refs", out var refsOf))
 {
     foreach (var w in worlds)
@@ -906,6 +951,57 @@ class Survey(DefaultFileProvider provider)
         catch { }
         templates[pkg] = found;
         return found;
+    }
+
+    /// The landscape components of `map` sampled into `grid` (cell → highest ground, cm):
+    /// each component's heightmap (8-bit R high, G low; 32768 is 0, 128 a unit) through the
+    /// component's world transform. Returns how many components were read.
+    public int Terrain(string map, double cell, Dictionary<(int, int), double> grid, JArray? raw = null)
+    {
+        var exports = provider.LoadPackage(map).GetExports().ToList();
+        var n = 0;
+        foreach (var comp in exports.Where(e => e.Class?.Name == "LandscapeComponent"))
+        {
+            var p = Props(comp);
+            var size = (int?)p["ComponentSizeQuads"] ?? 0;
+            if (size <= 0 || Resolve(exports, p["HeightmapTexture"]) is not CUE4Parse.UE4.Assets.Exports.Texture.UTexture2D tex) continue;
+            var mip = tex.GetFirstMip();
+            var data = mip?.BulkData?.Data;
+            if (mip == null || data == null) continue;
+            int tw = mip.SizeX, th = mip.SizeY;
+            if (data.Length < tw * th * 4) continue;
+            var bias = p["HeightmapScaleBias"];
+            int ox = (int)Math.Round(((double?)bias?["Z"] ?? 0) * tw), oy = (int)Math.Round(((double?)bias?["W"] ?? 0) * th);
+            // The component sits in its proxy's landscape space at its section base (quads), less
+            // the proxy's section offset; the proxy's root carries the landscape's scale and turn.
+            var proxy = exports.FirstOrDefault(e => e.Name == comp.Outer?.Name && e.Outer?.Name == "PersistentLevel");
+            var pp = Props(proxy);
+            var root = Resolve(exports, pp["RootComponent"]);
+            if (root == null) continue;
+            var xf = World(exports, root, 0);
+            double bx = (double?)p["SectionBaseX"] ?? 0, by = (double?)p["SectionBaseY"] ?? 0;
+            double sx = (double?)pp["LandscapeSectionOffset"]?["X"] ?? 0, sy = (double?)pp["LandscapeSectionOffset"]?["Y"] ?? 0;
+            var step = Math.Max(1, (int)Math.Round(cell / Math.Max(1.0, xf.S.X) / 2));
+            var samples = new JArray();
+            for (var j = 0; j <= size; j += step)
+                for (var i = 0; i <= size; i += step)
+                {
+                    int tx = ox + i, ty = oy + j;
+                    if (tx >= tw || ty >= th) continue;
+                    var o = (ty * tw + tx) * 4;
+                    // B8G8R8A8: B, G, R, A in memory; R high byte, G low.
+                    var h = data[o + 2] << 8 | data[o + 1];
+                    var local = new Xf(System.Numerics.Quaternion.Identity, new System.Numerics.Vector3((float)(bx - sx + i), (float)(by - sy + j), (h - 32768) / 128f), System.Numerics.Vector3.One);
+                    var at = xf.Apply(local).T;
+                    // A transform not read right puts samples nowhere: only those on the map.
+                    if (!float.IsFinite(at.X) || !float.IsFinite(at.Y) || !float.IsFinite(at.Z) || Math.Abs(at.X) > 5e6 || Math.Abs(at.Y) > 5e6) continue;
+                    var key = ((int)Math.Floor(at.X / cell), (int)Math.Floor(at.Y / cell));
+                    if (!grid.TryGetValue(key, out var z) || at.Z > z) grid[key] = at.Z;
+                }
+            raw?.Add(new JObject { ["base"] = new JArray(bx, by), ["offset"] = new JArray(sx, sy), ["t"] = new JArray(xf.T.X, xf.T.Y, xf.T.Z), ["s"] = new JArray(xf.S.X, xf.S.Y, xf.S.Z), ["q"] = new JArray(xf.Q.X, xf.Q.Y, xf.Q.Z, xf.Q.W), ["size"] = size });
+            n++;
+        }
+        return n;
     }
 
     /// Every export whose properties name `want`: what points at an actor (`--refs`).
