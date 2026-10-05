@@ -792,6 +792,22 @@ fn chip(ui: &mut egui::Ui, on: &mut bool, label: &str) -> egui::Response {
     resp
 }
 
+/// `rect` (points) in GL pixels, from the bottom of a screen `screen` px: unclamped, so it may
+/// start above or below the window.
+fn viewport(rect: egui::Rect, ppp: f32, screen: [u32; 2]) -> egui::epaint::ViewportInPixels {
+    let left_px = (rect.min.x * ppp).round() as i32;
+    let top_px = (rect.min.y * ppp).round() as i32;
+    let width_px = (rect.max.x * ppp).round() as i32 - left_px;
+    let height_px = (rect.max.y * ppp).round() as i32 - top_px;
+    egui::epaint::ViewportInPixels {
+        left_px,
+        top_px,
+        from_bottom_px: screen[1] as i32 - top_px - height_px,
+        width_px,
+        height_px,
+    }
+}
+
 /// The maps' colours (raster.rs): the north mark, the marks' outline.
 const NORTH: Color32 = Color32::from_rgb(255, 110, 90);
 const OUTLINE: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 200);
@@ -1095,7 +1111,10 @@ impl Gpu {
 
     fn draw(&mut self, gl: &glow::Context, s: &Scene, f: &Frame, info: &egui::PaintCallbackInfo) {
         self.sync(gl, s, f.round);
-        let vp = info.viewport_in_pixels();
+        // The view's whole rect in pixels, as it is, not clamped to the window as egui's
+        // `viewport_in_pixels` is: scrolled partly out of the window, a clamped viewport squashes
+        // the projection and the view seems to move. What shows is cut by the scissor below.
+        let vp = viewport(info.viewport, info.pixels_per_point, info.screen_size_px);
         let clip = info.clip_rect_in_pixels();
         // SAFETY: as above; every state changed here is put back for egui at the end.
         unsafe {
@@ -1273,6 +1292,15 @@ impl super::Panel {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_viewport_keeps_its_size_when_scrolled_out() {
+        // a 400 x 300 view scrolled 100 px above a 1000 x 800 window
+        let r = egui::Rect::from_min_size(egui::pos2(50.0, -100.0), egui::vec2(400.0, 300.0));
+        let v = viewport(r, 1.0, [1000, 800]);
+        assert_eq!((v.left_px, v.width_px, v.height_px), (50, 400, 300));
+        assert_eq!(v.from_bottom_px, 800 + 100 - 300);
+    }
 
     #[test]
     fn base64_reads_back() {

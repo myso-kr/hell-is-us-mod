@@ -487,3 +487,11 @@ spot under its icon, which the X-ray shows through the ground.
 The 3D view no longer zooms on the plain wheel: scrolling the page past it zoomed it. Ctrl+wheel
 (egui's `zoom_delta`, which takes the event from the page's scroll) and pinch zoom, as over an
 embedded map.
+
+### 16.4 The view moved when the page scrolled (2026-10-05)
+
+egui's `PaintCallbackInfo::viewport_in_pixels` clamps the viewport to the window (epaint
+`ViewportInPixels::from_points`). Scrolled partly out of the window, the 3D view's GL viewport
+shrank while its projection kept the rect's aspect, so the scene squashed and seemed to move with
+the scroll. The view now sets the rect's own, unclamped viewport (`map3d::viewport`, which may start
+above or below the window); the scissor alone cuts it to what shows.

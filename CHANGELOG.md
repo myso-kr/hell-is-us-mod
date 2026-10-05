@@ -61,6 +61,7 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- The 3D map's view no longer shifts as the Map page scrolls it partly out of the window.
 - Routes no longer read as blocked behind every door. The game's navmesh has every door closed, so
   "blocked" meant behind any door at all, and a way round through an ordinary door was never found.
   Doors that open with a press (or whose needs are met), opened doors, and one-sided doors from the
