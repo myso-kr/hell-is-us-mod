@@ -828,3 +828,6 @@ SORT_TIMELOOP	Bucle temporal
 FULLSCREEN_HIDES_OVERLAYS	El juego está en pantalla completa exclusiva: los mapas y la brújula no pueden mostrarse encima. Pon el juego en ventana sin bordes.
 CTX_DOOR	Esta puerta ({door}) se abre tras: {steps}
 GRAPH_GO_TO_REGION	A {region}: {what}
+CTX_DROP_SAFE	Atajo: caída de {m} m, sin daño
+CTX_DROP_HURTS	Atajo: caída de {m} m, cuesta el 10 % de salud
+CTX_DROP_HURTS_MORE	Atajo: caída de {m} m, hasta el 70 % de salud

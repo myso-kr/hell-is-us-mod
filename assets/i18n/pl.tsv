@@ -828,3 +828,6 @@ SORT_TIMELOOP	Pętla czasu
 FULLSCREEN_HIDES_OVERLAYS	Gra działa w trybie wyłącznego pełnego ekranu: mapy i kompas nie mogą się nad nią pojawić. Ustaw grę na okno bez ramki.
 CTX_DOOR	Te drzwi ({door}) otworzą się po: {steps}
 GRAPH_GO_TO_REGION	Do {region}: {what}
+CTX_DROP_SAFE	Skrót: {m} m spadku, bez obrażeń
+CTX_DROP_HURTS	Skrót: {m} m spadku kosztuje 10% zdrowia
+CTX_DROP_HURTS_MORE	Skrót: {m} m spadku, do 70% zdrowia

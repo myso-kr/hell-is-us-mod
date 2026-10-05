@@ -256,3 +256,29 @@ The rule now (`Graph::passable`, `NavMesh::bridged`):
 
 What stays blocked at the forge with every door open is real: the large gear and the W wrath rod under
 the unsolved flood (4.9 m down), the W fear rod 12 m down (the lift).
+
+## 10. Shortcuts down (2026-10-06)
+
+The game's navmesh has no way down a ledge: a drop the player takes in a second is a long walk
+round, or no way at all, to the route. Asked for by the user as a shortcut drawn beside the route
+("branching off and joining again"), with the fall's harm counted.
+
+- **The harm**, read from the game (`doctor inspect cdo=FallDamageConfig`, build 24045435):
+  no landing animation to 1.5 m, light landing from 4.5 m with 10 % of health lost, heavy from
+  9 m with damage scaled to 70 % at 12 m, death from 15 m (`KillHeight`). Drops are offered up to
+  12 m only.
+- **Finding them** (`NavMesh::find_drops`): every edge of a poly with no neighbour inside its
+  tile (a wall or a ledge to Recast) is looked over every 2 m, out 0.8, 1.6 and 2.6 m, for the
+  highest floor below within 0.8–12 m; a wall is told from a ledge by the scene's obstacles
+  (`Scene::blocking`, a grid of them): nothing in the way going out over the edge at chest height
+  and down; no deadly water to land in. One drop per pair of polys, the lowest. About 5,500 on
+  Lake Cynon; found on a thread of its own when the navmesh changes (3 s of work, which stopped
+  the worker's step when done inline).
+- **Routing** (`NavMesh::route_dropping`): A* over the walks and the drops, one way down, each
+  drop adding its harm to the length (half its height when harmless, 30 m when it hurts, 80 m
+  when it hurts more); the string pulled through each walked piece and joined at each drop's top
+  and bottom.
+- **Shown** (overlay `route.rs`): beside the route, when the route is blocked or the shortcut is
+  a fifth and 20 m shorter; a goal reached only by it is not blocked. The maps draw it dashed in
+  cyan, each drop a ↓ with its height, cyan, amber or red by the harm; the quest tracker tells a
+  drop within 30 m. Not yet on the 3D map and in the game view.

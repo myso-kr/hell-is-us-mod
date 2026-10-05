@@ -751,6 +751,20 @@ fn target(a: &hiumod::engine::Attached, objects: &hiumod::gobjects::Objects, wha
             a.things()?;
             pick(a.enemies())
         }
+        // The class default objects of a class and of every class below it (`Default__…`):
+        // where a config class keeps its values (FallDamageConfig's landing heights).
+        _ if what.starts_with("cdo=") => {
+            let class = &what["cdo=".len()..];
+            let all: Vec<u64> = objects
+                .all(m)
+                .into_iter()
+                .filter(|&o| n.object(m, o).unwrap_or_default().starts_with("Default__") && n.is_a(m, o, class))
+                .collect();
+            if all.is_empty() {
+                return Err(format!("no default object of {class}"));
+            }
+            pick(all)
+        }
         _ if what.starts_with("0x") => {
             let at = u64::from_str_radix(&what[2..], 16).map_err(|_| format!("{what} is not an address"))?;
             mem::plausible(at).then_some(vec![at]).ok_or_else(|| format!("{what} is not a plausible address"))

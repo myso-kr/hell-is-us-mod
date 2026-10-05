@@ -426,7 +426,18 @@ pub struct Drawn {
     pub path: Path,
     pub colour: Option<[u8; 3]>,
     pub focus: bool,
+    /// A shorter way that jumps down (overlay/route.rs `Shortcut`): its points, and each drop's
+    /// top with its height (cm).
+    pub shortcut: Vec<[f32; 2]>,
+    pub drops: Vec<([f32; 3], f32)>,
 }
+
+/// A shortcut's line, and its drops' marks by the harm the fall does (FallDamageConfig):
+/// none, some, much.
+const SHORTCUT: Rgba = Rgba(90, 215, 235, 235);
+const DROP_SAFE: Rgba = Rgba(90, 215, 235, 255);
+const DROP_HURTS: Rgba = Rgba(240, 170, 60, 255);
+const DROP_HURTS_MORE: Rgba = Rgba(235, 80, 70, 255);
 
 /// The map's radius on a canvas (px): a full-screen map's circle leaves `FULL_FILL` of the
 /// short side's half, so the screen keeps a margin above and below it.
@@ -907,6 +918,45 @@ pub fn draw_above(
                 } else {
                     cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), outer, faded(Rgba(0, 0, 0, 160), lines));
                     cv.line((cx + a.0, cy + a.1), (cx + b.0, cy + b.1), inner, faded(Rgba(cr, cg, cb, 235), lines));
+                }
+            }
+            // A way down beside the route: dashed, in its own colour, each drop marked with how
+            // far down it goes and coloured by what the fall does.
+            if let Some(dr) = drawn.filter(|d| d.shortcut.len() >= 2) {
+                let pts: Vec<(f32, f32)> = dr.shortcut.iter().map(|q| view.project([q[0], q[1], 0.0])).collect();
+                let inside = |p: (f32, f32)| p.0 * p.0 + p.1 * p.1 <= (r - 2.0) * (r - 2.0);
+                for s in pts.windows(2) {
+                    let (a, b) = (s[0], s[1]);
+                    if !inside(a) || !inside(b) {
+                        continue;
+                    }
+                    let len = ((b.0 - a.0).powi(2) + (b.1 - a.1).powi(2)).sqrt().max(f32::EPSILON);
+                    let (ux, uy) = ((b.0 - a.0) / len, (b.1 - a.1) / len);
+                    let mut t = 0.0;
+                    while t < len {
+                        let e = (t + 4.0).min(len);
+                        let (p0, p1) = ((cx + a.0 + ux * t, cy + a.1 + uy * t), (cx + a.0 + ux * e, cy + a.1 + uy * e));
+                        cv.line(p0, p1, outer - 0.6, faded(Rgba(0, 0, 0, 150), lines));
+                        cv.line(p0, p1, inner - 0.3, faded(SHORTCUT, lines));
+                        t += 7.0;
+                    }
+                }
+                for &(top, h) in &dr.drops {
+                    let q = view.project([top[0], top[1], 0.0]);
+                    if !inside(q) {
+                        continue;
+                    }
+                    let c = if h <= crate::navmesh::DROP_HURTS {
+                        DROP_SAFE
+                    } else if h <= crate::navmesh::DROP_HURTS_MORE {
+                        DROP_HURTS
+                    } else {
+                        DROP_HURTS_MORE
+                    };
+                    let (x, y) = (cx + q.0, cy + q.1);
+                    cv.disc(x, y, 6.5, faded(OUTLINE, marks));
+                    cv.triangle([(x, y + 4.0), (x - 4.0, y - 2.5), (x + 4.0, y - 2.5)], faded(c, marks));
+                    cv.text(x + 14.0, y, 9.0, &format!("{:.0}m", h / 100.0), faded(c, marks));
                 }
             }
         } else if target {

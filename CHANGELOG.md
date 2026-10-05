@@ -32,6 +32,14 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added (2026-10-06)
 
+- Shortcuts down: where the hero can jump off a ledge to a floor below (navmesh.rs `find_drops`:
+  0.8–12 m, nothing in the way, no deadly water to land in) and a route that does so is much the
+  shorter (a fifth and 20 m), or the walking route is blocked, the minimap and big map draw it
+  beside the route, dashed in cyan, each drop marked with its height and coloured by what the
+  fall does by the game's own fall damage (FallDamageConfig: none to 4.5 m, 10 % of health to
+  9 m, up to 70 % at 12 m, death at 15 m; drops over 12 m are never offered). Near a drop the
+  quest tracker says it. One way: the shortcut never climbs back. `doctor inspect cdo=Class`
+  reads a class's default object.
 - Standing at a shut door, the quest tracker and the Now page say what opens it, first thing
   first (graph.rs `door_here`; with the "what must come first" consent). The guide named a door
   only when a route ran into it.

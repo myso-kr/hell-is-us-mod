@@ -828,3 +828,6 @@ SORT_TIMELOOP	Loop temporal
 FULLSCREEN_HIDES_OVERLAYS	O jogo está em tela cheia exclusiva: os mapas e a bússola não podem aparecer por cima. Coloque o jogo em janela sem bordas.
 CTX_DOOR	Esta porta ({door}) abre depois de: {steps}
 GRAPH_GO_TO_REGION	Para {region}: {what}
+CTX_DROP_SAFE	Atalho: queda de {m} m, sem dano
+CTX_DROP_HURTS	Atalho: queda de {m} m custa 10% da vida
+CTX_DROP_HURTS_MORE	Atalho: queda de {m} m, até 70% da vida

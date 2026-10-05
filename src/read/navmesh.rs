@@ -65,6 +65,10 @@ pub struct NavMesh {
     /// Diagnostics: border edges, those joined, overlaps refused for height.
     pub stats: [usize; 3],
     polys: Vec<Poly>,
+    /// The polys' edges with no neighbour inside their tile: a wall, or a ledge (poly, ends).
+    ledges: Vec<(u32, [f32; 3], [f32; 3])>,
+    /// Where the hero can jump down from one floor to another (`with_drops`).
+    pub drops: Vec<Drop>,
     /// Polys by the lookup cells their outline covers.
     grid: HashMap<(i32, i32), Vec<u32>>,
 }
@@ -182,6 +186,8 @@ impl NavMesh {
                     let (a, b) = (corners[e], corners[(e + 1) % corners.len()]);
                     if nei & EXTERNAL != 0 {
                         border.push((me, a, b));
+                    } else if nei == 0 {
+                        mesh.ledges.push((me, a, b));
                     } else if nei != 0
                         && ((nei - 1) as usize) < t.polys.len()
                         && !t.polys[(nei - 1) as usize].0.is_empty()
@@ -460,6 +466,15 @@ impl NavMesh {
 
     fn walk(&self, s: u32, t: u32, pa: [f32; 3], pb: [f32; 3]) -> Option<(Path, Vec<f32>)> {
         let polys = self.astar(s, t, pa, pb)?;
+        let pts = self.pulled(&polys, pa, pb)?;
+        let points: Vec<[f32; 2]> = pts.iter().map(|p| [p[0], p[1]]).collect();
+        let heights = pts.iter().map(|p| p[2]).collect();
+        let through = vec![false; points.len().saturating_sub(1)];
+        Some((Path { points, through }, heights))
+    }
+
+    /// The string pulled through `polys` from `pa` to `pb` (the funnel over their portals).
+    fn pulled(&self, polys: &[u32], pa: [f32; 3], pb: [f32; 3]) -> Option<Vec<[f32; 3]>> {
         // The portals along the way, as (left, right) for the funnel.
         let mut portals: Vec<([f32; 3], [f32; 3])> = vec![(pa, pa)];
         for w in polys.windows(2) {
@@ -470,11 +485,181 @@ impl NavMesh {
             portals.push((l, r));
         }
         portals.push((pb, pb));
-        let pts = funnel(&portals);
-        let points: Vec<[f32; 2]> = pts.iter().map(|p| [p[0], p[1]]).collect();
-        let heights = pts.iter().map(|p| p[2]).collect();
-        let through = vec![false; points.len().saturating_sub(1)];
-        Some((Path { points, through }, heights))
+        Some(funnel(&portals))
+    }
+
+    /// The ways down off its ledges, found against `scene`: each ledge looked over every
+    /// `DROP_ALONG`, out to `DROP_OUT`, for the highest floor below it within `DROP_MIN`..
+    /// `DROP_MAX` — with nothing in the way going out over the edge or down (a wall is a ledge
+    /// to the navmesh too: behind it, a room below), and no deadly water to land in.
+    pub fn with_drops(&self, scene: &crate::obstacles::Scene) -> NavMesh {
+        self.with_drops_list(self.find_drops(scene))
+    }
+
+    /// The mesh with `drops` (found by `find_drops` on a mesh with the same polys).
+    pub fn with_drops_list(&self, drops: Vec<Drop>) -> NavMesh {
+        let mut out = self.clone();
+        out.drops = drops;
+        out
+    }
+
+    /// The ways down (see `with_drops`): seconds of work on a large mesh, so done off the
+    /// worker's step (engine `Attached::nav`).
+    pub fn find_drops(&self, scene: &crate::obstacles::Scene) -> Vec<Drop> {
+        let blocking = scene.blocking();
+        let mut found: HashMap<(u32, u32), Drop> = HashMap::new();
+        for &(p, a, b) in &self.ledges {
+            let c = self.polys[p as usize].centre;
+            let len = (b[0] - a[0]).hypot(b[1] - a[1]);
+            if len < 1.0 {
+                continue;
+            }
+            // outward: across the edge, away from the poly's middle
+            let mut n = [-(b[1] - a[1]) / len, (b[0] - a[0]) / len];
+            let mid = [(a[0] + b[0]) / 2.0, (a[1] + b[1]) / 2.0];
+            if n[0] * (c[0] - mid[0]) + n[1] * (c[1] - mid[1]) > 0.0 {
+                n = [-n[0], -n[1]];
+            }
+            let k = (len / DROP_ALONG).ceil().max(1.0) as usize;
+            for i in 0..k {
+                let t = (i as f32 + 0.5) / k as f32;
+                let top = [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
+                for out_d in DROP_OUT {
+                    let q = [top[0] + n[0] * out_d, top[1] + n[1] * out_d];
+                    // the highest floor under q, a drop below the top
+                    let (cx, cy) = cell(q[0], q[1]);
+                    let mut best: Option<(f32, u32)> = None;
+                    for y in cy - 1..=cy + 1 {
+                        for x in cx - 1..=cx + 1 {
+                            for &j in self.grid.get(&(x, y)).into_iter().flatten() {
+                                if j == p {
+                                    continue;
+                                }
+                                if let Some(z) = self.height_in(j, q[0], q[1]) {
+                                    let h = top[2] - z;
+                                    if (DROP_MIN..=DROP_MAX).contains(&h) && best.is_none_or(|(bz, _)| z > bz) {
+                                        best = Some((z, j));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    let Some((z, j)) = best else { continue };
+                    let bottom = [q[0], q[1], z];
+                    let lift = |v: [f32; 3], up: f32| [v[0], v[1], v[2] + up];
+                    // over the edge at chest height, then down: nothing in the way
+                    if blocking.blocks(lift(top, 100.0), [q[0], q[1], top[2] + 100.0])
+                        || blocking.blocks([q[0], q[1], top[2] + 100.0], lift(bottom, 60.0))
+                        || scene.deadly(lift(bottom, 30.0))
+                    {
+                        break;
+                    }
+                    let d = Drop { from: p, to: j, top, bottom };
+                    // one a pair of floors: the shortest
+                    let keep = found.get(&(p, j)).is_none_or(|o| d.height() < o.height());
+                    if keep {
+                        found.insert((p, j), d);
+                    }
+                    break;
+                }
+            }
+        }
+        let mut drops: Vec<Drop> = found.into_values().collect();
+        drops.sort_by_key(|d| (d.from, d.to));
+        drops
+    }
+
+    /// A route that may also jump down (the drops), with what each drop costs by its harm:
+    /// its points and their heights, and the drops it takes, in order. None when there is no
+    /// such route, or it takes no drop (the plain route is the same).
+    pub fn route_dropping(&self, a: [f32; 3], b: [f32; 3]) -> Option<(Vec<[f32; 3]>, Vec<Drop>)> {
+        if self.drops.is_empty() {
+            return None;
+        }
+        let (s, pa) = self.locate(a)?;
+        let (t, pb) = self.locate(b)?;
+        let mut by_from: HashMap<u32, Vec<usize>> = HashMap::new();
+        for (k, d) in self.drops.iter().enumerate() {
+            by_from.entry(d.from).or_default().push(k);
+        }
+        let n = self.polys.len();
+        let mut g = vec![f32::INFINITY; n];
+        let mut at = vec![[0.0f32; 3]; n];
+        // how each poly was entered: from which, and by which drop if one
+        let mut prev: Vec<(u32, Option<usize>)> = vec![(u32::MAX, None); n];
+        let mut open = BinaryHeap::new();
+        g[s as usize] = 0.0;
+        at[s as usize] = pa;
+        open.push((Reverse((dist(pa, pb) * 10.0) as u64), s));
+        let mut steps = 0;
+        let mut reached = false;
+        while let Some((_, u)) = open.pop() {
+            if u == t {
+                reached = true;
+                break;
+            }
+            steps += 1;
+            if steps > 200_000 {
+                return None;
+            }
+            let here = at[u as usize];
+            let walks = self.polys[u as usize].links.iter().map(|&(v, [e0, e1])| {
+                let mid = [(e0[0] + e1[0]) / 2.0, (e0[1] + e1[1]) / 2.0, (e0[2] + e1[2]) / 2.0];
+                (v, if v == t { pb } else { mid }, 0.0, None)
+            });
+            let jumps = by_from.get(&u).into_iter().flatten().map(|&k| {
+                let d = &self.drops[k];
+                (d.to, if d.to == t { pb } else { d.bottom }, drop_penalty(d.height()), Some(k))
+            });
+            for (v, to, extra, via) in walks.chain(jumps).collect::<Vec<_>>() {
+                let leg = match via {
+                    // to the top across, then down for free but for the harm
+                    Some(k) => flat(here, self.drops[k].top) + flat(self.drops[k].bottom, to),
+                    None => dist(here, to),
+                };
+                let cost = g[u as usize] + leg + extra;
+                if cost < g[v as usize] {
+                    g[v as usize] = cost;
+                    at[v as usize] = to;
+                    prev[v as usize] = (u, via);
+                    open.push((Reverse(((cost + dist(to, pb)) * 10.0) as u64), v));
+                }
+            }
+        }
+        if !reached {
+            return None;
+        }
+        // back from t: the polys, split where a drop was taken
+        let mut chain = vec![(t, None)];
+        let mut c = t;
+        while prev[c as usize].0 != u32::MAX {
+            let (p, via) = prev[c as usize];
+            chain.last_mut().unwrap().1 = via;
+            chain.push((p, None));
+            c = p;
+        }
+        chain.reverse();
+        // chain[i].1: the drop that led into chain[i]
+        let used: Vec<Drop> = chain.iter().filter_map(|(_, via)| via.map(|k| self.drops[k])).collect();
+        if used.is_empty() {
+            return None;
+        }
+        let mut pts: Vec<[f32; 3]> = Vec::new();
+        let mut piece: Vec<u32> = Vec::new();
+        let mut from = pa;
+        for (poly, via) in &chain {
+            // landed here by a drop: the walk so far ends at its top, the next starts below
+            if let Some(k) = via {
+                let d = self.drops[*k];
+                pts.extend(self.pulled(&piece, from, d.top)?);
+                from = d.bottom;
+                piece.clear();
+            }
+            piece.push(*poly);
+        }
+        pts.extend(self.pulled(&piece, from, pb)?);
+        pts.dedup_by(|a, b| dist(*a, *b) < 1.0);
+        Some((pts, used))
     }
 
     fn astar(&self, s: u32, t: u32, pa: [f32; 3], pb: [f32; 3]) -> Option<Vec<u32>> {
@@ -611,6 +796,47 @@ const BRIDGE_UPDOWN: f32 = 200.0;
 /// two groups within `BRIDGE_UPDOWN` of the door were joined, a ledge above with the floor
 /// below — a way straight up through the air.
 const BRIDGE_STEP: f32 = 120.0;
+/// A way down off a ledge: from the poly `from` at `top` (on its edge) to `to` at `bottom`,
+/// `top`'s height above it. One way: there is no climbing back.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Drop {
+    pub from: u32,
+    pub to: u32,
+    pub top: [f32; 3],
+    pub bottom: [f32; 3],
+}
+
+impl Drop {
+    /// How far down (cm).
+    pub fn height(&self) -> f32 {
+        self.top[2] - self.bottom[2]
+    }
+}
+
+/// A drop is more than a step (cm) and less than what the game's fall damage makes deadly: it
+/// kills from 15 m (FallDamageConfig.KillHeight on 24045435); 12 m keeps a margin, the damage
+/// there is 70 % of the hero's health at most (MaxDamageRatio).
+const DROP_MIN: f32 = 80.0;
+const DROP_MAX: f32 = 1200.0;
+/// From 4.5 m a landing costs 10 % of the hero's health (LightDamageHeight, LightDamageRatio);
+/// from 9 m more, up to 70 % at 12 m (ScaledDamageStartHeight, ScaledDamageMaxHeight).
+pub const DROP_HURTS: f32 = 450.0;
+pub const DROP_HURTS_MORE: f32 = 900.0;
+/// How far out from a ledge the landing is looked for (cm), and how far apart along a ledge.
+const DROP_OUT: [f32; 3] = [80.0, 160.0, 260.0];
+const DROP_ALONG: f32 = 200.0;
+/// What a drop adds to a route's length (cm) by its harm, so a route takes one only when it is
+/// much the shorter: none without damage, then 30 m, then 80 m.
+fn drop_penalty(h: f32) -> f32 {
+    if h <= DROP_HURTS {
+        h * 0.5
+    } else if h <= DROP_HURTS_MORE {
+        3000.0
+    } else {
+        8000.0
+    }
+}
+
 /// How near an elevator's lever its stop's floor is (cm): across, and up or down.
 const LIFT_NEAR: f32 = 600.0;
 const LIFT_UPDOWN: f32 = 400.0;
@@ -870,6 +1096,32 @@ mod tests {
             "{:?}",
             path.points
         );
+    }
+
+    #[test]
+    fn a_ledge_gives_a_way_down_and_a_route_takes_it() {
+        // A ledge 5 m up (Recast x 0..1000) beside a floor below (x 1000..3000): no stairs.
+        let v = [
+            [0.0, 500.0, 0.0],
+            [1000.0, 500.0, 0.0],
+            [1000.0, 500.0, 1000.0],
+            [0.0, 500.0, 1000.0],
+            [1000.0, 0.0, 0.0],
+            [3000.0, 0.0, 0.0],
+            [3000.0, 0.0, 1000.0],
+            [1000.0, 0.0, 1000.0],
+        ];
+        let mesh = NavMesh::from_tiles(&[tile(&v, &[(&[0, 1, 2, 3], &[0, 0, 0, 0]), (&[4, 5, 6, 7], &[0, 0, 0, 0])])]);
+        let (up, down) = ([-500.0, -500.0, 500.0], [-2500.0, -500.0, 0.0]);
+        assert!(mesh.route(up, down).is_some_and(|(p, _)| p.uncertain()), "no walking down");
+        let dropping = mesh.with_drops(&crate::obstacles::Scene::default());
+        assert!(dropping.drops.iter().any(|d| (d.height() - 500.0).abs() < 1.0), "{:?}", dropping.drops);
+        let (pts, used) = dropping.route_dropping(up, down).expect("down the ledge");
+        assert_eq!(used.len(), 1);
+        assert!(used[0].height() > DROP_HURTS, "5 m hurts");
+        assert!(pts.first().is_some_and(|p| p[2] > 400.0) && pts.last().is_some_and(|p| p[2] < 100.0));
+        // and never back up
+        assert!(dropping.route_dropping(down, up).is_none());
     }
 
     #[test]

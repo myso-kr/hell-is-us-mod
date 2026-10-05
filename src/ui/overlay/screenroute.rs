@@ -8,7 +8,7 @@
 //! everywhere and is left out of the test; walls and floors are obstacles there.
 
 use super::marker;
-use crate::obstacles::{Obstacle, Scene};
+use crate::obstacles::{clip, Obstacle, Scene};
 use crate::raster::Canvas;
 use crate::ui::layered::Layered;
 use std::collections::HashMap;
@@ -403,41 +403,6 @@ fn visible(eye: [f32; 3], p: [f32; 3], scene: &Scene, boxes: &[[f32; 4]]) -> boo
         }
     }
     true
-}
-
-/// The part [t0, t1] of the segment `a + t·d` (t in `lo..hi`) over a convex outline (x/y), if any
-/// (Cyrus–Beck).
-fn clip(hull: &[[f32; 2]], a: [f32; 3], d: [f32; 3], lo: f32, hi: f32) -> Option<(f32, f32)> {
-    let n = hull.len();
-    if n < 3 {
-        return None;
-    }
-    // inward normals: the outline's winding from its signed area
-    let area: f32 = (0..n).map(|k| hull[k][0] * hull[(k + 1) % n][1] - hull[(k + 1) % n][0] * hull[k][1]).sum();
-    let sign = if area >= 0.0 { 1.0 } else { -1.0 };
-    let (mut t0, mut t1) = (lo, hi);
-    for k in 0..n {
-        let (p, q) = (hull[k], hull[(k + 1) % n]);
-        let normal = [-(q[1] - p[1]) * sign, (q[0] - p[0]) * sign];
-        let num = normal[0] * (a[0] - p[0]) + normal[1] * (a[1] - p[1]);
-        let den = normal[0] * d[0] + normal[1] * d[1];
-        if den.abs() < 1e-9 {
-            if num < 0.0 {
-                return None;
-            }
-            continue;
-        }
-        let t = -num / den;
-        if den > 0.0 {
-            t0 = t0.max(t);
-        } else {
-            t1 = t1.min(t);
-        }
-        if t0 > t1 {
-            return None;
-        }
-    }
-    Some((t0, t1))
 }
 
 #[cfg(test)]

@@ -828,3 +828,6 @@ SORT_TIMELOOP	Zaman döngüsü
 FULLSCREEN_HIDES_OVERLAYS	Oyun özel tam ekranda çalışıyor: haritalar ve pusula üstünde görünemez. Oyunu kenarlıksız pencereye alın.
 CTX_DOOR	Bu kapı ({door}) şunlardan sonra açılır: {steps}
 GRAPH_GO_TO_REGION	{region} bölgesine: {what}
+CTX_DROP_SAFE	Kestirme: {m} m düşüş, hasar yok
+CTX_DROP_HURTS	Kestirme: {m} m düşüş, canın %10’u
+CTX_DROP_HURTS_MORE	Kestirme: {m} m düşüş, canın %70’ine kadar

@@ -828,3 +828,6 @@ SORT_TIMELOOP	タイムループ
 FULLSCREEN_HIDES_OVERLAYS	ゲームが排他的フルスクリーンで動作しているため、地図とコンパスを重ねて表示できません。ボーダーレスウィンドウに切り替えてください。
 CTX_DOOR	この扉（{door}）は次の後に開きます: {steps}
 GRAPH_GO_TO_REGION	{region}へ: {what}
+CTX_DROP_SAFE	近道: {m} m の落下（ダメージなし）
+CTX_DROP_HURTS	近道: {m} m の落下 · 体力10%ダメージ
+CTX_DROP_HURTS_MORE	近道: {m} m の落下 · 体力最大70%ダメージ

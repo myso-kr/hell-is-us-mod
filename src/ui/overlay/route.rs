@@ -21,9 +21,33 @@ pub const ROUTE_AHEAD: f32 = 800.0;
 /// A goal's actor stands about this far above the floor it is on (cm).
 const GOAL_FEET: f32 = 50.0;
 
+/// A shorter way that jumps down where the route walks round (navmesh.rs `route_dropping`):
+/// drawn beside the route, not in its place — the player chooses, the fall can hurt.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Shortcut {
+    /// Its points (cm), from the hero to the goal, through each drop's top and bottom.
+    pub pts: Vec<[f32; 3]>,
+    pub drops: Vec<crate::navmesh::Drop>,
+}
+
+/// A shortcut is shown when the route is blocked, or when it is this much shorter: a fifth,
+/// and 20 m at least.
+const SHORTCUT_RATIO: f32 = 0.8;
+const SHORTCUT_SAVES: f32 = 2000.0;
+
+fn flat_len(pts: impl Iterator<Item = [f32; 2]>) -> f32 {
+    let pts: Vec<[f32; 2]> = pts.collect();
+    pts.windows(2).map(|w| (w[1][0] - w[0][0]).hypot(w[1][1] - w[0][1])).sum()
+}
+
+/// A route worked out off the overlay's thread: its way, the heights, its goal, a shortcut.
+type Worked = (Path, Vec<f32>, u64, Option<Shortcut>);
+
 #[derive(Default)]
 pub struct Route {
     path: Path,
+    /// A shorter way down, when there is one worth showing.
+    shortcut: Option<Shortcut>,
     /// The height of each of `path`'s points (cm): the navmesh's floor, or the ground.
     heights: Vec<f32>,
     goal: Option<u64>,
@@ -31,7 +55,7 @@ pub struct Route {
     at: Option<Instant>,
     /// A route being worked out off this thread (it can take a few hundred ms), and
     /// the goal it is for.
-    pending: Option<std::thread::JoinHandle<(Path, Vec<f32>, u64)>>,
+    pending: Option<std::thread::JoinHandle<Worked>>,
     /// Goals whose last route had to go through something.
     pub blocked: HashSet<u64>,
     /// What each route worked out since last asked said of its goal: blocked or not
@@ -66,15 +90,20 @@ impl Route {
         let (every, far) = if slow { (SLOW_EVERY, SLOW_MOVED) } else { (ROUTE_EVERY, ROUTE_MOVED) };
         let due = self.goal != Some(g.id) || moved > far || self.at.is_none_or(|t| t.elapsed() >= every);
         if self.pending.as_ref().is_some_and(|h| h.is_finished()) {
-            if let Ok((path, heights, id)) = self.pending.take().unwrap().join() {
+            if let Ok((path, heights, id, cut)) = self.pending.take().unwrap().join() {
                 // Whether it can be walked to at all: a route that has to go through
-                // (a locked door, a puzzle) marks its goal blocked.
-                if path.uncertain() {
+                // (a locked door, a puzzle) marks its goal blocked — unless a way down gets
+                // there.
+                let blocked = path.uncertain() && cut.is_none();
+                if blocked {
                     self.blocked.insert(id);
                 } else {
                     self.blocked.remove(&id);
                 }
-                self.seen.push((id, path.uncertain()));
+                self.seen.push((id, blocked));
+                if id == g.id {
+                    self.shortcut = cut;
+                }
                 // Same goal: keep the way being followed unless this one is clearly
                 // better, so the compass does not swing.
                 if id == g.id
@@ -92,19 +121,26 @@ impl Route {
                 ([p[0], p[1]], [g.at[0], g.at[1]], p[2] - 90.0, g.id, scene.clone(), nav.clone());
             let goal_feet = g.at[2] - GOAL_FEET;
             self.pending = Some(std::thread::spawn(move || {
-                let (path, heights) =
-                    nav.route([from[0], from[1], feet], [to[0], to[1], goal_feet]).unwrap_or_else(|| {
-                        let path = crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail);
-                        // The grid's way knows no floors: the ground under it, or the hero's feet.
-                        let heights =
-                            path.points.iter().map(|q| scene.terrain.height(q[0], q[1]).unwrap_or(feet)).collect();
-                        (path, heights)
-                    });
-                (path, heights, id)
+                let (a, b) = ([from[0], from[1], feet], [to[0], to[1], goal_feet]);
+                let (path, heights) = nav.route(a, b).unwrap_or_else(|| {
+                    let path = crate::pathfind::route(from, to, feet, &scene.obstacles, &scene.terrain, &trail);
+                    // The grid's way knows no floors: the ground under it, or the hero's feet.
+                    let heights =
+                        path.points.iter().map(|q| scene.terrain.height(q[0], q[1]).unwrap_or(feet)).collect();
+                    (path, heights)
+                });
+                // A way down, beside it, when the route is blocked or it is much the shorter.
+                let walked = flat_len(path.points.iter().copied());
+                let cut = nav.route_dropping(a, b).filter(|(pts, _)| {
+                    let l = flat_len(pts.iter().map(|q| [q[0], q[1]]));
+                    path.uncertain() || (l < walked * SHORTCUT_RATIO && walked - l > SHORTCUT_SAVES)
+                });
+                (path, heights, id, cut.map(|(pts, drops)| Shortcut { pts, drops }))
             }));
             if self.goal != Some(g.id) {
                 self.path = Default::default();
                 self.heights.clear();
+                self.shortcut = None;
             }
             self.goal = Some(g.id);
             self.from = [p[0], p[1]];
@@ -130,6 +166,11 @@ impl Route {
                 })
                 .collect();
         crate::pathfind::smooth3(&pts)
+    }
+
+    /// The way down beside the route, if there is one worth showing.
+    pub fn shortcut(&self) -> Option<&Shortcut> {
+        self.shortcut.as_ref()
     }
 
     /// The route as drawn: starting at the hero.

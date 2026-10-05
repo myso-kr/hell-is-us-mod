@@ -828,3 +828,6 @@ SORT_TIMELOOP	Time loop
 FULLSCREEN_HIDES_OVERLAYS	The game runs in exclusive fullscreen: the maps and the compass cannot show over it. Set the game to borderless (windowed fullscreen).
 CTX_DOOR	This door ({door}) opens after: {steps}
 GRAPH_GO_TO_REGION	To {region}: {what}
+CTX_DROP_SAFE	Shortcut: a {m} m drop, no damage
+CTX_DROP_HURTS	Shortcut: a {m} m drop costs 10% of your health
+CTX_DROP_HURTS_MORE	Shortcut: a {m} m drop costs up to 70% of your health

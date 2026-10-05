@@ -133,6 +133,19 @@ pub fn lines(
     out
 }
 
+/// "A shortcut: a 6 m drop — 10 % of health", by the game's fall damage (navmesh.rs).
+pub fn drop_line(h: f32) -> Line {
+    let m = format!("{:.0}", h / 100.0);
+    let (text, colour) = if h <= crate::navmesh::DROP_HURTS {
+        (trf!("CTX_DROP_SAFE", m = m), Rgba(90, 215, 235, 255))
+    } else if h <= crate::navmesh::DROP_HURTS_MORE {
+        (trf!("CTX_DROP_HURTS", m = m), Rgba(240, 170, 60, 255))
+    } else {
+        (trf!("CTX_DROP_HURTS_MORE", m = m), Rgba(235, 80, 70, 255))
+    };
+    Line { text, colour }
+}
+
 /// "This door (…) opens after: A → B → C …", the first three steps, first thing first.
 pub fn door_line(door: &str, first: &[String]) -> String {
     let mut steps: Vec<&str> = first.iter().map(String::as_str).take(3).collect();

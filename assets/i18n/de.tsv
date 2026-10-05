@@ -828,3 +828,6 @@ SORT_TIMELOOP	Zeitschleife
 FULLSCREEN_HIDES_OVERLAYS	Das Spiel läuft im exklusiven Vollbild: Karten und Kompass können darüber nicht erscheinen. Stelle das Spiel auf randloses Fenster.
 CTX_DOOR	Diese Tür ({door}) öffnet sich nach: {steps}
 GRAPH_GO_TO_REGION	Nach {region}: {what}
+CTX_DROP_SAFE	Abkürzung: {m} m Sprung, kein Schaden
+CTX_DROP_HURTS	Abkürzung: {m} m Sprung kostet 10 % Gesundheit
+CTX_DROP_HURTS_MORE	Abkürzung: {m} m Sprung kostet bis zu 70 % Gesundheit

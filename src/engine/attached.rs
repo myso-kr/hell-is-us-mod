@@ -20,6 +20,8 @@ struct Bridged {
     opened: Vec<([f32; 3], Option<[f32; 3]>)>,
     one_way: Vec<[[f32; 3]; 2]>,
     lifts: Vec<Vec<[f32; 3]>>,
+    /// The drops it has (`Guide::drops`).
+    drops: Arc<Vec<crate::navmesh::Drop>>,
     mesh: Arc<crate::navmesh::NavMesh>,
 }
 
@@ -98,6 +100,12 @@ struct Guide {
     one_way: Vec<[[f32; 3]; 2]>,
     /// The elevators of the hero's world that run, as their stops (graph.rs `lifts`).
     lifts: Vec<Vec<[f32; 3]>>,
+    /// The drops last told in the log: (safe, hurt, hurt more).
+    drops_logged: Option<(usize, usize, usize)>,
+    /// The ways down off the navmesh's ledges, by the navmesh they were found on (its address):
+    /// found on a thread of their own, seconds of work (measured: 3 s, which stopped the step).
+    drops: Option<(usize, Arc<Vec<crate::navmesh::Drop>>)>,
+    drops_job: Option<(usize, std::thread::JoinHandle<Vec<crate::navmesh::Drop>>)>,
     bridged: Option<Bridged>,
     /// The survey of every world (Mods\survey), read once; and what the hero knows and
     /// holds by name, to judge it with — renewed with the knowledge.
@@ -827,20 +835,54 @@ impl Attached {
     pub fn nav(&self) -> Arc<crate::navmesh::NavMesh> {
         let mut g = self.guide.borrow_mut();
         let base = g.nav.done.clone();
-        if g.opened.is_empty() && g.one_way.is_empty() && g.lifts.is_empty() {
-            return base;
+        // The ways down for this navmesh: found off the step, against the scene as it is then
+        // (its walls and water); until they are, none.
+        let key = Arc::as_ptr(&base) as usize;
+        if g.drops_job.as_ref().is_some_and(|(_, h)| h.is_finished()) {
+            let (k, h) = g.drops_job.take().unwrap();
+            if let Ok(found) = h.join() {
+                g.drops = Some((k, Arc::new(found)));
+            }
         }
+        if g.drops.as_ref().is_none_or(|(k, _)| *k != key) && g.drops_job.as_ref().is_none_or(|(k, _)| *k != key) {
+            let (mesh, scene) = (base.clone(), g.obstacles.done.clone());
+            g.drops_job = Some((key, std::thread::spawn(move || mesh.find_drops(&scene))));
+        }
+        let drops = g.drops.as_ref().filter(|(k, _)| *k == key).map(|(_, d)| d.clone()).unwrap_or_default();
         if let Some(b) = &g.bridged {
-            if Arc::ptr_eq(&b.from, &base) && b.opened == g.opened && b.one_way == g.one_way && b.lifts == g.lifts {
+            if Arc::ptr_eq(&b.from, &base)
+                && (Arc::ptr_eq(&b.drops, &drops) || b.drops.is_empty() && drops.is_empty())
+                && b.opened == g.opened
+                && b.one_way == g.one_way
+                && b.lifts == g.lifts
+            {
                 return b.mesh.clone();
             }
         }
-        let mesh = Arc::new(base.bridged(&g.opened).one_way(&g.one_way).lifts(&g.lifts));
+        let _t = crate::prof::span("nav.build");
+        let mesh = Arc::new(
+            base.bridged(&g.opened).one_way(&g.one_way).lifts(&g.lifts).with_drops_list(drops.as_ref().clone()),
+        );
+        // How many ways down, by the harm of the fall, when it changes.
+        let by = |lo: f32, hi: f32| mesh.drops.iter().filter(|d| d.height() > lo && d.height() <= hi).count();
+        let counts = (
+            by(0.0, crate::navmesh::DROP_HURTS),
+            by(crate::navmesh::DROP_HURTS, crate::navmesh::DROP_HURTS_MORE),
+            by(crate::navmesh::DROP_HURTS_MORE, f32::MAX),
+        );
+        if g.drops_logged != Some(counts) {
+            g.drops_logged = Some(counts);
+            crate::logfile::line(&format!(
+                "navmesh drops: {} safe, {} hurt, {} hurt more",
+                counts.0, counts.1, counts.2
+            ));
+        }
         g.bridged = Some(Bridged {
             from: base,
             opened: g.opened.clone(),
             one_way: g.one_way.clone(),
             lifts: g.lifts.clone(),
+            drops,
             mesh: mesh.clone(),
         });
         mesh

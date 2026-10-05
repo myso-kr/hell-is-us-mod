@@ -104,6 +104,8 @@ const BARRIER_NEAR: f32 = 500.0;
 /// How much nearer to a goal found blocked the hero comes (cm), or how long it is, before it
 /// is tried again.
 const BLOCKED_MOVED: f32 = 3000.0;
+/// A way down on the route in focus is told this near (cm).
+const DROP_NOTE: f32 = 3000.0;
 const BLOCKED_FOR: Duration = Duration::from_secs(180);
 /// This many different goals found blocked within `ENCLOSED_WITHIN` from within
 /// `ENCLOSED_NEAR` (cm) of one spot: the spot reads as closed, and blocked goals are not
@@ -685,6 +687,7 @@ pub fn run(shared: Arc<Shared>) {
                 let mut through: Option<crate::graph::DoorStep> = None;
                 for f in &followed {
                     let Some(g) = goals.iter().find(|g| g.id == f.id) else { continue };
+                    let mut cut: Option<route::Shortcut> = None;
                     let path = if state.route {
                         let trail = || {
                             state
@@ -700,11 +703,13 @@ pub fn run(shared: Arc<Shared>) {
                             let draped = route::drape(&r.drawn3d(p), &nav, &obstacles);
                             *shared.route3d.lock().unwrap() = (draped, f.colour.unwrap_or(g.tier.rgb()));
                         }
+                        cut = r.shortcut().cloned();
                         r.drawn(p)
                     } else {
                         Default::default()
                     };
-                    if path.uncertain() {
+                    // blocked, unless a way down gets there
+                    if path.uncertain() && cut.is_none() {
                         uncertain.insert(f.id);
                         if f.track.is_none() && through.is_none() {
                             // Not when the step's own way is blocked too: then the two
@@ -741,7 +746,20 @@ pub fn run(shared: Arc<Shared>) {
                         let short = (end[0] - g.at[0]).hypot(end[1] - g.at[1]) / 100.0;
                         notes.push((f.id, path.points.len(), path.uncertain(), (short * 10.0).round() / 10.0));
                     }
-                    drawn.push(crate::raster::Drawn { id: f.id, path, colour: f.colour, focus: f.focus });
+                    drawn.push(crate::raster::Drawn {
+                        id: f.id,
+                        path,
+                        colour: f.colour,
+                        focus: f.focus,
+                        shortcut: cut
+                            .as_ref()
+                            .map(|c| c.pts.iter().map(|q| [q[0], q[1]]).collect())
+                            .unwrap_or_default(),
+                        drops: cut
+                            .as_ref()
+                            .map(|c| c.drops.iter().map(|d| (d.top, d.height())).collect())
+                            .unwrap_or_default(),
+                    });
                 }
                 *shared.route_uncertain.lock().unwrap() = uncertain;
                 last_drawn = drawn.clone();
@@ -981,6 +999,15 @@ pub fn run(shared: Arc<Shared>) {
                             }
                             let note = key_note.as_ref().map(|(n, _)| n.as_str());
                             context_lines = context::lines(s, &things, &goals, h, world, places, note);
+                            // A way down near on the route in focus: how far, and what the fall does.
+                            let focus = state.focused();
+                            if let Some(d) =
+                                focus.and_then(|id| routes.get(&id)).and_then(|r| r.shortcut()).and_then(|c| {
+                                    c.drops.iter().find(|d| (d.top[0] - h[0]).hypot(d.top[1] - h[1]) <= DROP_NOTE)
+                                })
+                            {
+                                context_lines.push(context::drop_line(d.height()));
+                            }
                         }
                     }
                     // At the top right, under the minimap when it shows; no lower than the

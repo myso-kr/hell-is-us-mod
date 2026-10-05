@@ -82,6 +82,113 @@ pub struct Pool {
     pub top: f32,
 }
 
+/// The obstacles by the cells (`BLOCK_CELL` cm) their outlines cover: for many segment tests
+/// (navmesh.rs `drops`), each against the few obstacles near it.
+pub struct Blocking<'a> {
+    scene: &'a Scene,
+    cells: HashMap<(i32, i32), Vec<u32>>,
+    bounds: Vec<[f32; 4]>,
+}
+
+const BLOCK_CELL: f32 = 1000.0;
+
+impl Scene {
+    /// An index for `Blocking::blocks`.
+    pub fn blocking(&self) -> Blocking<'_> {
+        let mut cells: HashMap<(i32, i32), Vec<u32>> = HashMap::new();
+        let mut bounds = Vec::with_capacity(self.obstacles.len());
+        for (i, o) in self.obstacles.iter().enumerate() {
+            let b = o.hull.iter().fold([f32::MAX, f32::MAX, f32::MIN, f32::MIN], |b, p| {
+                [b[0].min(p[0]), b[1].min(p[1]), b[2].max(p[0]), b[3].max(p[1])]
+            });
+            bounds.push(b);
+            if o.water || b[2] - b[0] > 50_000.0 || b[3] - b[1] > 50_000.0 {
+                continue;
+            }
+            let c = |v: f32| (v / BLOCK_CELL).floor() as i32;
+            for y in c(b[1])..=c(b[3]) {
+                for x in c(b[0])..=c(b[2]) {
+                    cells.entry((x, y)).or_default().push(i as u32);
+                }
+            }
+        }
+        Blocking { scene: self, cells, bounds }
+    }
+
+    /// Whether `p` is in deadly water.
+    pub fn deadly(&self, p: [f32; 3]) -> bool {
+        self.pools.iter().any(|w| w.holds(p))
+    }
+}
+
+impl Blocking<'_> {
+    /// Whether the segment a→b passes through an obstacle (a wall, a rock): its part over the
+    /// obstacle's outline is within the obstacle's heights.
+    pub fn blocks(&self, a: [f32; 3], b: [f32; 3]) -> bool {
+        let d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+        let c = |v: f32| (v / BLOCK_CELL).floor() as i32;
+        let (x0, x1) = (c(a[0].min(b[0])), c(a[0].max(b[0])));
+        let (y0, y1) = (c(a[1].min(b[1])), c(a[1].max(b[1])));
+        // an obstacle in two cells is tested twice: cheaper than remembering
+        for y in y0..=y1 {
+            for x in x0..=x1 {
+                for &i in self.cells.get(&(x, y)).into_iter().flatten() {
+                    let (o, bb) = (&self.scene.obstacles[i as usize], self.bounds[i as usize]);
+                    if bb[2] < a[0].min(b[0])
+                        || bb[0] > a[0].max(b[0])
+                        || bb[3] < a[1].min(b[1])
+                        || bb[1] > a[1].max(b[1])
+                    {
+                        continue;
+                    }
+                    if let Some((t0, t1)) = clip(&o.hull, a, d, 0.0, 1.0) {
+                        let (z0, z1) = (a[2] + d[2] * t0, a[2] + d[2] * t1);
+                        if z0.min(z1) <= o.zmax && z0.max(z1) >= o.zmin {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }
+}
+
+/// The part [t0, t1] of the segment `a + t·d` (t in `lo..hi`) over a convex outline (x/y), if any
+/// (Cyrus–Beck).
+pub fn clip(hull: &[[f32; 2]], a: [f32; 3], d: [f32; 3], lo: f32, hi: f32) -> Option<(f32, f32)> {
+    let n = hull.len();
+    if n < 3 {
+        return None;
+    }
+    // inward normals: the outline's winding from its signed area
+    let area: f32 = (0..n).map(|k| hull[k][0] * hull[(k + 1) % n][1] - hull[(k + 1) % n][0] * hull[k][1]).sum();
+    let sign = if area >= 0.0 { 1.0 } else { -1.0 };
+    let (mut t0, mut t1) = (lo, hi);
+    for k in 0..n {
+        let (p, q) = (hull[k], hull[(k + 1) % n]);
+        let normal = [-(q[1] - p[1]) * sign, (q[0] - p[0]) * sign];
+        let num = normal[0] * (a[0] - p[0]) + normal[1] * (a[1] - p[1]);
+        let den = normal[0] * d[0] + normal[1] * d[1];
+        if den.abs() < 1e-9 {
+            if num < 0.0 {
+                return None;
+            }
+            continue;
+        }
+        let t = -num / den;
+        if den > 0.0 {
+            t0 = t0.max(t);
+        } else {
+            t1 = t1.min(t);
+        }
+        if t0 > t1 {
+            return None;
+        }
+    }
+    Some((t0, t1))
+}
+
 impl Pool {
     /// Whether `p` is in it: inside its outline, between its bottom and its surface.
     pub fn holds(&self, p: [f32; 3]) -> bool {
