@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	前往{region}：{what}
 CTX_DROP_SAFE	捷径：{m} 米落下（无伤害）
 CTX_DROP_HURTS	捷径：{m} 米落下 · 损失 10% 生命
 CTX_DROP_HURTS_MORE	捷径：{m} 米落下 · 最多损失 70% 生命
+MAP3D_SPOT	此处
+MAP3D_TELEPORT_HERE	传送到这里
+MOVED_TO_SPOT	已移动到该处。

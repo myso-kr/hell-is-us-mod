@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	Vers {region} : {what}
 CTX_DROP_SAFE	Raccourci : chute de {m} m, sans dégâts
 CTX_DROP_HURTS	Raccourci : chute de {m} m, 10 % de santé
 CTX_DROP_HURTS_MORE	Raccourci : chute de {m} m, jusqu’à 70 % de santé
+MAP3D_SPOT	Cet endroit
+MAP3D_TELEPORT_HERE	Se téléporter ici
+MOVED_TO_SPOT	Déplacé à l’endroit.

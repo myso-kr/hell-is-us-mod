@@ -6,6 +6,14 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## Unreleased
+
+### Added
+
+- Teleport from the 3D map (cheats agreed to): a double click on a floor picks the spot under it,
+  shown with a ring and a card with how far it is; "Teleport here" sends the hero there, and the
+  picked place's card has the same. The teleport card's "back to where it was" covers it.
+
 ## 0.5.0 — 2026-10-06
 
 ### Added

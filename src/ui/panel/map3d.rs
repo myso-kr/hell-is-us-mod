@@ -50,6 +50,11 @@ impl Scene {
     fn to_scene(&self, p: [f32; 3]) -> [f32; 3] {
         [(p[1] - self.origin[1]) / 100.0, (p[2] - self.origin[2]) / 100.0, -(p[0] - self.origin[0]) / 100.0]
     }
+
+    /// Back from the scene's metres to the game's place (cm): `to_scene` undone.
+    fn to_game(&self, q: [f32; 3]) -> [f32; 3] {
+        [self.origin[0] - q[2] * 100.0, self.origin[1] + q[0] * 100.0, self.origin[2] + q[1] * 100.0]
+    }
 }
 
 /// The map's sort of a graph node, by its class alone (the maps classify by the class's lineage,
@@ -347,6 +352,12 @@ pub struct Map3d {
     picked: Option<usize>,
     /// The view keeps the hero in its middle (a right drag lets go).
     follow: bool,
+    /// A spot picked on the floor (a double click), in the game's place (cm).
+    spot: Option<[f32; 3]>,
+    /// Whether the page lets the hero be sent there (the cheats agreed to, the hero in play).
+    pub can_teleport: bool,
+    /// A teleport asked for on the view, for the page to send.
+    pub teleport: Option<[f32; 3]>,
 }
 
 impl Default for Map3d {
@@ -368,6 +379,9 @@ impl Default for Map3d {
             round: i32::MAX,
             picked: None,
             follow: true,
+            spot: None,
+            can_teleport: false,
+            teleport: None,
         }
     }
 }
@@ -477,8 +491,30 @@ impl Map3d {
         let vp = mul(&proj, &view);
         let route: Vec<[f32; 3]> = route.iter().map(|&q| scene.to_scene(q)).collect();
         let cut: Vec<[f32; 3]> = shortcut.0.iter().map(|&q| scene.to_scene(q)).collect();
-        if resp.clicked() {
+        // A double click on the floor picks the spot under it: the nearest to the camera of the
+        // walkable floors' (else the ground's) points within a few pixels of the click.
+        if resp.double_clicked() {
             if let Some(pos) = resp.interact_pointer_pos() {
+                let near = |pts: &[f32], stride: usize| {
+                    pts.chunks_exact(stride)
+                        .map(|c| [c[0], c[1], c[2]])
+                        .filter_map(|q| {
+                            let p = project(&vp, q, rect)?;
+                            let d =
+                                ((q[0] - eye[0]).powi(2) + (q[1] - eye[1]).powi(2) + (q[2] - eye[2]).powi(2)).sqrt();
+                            (p.distance(pos) < SPOT_PX).then_some((d, q))
+                        })
+                        .min_by(|a, b| a.0.total_cmp(&b.0))
+                };
+                let floor = scene.floors.iter().filter_map(|f| near(f, 6)).min_by(|a, b| a.0.total_cmp(&b.0));
+                if let Some((_, q)) = floor.or_else(|| near(&scene.terrain, 6)) {
+                    self.spot = Some(scene.to_game(q));
+                    self.picked = None;
+                }
+            }
+        } else if resp.clicked() {
+            if let Some(pos) = resp.interact_pointer_pos() {
+                self.spot = None;
                 self.picked = scene
                     .nodes
                     .iter()
@@ -567,6 +603,12 @@ impl Map3d {
             }
         }
         // markers over the scene: the route's end, the picked place, the hero
+        // the spot picked, a ring on the floor
+        if let Some(q) = self.spot.and_then(|at| project(&vp, scene.to_scene(at), rect)) {
+            painter.circle_stroke(q, 8.0, egui::Stroke::new(2.5, OUTLINE));
+            painter.circle_stroke(q, 8.0, egui::Stroke::new(1.5, Color32::WHITE));
+            painter.circle_filled(q, 2.5, Color32::WHITE);
+        }
         // the shortcut's drops: ↓ and how far, coloured by what the fall does
         for &(top, h) in &shortcut.1 {
             if let Some(q) = project(&vp, scene.to_scene(top), rect) {
@@ -656,6 +698,31 @@ impl Map3d {
                         String::new()
                     };
                     ui.label(RichText::new(format!("{round}{below}")).small().color(Color32::from_rgb(160, 175, 170)));
+                    if self.can_teleport && ui.button(tr!("MAP3D_TELEPORT_HERE")).clicked() {
+                        self.teleport = Some(scene.to_game(n.at));
+                    }
+                });
+            }
+            // a spot picked on the floor: where, and (cheats agreed to) going there
+            if let Some(at) = self.spot {
+                ui.add_space(6.0);
+                glass.show(ui, |ui| {
+                    ui.set_max_width(320.0);
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new(tr!("MAP3D_SPOT")).strong().size(13.0));
+                        if ui.small_button("×").clicked() {
+                            self.spot = None;
+                        }
+                    });
+                    if let Some((h, _)) = hero {
+                        ui.label(
+                            RichText::new(crate::raster::span(h, at)).small().color(Color32::from_rgb(160, 175, 170)),
+                        );
+                    }
+                    if self.can_teleport && ui.button(tr!("MAP3D_TELEPORT_HERE")).clicked() {
+                        self.teleport = Some(at);
+                        self.spot = None;
+                    }
                 });
             }
         });
@@ -840,6 +907,9 @@ const RIBBON_LIFT: f32 = 0.15;
 
 /// The route ribbon's half width (m).
 const RIBBON_HALF: f32 = 0.9;
+
+/// A double click picks a floor point this near it on the screen (px).
+const SPOT_PX: f32 = 10.0;
 
 /// At most this many icons, none over another: the nearest win.
 const ICONS_MAX: usize = 220;
@@ -1512,6 +1582,9 @@ impl super::Panel {
         let (route, colour) = self.shared.route3d.lock().unwrap().clone();
         let shortcut = self.shared.shortcut3d.lock().unwrap().clone();
         self.map3d.want(&world);
+        // Sending the hero to a spot is a cheat: with that consent, the hero in play.
+        self.map3d.can_teleport = self.grants(crate::settings::Consent::CHEATS) && snap.is_some_and(|s| s.gate.is_ok());
+        let full_world = snap.and_then(|s| s.world.clone()).unwrap_or_default();
         card(t, &format!("{} · {}", tr!("MAP3D"), if world.is_empty() { "—" } else { world.as_str() }), |t| {
             if self.map3d.missing() {
                 note(t, tr!("MAP3D_MISSING"));
@@ -1523,6 +1596,11 @@ impl super::Panel {
             tw::block(t, |ui| {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
                 self.map3d.view(ui, height, hero, &route, colour, state, &shortcut);
+                if let Some(at) = self.map3d.teleport.take() {
+                    let _ = self.tx.send(crate::ui::Request::TeleportHere(full_world.clone(), at));
+                    // "back to where it was" in the teleport card
+                    self.went = true;
+                }
             });
         });
     }
@@ -1548,6 +1626,14 @@ mod tests {
         let v = viewport(r, 1.0, [1000, 800]);
         assert_eq!((v.left_px, v.width_px, v.height_px), (50, 400, 300));
         assert_eq!(v.from_bottom_px, 800 + 100 - 300);
+    }
+
+    #[test]
+    fn a_spot_on_the_map_is_the_place_it_was_in_the_game() {
+        let s = Scene { origin: [1200.0, -3400.0, 500.0], ..Default::default() };
+        let p = [-15000.0, 22000.0, 3100.0];
+        let back = s.to_game(s.to_scene(p));
+        assert!((0..3).all(|k| (back[k] - p[k]).abs() < 0.01), "{back:?}");
     }
 
     #[test]

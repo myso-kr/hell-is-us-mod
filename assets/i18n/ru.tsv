@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	В {region}: {what}
 CTX_DROP_SAFE	Короткий путь: прыжок {m} м, без урона
 CTX_DROP_HURTS	Короткий путь: прыжок {m} м — 10% здоровья
 CTX_DROP_HURTS_MORE	Короткий путь: прыжок {m} м — до 70% здоровья
+MAP3D_SPOT	Эта точка
+MAP3D_TELEPORT_HERE	Телепорт сюда
+MOVED_TO_SPOT	Перемещено в точку.

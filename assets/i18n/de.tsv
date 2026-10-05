@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	Nach {region}: {what}
 CTX_DROP_SAFE	Abkürzung: {m} m Sprung, kein Schaden
 CTX_DROP_HURTS	Abkürzung: {m} m Sprung kostet 10 % Gesundheit
 CTX_DROP_HURTS_MORE	Abkürzung: {m} m Sprung kostet bis zu 70 % Gesundheit
+MAP3D_SPOT	Diese Stelle
+MAP3D_TELEPORT_HERE	Hierher teleportieren
+MOVED_TO_SPOT	Zur Stelle bewegt.

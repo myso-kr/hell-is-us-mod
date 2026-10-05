@@ -335,6 +335,17 @@ impl Engine {
     /// To a place followed, in the hero's world only: a step short of it on the hero's
     /// side, a little above it (`SHORT_OF`, `ABOVE`).
     pub fn teleport_to(&mut self, world: &str, at: [f32; 3]) -> Result<(), String> {
+        self.teleport_near(world, at, true)
+    }
+
+    /// To the spot `at` itself (a floor picked on the 3D map), not short of it.
+    pub fn teleport_here(&mut self, world: &str, at: [f32; 3]) -> Result<(), String> {
+        self.teleport_near(world, at, false)
+    }
+
+    /// `short`: land `SHORT_OF` before `at` on the hero's side (a place followed: the thing
+    /// itself is often in a wall or on a table); else on `at`.
+    fn teleport_near(&mut self, world: &str, at: [f32; 3], short: bool) -> Result<(), String> {
         self.refresh()?;
         let a = self.attached.as_ref().unwrap();
         a.gate()?;
@@ -347,7 +358,7 @@ impl Engine {
         let at = [at[0] as f64, at[1] as f64, at[2] as f64];
         let (dx, dy) = (p[0] - at[0], p[1] - at[1]);
         let d = dx.hypot(dy);
-        let back = if d > 1.0 { SHORT_OF.min(d) / d } else { 0.0 };
+        let back = if short && d > 1.0 { SHORT_OF.min(d) / d } else { 0.0 };
         a.teleport([at[0] + dx * back, at[1] + dy * back, at[2] + ABOVE])?;
         // Where it stood, for going back (the first of a run of teleports: where it came from).
         self.before.get_or_insert((here, p));

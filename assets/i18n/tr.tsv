@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	{region} bölgesine: {what}
 CTX_DROP_SAFE	Kestirme: {m} m düşüş, hasar yok
 CTX_DROP_HURTS	Kestirme: {m} m düşüş, canın %10’u
 CTX_DROP_HURTS_MORE	Kestirme: {m} m düşüş, canın %70’ine kadar
+MAP3D_SPOT	Bu nokta
+MAP3D_TELEPORT_HERE	Buraya ışınlan
+MOVED_TO_SPOT	Noktaya taşındı.

@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	Verso {region}: {what}
 CTX_DROP_SAFE	Scorciatoia: salto di {m} m, nessun danno
 CTX_DROP_HURTS	Scorciatoia: salto di {m} m, costa il 10% di salute
 CTX_DROP_HURTS_MORE	Scorciatoia: salto di {m} m, fino al 70% di salute
+MAP3D_SPOT	Questo punto
+MAP3D_TELEPORT_HERE	Teletrasportati qui
+MOVED_TO_SPOT	Spostato al punto.

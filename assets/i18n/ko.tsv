@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	{region}(으)로 이동: {what}
 CTX_DROP_SAFE	지름길: {m} m 낙하 (피해 없음)
 CTX_DROP_HURTS	지름길: {m} m 낙하 · 체력 10% 피해
 CTX_DROP_HURTS_MORE	지름길: {m} m 낙하 · 체력 최대 70% 피해
+MAP3D_SPOT	이 지점
+MAP3D_TELEPORT_HERE	여기로 순간이동
+MOVED_TO_SPOT	그 지점으로 이동했습니다.

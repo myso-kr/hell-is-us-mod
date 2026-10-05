@@ -59,6 +59,8 @@ pub enum Request {
     Teleport(String, [f32; 3], String),
     /// Back to where the hero stood before teleporting there.
     GoBack,
+    /// To a spot picked on the 3D map (its world, the spot, cm).
+    TeleportHere(String, [f32; 3]),
     Quit,
 }
 
@@ -226,6 +228,10 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
             },
             Ok(Request::Teleport(world, at, label)) => match engine.teleport_to(&world, at) {
                 Ok(()) => reply(true, trf!("MOVED_TO_TARGET", name = label)),
+                Err(e) => reply(false, e),
+            },
+            Ok(Request::TeleportHere(world, at)) => match engine.teleport_here(&world, at) {
+                Ok(()) => reply(true, tr!("MOVED_TO_SPOT").to_string()),
                 Err(e) => reply(false, e),
             },
             Ok(Request::GoBack) => match engine.go_back() {

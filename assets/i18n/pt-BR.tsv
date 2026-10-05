@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	Para {region}: {what}
 CTX_DROP_SAFE	Atalho: queda de {m} m, sem dano
 CTX_DROP_HURTS	Atalho: queda de {m} m custa 10% da vida
 CTX_DROP_HURTS_MORE	Atalho: queda de {m} m, até 70% da vida
+MAP3D_SPOT	Este ponto
+MAP3D_TELEPORT_HERE	Teleportar para cá
+MOVED_TO_SPOT	Movido para o ponto.

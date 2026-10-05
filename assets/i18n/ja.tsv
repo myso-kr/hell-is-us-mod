@@ -831,3 +831,6 @@ GRAPH_GO_TO_REGION	{region}へ: {what}
 CTX_DROP_SAFE	近道: {m} m の落下（ダメージなし）
 CTX_DROP_HURTS	近道: {m} m の落下 · 体力10%ダメージ
 CTX_DROP_HURTS_MORE	近道: {m} m の落下 · 体力最大70%ダメージ
+MAP3D_SPOT	この地点
+MAP3D_TELEPORT_HERE	ここへテレポート
+MOVED_TO_SPOT	その地点へ移動しました。
