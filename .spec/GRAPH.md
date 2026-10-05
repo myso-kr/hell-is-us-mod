@@ -41,7 +41,24 @@ game can be played to.
   `HammerOfModusEncounterKilled`), items the quests' scripts hand out (keystones, keycards, the hero's
   necklace, Colonel Vaas's office key), and a few facts set by scenes.
 
-## 3. Next
+## 3. The guide on the graph (2026-10-05)
+
+`Graph::gate` (attached.rs, each step): a goal whose node has a chain of two or more against the
+save (used = save GUIDs with a state; known = facts and tags; held = items) is held back
+(`Gate::Conditional`, "first: …") and the chain's first node made a goal of its quest (or a goal
+already there takes the quest on), so the story's guide goes there. A node that keeps no state (an
+area trigger) holds nothing back. A chain that ends in what no place gives leaves the goal alone.
+
+Deadly water names no drain in the game's data (the Lymbic Forge's `DeadlyWaterStaticForge01/02`
+receivers have no activators and nothing refers to them; a blueprint or a sequence empties them).
+So the live pass keeps the deadly water boxes as found (`Scene::pools`, indoors too, not cached) and
+`Graph::flood` holds back a goal inside one below its surface ("under water: drain it first"), the
+nearest unused drain of the world (`…Drain…`, or giving a `WaterLevel` tag) guided to through its
+chain. Measured by the Forge: the two keys under water held back; the axle gear held back behind
+"the wall panel ← the first-generation Lymbic activator", the activator made the story's goal.
+Whether a drained box goes from the live pass is to be seen once drained.
+
+## 4. Next
 
 1. What gives the 15: the quests' steps (StoryUnits), encounters (a boss killed), loot tables, scenes.
 2. The guide on the graph: the auto target's chain resolved against the save (facts, tags, items

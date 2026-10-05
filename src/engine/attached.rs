@@ -47,6 +47,8 @@ struct Guide {
     /// The survey of every world (Mods\survey), read once; and what the hero knows and
     /// holds by name, to judge it with — renewed with the knowledge.
     survey: Option<crate::survey::Survey>,
+    /// The requirement graph of the whole game (graph.rs), from the survey, read once.
+    graph: Option<crate::graph::Graph>,
     /// The game's spawner and vault tables (Mods\survey), read once.
     tables: Option<crate::tables::Tables>,
     /// `gamedata::generation` when those two were read: new files read again.
@@ -398,6 +400,16 @@ impl Attached {
             // gives an item a placement still takes.
             goals.extend(crate::requires::placement_goals(survey, w, &g.saved, &g.held));
             crate::requires::mark_givers(&mut goals, survey, w, &g.saved, &g.held);
+            // What must come first, by the whole game's graph: a goal whose place needs
+            // something not done yet gives way to the first thing of its chain.
+            let graph =
+                g.graph.get_or_insert_with(|| crate::graph::Graph::load(&crate::paths::data_dir().join("survey")));
+            let known: HashSet<String> = g.known_facts.union(&g.known_tags).cloned().collect();
+            let state = crate::graph::State { used: &g.saved, known: &known, held: &g.held };
+            graph.gate(&mut goals, w, &state);
+            // Under deadly water now: held back, the drain's chain guided to instead.
+            let pools = g.obstacles.done.pools.clone();
+            graph.flood(&mut goals, w, &pools, &state);
         }
         Ok((goals, k))
     }

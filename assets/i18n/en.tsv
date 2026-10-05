@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W wanted for the story · B blocked · S skipped · F followed.
 REQ_PUT_HERE	Put here: {items}
 REQ_PUT_HELD	You hold what goes here.
 REQ_NEEDED_FOR	needed for {place}
+GRAPH_FIRST	first: {chain}
+GRAPH_STEP_FOR	comes first: {chain}
+GRAPH_FLOODED	under water: drain it first

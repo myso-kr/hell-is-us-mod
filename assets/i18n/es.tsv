@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W necesario · B bloqueado · S omitido · F seguido. Todo en M
 REQ_PUT_HERE	Colocar aquí: {items}
 REQ_PUT_HELD	Llevas lo que va aquí.
 REQ_NEEDED_FOR	necesario para {place}
+GRAPH_FIRST	primero: {chain}
+GRAPH_STEP_FOR	va primero: {chain}
+GRAPH_FLOODED	bajo el agua: drénala primero

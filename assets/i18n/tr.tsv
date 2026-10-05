@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W gerekli · B engelli · S atlandı · F takipte. Tümü Mods\
 REQ_PUT_HERE	Buraya koy: {items}
 REQ_PUT_HELD	Buraya gideni taşıyorsun.
 REQ_NEEDED_FOR	{place} için gerekli
+GRAPH_FIRST	önce: {chain}
+GRAPH_STEP_FOR	önce yapılacak: {chain}
+GRAPH_FLOODED	su altında: önce suyu boşalt

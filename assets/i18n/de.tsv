@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W für die Story gebraucht · B blockiert · S übersprungen ·
 REQ_PUT_HERE	Hier ablegen: {items}
 REQ_PUT_HELD	Du hast, was hierher gehört.
 REQ_NEEDED_FOR	gebraucht für {place}
+GRAPH_FIRST	zuerst: {chain}
+GRAPH_STEP_FOR	kommt zuerst: {chain}
+GRAPH_FLOODED	unter Wasser: erst ablassen

@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W нужно · B заблокировано · S пропущ�
 REQ_PUT_HERE	Положить сюда: {items}
 REQ_PUT_HELD	У вас есть то, что сюда нужно.
 REQ_NEEDED_FOR	нужно для: {place}
+GRAPH_FIRST	сначала: {chain}
+GRAPH_STEP_FOR	сначала: {chain}
+GRAPH_FLOODED	под водой: сначала слейте воду

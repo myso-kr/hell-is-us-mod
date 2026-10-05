@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W ストーリーに必要 · B 通行不可 · S スキップ 
 REQ_PUT_HERE	置く場所：{items}
 REQ_PUT_HELD	ここに置くアイテムを持っています。
 REQ_NEEDED_FOR	{place}に必要
+GRAPH_FIRST	先に：{chain}
+GRAPH_STEP_FOR	先にやること：{chain}
+GRAPH_FLOODED	水没中：先に水を抜く必要があります

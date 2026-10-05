@@ -228,7 +228,9 @@ impl Graph {
 
     fn met(&self, n: &Need, world: &str, s: &State) -> bool {
         match n {
-            Need::Used(a) => self.node(world, a).is_some_and(|i| self.used(i, s)),
+            // What keeps no state in the save (an area trigger walked into) cannot be told
+            // done: it holds nothing back.
+            Need::Used(a) => self.node(world, a).is_none_or(|i| self.nodes[i].guid.is_none() || self.used(i, s)),
             Need::Fact(t, has) => s.known.contains(t) == *has,
             Need::Item(it) => s.held.contains(it),
             Need::All(v) => v.iter().all(|x| self.met(x, world, s)),
@@ -363,6 +365,149 @@ impl Graph {
     }
 }
 
+/// How a node reads to the player: what it gives, what goes there, or its class's words.
+pub fn label(n: &Node) -> String {
+    if let Some(it) = n.gives_items.first() {
+        return crate::goals::item_label(it);
+    }
+    let takes: Vec<String> = n
+        .needs
+        .iter()
+        .flat_map(|x| match x {
+            Need::All(v) => v.clone(),
+            other => vec![other.clone()],
+        })
+        .filter_map(|x| match x {
+            Need::Item(it) => Some(crate::goals::item_label(&it)),
+            _ => None,
+        })
+        .collect();
+    if !takes.is_empty() {
+        return trf!("REQ_PUT_HERE", items = takes.join(", "));
+    }
+    crate::goals::readable(&n.class)
+}
+
+impl Graph {
+    /// Each goal in `world` whose place needs something first (`chain`) is held back —
+    /// `Gate::Conditional`, its detail saying what comes first — and the first thing of its
+    /// chain is made a goal of its quest, so the guide goes there instead (a goal already
+    /// there takes the quest on). A chain that ends in what no place gives (the story's
+    /// scripts) leaves the goal as it is. Returns the chains, for the trace.
+    pub fn gate(&self, goals: &mut Vec<crate::goals::Goal>, world: &str, s: &State) -> Vec<(u64, Vec<String>)> {
+        use crate::goals::{Gate, Goal};
+        let mut firsts: Vec<(usize, Goal, String)> = Vec::new();
+        let mut chains = Vec::new();
+        for g in goals.iter_mut() {
+            let Some(i) = self.near(world, g.at, NEAR) else { continue };
+            let Some(chain) = self.chain(i, s) else { continue };
+            if chain.len() < 2 {
+                continue;
+            }
+            let names: Vec<String> = chain.iter().map(|&k| label(&self.nodes[k])).collect();
+            let text = names.iter().rev().cloned().collect::<Vec<_>>().join(" → ");
+            g.gate = Gate::Conditional;
+            g.detail = format!("{} · {}", g.detail, trf!("GRAPH_FIRST", chain = text));
+            chains.push((g.id, names));
+            firsts.push((*chain.last().unwrap(), g.clone(), text));
+        }
+        for (first, of, text) in firsts {
+            self.step(goals, first, &of, &text);
+        }
+        chains
+    }
+}
+
+impl Graph {
+    /// The first thing of a chain made a goal of `of`'s quest (or a goal already there
+    /// taking its quest on).
+    fn step(&self, goals: &mut Vec<crate::goals::Goal>, first: usize, of: &crate::goals::Goal, text: &str) {
+        use crate::goals::{Gate, Goal};
+        let n = &self.nodes[first];
+        match goals.iter_mut().find(|g| (g.at[0] - n.at[0]).hypot(g.at[1] - n.at[1]) <= NEAR) {
+            Some(g) => {
+                for k in &of.keys {
+                    if !g.keys.contains(k) {
+                        g.keys.push(k.clone());
+                    }
+                }
+                for t in &of.tags {
+                    if !g.tags.contains(t) {
+                        g.tags.push(t.clone());
+                    }
+                }
+                g.quests.extend(of.quests.iter().copied().filter(|q| !g.quests.contains(q)).collect::<Vec<_>>());
+                if g.tier > of.tier {
+                    g.tier = of.tier;
+                }
+            }
+            None => goals.push(Goal {
+                tier: of.tier,
+                id: step_id(n),
+                label: label(n),
+                detail: trf!("GRAPH_STEP_FOR", chain = text),
+                at: n.at,
+                quests: of.quests.clone(),
+                tags: of.tags.clone(),
+                keys: of.keys.clone(),
+                gate: Gate::Open,
+                named: true,
+            }),
+        }
+    }
+
+    /// Each goal under deadly water now (`pools`, from the live pass) is held back, and the
+    /// way to drain it made a goal: the nearest drain in the world not yet used (a node
+    /// whose class says `Drain` or that gives a `WaterLevel` tag), through its chain. The
+    /// water itself names no drain in the game's data, so the nearest stands in. Returns
+    /// how many goals were under water.
+    pub fn flood(
+        &self,
+        goals: &mut Vec<crate::goals::Goal>,
+        world: &str,
+        pools: &[crate::obstacles::Pool],
+        s: &State,
+    ) -> usize {
+        let under: Vec<usize> = (0..goals.len()).filter(|&i| pools.iter().any(|p| p.holds(goals[i].at))).collect();
+        for &i in &under {
+            let g = &mut goals[i];
+            g.gate = crate::goals::Gate::Conditional;
+            g.detail = format!("{} · {}", g.detail, tr!("GRAPH_FLOODED"));
+        }
+        for i in under.clone() {
+            let of = goals[i].clone();
+            let drains = self.nodes.iter().enumerate().filter(|(k, n)| {
+                n.world == world
+                    && !self.used(*k, s)
+                    && (n.class.contains("Drain") || n.gives_tags.iter().any(|t| t.contains("WaterLevel")))
+            });
+            let mut drains: Vec<(usize, f32)> = drains
+                .map(|(k, n)| (k, (n.at[0] - of.at[0]).hypot(n.at[1] - of.at[1])))
+                .filter(|(_, d)| *d < 40_000.0)
+                .collect();
+            drains.sort_by(|a, b| a.1.total_cmp(&b.1));
+            if let Some(chain) = drains.iter().find_map(|&(k, _)| self.chain(k, s)) {
+                let mut names: Vec<String> = chain.iter().map(|&k| label(&self.nodes[k])).collect();
+                names.insert(0, of.label.clone());
+                let text = names.iter().rev().cloned().collect::<Vec<_>>().join(" → ");
+                self.step(goals, *chain.last().unwrap(), &of, &text);
+            }
+        }
+        under.len()
+    }
+}
+
+/// How near a goal and a node must be to be the same place (cm).
+const NEAR: f32 = 150.0;
+
+/// A step goal's id: its node, apart from the survey's and the live ids.
+fn step_id(n: &Node) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    ("graph", &n.world, &n.name).hash(&mut h);
+    h.finish() | 1 << 63
+}
+
 /// What `reach` found.
 pub struct Report {
     pub nodes: usize,
@@ -410,6 +555,36 @@ mod tests {
         used.insert("g2".to_string());
         let s = State { used: &used, known: &known, held: &held };
         assert_eq!(names(g.chain(key, &s).unwrap()), ["Key", "Drain", "Lever"], "the slot used: to the lever");
+    }
+
+    #[test]
+    fn a_goal_under_water_gives_way_to_the_drain_chain() {
+        use crate::goals::{Gate, Goal, Tier};
+        let g = forge();
+        // The key under water, with no condition of its own (the Lymbic Forge's scholar).
+        let mut goals = vec![Goal {
+            tier: Tier::Quest,
+            id: 1,
+            label: "Key".into(),
+            detail: String::new(),
+            at: [5000.0, 0.0, -100.0],
+            quests: vec![],
+            tags: vec![],
+            keys: vec!["Q2".into()],
+            gate: Gate::Open,
+            named: true,
+        }];
+        let pool = crate::obstacles::Pool {
+            hull: vec![[4000.0, -1000.0], [6000.0, -1000.0], [6000.0, 1000.0], [4000.0, 1000.0]],
+            bottom: -500.0,
+            top: 0.0,
+        };
+        let none = HashSet::new();
+        let s = State { used: &none, known: &none, held: &none };
+        assert_eq!(g.flood(&mut goals, "W", &[pool], &s), 1);
+        assert_eq!(goals[0].gate, Gate::Conditional, "the key held back");
+        let step = goals.iter().find(|x| x.at == [0.0, 0.0, 0.0]).expect("the gear made a goal");
+        assert_eq!(step.keys, ["Q2"], "of the key's quest");
     }
 
     #[test]

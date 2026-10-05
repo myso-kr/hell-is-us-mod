@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W 剧情需要 · B 受阻 · S 已跳过 · F 追踪中。全�
 REQ_PUT_HERE	放置处：{items}
 REQ_PUT_HELD	你持有放在这里的物品。
 REQ_NEEDED_FOR	{place}需要
+GRAPH_FIRST	先：{chain}
+GRAPH_STEP_FOR	先做：{chain}
+GRAPH_FLOODED	被水淹没：需先排水

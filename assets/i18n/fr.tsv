@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W voulu · B bloqué · S ignoré · F suivi. Tout dans Mods\do
 REQ_PUT_HERE	À poser ici : {items}
 REQ_PUT_HELD	Vous avez ce qui va ici.
 REQ_NEEDED_FOR	nécessaire pour {place}
+GRAPH_FIRST	d'abord : {chain}
+GRAPH_STEP_FOR	vient d'abord : {chain}
+GRAPH_FLOODED	sous l'eau : vidangez d'abord

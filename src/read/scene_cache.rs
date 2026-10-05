@@ -149,7 +149,7 @@ fn decode(bytes: &[u8]) -> Option<Scene> {
         let (zmin, zmax, water) = (c.f32()?, c.f32()?, c.take::<1>()?[0] != 0);
         obstacles.push(Obstacle { hull, zmin, zmax, water });
     }
-    c.0.is_empty().then(|| Scene { obstacles, terrain: Terrain::new(fields) })
+    c.0.is_empty().then(|| Scene { obstacles, terrain: Terrain::new(fields), pools: Vec::new() })
 }
 
 #[cfg(test)]
@@ -163,7 +163,11 @@ mod tests {
     #[test]
     fn a_scene_reads_back_as_written() {
         let water = Obstacle { hull: vec![[0.0, 0.0], [10.0, 0.0], [0.0, 10.0]], zmin: -1.0, zmax: 5.0, water: true };
-        let scene = Scene { obstacles: vec![water], terrain: Terrain::new(vec![field(0.0, 1.0), field(200.0, 2.0)]) };
+        let scene = Scene {
+            obstacles: vec![water],
+            terrain: Terrain::new(vec![field(0.0, 1.0), field(200.0, 2.0)]),
+            pools: vec![],
+        };
         let back = decode(&encode(&scene)).expect("reads");
         assert_eq!(back.obstacles, scene.obstacles);
         assert_eq!(back.terrain.fields(), scene.terrain.fields());
@@ -172,7 +176,7 @@ mod tests {
 
     #[test]
     fn a_bad_file_is_ignored() {
-        let scene = Scene { obstacles: vec![], terrain: Terrain::new(vec![field(0.0, 1.0)]) };
+        let scene = Scene { obstacles: vec![], terrain: Terrain::new(vec![field(0.0, 1.0)]), pools: vec![] };
         let bytes = encode(&scene);
         assert!(decode(&bytes[..bytes.len() - 1]).is_none(), "cut short");
         let mut other = bytes.clone();

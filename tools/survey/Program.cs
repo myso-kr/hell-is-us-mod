@@ -101,6 +101,13 @@ if (opts.ContainsKey("tables"))
 }
 
 var survey = new Survey(provider);
+if (opts.TryGetValue("refs", out var refsOf))
+{
+    foreach (var w in worlds)
+        foreach (var map in survey.Maps(w))
+            survey.Refs(map, refsOf);
+    return;
+}
 if (opts.TryGetValue("peek", out var peek))
 {
     foreach (var w in worlds)
@@ -550,6 +557,20 @@ class Survey(DefaultFileProvider provider)
             done[path] = new JObject { ["payloads"] = payloads, ["subgraphs"] = new JArray(subs.Distinct()) };
         }
         return done;
+    }
+
+    /// Every export whose properties name `want`: what points at an actor (`--refs`).
+    public void Refs(string map, string want)
+    {
+        var pkg = provider.LoadPackage(map);
+        foreach (var e in pkg.GetExports())
+        {
+            if (e.GetPathName().Contains(want)) continue;
+            var text = Props(e).ToString(Formatting.None);
+            if (!text.Contains(want)) continue;
+            Console.WriteLine($"== {map} {e.Outer?.Name} {e.Name} [{e.Class?.Name}]");
+            Console.WriteLine(Props(e).ToString(Formatting.Indented));
+        }
     }
 
     public void Peek(string map, string want)

@@ -760,3 +760,6 @@ DEBUG_GUIDE_HINT	W 스토리에 필요 · B 막힘 · S 건너뜀 · F 추적 �
 REQ_PUT_HERE	놓을 곳: {items}
 REQ_PUT_HELD	여기에 놓을 아이템을 가지고 있습니다.
 REQ_NEEDED_FOR	{place}에 필요
+GRAPH_FIRST	먼저: {chain}
+GRAPH_STEP_FOR	먼저 할 일: {chain}
+GRAPH_FLOODED	물에 잠김: 먼저 물을 빼야 합니다

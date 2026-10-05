@@ -64,6 +64,36 @@ const DECK: (f32, f32, f32, f32) = (50.0, 300.0, 200.0, 20_000.0);
 pub struct Scene {
     pub obstacles: Vec<Obstacle>,
     pub terrain: Terrain,
+    /// The deadly water as the game has it now, indoors too (a flooded hall the ground
+    /// below is not landscape in): what lies under it cannot be reached (graph.rs, the
+    /// guide). Not kept on disk: only the live pass knows whether a drain has emptied it.
+    pub pools: Vec<Pool>,
+}
+
+/// A deadly water box: its outline from above, its bottom and its surface (cm).
+#[derive(Clone, Debug, PartialEq)]
+pub struct Pool {
+    pub hull: Vec<[f32; 2]>,
+    pub bottom: f32,
+    pub top: f32,
+}
+
+impl Pool {
+    /// Whether `p` is in it: inside its outline, between its bottom and its surface.
+    pub fn holds(&self, p: [f32; 3]) -> bool {
+        if p[2] < self.bottom || p[2] > self.top {
+            return false;
+        }
+        let n = self.hull.len();
+        let mut inside = false;
+        for k in 0..n {
+            let (a, b) = (self.hull[k], self.hull[(k + 1) % n]);
+            if (a[1] > p[1]) != (b[1] > p[1]) && p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0] {
+                inside = !inside;
+            }
+        }
+        inside
+    }
 }
 
 /// An FTransform: rotation quaternion (x, y, z, w), translation, scale.
@@ -340,6 +370,7 @@ struct Fields {
 /// Where deadly water is: a box's outline from above and the height of its top.
 struct Hazard {
     hull: Vec<[f32; 2]>,
+    bottom: f32,
     top: f32,
 }
 
@@ -525,7 +556,7 @@ impl Obstacles {
             }
         }
         if let Some(o) = obstacle(&pts) {
-            self.hazards.push(Hazard { hull: o.hull, top: o.zmax });
+            self.hazards.push(Hazard { hull: o.hull, bottom: o.zmin, top: o.zmax });
         }
     }
 
@@ -609,9 +640,11 @@ impl Obstacles {
                 let (fields, grew) = scene_cache::merge(self.done.terrain.fields(), live);
                 let terrain = Terrain::new(fields);
                 let mut obstacles = std::mem::take(&mut self.building);
-                let wet = water(&std::mem::take(&mut self.hazards), &terrain, &obstacles, hero);
+                let hazards = std::mem::take(&mut self.hazards);
+                let wet = water(&hazards, &terrain, &obstacles, hero);
                 obstacles.extend(wet);
-                self.done = Arc::new(Scene { obstacles, terrain });
+                let pools = hazards.into_iter().map(|h| Pool { hull: h.hull, bottom: h.bottom, top: h.top }).collect();
+                self.done = Arc::new(Scene { obstacles, terrain, pools });
                 // Kept when the ground grew, and once a run for the obstacles.
                 if (grew || self.from_cache) && !self.world.is_empty() {
                     scene_cache::save(&self.world, self.done.clone());
@@ -675,7 +708,8 @@ mod tests {
     fn water_is_the_box_where_the_ground_is_below_its_top() {
         // A 20 m box whose top is at z 0, over ground rising west to east: -100 at
         // x = 0, +100 at x = 2000 — so the western half is under water.
-        let hazard = Hazard { hull: vec![[0.0, 0.0], [2000.0, 0.0], [2000.0, 2000.0], [0.0, 2000.0]], top: 0.0 };
+        let hazard =
+            Hazard { hull: vec![[0.0, 0.0], [2000.0, 0.0], [2000.0, 2000.0], [0.0, 2000.0]], bottom: -500.0, top: 0.0 };
         let n = 21;
         let z = (0..n * n).map(|i| -100.0 + (i % n) as f32 * 10.0).collect();
         let terrain = Terrain::new(vec![Heightfield { origin: [0.0, 0.0, 0.0], spacing: [100.0, 100.0], n, z }]);
@@ -691,7 +725,8 @@ mod tests {
 
     #[test]
     fn a_deck_dries_the_water_under_it_and_a_tree_does_not() {
-        let hazard = Hazard { hull: vec![[0.0, 0.0], [2000.0, 0.0], [2000.0, 2000.0], [0.0, 2000.0]], top: 0.0 };
+        let hazard =
+            Hazard { hull: vec![[0.0, 0.0], [2000.0, 0.0], [2000.0, 2000.0], [0.0, 2000.0]], bottom: -500.0, top: 0.0 };
         let n = 21;
         let terrain = Terrain::new(vec![Heightfield {
             origin: [0.0, 0.0, 0.0],

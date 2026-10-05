@@ -216,7 +216,7 @@ mod tests {
             zmax: f32::MAX,
             water: true,
         };
-        Scene { obstacles: vec![water], terrain: Terrain::new(vec![field]) }
+        Scene { obstacles: vec![water], terrain: Terrain::new(vec![field]), pools: vec![] }
     }
 
     #[test]
@@ -252,7 +252,7 @@ mod tests {
             zmax: 2000.0,
             water: true,
         };
-        let scene = Scene { obstacles: vec![water], terrain: Terrain::new(vec![field]) };
+        let scene = Scene { obstacles: vec![water], terrain: Terrain::new(vec![field]), pools: vec![] };
         let r = Relief::bake(&scene, [5000.0, 5000.0], 4900.0, 0.0);
         assert!(r.look(500.0, 5000.0).unwrap().1, "in the box");
         assert!(r.look(1500.0, 5000.0).unwrap().1, "below the surface, past the box");
