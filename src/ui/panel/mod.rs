@@ -297,6 +297,8 @@ pub struct Panel {
     /// After sending, the worker's next snapshot may predate it. Until it has caught
     /// up, the checkboxes are not overwritten from it.
     sent: Option<Instant>,
+    /// A teleport to a place followed was asked for: the way back is offered (groups.rs).
+    went: bool,
     reply: Option<(bool, String, Instant)>,
     /// The console at the foot of the window, and whether the window was showing on
     /// the last frame (to put the cursor in the console as it opens).
@@ -432,6 +434,7 @@ impl Panel {
             value,
             slid: HashMap::new(),
             sent: None,
+            went: false,
             reply: None,
             console: Default::default(),
             was_visible: false,

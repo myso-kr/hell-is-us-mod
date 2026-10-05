@@ -720,7 +720,7 @@ APC	APC
 SAVE_AND_TRAVEL	Kayıt ve yolculuk
 SAVE_POINT_TO_APC	Kayıt noktası (APC'ye)
 TELEPORT_TO_FOLLOWED	Takip edilene ışınlan
-TELEPORT_TO_FOLLOWED_HINT	Bir adım önüne indirir, yalnızca bu bölgede. Önce konumunu kaydet: kapalı bir yerde sıkışabilirsin.
+TELEPORT_TO_FOLLOWED_HINT	Hedefin hemen önüne bırakır, yalnızca bu bölgede. Önce bulunduğun yer saklanır: "Son konuma dön" seni oraya geri götürür.
 NOTHING_FOLLOWED_HERE	Bu bölgede takip edilen bir şey yok.
 TELEPORT	Işınlan
 MOVED_TO_TARGET	{name} konumuna gidildi
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	Ekranda daha çok şey, oyunun kendi görüntüsünden daha az.
 CONSENT_HUD_YES	Evet, oyunun üstünde göster
 GUIDE_WITHHELD	Ayarların gizledi: {places} gizli yer, cevabı ele veren {answers} yer. Ayarlar'dan açılabilir.
 GUIDE_STEPS_OFF	"Önce ne yapılacak" kapalı: rehber kapıları ve suyu dikkate almadan doğrudan hedefe götürür.
+TELEPORT_BACK	Son konuma dön
+MOVED_BACK	Işınlanmadan önceki yerine döndün.
+NOTHING_TO_GO_BACK_TO	Işınlanmadan önceki konum saklanmadı.

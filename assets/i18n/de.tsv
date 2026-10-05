@@ -720,7 +720,7 @@ APC	APC
 SAVE_AND_TRAVEL	Speichern & Reisen
 SAVE_POINT_TO_APC	Speicherpunkt (zum APC)
 TELEPORT_TO_FOLLOWED	Zum Verfolgten teleportieren
-TELEPORT_TO_FOLLOWED_HINT	Landet einen Schritt davor, nur in dieser Region. Erst die Position speichern: ein abgeschlossener Ort kann dich einsperren.
+TELEPORT_TO_FOLLOWED_HINT	Setzt dich kurz davor ab, nur in dieser Region. Dein Standort wird vorher gemerkt: "Zur letzten Position" bringt dich zurück.
 NOTHING_FOLLOWED_HERE	In dieser Region wird nichts verfolgt.
 TELEPORT	Teleportieren
 MOVED_TO_TARGET	Zu {name} bewegt
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	Mehr auf dem Bildschirm, weniger vom Bild des Spiels.
 CONSENT_HUD_YES	Ja, über dem Spiel zeigen
 GUIDE_WITHHELD	Durch deine Einstellungen ausgelassen: {places} verborgene Orte, {answers} verraten eine Lösung. In den Einstellungen einschaltbar.
 GUIDE_STEPS_OFF	"Was zuerst kommt" ist aus: die Führung geht direkt zum Ziel, an Türen und Wasser vorbei.
+TELEPORT_BACK	Zur letzten Position
+MOVED_BACK	Zurück am Standort vor dem Teleport.
+NOTHING_TO_GO_BACK_TO	Kein Standort vor einem Teleport gemerkt.

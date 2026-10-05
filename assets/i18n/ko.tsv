@@ -720,7 +720,7 @@ APC	장갑차
 SAVE_AND_TRAVEL	저장·이동
 SAVE_POINT_TO_APC	저장 지점 (장갑차로 이동)
 TELEPORT_TO_FOLLOWED	추적 대상으로 순간이동
-TELEPORT_TO_FOLLOWED_HINT	대상 바로 앞에 내려 줍니다(이 지역 안에서만). 막힌 곳에 갇힐 수 있으니 먼저 위치를 저장해 두세요.
+TELEPORT_TO_FOLLOWED_HINT	대상 바로 앞에 내려 줍니다(이 지역 안에서만). 이동 전 위치를 자동으로 저장하니, 갇히면 "마지막 위치로 이동"으로 돌아오세요.
 NOTHING_FOLLOWED_HERE	이 지역에서 추적 중인 대상이 없습니다.
 TELEPORT	이동
 MOVED_TO_TARGET	{name}(으)로 이동했습니다
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	화면에 정보가 늘어 게임 본연의 화면이 조금 �
 CONSENT_HUD_YES	네, 게임 화면에 보여 주세요
 GUIDE_WITHHELD	설정으로 가려진 목표: 숨겨진 장소 {places}곳, 답이 드러나는 곳 {answers}곳. 설정 탭에서 켤 수 있어요.
 GUIDE_STEPS_OFF	"먼저 할 일" 안내가 꺼져 있어요: 잠긴 문이나 물을 고려하지 않고 목표로 바로 안내해요.
+TELEPORT_BACK	마지막 위치로 이동
+MOVED_BACK	순간이동 전 위치로 돌아왔습니다.
+NOTHING_TO_GO_BACK_TO	순간이동 전 위치가 저장되어 있지 않습니다.

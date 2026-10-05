@@ -23,6 +23,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   answers, missable warnings, panels over the game and cheats. Answers given before carry over. What
   the settings leave out of the guide is counted on the Guide page's auto card.
 - When the guide's route runs through a shut door, lock or slot, it goes to what opens it first.
+- Teleporting to what is followed keeps where the hero stood; "Back to last position" in the card's
+  header goes back, shown from a teleport until used.
 
 ### Changed
 

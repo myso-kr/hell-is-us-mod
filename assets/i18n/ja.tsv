@@ -720,7 +720,7 @@ APC	装甲車
 SAVE_AND_TRAVEL	セーブ・移動
 SAVE_POINT_TO_APC	セーブ地点（装甲車へ移動）
 TELEPORT_TO_FOLLOWED	追跡対象へ瞬間移動
-TELEPORT_TO_FOLLOWED_HINT	対象の一歩手前に着地します（この地域内のみ）。閉じた場所に閉じ込められることがあるので、先に位置を保存してください。
+TELEPORT_TO_FOLLOWED_HINT	対象の手前に降ろします（この地域内のみ）。移動前の位置を自動で保存するので、閉じ込められたら「最後の位置へ移動」で戻れます。
 NOTHING_FOLLOWED_HERE	この地域で追跡中の対象はありません。
 TELEPORT	移動
 MOVED_TO_TARGET	{name}へ移動しました
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	画面の情報が増え、ゲーム本来の画面が少し隠
 CONSENT_HUD_YES	はい、ゲーム画面に表示してください
 GUIDE_WITHHELD	設定で隠れている目標：隠れた場所{places}か所、答えが分かる所{answers}か所。設定タブで有効にできます。
 GUIDE_STEPS_OFF	「先にやること」案内はオフです：鍵のかかった扉や水を考えずに目標へ直接案内します。
+TELEPORT_BACK	最後の位置へ移動
+MOVED_BACK	テレポート前の位置に戻りました。
+NOTHING_TO_GO_BACK_TO	テレポート前の位置が保存されていません。

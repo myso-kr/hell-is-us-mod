@@ -91,5 +91,11 @@ this region) with a Teleport button each. It uses the same write as the saved po
 (`Attached::teleport`: the root component's location and its `ComponentToWorld`, the velocity
 cleared), landing `SHORT_OF` (150 cm) short of the target on the hero's side and `ABOVE` (120 cm)
 over it: not inside what stands there (a chest, a person), and dropping onto its floor. Only in the
-hero's region: another region's place has no ground loaded to land on. A closed-off target can trap
-the hero, so the card says to save a position first. Confirmed in play by the user (2026-10-05).
+hero's region: another region's place has no ground loaded to land on. Confirmed in play by the user
+(2026-10-05).
+
+A closed-off target can trap the hero. At first the card said to save a position first; since
+2026-10-05 (the user's suggestion) the engine keeps where the hero stood before a teleport in a slot of
+its own (`Engine::before`; the first of a run of teleports, so going back is to where it started), and
+the card's header shows "Back to last position" from a teleport until it is pressed
+(`Request::GoBack`; the slot is emptied either way).

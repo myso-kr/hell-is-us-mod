@@ -720,7 +720,7 @@ APC	APC
 SAVE_AND_TRAVEL	Guardar y viajar
 SAVE_POINT_TO_APC	Punto de guardado (al APC)
 TELEPORT_TO_FOLLOWED	Teletransporte a lo seguido
-TELEPORT_TO_FOLLOWED_HINT	Aterriza un paso antes, solo en esta región. Guarda antes tu posición: un lugar cerrado puede atraparte.
+TELEPORT_TO_FOLLOWED_HINT	Te deja justo antes, solo en esta región. Antes se guarda dónde estabas: "Volver a la última posición" te devuelve allí.
 NOTHING_FOLLOWED_HERE	Nada seguido en esta región.
 TELEPORT	Teletransportar
 MOVED_TO_TARGET	Movido a {name}
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	Más en pantalla, menos de la imagen propia del juego.
 CONSENT_HUD_YES	Sí, muéstralo sobre el juego
 GUIDE_WITHHELD	Omitidos por tus ajustes: {places} lugares ocultos, {answers} que revelan una respuesta. Se pueden activar en Ajustes.
 GUIDE_STEPS_OFF	"Qué va primero" está desactivado: la guía va directa al objetivo, sin tener en cuenta puertas ni agua.
+TELEPORT_BACK	Volver a la última posición
+MOVED_BACK	De vuelta donde estabas antes del teletransporte.
+NOTHING_TO_GO_BACK_TO	No hay posición guardada antes de un teletransporte.

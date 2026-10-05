@@ -73,6 +73,9 @@ pub struct Engine {
     active: Vec<Active>,
     notice: Option<String>,
     slots: [Option<(String, [f64; 3])>; SLOTS],
+    /// Where the hero stood before teleporting to a place followed: a slot of its own, kept
+    /// through further teleports until gone back to.
+    before: Option<(String, [f64; 3])>,
 }
 
 /// How often to look for the game, or check it is still the same process. Listing
@@ -88,6 +91,7 @@ impl Engine {
             originals: Originals::load(&hold::default_path())?,
             extras: Extras::default(),
             slots: Default::default(),
+            before: None,
             active: Vec::new(),
             notice: None,
         })
@@ -340,7 +344,23 @@ impl Engine {
         let (dx, dy) = (p[0] - at[0], p[1] - at[1]);
         let d = dx.hypot(dy);
         let back = if d > 1.0 { SHORT_OF.min(d) / d } else { 0.0 };
-        a.teleport([at[0] + dx * back, at[1] + dy * back, at[2] + ABOVE])
+        a.teleport([at[0] + dx * back, at[1] + dy * back, at[2] + ABOVE])?;
+        // Where it stood, for going back (the first of a run of teleports: where it came from).
+        self.before.get_or_insert((here, p));
+        Ok(())
+    }
+
+    /// Back to where the hero stood before teleporting to a place followed; the slot is
+    /// emptied either way.
+    pub fn go_back(&mut self) -> Result<(), String> {
+        self.refresh()?;
+        let a = self.attached.as_ref().unwrap();
+        a.gate()?;
+        let (world, p) = self.before.take().ok_or(tr!("NOTHING_TO_GO_BACK_TO"))?;
+        if a.chain()?.world(&a.game, &a.anchors)? != world {
+            return Err(trf!("SAVED_IN_ANOTHER_REGION", world = crate::i18n::place(&world)));
+        }
+        a.teleport([p[0], p[1], p[2] + LIFT])
     }
 
     /// Back to slot `i` — only in the world it was saved in.

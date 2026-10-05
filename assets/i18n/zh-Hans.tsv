@@ -720,7 +720,7 @@ APC	装甲车
 SAVE_AND_TRAVEL	存档与移动
 SAVE_POINT_TO_APC	存档点（前往装甲车）
 TELEPORT_TO_FOLLOWED	传送到追踪目标
-TELEPORT_TO_FOLLOWED_HINT	落在目标前一步（仅限本区域）。请先保存位置：封闭处可能会被困住。
+TELEPORT_TO_FOLLOWED_HINT	传送到目标前方（仅限本区域）。传送前会自动保存当前位置，被困时可用“回到上一个位置”返回。
 NOTHING_FOLLOWED_HERE	本区域没有追踪目标。
 TELEPORT	传送
 MOVED_TO_TARGET	已移动到{name}
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	屏幕上信息更多，游戏本身的画面被遮挡一些。
 CONSENT_HUD_YES	好的，显示在游戏画面上
 GUIDE_WITHHELD	因设置而隐藏：隐藏地点{places}处，会泄露答案的{answers}处。可在设置中开启。
 GUIDE_STEPS_OFF	"先做什么"导航已关闭：导航会直接前往目标，不考虑锁住的门和水。
+TELEPORT_BACK	回到上一个位置
+MOVED_BACK	已回到传送前的位置。
+NOTHING_TO_GO_BACK_TO	没有保存传送前的位置。

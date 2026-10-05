@@ -720,7 +720,7 @@ APC	APC
 SAVE_AND_TRAVEL	Save & travel
 SAVE_POINT_TO_APC	Save point (to the APC)
 TELEPORT_TO_FOLLOWED	Teleport to what is followed
-TELEPORT_TO_FOLLOWED_HINT	Lands a step short of it, in this region only. Save your position first: a closed-off spot can trap you.
+TELEPORT_TO_FOLLOWED_HINT	Lands a step short of it, in this region only. Where you stood is kept first: "Back to last position" returns you there.
 NOTHING_FOLLOWED_HERE	Nothing followed in this region.
 TELEPORT	Teleport
 MOVED_TO_TARGET	Moved to {name}
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	More on the screen, less of the game's own picture.
 CONSENT_HUD_YES	Yes, show it over the game
 GUIDE_WITHHELD	Left out by your settings: {places} hidden places, {answers} giving an answer away. They can be turned on in Settings.
 GUIDE_STEPS_OFF	What must come first is off: the guide goes straight to the goal, past locked doors and water.
+TELEPORT_BACK	Back to last position
+MOVED_BACK	Back where you stood before the teleport.
+NOTHING_TO_GO_BACK_TO	No position before a teleport is kept.

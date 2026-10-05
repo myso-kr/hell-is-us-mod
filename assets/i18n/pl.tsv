@@ -720,7 +720,7 @@ APC	APC
 SAVE_AND_TRAVEL	Zapis i podróż
 SAVE_POINT_TO_APC	Punkt zapisu (do APC)
 TELEPORT_TO_FOLLOWED	Teleport do śledzonego
-TELEPORT_TO_FOLLOWED_HINT	Ląduje krok przed celem, tylko w tym regionie. Najpierw zapisz pozycję: zamknięte miejsce może cię uwięzić.
+TELEPORT_TO_FOLLOWED_HINT	Stawia cię tuż przed nim, tylko w tym regionie. Wcześniej zapamiętuje, gdzie stałeś: „Wróć do ostatniej pozycji” cię tam przeniesie.
 NOTHING_FOLLOWED_HERE	Nic nie jest śledzone w tym regionie.
 TELEPORT	Teleportuj
 MOVED_TO_TARGET	Przeniesiono do: {name}
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	Więcej na ekranie, mniej obrazu samej gry.
 CONSENT_HUD_YES	Tak, pokaż nad grą
 GUIDE_WITHHELD	Pominięte przez ustawienia: {places} ukrytych miejsc, {answers} zdradzających odpowiedź. Można włączyć w Ustawieniach.
 GUIDE_STEPS_OFF	"Co najpierw" jest wyłączone: przewodnik idzie prosto do celu, pomijając drzwi i wodę.
+TELEPORT_BACK	Wróć do ostatniej pozycji
+MOVED_BACK	Wrócono na miejsce sprzed teleportacji.
+NOTHING_TO_GO_BACK_TO	Brak zapisanej pozycji sprzed teleportacji.

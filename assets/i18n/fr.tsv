@@ -720,7 +720,7 @@ APC	APC
 SAVE_AND_TRAVEL	Sauvegarde et voyage
 SAVE_POINT_TO_APC	Point de sauvegarde (vers l'APC)
 TELEPORT_TO_FOLLOWED	Se téléporter vers le suivi
-TELEPORT_TO_FOLLOWED_HINT	Atterrit un pas avant, dans cette région seulement. Sauvegardez d'abord votre position : un endroit fermé peut vous piéger.
+TELEPORT_TO_FOLLOWED_HINT	Vous dépose juste avant, dans cette région seulement. Votre position est gardée d'abord : « Revenir à la dernière position » vous y ramène.
 NOTHING_FOLLOWED_HERE	Rien de suivi dans cette région.
 TELEPORT	Téléporter
 MOVED_TO_TARGET	Déplacé vers {name}
@@ -799,3 +799,6 @@ CONSENT_HUD_COST	Plus d'éléments à l'écran, moins de l'image du jeu.
 CONSENT_HUD_YES	Oui, affichez-le sur le jeu
 GUIDE_WITHHELD	Écartés par vos réglages : {places} lieux cachés, {answers} révélant une réponse. Activables dans les Réglages.
 GUIDE_STEPS_OFF	"Ce qui vient d'abord" est désactivé : le guide va droit au but, sans tenir compte des portes ni de l'eau.
+TELEPORT_BACK	Revenir à la dernière position
+MOVED_BACK	Revenu où vous étiez avant la téléportation.
+NOTHING_TO_GO_BACK_TO	Aucune position d'avant téléportation n'est gardée.

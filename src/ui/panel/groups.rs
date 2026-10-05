@@ -136,47 +136,71 @@ impl Panel {
 
     /// What is followed (the auto guide's pick and every track) with a button each that
     /// moves the hero there: a step short of it, in this region only.
-    pub(super) fn teleports(&self, t: &mut Tui, snap: Option<&Snapshot>) {
-        card(t, tr!("TELEPORT_TO_FOLLOWED"), |t| {
-            let Some(s) = snap else { return };
-            let world = s.world.clone().unwrap_or_default();
-            let here = s.pose.map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
-            let state = self.shared.map.lock().unwrap();
-            let mut goals: Vec<crate::goals::Goal> = s.goals.iter().cloned().collect();
-            goals.extend(state.place_goals(&s.goals, &world));
-            let rows: Vec<(String, [u8; 3], [f32; 3])> = state
-                .followed()
-                .into_iter()
-                .filter_map(|f| {
-                    let g = goals.iter().find(|g| g.id == f.id)?;
-                    let label = match f.track.and_then(|id| state.tracks.iter().find(|t| t.id == id)) {
-                        Some(tr) => tr.shown(),
-                        None => format!("{} · {}", tr!("GUIDE_AUTO_CARD"), g.label),
-                    };
-                    Some((label, f.colour.unwrap_or([235, 235, 235]), g.at))
-                })
-                .collect();
-            drop(state);
-            note(t, tr!("TELEPORT_TO_FOLLOWED_HINT"));
-            if rows.is_empty() {
-                text(t, RichText::new(tr!("NOTHING_FOLLOWED_HERE")).color(DIM));
-            }
-            for (label, [r, g, b], at) in rows {
-                t.style(tw::row(INLINE)).add(|t| {
-                    w(t, |ui| {
-                        let (rect, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
-                        ui.painter().circle_filled(rect.center(), 5.0, Color32::from_rgb(r, g, b));
+    /// Before each teleport the engine keeps where the hero stood; the header's button goes
+    /// back there, shown from a teleport until it is used.
+    pub(super) fn teleports(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
+        let mut back = false;
+        let went = self.went;
+        let mut gone = false;
+        tw::card_with(
+            t,
+            tr!("TELEPORT_TO_FOLLOWED"),
+            |ui| {
+                if went && ui.small_button(tr!("TELEPORT_BACK")).clicked() {
+                    back = true;
+                }
+            },
+            |t| {
+                let Some(s) = snap else { return };
+                let world = s.world.clone().unwrap_or_default();
+                let here = s.pose.map(|(p, _)| [p[0] as f32, p[1] as f32, p[2] as f32]);
+                let state = self.shared.map.lock().unwrap();
+                let mut goals: Vec<crate::goals::Goal> = s.goals.iter().cloned().collect();
+                goals.extend(state.place_goals(&s.goals, &world));
+                let rows: Vec<(String, [u8; 3], [f32; 3])> = state
+                    .followed()
+                    .into_iter()
+                    .filter_map(|f| {
+                        let g = goals.iter().find(|g| g.id == f.id)?;
+                        let label = match f.track.and_then(|id| state.tracks.iter().find(|t| t.id == id)) {
+                            Some(tr) => tr.shown(),
+                            None => format!("{} · {}", tr!("GUIDE_AUTO_CARD"), g.label),
+                        };
+                        Some((label, f.colour.unwrap_or([235, 235, 235]), g.at))
+                    })
+                    .collect();
+                drop(state);
+                note(t, tr!("TELEPORT_TO_FOLLOWED_HINT"));
+                if rows.is_empty() {
+                    text(t, RichText::new(tr!("NOTHING_FOLLOWED_HERE")).color(DIM));
+                }
+                for (label, [r, g, b], at) in rows {
+                    t.style(tw::row(INLINE)).add(|t| {
+                        w(t, |ui| {
+                            let (rect, _) = ui.allocate_exact_size(egui::vec2(12.0, 12.0), egui::Sense::hover());
+                            ui.painter().circle_filled(rect.center(), 5.0, Color32::from_rgb(r, g, b));
+                        });
+                        block(t, |ui| ui.add(egui::Label::new(&label).truncate()));
+                        if let Some(h) = here {
+                            w(t, |ui| {
+                                ui.label(RichText::new(crate::raster::span(h, at)).monospace().small().color(DIM))
+                            });
+                        }
+                        if w(t, |ui| ui.button(tr!("TELEPORT"))).clicked() {
+                            let _ = self.tx.send(Request::Teleport(world.clone(), at, label.clone()));
+                            gone = true;
+                        }
                     });
-                    block(t, |ui| ui.add(egui::Label::new(&label).truncate()));
-                    if let Some(h) = here {
-                        w(t, |ui| ui.label(RichText::new(crate::raster::span(h, at)).monospace().small().color(DIM)));
-                    }
-                    if w(t, |ui| ui.button(tr!("TELEPORT"))).clicked() {
-                        let _ = self.tx.send(Request::Teleport(world.clone(), at, label.clone()));
-                    }
-                });
-            }
-        });
+                }
+            },
+        );
+        if gone {
+            self.went = true;
+        }
+        if back {
+            let _ = self.tx.send(Request::GoBack);
+            self.went = false;
+        }
     }
 
     /// Every cheat that is on, across the groups: the name and its group (dim), and the
