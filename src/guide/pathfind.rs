@@ -329,6 +329,69 @@ impl Path {
     pub fn uncertain(&self) -> bool {
         self.through.iter().any(|&t| t)
     }
+
+    /// The path with its corners rounded, to be drawn: `smooth`, a leg's flag kept by the
+    /// pieces it becomes (a piece across a corner takes either leg's).
+    pub fn smooth(&self) -> Path {
+        let mut points: Vec<[f32; 3]> = self.points.iter().map(|q| [q[0], q[1], 0.0]).collect();
+        let mut through = self.through.clone();
+        through.resize(points.len().saturating_sub(1), false);
+        for _ in 0..SMOOTH_PASSES {
+            let (p, t) = cut_corners(&points, &through);
+            points = p;
+            through = t;
+        }
+        Path { points: points.iter().map(|q| [q[0], q[1]]).collect(), through }
+    }
+}
+
+/// Corner cuts (Chaikin's): each leg loses a quarter at either end, at most `SMOOTH_CUT` (cm), so
+/// a corner by a doorway is rounded without crossing into the wall; twice, for a smooth bend.
+const SMOOTH_PASSES: usize = 2;
+const SMOOTH_CUT: f32 = 120.0;
+
+fn cut_corners(pts: &[[f32; 3]], through: &[bool]) -> (Vec<[f32; 3]>, Vec<bool>) {
+    let n = pts.len();
+    if n < 3 {
+        return (pts.to_vec(), through.to_vec());
+    }
+    let mut out = vec![pts[0]];
+    let mut flags = Vec::new();
+    for k in 0..n - 1 {
+        let (a, b) = (pts[k], pts[k + 1]);
+        let d = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+        let len = (d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt().max(f32::EPSILON);
+        let f = (0.25 * len).min(SMOOTH_CUT) / len;
+        let at = |t: f32| [a[0] + d[0] * t, a[1] + d[1] * t, a[2] + d[2] * t];
+        let leg = through.get(k).copied().unwrap_or(false);
+        // the ends stay where they are: the hero and the goal
+        if k > 0 {
+            out.push(at(f));
+            // the piece across the corner from the leg before
+            let before = through.get(k - 1).copied().unwrap_or(false);
+            flags.push(before || leg);
+        }
+        if k < n - 2 {
+            out.push(at(1.0 - f));
+            flags.push(leg);
+        } else {
+            out.push(b);
+            flags.push(leg);
+        }
+    }
+    (out, flags)
+}
+
+/// A 3D polyline (cm) with its corners rounded as `Path::smooth` rounds a path's.
+pub fn smooth3(pts: &[[f32; 3]]) -> Vec<[f32; 3]> {
+    let mut points = pts.to_vec();
+    let mut through = vec![false; points.len().saturating_sub(1)];
+    for _ in 0..SMOOTH_PASSES {
+        let (p, t) = cut_corners(&points, &through);
+        points = p;
+        through = t;
+    }
+    points
 }
 
 /// A polygon's area (cm²).
@@ -461,6 +524,27 @@ pub fn next_point(route: &[[f32; 2]], from: [f32; 2], ahead: f32) -> Option<[f32
     let slack = (best.sqrt() + PASSED).powi(2);
     let seg = near.iter().rposition(|&d| d <= slack)?;
     route[seg + 1..].iter().find(|p| d2(**p, from) >= ahead * ahead).or(route.last()).copied()
+}
+
+#[cfg(test)]
+mod smooth_tests {
+    use super::*;
+
+    #[test]
+    fn a_smoothed_path_keeps_its_ends_and_rounds_its_corner() {
+        let p = Path { points: vec![[0.0, 0.0], [1000.0, 0.0], [1000.0, 1000.0]], through: vec![false, true] };
+        let s = p.smooth();
+        assert_eq!(s.points.first(), Some(&[0.0, 0.0]));
+        assert_eq!(s.points.last(), Some(&[1000.0, 1000.0]));
+        assert_eq!(s.through.len(), s.points.len() - 1);
+        assert!(s.points.len() > 3, "the corner is cut into pieces");
+        assert!(!s.points.contains(&[1000.0, 0.0]), "the corner itself is gone");
+        // no cut further than SMOOTH_CUT from the corner
+        assert!(s.points.iter().all(|q| (q[0] - 1000.0).abs().max(q[1].abs()) >= 0.0));
+        assert!(s.points.iter().all(|q| q[0] >= 1000.0 - SMOOTH_CUT || q[1].abs() < 1.0));
+        assert!(*s.through.last().unwrap(), "the last leg keeps its flag");
+        assert!(!s.through[0], "the first leg keeps its own");
+    }
 }
 
 #[cfg(test)]

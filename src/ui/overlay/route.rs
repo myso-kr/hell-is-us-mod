@@ -116,20 +116,20 @@ impl Route {
     /// game's view. Points without a height (a path kept from before heights) take the hero's.
     pub fn drawn3d(&self, p: [f32; 3]) -> Vec<[f32; 3]> {
         let feet = p[2] - 90.0;
-        self.path
-            .points
-            .iter()
-            .enumerate()
-            .map(
-                |(k, q)| {
+        let pts: Vec<[f32; 3]> =
+            self.path
+                .points
+                .iter()
+                .enumerate()
+                .map(|(k, q)| {
                     if k == 0 {
                         [p[0], p[1], feet]
                     } else {
                         [q[0], q[1], self.heights.get(k).copied().unwrap_or(feet)]
                     }
-                },
-            )
-            .collect()
+                })
+                .collect();
+        crate::pathfind::smooth3(&pts)
     }
 
     /// The route as drawn: starting at the hero.
@@ -138,6 +138,7 @@ impl Route {
         if let Some(first) = path.points.first_mut() {
             *first = [p[0], p[1]];
         }
-        path
+        // drawn with round bends, not a polyline's corners
+        path.smooth()
     }
 }

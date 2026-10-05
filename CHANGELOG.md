@@ -23,6 +23,11 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Changed
 
+- Routes are drawn with round bends on the minimap, the big map, the 3D map and in the game view
+  (corners cut twice, at most 1.2 m, so a bend by a doorway does not cross the wall); the 3D map's
+  ribbon is one strip with mitred joins, not a chain of plates.
+- The game view's icons shrink and fade with distance as the compass's pins do, and the game
+  view's 3D layer shows and hides with the maps (game in front, no menu, the map key not off).
 - The 3D map zooms with Ctrl+wheel (or the + and − buttons): the wheel scrolls the page, as over
   an embedded map, so scrolling past it no longer moves its camera.
 - The Map page's settings (minimap, big map, terrain, layer opacity, the game view's 3D layer,

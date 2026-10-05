@@ -495,3 +495,19 @@ egui's `PaintCallbackInfo::viewport_in_pixels` clamps the viewport to the window
 shrank while its projection kept the rect's aspect, so the scene squashed and seemed to move with
 the scroll. The view now sets the rect's own, unclamped viewport (`map3d::viewport`, which may start
 above or below the window); the scissor alone cuts it to what shows.
+
+### 16.5 Round routes; the game view's icons by distance (2026-10-06)
+
+The route was drawn as the path's polyline: hard corners on the 2D maps, and on the 3D map a quad
+per leg, which overlapped or gapped at each bend ("square plates joined"). `Path::smooth` (and
+`pathfind::smooth3` for the 3D route) cut each corner twice (Chaikin), a quarter of the leg at each
+end but at most 1.2 m, so a corner by a doorway rounds without crossing into the wall; the ends (the
+hero and the goal) stay, and a leg's "through" flag passes to its pieces. `Route::drawn` and
+`drawn3d` return the smoothed way, so every map and the game view draw the same curve. The 3D
+ribbon is one strip: each point's side is the mean of its legs', lengthened through a bend (at most
+twice) so the band keeps its width.
+
+The game view's icons take the compass's look (`compass::pin_look`: 115% near to 70% far, opaque
+to 35%, on a log scale over 10–200 m), rasterised per size in 2 px steps and drawn far first. The
+layer is hidden whenever the maps are (game not in front, a menu open, no map consent) and when the
+map key is at "off".

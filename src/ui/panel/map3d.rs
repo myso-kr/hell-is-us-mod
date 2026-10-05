@@ -743,20 +743,49 @@ struct Frame {
 fn ribbon(pts: &[[f32; 3]], colour: [u8; 3]) -> Vec<f32> {
     let mut out = Vec::new();
     let n = pts.len();
-    for k in 0..n.saturating_sub(1) {
+    if n < 2 {
+        return out;
+    }
+    let c = colour.map(|v| v as f32 / 255.0);
+    // each leg's unit side
+    let side = |k: usize| {
         let (a, b) = (pts[k], pts[k + 1]);
         let (dx, dz) = (b[0] - a[0], b[2] - a[2]);
         let l = (dx * dx + dz * dz).sqrt().max(1e-3);
-        let (ox, oz) = (-dz / l * 1.2, dx / l * 1.2);
-        let c = colour.map(|v| v as f32 / 255.0);
-        let (ca, cb) = (c, c);
-        let v = |p: [f32; 3], s: f32, col: [f32; 3]| [p[0] + ox * s, p[1] + 0.6, p[2] + oz * s, col[0], col[1], col[2]];
-        for q in [v(a, -1.0, ca), v(a, 1.0, ca), v(b, 1.0, cb), v(a, -1.0, ca), v(b, 1.0, cb), v(b, -1.0, cb)] {
+        [-dz / l, dx / l]
+    };
+    // each point's: the mean of its legs' (a mitre), lengthened so the band keeps its width
+    // through a bend, at most twice
+    let edges: Vec<([f32; 3], [f32; 3])> = (0..n)
+        .map(|k| {
+            let s = match (k.checked_sub(1).map(side), (k + 1 < n).then(|| side(k))) {
+                (Some(a), Some(b)) => {
+                    let m = [a[0] + b[0], a[1] + b[1]];
+                    let l = (m[0] * m[0] + m[1] * m[1]).sqrt().max(1e-3);
+                    let m = [m[0] / l, m[1] / l];
+                    let stretch = 1.0 / (m[0] * a[0] + m[1] * a[1]).max(0.5);
+                    [m[0] * stretch, m[1] * stretch]
+                }
+                (Some(a), None) | (None, Some(a)) => a,
+                (None, None) => [0.0, 0.0],
+            };
+            let p = pts[k];
+            let at = |w: f32| [p[0] + s[0] * w, p[1] + 0.6, p[2] + s[1] * w];
+            (at(-RIBBON_HALF), at(RIBBON_HALF))
+        })
+        .collect();
+    let v = |p: [f32; 3]| [p[0], p[1], p[2], c[0], c[1], c[2]];
+    for w in edges.windows(2) {
+        let ((l0, r0), (l1, r1)) = (w[0], w[1]);
+        for q in [v(l0), v(r0), v(r1), v(l0), v(r1), v(l1)] {
             out.extend(q);
         }
     }
     out
 }
+
+/// The route ribbon's half width (m).
+const RIBBON_HALF: f32 = 0.9;
 
 /// At most this many icons, none over another: the nearest win.
 const ICONS_MAX: usize = 220;
