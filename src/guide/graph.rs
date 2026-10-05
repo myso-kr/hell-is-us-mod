@@ -392,7 +392,10 @@ impl Graph {
         let at = a["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
         let at = at.filter(|x| x.len() == 3).map_or([0.0; 3], |x| [x[0], x[1], x[2]]);
         let mut needs = Vec::new();
-        let acts = strs(&a["activators"]);
+        // Packed level instances (`…_PLI_C`) are baked art, not actors: one names a floor as its
+        // activator (a designer's slip in Senedra's cells); nothing can set it off.
+        let acts: Vec<String> = strs(&a["activators"]).into_iter().filter(|x| !x.contains("_PLI_C")).collect();
+        let class = a["class"].as_str().unwrap_or("");
         let l = &a["logic"];
         let logic = (!l.is_null()).then(|| Logic {
             order: l["order"].as_bool().unwrap_or(false),
@@ -401,8 +404,11 @@ impl Graph {
             solution: l["solution"].as_array().into_iter().flatten().filter_map(|x| x.as_i64()).collect(),
         });
         if !acts.is_empty() {
-            // In order, all of them, or each to its position: every one; else any one.
-            let every = logic.as_ref().is_some_and(|l| l.order || l.all || !l.solution.is_empty());
+            // In order, all of them, or each to its position: every one; a multi-activator
+            // receiver every one too (the forge's four keystones, its two keys), though the
+            // survey reads no logic for most; else any one (an elevator's call levers).
+            let every = logic.as_ref().is_some_and(|l| l.order || l.all || !l.solution.is_empty())
+                || class.contains("MultiActivator") && class.contains("Receiver");
             let each: Vec<Need> = acts.iter().cloned().map(Need::Used).collect();
             needs.push(if every { Need::All(each) } else { Need::Any(each) });
         }
@@ -410,9 +416,15 @@ impl Graph {
             needs.extend(need_of(c));
         }
         let items = strs(&a["puzzle"]["items"]);
-        // A choice puzzle's slot takes one of several: no single item it needs.
-        if !items.is_empty() && a["puzzle"]["expects"].is_null() {
-            needs.push(Need::All(items.into_iter().map(Need::Item).collect()));
+        // A slot takes its item. A choice puzzle's slot that counts one as right takes that one
+        // (the Eye of God's orbs); a decoy (`expects` empty) is left empty: nothing to bring
+        // (Vyssa's fifteen wrong flower spots; needing any of their items closed a loop that
+        // left 1627 nodes stuck).
+        match a["puzzle"]["expects"].as_str() {
+            Some(e) if !e.is_empty() => needs.push(Need::Item(e.rsplit('/').next().unwrap_or(e).to_string())),
+            Some(_) => {}
+            None if !items.is_empty() => needs.push(Need::All(items.into_iter().map(Need::Item).collect())),
+            None => {}
         }
         let mut gives_tags = payload_facts(&a["payload"], identities);
         // A quest listener: what its blueprint sets as the story goes.
@@ -458,6 +470,80 @@ impl Graph {
     }
 
     fn index(&mut self) {
+        // A slot on a pillar that rises (the Eye of God's last slot sits on the pillar its orbs
+        // raise): usable once the pillar is up. Only pillars: a keystone slot also sits by the
+        // panel it sets off itself, and needing that would close a loop.
+        let pillars: Vec<(String, String, [f32; 3])> = self
+            .nodes
+            .iter()
+            .filter(|n| n.class.contains("Pillar") && n.class.contains("Receiver"))
+            .map(|n| (n.world.clone(), n.name.clone(), n.at))
+            .collect();
+        for n in self.nodes.iter_mut().filter(|n| n.class.contains("Placement")) {
+            if let Some((_, pillar, _)) = pillars.iter().find(|(w, _, at)| {
+                *w == n.world
+                    && (at[0] - n.at[0]).hypot(at[1] - n.at[1]) < PILLAR_NEAR
+                    && (at[2] - n.at[2]).abs() < PILLAR_NEAR
+            }) {
+                n.needs.push(Need::Used(pillar.clone()));
+            }
+        }
+        // A main quest's facts are given within it: what gives them needs it begun, where
+        // something begins it (the Eye of God's orbs and Act 3's end wait for Quest06, begun
+        // when all four keystones are in; a place behind a door the data does not tell of).
+        // Not what begins it.
+        let started: HashSet<String> = self
+            .nodes
+            .iter()
+            .flat_map(|n| n.gives_tags.iter())
+            .filter(|t| t.ends_with("_Started_StatusFact_DA"))
+            .cloned()
+            .collect();
+        for n in self.nodes.iter_mut() {
+            if n.gives_tags.iter().any(|t| t.ends_with("_Started_StatusFact_DA")) {
+                continue;
+            }
+            let mut quests: Vec<String> = n
+                .gives_tags
+                .iter()
+                .filter_map(|t| t.find("Quest0").map(|i| t[i..].chars().take(7).collect::<String>()))
+                .filter(|q| q != "Quest01")
+                .collect();
+            quests.sort();
+            quests.dedup();
+            for q in quests {
+                let begun = format!("{q}_Started_StatusFact_DA");
+                if started.contains(&begun) {
+                    n.needs.push(Need::Fact(begun, true));
+                }
+            }
+        }
+        // A person "used" (a cinematic after a conversation): something their conversation says
+        // known, which the save holds (a person keeps no state of their own).
+        let said: HashMap<(String, String), Vec<String>> = {
+            let mut m: HashMap<(String, String), Vec<String>> = HashMap::new();
+            for n in self.nodes.iter().filter(|n| n.class == "Say") {
+                if let (Some((who, _)), Some(first)) = (n.name.split_once("#say"), n.gives_tags.first()) {
+                    m.entry((n.world.clone(), who.to_string())).or_default().push(first.clone());
+                }
+            }
+            m
+        };
+        fn person(need: &mut Need, world: &str, said: &HashMap<(String, String), Vec<String>>) {
+            match need {
+                Need::Used(a) => {
+                    if let Some(tags) = said.get(&(world.to_string(), a.clone())) {
+                        *need = Need::Any(tags.iter().map(|t| Need::Fact(t.clone(), true)).collect());
+                    }
+                }
+                Need::All(v) | Need::Any(v) => v.iter_mut().for_each(|x| person(x, world, said)),
+                _ => {}
+            }
+        }
+        for n in self.nodes.iter_mut() {
+            let world = n.world.clone();
+            n.needs.iter_mut().for_each(|x| person(x, &world, &said));
+        }
         // A device that needs the state of the receiver it sets off (an elevator's call lever
         // needs the elevator at the other floor): where the receiver is, not what comes
         // first. Kept, it closes a loop (lever → elevator → lever) no chain gets out of.
@@ -1212,6 +1298,8 @@ impl Graph {
 
 /// How near a goal and a node must be to be the same place (cm).
 const NEAR: f32 = 150.0;
+/// How near a slot must sit to a pillar to be on it (cm).
+const PILLAR_NEAR: f32 = 50.0;
 /// A receiver's devices further apart than this from their middle (cm) are not one room.
 const STAND_SPREAD: f32 = 2_500.0;
 
