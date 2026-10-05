@@ -625,7 +625,7 @@ impl Graph {
                     id: step_id(n),
                     world: n.world.clone(),
                     at: n.at,
-                    label: crate::goals::readable(&n.class),
+                    label: place_label(n),
                     kind: self.puzzle_kind(i)?,
                     answer: self.answer(i)?,
                     solved: self.used(i, s),
@@ -673,12 +673,52 @@ pub fn label(n: &Node) -> String {
         return trf!("REQ_PUT_HERE", items = takes.join(", "));
     }
     // What kind of thing it is, in words, where the class says it; else its class's words.
+    place_label(n)
+}
+
+/// A node's place, from its class's words without the words every such class has
+/// (`Eye Of God Multi Activators Receiver` → `Eye Of God`), with its kind's word when the
+/// class says one (`Lake Cynon · Lymbic lock`).
+pub fn place_label(n: &Node) -> String {
+    const GENERIC: [&str; 22] = [
+        "Multi",
+        "Activators",
+        "Activator",
+        "Receiver",
+        "Interact",
+        "Interactable",
+        "Logic",
+        "Gate",
+        "Inactive",
+        "Payload",
+        "Panel",
+        "Lymbic",
+        "Lock",
+        "1st",
+        "Gen",
+        "Puzzle",
+        "Dial",
+        "Keypad",
+        "Placement",
+        "Trigger",
+        "No",
+        "Actions",
+    ];
+    let words: Vec<String> =
+        crate::goals::readable(&n.class).split(' ').filter(|w| !GENERIC.contains(w)).map(str::to_string).collect();
+    let place = words.join(" ").trim().to_string();
     let kind = KINDS.iter().find(|(part, _)| n.class.contains(part)).map(|(_, key)| crate::i18n::text(key));
-    kind.unwrap_or_else(|| crate::goals::readable(&n.class))
+    match (place.is_empty(), kind) {
+        (false, Some(k)) => format!("{place} · {k}"),
+        (false, None) => place,
+        (true, Some(k)) => k,
+        (true, None) => crate::goals::readable(&n.class),
+    }
 }
 
 /// What a class's name says a thing is (the first that fits), and its words' key.
-const KINDS: [(&str, &str); 9] = [
+const KINDS: [(&str, &str); 10] = [
+    ("LymbicLock_1stGen", "LYMBIC_LOCK"),
     ("1stGenLymbicActivator", "GRAPH_LYMBIC_ACTIVATOR"),
     ("LymbicLockPanel", "LYMBIC_LOCK"),
     ("DroneTranslation", "DRONE_TRANSLATION"),
@@ -947,6 +987,15 @@ mod tests {
         assert_eq!(goals[0].gate, Gate::Conditional, "the key held back");
         let step = goals.iter().find(|x| x.at == [0.0, 0.0, 0.0]).expect("the gear made a goal");
         assert_eq!(step.keys, ["Q2"], "of the key's quest");
+    }
+
+    #[test]
+    fn a_place_reads_as_its_words_and_its_kind() {
+        let n = |class: &str| Node { class: class.into(), ..Default::default() };
+        assert_eq!(place_label(&n("EyeOfGodMultiActivatorsReceiver_BP_C")), "Eye Of God");
+        assert_eq!(place_label(&n("ForgeFoyerMultiActivatorsReceiver_BP_C")), "Forge Foyer");
+        let lock = format!("Lake Cynon · {}", crate::i18n::text("LYMBIC_LOCK"));
+        assert_eq!(place_label(&n("LakeCynon_LymbicLock_1stGenReceiver_BP_C")), lock);
     }
 
     #[test]
