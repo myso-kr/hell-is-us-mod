@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Raccourci : chute de {m} m, jusqu’à 70 % de santé
 MAP3D_SPOT	Cet endroit
 MAP3D_TELEPORT_HERE	Se téléporter ici
 MOVED_TO_SPOT	Déplacé à l’endroit.
+FACE_SCONCE_LIT	allumé
+FACE_SCONCE_OUT	éteint
+FACE_INWARD	{glyph} vers l’intérieur
+GLYPH_ARROWS	flèches haut et bas
+GLYPH_BOW	arc et flèche
+GLYPH_RING	anneau ouvert en haut
+GLYPH_CLAWS	traces de griffes

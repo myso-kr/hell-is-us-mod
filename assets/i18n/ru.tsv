@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Короткий путь: прыжок {m} м — до 70% 
 MAP3D_SPOT	Эта точка
 MAP3D_TELEPORT_HERE	Телепорт сюда
 MOVED_TO_SPOT	Перемещено в точку.
+FACE_SCONCE_LIT	зажечь
+FACE_SCONCE_OUT	не зажигать
+FACE_INWARD	{glyph} внутрь
+GLYPH_ARROWS	стрелки вверх и вниз
+GLYPH_BOW	лук и стрела
+GLYPH_RING	кольцо, открытое сверху
+GLYPH_CLAWS	следы когтей

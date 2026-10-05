@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Skrót: {m} m spadku, do 70% zdrowia
 MAP3D_SPOT	To miejsce
 MAP3D_TELEPORT_HERE	Teleportuj tutaj
 MOVED_TO_SPOT	Przeniesiono w to miejsce.
+FACE_SCONCE_LIT	zapalony
+FACE_SCONCE_OUT	zgaszony
+FACE_INWARD	{glyph} do środka
+GLYPH_ARROWS	strzałki w górę i w dół
+GLYPH_BOW	łuk i strzała
+GLYPH_RING	pierścień otwarty u góry
+GLYPH_CLAWS	ślady pazurów

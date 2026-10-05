@@ -53,6 +53,20 @@ pub fn kind(ui: &mut egui::Ui, k: crate::actors::Kind, size: f32) -> egui::Respo
     sort(ui, s, size)
 }
 
+/// How a puzzle's device looks set right (graph.rs `Face`): a sconce lit or out, a glyph.
+pub fn face(ui: &mut egui::Ui, f: crate::graph::Face, size: f32) -> egui::Response {
+    use crate::graph::{Face, Glyph};
+    let svg = match f {
+        Face::Sconce(true) => include_str!("../../assets/puzzles/sconce_lit.svg"),
+        Face::Sconce(false) => include_str!("../../assets/puzzles/sconce_out.svg"),
+        Face::Hermit(Glyph::Arrows) => include_str!("../../assets/puzzles/hermit_arrows.svg"),
+        Face::Hermit(Glyph::Bow) => include_str!("../../assets/puzzles/hermit_bow.svg"),
+        Face::Hermit(Glyph::Ring) => include_str!("../../assets/puzzles/hermit_ring.svg"),
+        Face::Hermit(Glyph::Claws) => include_str!("../../assets/puzzles/hermit_claws.svg"),
+    };
+    image(ui, svg, size)
+}
+
 /// A map pin kind's icon (assets/pins).
 pub fn pin(ui: &mut egui::Ui, k: crate::minimap::PinKind, size: f32) -> egui::Response {
     image(ui, crate::icons::pin_source(k), size)

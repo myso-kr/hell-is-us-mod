@@ -506,8 +506,20 @@ impl Panel {
                     guide_to(state, &goals, &x);
                 }
                 if self.revealed.contains(&p.id) {
-                    for line in &p.answer {
-                        text(t, RichText::new(format!("    {line}")).color(OK));
+                    for step in &p.answer {
+                        match step.face {
+                            // drawn as the game shows it, beside its line
+                            Some(f) => {
+                                w(t, |ui| {
+                                    ui.horizontal(|ui| {
+                                        ui.add_space(14.0);
+                                        crate::ui::svg::face(ui, f, 20.0);
+                                        ui.label(RichText::new(&step.text).color(OK));
+                                    })
+                                });
+                            }
+                            None => text(t, RichText::new(format!("    {}", step.text)).color(OK)),
+                        }
                     }
                 }
             }

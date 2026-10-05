@@ -10,6 +10,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- Puzzle answers show what the game shows, not a number, where guides tell it: a sconce lit or
+  left out (the Sconces of Knowledge, the Forge Foyer), and the Hermit's plinths by the glyph
+  each turns inward (up and down arrows, bow, open ring, claws), drawn as SVG beside each line.
 - Teleport from the 3D map (cheats agreed to): a double click on a floor picks the spot under it,
   shown with a ring and a card with how far it is; "Teleport here" sends the hero there, and the
   picked place's card has the same. The teleport card's "back to where it was" covers it.

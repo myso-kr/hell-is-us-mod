@@ -844,6 +844,76 @@ impl Graph {
 }
 
 /// A compass word for the way from `from` to `to` (north is −Y in Hell Is Us).
+/// One step of a puzzle's answer: its line, and how the device looks set right, where the
+/// game shows that by a picture rather than a number (ui/svg.rs `face`).
+#[derive(Clone, Debug, PartialEq)]
+pub struct AnswerStep {
+    pub text: String,
+    pub face: Option<Face>,
+}
+
+/// How a device set right looks in the game.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Face {
+    /// A sconce lever (`…Sconce_LeverDualPosition…`): lit, or left out. The solution's 1 and 0
+    /// (the Sconces of Knowledge, the Forge Foyer).
+    Sconce(bool),
+    /// The Hermit's plinths (Acasa Marshes): each turned to show its glyph inward, to the
+    /// platform's middle — by the plinth's side of it, as the guides have it: east the up and
+    /// down arrows, north the bow, west the ring open at the top, south the claws.
+    Hermit(Glyph),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Glyph {
+    Arrows,
+    Bow,
+    Ring,
+    Claws,
+}
+
+impl Face {
+    pub fn label(self) -> String {
+        match self {
+            Face::Sconce(true) => tr!("FACE_SCONCE_LIT").to_string(),
+            Face::Sconce(false) => tr!("FACE_SCONCE_OUT").to_string(),
+            Face::Hermit(g) => trf!(
+                "FACE_INWARD",
+                glyph = match g {
+                    Glyph::Arrows => tr!("GLYPH_ARROWS"),
+                    Glyph::Bow => tr!("GLYPH_BOW"),
+                    Glyph::Ring => tr!("GLYPH_RING"),
+                    Glyph::Claws => tr!("GLYPH_CLAWS"),
+                }
+            ),
+        }
+    }
+}
+
+/// How the device `class` of the puzzle `receiver` (standing at `at`, the puzzle at `centre`)
+/// looks set to `position`, where the game shows it by a picture.
+fn face(receiver: &str, class: &str, centre: [f32; 3], at: [f32; 3], position: Option<i64>) -> Option<Face> {
+    if class.contains("LeverDualPosition") {
+        return position.map(|p| Face::Sconce(p != 0));
+    }
+    if receiver.contains("HermitSecret") {
+        let (east, north) = (at[0] - centre[0], -(at[1] - centre[1]));
+        let g = if east.abs() >= north.abs() {
+            if east > 0.0 {
+                Glyph::Arrows
+            } else {
+                Glyph::Ring
+            }
+        } else if north > 0.0 {
+            Glyph::Bow
+        } else {
+            Glyph::Claws
+        };
+        return Some(Face::Hermit(g));
+    }
+    None
+}
+
 fn bearing(from: [f32; 3], to: [f32; 3]) -> &'static str {
     let (east, north) = (to[0] - from[0], -(to[1] - from[1]));
     let deg = east.atan2(north).to_degrees().rem_euclid(360.0);
@@ -874,7 +944,7 @@ impl Graph {
 
     /// The answer of an order or position puzzle: each activator, numbered in its order,
     /// with its way and distance from the receiver, and the position it must be at.
-    pub fn answer(&self, i: usize) -> Option<Vec<String>> {
+    pub fn answer(&self, i: usize) -> Option<Vec<AnswerStep>> {
         let n = &self.nodes[i];
         let l = n.logic.as_ref()?;
         if !(l.order || !l.solution.is_empty()) {
@@ -885,12 +955,23 @@ impl Graph {
                 .iter()
                 .enumerate()
                 .map(|(k, a)| {
-                    let at = self.node(&n.world, a).map(|j| self.nodes[j].at).unwrap_or(n.at);
+                    let device = self.node(&n.world, a).map(|j| &self.nodes[j]);
+                    let at = device.map_or(n.at, |d| d.at);
                     let m = ((at[0] - n.at[0]).hypot(at[1] - n.at[1]) / 100.0).round() as u32;
                     let place = format!("{} {}m", bearing(n.at, at), m);
-                    match l.solution.get(k) {
-                        Some(p) => trf!("GRAPH_ANSWER_POSITION", k = k + 1, place = place, p = p),
-                        None => trf!("GRAPH_ANSWER_STEP", k = k + 1, place = place),
+                    let class = device.map_or("", |d| d.class.as_str());
+                    match (l.solution.get(k), face(&n.class, class, n.at, at, l.solution.get(k).copied())) {
+                        // as the game shows it: a sconce lit or not, a plinth's glyph
+                        (_, Some(f)) => {
+                            AnswerStep { text: format!("{}. {place}: {}", k + 1, f.label()), face: Some(f) }
+                        }
+                        (Some(p), None) => AnswerStep {
+                            text: trf!("GRAPH_ANSWER_POSITION", k = k + 1, place = place, p = p),
+                            face: None,
+                        },
+                        (None, None) => {
+                            AnswerStep { text: trf!("GRAPH_ANSWER_STEP", k = k + 1, place = place), face: None }
+                        }
                     }
                 })
                 .collect(),
@@ -1056,7 +1137,7 @@ pub struct LogicPuzzle {
     pub at: [f32; 3],
     pub label: String,
     pub kind: String,
-    pub answer: Vec<String>,
+    pub answer: Vec<AnswerStep>,
     pub solved: bool,
 }
 
@@ -1538,6 +1619,26 @@ pub struct Report {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_puzzle_device_shows_as_the_game_shows_it() {
+        let c = [0.0, 0.0, 0.0];
+        assert_eq!(
+            face("X", "MedialSconce_LeverDualPosition_ActivatorInteract_BP_C", c, c, Some(1)),
+            Some(Face::Sconce(true))
+        );
+        assert_eq!(
+            face("X", "MedialSconce_LeverDualPosition_ActivatorInteract_BP_C", c, c, Some(0)),
+            Some(Face::Sconce(false))
+        );
+        // the Hermit's plinths by their side of the platform (Unreal: +x east, −y north)
+        let hermit = "AcasaMarshesHermitSecretLogicGateReceiver_BP_C";
+        assert_eq!(face(hermit, "P", c, [500.0, 0.0, 0.0], Some(2)), Some(Face::Hermit(Glyph::Arrows)));
+        assert_eq!(face(hermit, "P", c, [0.0, -500.0, 0.0], Some(2)), Some(Face::Hermit(Glyph::Bow)));
+        assert_eq!(face(hermit, "P", c, [-500.0, 0.0, 0.0], Some(2)), Some(Face::Hermit(Glyph::Ring)));
+        assert_eq!(face(hermit, "P", c, [0.0, 500.0, 0.0], Some(2)), Some(Face::Hermit(Glyph::Claws)));
+        assert_eq!(face("JeljinMausoleum01", "Statue", c, c, Some(3)), None, "unknown: the number stays");
+    }
     use serde_json::json;
 
     /// The Lymbic Forge, as the survey has it: a gear given, a slot taking it, a lever

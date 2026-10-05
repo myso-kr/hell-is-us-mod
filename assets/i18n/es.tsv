@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Atajo: caída de {m} m, hasta el 70 % de salud
 MAP3D_SPOT	Este punto
 MAP3D_TELEPORT_HERE	Teletransportarse aquí
 MOVED_TO_SPOT	Movido al punto.
+FACE_SCONCE_LIT	encendido
+FACE_SCONCE_OUT	apagado
+FACE_INWARD	{glyph} hacia dentro
+GLYPH_ARROWS	flechas arriba y abajo
+GLYPH_BOW	arco y flecha
+GLYPH_RING	anillo abierto arriba
+GLYPH_CLAWS	marcas de garras

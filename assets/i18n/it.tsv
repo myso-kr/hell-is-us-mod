@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Scorciatoia: salto di {m} m, fino al 70% di salute
 MAP3D_SPOT	Questo punto
 MAP3D_TELEPORT_HERE	Teletrasportati qui
 MOVED_TO_SPOT	Spostato al punto.
+FACE_SCONCE_LIT	acceso
+FACE_SCONCE_OUT	spento
+FACE_INWARD	{glyph} verso l’interno
+GLYPH_ARROWS	frecce su e giù
+GLYPH_BOW	arco e freccia
+GLYPH_RING	anello aperto in alto
+GLYPH_CLAWS	segni di artigli

@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	지름길: {m} m 낙하 · 체력 최대 70% 피해
 MAP3D_SPOT	이 지점
 MAP3D_TELEPORT_HERE	여기로 순간이동
 MOVED_TO_SPOT	그 지점으로 이동했습니다.
+FACE_SCONCE_LIT	켜기
+FACE_SCONCE_OUT	끄기
+FACE_INWARD	{glyph}이(가) 안쪽을 향하게
+GLYPH_ARROWS	위아래 화살표
+GLYPH_BOW	활과 화살
+GLYPH_RING	위가 트인 고리
+GLYPH_CLAWS	발톱 자국

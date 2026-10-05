@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Abkürzung: {m} m Sprung kostet bis zu 70 % Gesundheit
 MAP3D_SPOT	Diese Stelle
 MAP3D_TELEPORT_HERE	Hierher teleportieren
 MOVED_TO_SPOT	Zur Stelle bewegt.
+FACE_SCONCE_LIT	anzünden
+FACE_SCONCE_OUT	aus
+FACE_INWARD	{glyph} nach innen
+GLYPH_ARROWS	Pfeile auf und ab
+GLYPH_BOW	Pfeil und Bogen
+GLYPH_RING	oben offener Ring
+GLYPH_CLAWS	Krallenspuren

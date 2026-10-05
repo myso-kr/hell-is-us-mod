@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Kestirme: {m} m düşüş, canın %70’ine kadar
 MAP3D_SPOT	Bu nokta
 MAP3D_TELEPORT_HERE	Buraya ışınlan
 MOVED_TO_SPOT	Noktaya taşındı.
+FACE_SCONCE_LIT	yakılı
+FACE_SCONCE_OUT	sönük
+FACE_INWARD	{glyph} içe bakacak
+GLYPH_ARROWS	yukarı aşağı oklar
+GLYPH_BOW	yay ve ok
+GLYPH_RING	üstü açık halka
+GLYPH_CLAWS	pençe izleri

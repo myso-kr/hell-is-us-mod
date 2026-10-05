@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	近道: {m} m の落下 · 体力最大70%ダメージ
 MAP3D_SPOT	この地点
 MAP3D_TELEPORT_HERE	ここへテレポート
 MOVED_TO_SPOT	その地点へ移動しました。
+FACE_SCONCE_LIT	点ける
+FACE_SCONCE_OUT	消す
+FACE_INWARD	{glyph}を内側に向ける
+GLYPH_ARROWS	上下の矢印
+GLYPH_BOW	弓矢
+GLYPH_RING	上が開いた輪
+GLYPH_CLAWS	爪痕

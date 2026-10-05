@@ -834,3 +834,10 @@ CTX_DROP_HURTS_MORE	Shortcut: a {m} m drop costs up to 70% of your health
 MAP3D_SPOT	This spot
 MAP3D_TELEPORT_HERE	Teleport here
 MOVED_TO_SPOT	Moved to the spot.
+FACE_SCONCE_LIT	lit
+FACE_SCONCE_OUT	left out
+FACE_INWARD	{glyph}, facing inward
+GLYPH_ARROWS	up and down arrows
+GLYPH_BOW	bow and arrow
+GLYPH_RING	ring open at the top
+GLYPH_CLAWS	claw marks
