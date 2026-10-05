@@ -294,6 +294,16 @@ impl Graph {
                     p["at"].as_array().map(|x| x.iter().map(|c| c.as_f64().unwrap_or(0.0) as f32).collect::<Vec<_>>());
                 let at = at.filter(|x| x.len() == 3).map_or([0.0; 3], |x| [x[0], x[1], x[2]]);
                 let gives_tags = payload_facts(p, &identities);
+                // A boss that gives a main quest's facts is fought in that quest: not before
+                // it has begun (Senedra's boss gives Quest03's keystone).
+                let mut needs = Vec::new();
+                if kind == "boss" {
+                    let mut quests: Vec<String> =
+                        gives_tags.iter().filter_map(|t| t.find("Quest0").map(|i| t[i..i + 7].to_string())).collect();
+                    quests.sort();
+                    quests.dedup();
+                    needs.extend(quests.into_iter().map(|q| Need::Fact(format!("{q}_Started_StatusFact_DA"), true)));
+                }
                 let name = format!("{world}:{kind}");
                 g.by_name.insert((world.to_string(), name.clone()), g.nodes.len());
                 g.nodes.push(Node {
@@ -303,6 +313,7 @@ impl Graph {
                     at,
                     gives_items: strs(&p["items"]),
                     gives_tags,
+                    needs,
                     ..Default::default()
                 });
             }
@@ -343,6 +354,15 @@ impl Graph {
                     });
                 }
             }
+        }
+        // A quest listener names the tags its blueprint uses, set or waited for alike
+        // (Jova's grieving father waits for `Act01Complete` to change the burial). One that
+        // something else gives, it waits for; only what nothing else gives is its own outcome
+        // (a boss killed, a photo taken).
+        let by_others: HashSet<String> =
+            g.nodes.iter().filter(|n| !n.scripted).flat_map(|n| n.gives_tags.iter().cloned()).collect();
+        for n in g.nodes.iter_mut().filter(|n| n.scripted && n.class.contains("QuestListener")) {
+            n.gives_tags.retain(|t| !by_others.contains(t));
         }
         // A region is travelled to by the APC once its transition is known (the region's
         // `WMA_<world>_Travel_BifrostTransitionFact`, a base fact of its travel identity that
