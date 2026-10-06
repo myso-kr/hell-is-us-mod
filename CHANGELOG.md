@@ -14,6 +14,11 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   points (or along the guide's route), 1.8 m above the floor, its corners rounded, eased in and
   out; Spotlight keeps it on the hero. The camera's distance and field of view now apply to the
   combat camera too, so a fight on the way keeps the shot.
+- Filming around obstacles, after DJI's APAS (bypass, planned ahead, rather than brake): a
+  flight's path goes over low obstacles and round tall ones, each avoidance starting well before
+  the obstacle and easing back after; the camera's distance closes in ahead of what stands behind
+  it — checked now and a moment ahead — and backs out slowly after, instead of the game's sudden
+  pull-in, which is itself slowed during a take.
 
 ## 0.7.0 — 2026-10-06
 

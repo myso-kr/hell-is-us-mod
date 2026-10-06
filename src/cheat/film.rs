@@ -21,6 +21,14 @@
 //! turns about, in the hero's frame (its body's yaw), and the game follows it smoothly
 //! (probed: 500 cm ahead moved the camera 480 cm the way the hero faced). The path is flown
 //! straight between the points, its corners rounded, lifted above the floor.
+//!
+//! Obstacles, after DJI's APAS: a drone set to film bypasses rather than brakes, its avoidance
+//! planned ahead so the path stays smooth. Here: a flight's path is checked before it starts —
+//! over low obstacles, round tall ones — and its heights and turns spread out so each begins
+//! well before the obstacle. The camera's room behind it is checked every tick, now and a moment
+//! ahead, and its distance eased in before the game's own pull-in (a snap in 0.15 s, out in
+//! 0.25 s) would have to act, and back out slowly after; that pull-in, if it still acts, is
+//! slowed for the take.
 
 use crate::mem::Memory;
 use crate::player::PoseSource;
@@ -83,6 +91,144 @@ pub struct Wiring {
     pub fov: Vec<u64>,
     pub pivot: Option<u64>,
     pub body: Option<u64>,
+    /// The camera mode's `PenetrationBlendInTime` and `PenetrationBlendOutTime` (floats).
+    pub blend: Option<(u64, u64)>,
+    /// What stands in the way (obstacles.rs), for the flight's path and the camera's room.
+    pub scene: std::sync::Arc<crate::obstacles::Scene>,
+}
+
+/// Clearing obstacles: the room kept from them (cm), how high an obstacle may stand above the
+/// path to be flown over rather than round (cm), the step the path is checked at (cm), and how
+/// far either side an avoidance is spread (cm).
+const CLEAR: f32 = 120.0;
+const CLIMB_MAX: f32 = 450.0;
+const CHECK_STEP: f32 = 50.0;
+const SPREAD: f32 = 400.0;
+/// The camera's room: kept from what is behind it (cm), never closer than (cm), how far ahead
+/// it looks (s of the flight, cm of the walk), and how fast it closes in and backs out (share a
+/// second).
+const ROOM_MARGIN: f32 = 60.0;
+const ROOM_MIN: f32 = 80.0;
+const ROOM_AHEAD_S: f32 = 0.8;
+const ROOM_AHEAD_CM: f32 = 250.0;
+const ROOM_IN: f32 = 2.5;
+const ROOM_OUT: f32 = 0.7;
+/// The game's own pull-in, slowed for a take (s): in, out.
+const BLEND: (f32, f32) = (0.6, 1.2);
+
+/// A flight's path kept clear of obstacles: each point inside one lifted over it (when it stands
+/// at most `CLIMB_MAX` above) or moved out past its side, then the heights spread so a climb
+/// starts `SPREAD` before (the most within reach, then the mean) and the moves smoothed, twice.
+pub fn clear_flight(path: &[[f32; 3]], b: &crate::obstacles::Blocking) -> Vec<[f32; 3]> {
+    // every CHECK_STEP
+    let mut pts: Vec<[f32; 3]> = Vec::new();
+    for w in path.windows(2) {
+        let d = ((w[1][0] - w[0][0]).powi(2) + (w[1][1] - w[0][1]).powi(2) + (w[1][2] - w[0][2]).powi(2)).sqrt();
+        let n = (d / CHECK_STEP).ceil().max(1.0) as usize;
+        for k in 0..n {
+            let t = k as f32 / n as f32;
+            pts.push([0, 1, 2].map(|i| w[0][i] + (w[1][i] - w[0][i]) * t));
+        }
+    }
+    pts.extend(path.last());
+    if pts.len() < 3 {
+        return pts;
+    }
+    let reach = (SPREAD / CHECK_STEP).round() as usize;
+    let n = pts.len();
+    // a window as wide either side (narrower near the ends, which stay where they are)
+    let window = |i: usize| {
+        let r = reach.min(i).min(n - 1 - i);
+        i - r..i + r + 1
+    };
+    for _ in 0..3 {
+        // what each point needs: a height, a move aside
+        let mut need = vec![f32::MIN; n];
+        let mut aside = vec![[0.0f32; 2]; n];
+        for i in 0..n {
+            let p = &pts[i];
+            for o in b.under(p[0], p[1]) {
+                if p[2] < o.zmin - CLEAR || p[2] > o.zmax + CLEAR {
+                    continue;
+                }
+                if o.zmax - p[2] <= CLIMB_MAX {
+                    need[i] = need[i].max(o.zmax + CLEAR);
+                } else {
+                    // round it, square to the way: on the side away from its middle, as far as
+                    // takes the point out of it and CLEAR beyond
+                    let (prev, next) = (pts[i.saturating_sub(1)], pts[(i + 1).min(n - 1)]);
+                    let (wx, wy) = (next[0] - prev[0], next[1] - prev[1]);
+                    let wl = wx.hypot(wy).max(1e-3);
+                    let mut side = [-wy / wl, wx / wl];
+                    let mid = o.hull.iter().fold([0.0f32, 0.0], |m, q| [m[0] + q[0], m[1] + q[1]]);
+                    let mid = [mid[0] / o.hull.len() as f32, mid[1] / o.hull.len() as f32];
+                    if (mid[0] - p[0]) * side[0] + (mid[1] - p[1]) * side[1] > 0.0 {
+                        side = [-side[0], -side[1]];
+                    }
+                    let out = crate::obstacles::clip(&o.hull, *p, [side[0], side[1], 0.0], 0.0, 100_000.0)
+                        .map_or(0.0, |(_, t1)| t1);
+                    let m = [side[0] * (out + CLEAR), side[1] * (out + CLEAR)];
+                    if m[0].hypot(m[1]) > aside[i][0].hypot(aside[i][1]) {
+                        aside[i] = m;
+                    }
+                }
+            }
+        }
+        if need.iter().all(|&z| z == f32::MIN) && aside.iter().all(|a| a[0] == 0.0 && a[1] == 0.0) {
+            break;
+        }
+        // spread: the most any point within reach needs, then the mean of that — so where an
+        // obstacle is, all of it is kept, and it eases in and out either side
+        let most_z: Vec<f32> = (0..n).map(|i| window(i).map(|j| need[j]).fold(pts[i][2], f32::max)).collect();
+        let most_aside: Vec<[f32; 2]> = (0..n)
+            .map(|i| {
+                window(i)
+                    .map(|j| aside[j])
+                    .fold([0.0f32, 0.0], |a, m| if m[0].hypot(m[1]) > a[0].hypot(a[1]) { m } else { a })
+            })
+            .collect();
+        let mean = |i: usize, v: &dyn Fn(usize) -> f32| {
+            let r = window(i);
+            let len = r.len() as f32;
+            r.map(v).sum::<f32>() / len
+        };
+        let next: Vec<[f32; 3]> = (0..n)
+            .map(|i| {
+                [
+                    pts[i][0] + mean(i, &|j| most_aside[j][0]),
+                    pts[i][1] + mean(i, &|j| most_aside[j][1]),
+                    mean(i, &|j| most_z[j]).max(pts[i][2]),
+                ]
+            })
+            .collect();
+        pts = next;
+    }
+    pts
+}
+
+/// How far behind `pivot` (along `back`) the camera can be, up to `want`: the obstacles' room
+/// less `ROOM_MARGIN`, never under `ROOM_MIN`.
+pub fn room_behind(b: &crate::obstacles::Blocking, pivot: [f32; 3], back: [f32; 3], want: f32) -> f32 {
+    let at = |d: f32| [0, 1, 2].map(|i| pivot[i] + back[i] * d);
+    if !b.blocks(pivot, at(want + ROOM_MARGIN)) {
+        return want;
+    }
+    let (mut lo, mut hi) = (0.0, want + ROOM_MARGIN);
+    for _ in 0..6 {
+        let mid = (lo + hi) / 2.0;
+        if b.blocks(pivot, at(mid)) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    (lo - ROOM_MARGIN).clamp(ROOM_MIN, want)
+}
+
+/// Behind the camera's view, as (pitch, yaw) in degrees.
+fn back_of(pitch: f32, yaw: f32) -> [f32; 3] {
+    let (p, y) = (pitch.to_radians(), yaw.to_radians());
+    [-p.cos() * y.cos(), -p.cos() * y.sin(), -p.sin()]
 }
 
 /// A flight: how high above the floor points it goes (cm), how fast at full pace (cm/s), how
@@ -155,6 +301,11 @@ impl Flight {
         let seg = self.at_len[i] - self.at_len[i - 1];
         let k = if seg > 0.0 { (s - self.at_len[i - 1]) / seg } else { 0.0 };
         [0, 1, 2].map(|j| self.path[i - 1][j] + (self.path[i][j] - self.path[i - 1][j]) * k)
+    }
+
+    /// Where the flight will be in `secs` at full pace.
+    pub fn ahead(&self, pace: f32, secs: f32) -> [f32; 3] {
+        self.point(self.s + pace.clamp(0.05, 1.0) * FLIGHT_SPEED * secs)
     }
 
     pub fn step(&mut self, pace: f32, dt: f32) -> Fly {
@@ -396,12 +547,14 @@ pub const KEY_GRACE: Duration = Duration::from_millis(600);
 /// How fast the camera's distance and field of view ease to the ones asked for (share a second).
 const ZOOM_EASE: f32 = 1.2;
 
-/// A camera setting a take eases to the value asked for, and puts back after.
+/// A camera setting a take eases to the value asked for, and puts back after. A distance's
+/// value is also kept within the room behind the camera.
 struct Knob {
     at: u64,
     was: f32,
     now: f32,
     want: f32,
+    distance: bool,
 }
 
 /// The walk along a route: the stick's input each moment from where the hero is.
@@ -447,6 +600,11 @@ impl Driver {
 
     pub fn length(&self) -> f32 {
         *self.at_len.last().unwrap_or(&0.0)
+    }
+
+    /// The route `cm` on from where the hero is along it.
+    pub fn ahead(&self, cm: f32) -> [f32; 2] {
+        self.point(self.along + cm)
     }
 
     /// The point `s` cm along the route.
@@ -603,6 +761,35 @@ pub fn roll(plan: Plan, wiring: Wiring, state: Arc<Mutex<State>>, ended: Arc<Mut
     Take { stop }
 }
 
+/// The camera's settings eased one tick toward what is asked: a distance no further than the
+/// room behind the camera from the pivots given (now and a moment ahead) — closing in faster
+/// than backing out, as the room is eased itself — the rest straight to their values.
+#[allow(clippy::too_many_arguments)]
+fn ease_knobs(
+    knobs: &mut [Knob],
+    room: &mut f32,
+    b: &crate::obstacles::Blocking,
+    pivots: [[f32; 3]; 2],
+    back: [f32; 3],
+    dt: f32,
+    game: &crate::game::process::Game,
+) {
+    let want = knobs.iter().filter(|k| k.distance).map(|k| k.want).fold(0.0, f32::max);
+    if want > 0.0 {
+        let free = pivots.iter().map(|&p| room_behind(b, p, back, want)).fold(want, f32::min);
+        if *room == f32::MAX {
+            *room = free;
+        }
+        let rate = if free < *room { ROOM_IN } else { ROOM_OUT };
+        *room += (free - *room) * (rate * dt).min(1.0);
+    }
+    for k in knobs.iter_mut() {
+        let target = if k.distance { k.want.min(*room) } else { k.want };
+        k.now += (target - k.now) * (ZOOM_EASE * dt).min(1.0);
+        game.write(k.at, &k.now.to_le_bytes());
+    }
+}
+
 fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> State {
     let game = match crate::game::process::Game::find() {
         Ok(Some(g)) => g,
@@ -638,19 +825,24 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         let mut b = [0u8; 4];
         game.read(at, &mut b).then(|| f32::from_le_bytes(b)).filter(|v| v.is_finite())
     };
-    // a flight keeps the camera close to its pivot unless asked otherwise
+    // a flight keeps the camera close to its pivot unless asked otherwise; the distance is held
+    // either way, kept within the room behind the camera (the game's own when none is asked)
     let distance = plan.distance.or(plan.flight.then_some(FLIGHT_DISTANCE));
     let mut knobs: Vec<Knob> = w
         .distance
         .iter()
-        .map(|&at| (at, distance))
-        .chain(w.fov.iter().map(|&at| (at, plan.fov)))
-        .filter_map(|(at, want)| {
-            let want = want?;
+        .map(|&at| (at, distance, true))
+        .chain(w.fov.iter().map(|&at| (at, plan.fov, false)))
+        .chain(w.blend.iter().flat_map(|&(i, o)| [(i, Some(BLEND.0), false), (o, Some(BLEND.1), false)]))
+        .filter_map(|(at, want, is_distance)| {
             let was = read_f(at)?;
-            Some(Knob { at, was, now: was, want })
+            let want = want.or(is_distance.then_some(was))?;
+            Some(Knob { at, was, now: was, want, distance: is_distance })
         })
         .collect();
+    let blocking = w.scene.blocking();
+    // the camera's room, kept between ticks: eased toward what is free
+    let mut room = f32::MAX;
     // A flight: from where the camera turns about now (the pivot, in the hero's frame).
     let pivot0 = w.pivot.and_then(read3);
     let mut flight = None;
@@ -663,7 +855,7 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         let start = [hp[0] as f32 + lx * c - ly * s, hp[1] as f32 + lx * s + ly * c, hp[2] as f32 + p0[2] as f32];
         let mut path = vec![start];
         path.extend(plan.path.iter().copied());
-        flight = Some(Flight::new(&path));
+        flight = Some(Flight::new(&clear_flight(&path, &blocking)));
     }
     let touched = last_input();
     let tick = Duration::from_secs_f64(1.0 / RATE_HZ);
@@ -689,6 +881,7 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
                 *f = Flight::new(&back);
                 continue;
             }
+            let ahead = f.ahead(plan.pace, ROOM_AHEAD_S);
             if fly.done {
                 break State::Finished;
             }
@@ -707,10 +900,8 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
                 let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
                 write3(w.rotation, [np.rem_euclid(360.0) as f64, ny as f64, roll]);
             }
-            for k in &mut knobs {
-                k.now += (k.want - k.now) * (ZOOM_EASE * dt).min(1.0);
-                game.write(k.at, &k.now.to_le_bytes());
-            }
+            let back = back_of(pitch.angle, yaw.angle);
+            ease_knobs(&mut knobs, &mut room, &blocking, [fly.at, ahead], back, dt, &game);
             *state.lock().unwrap() = State::Rolling(fly.share);
             next += tick;
             let now = Instant::now();
@@ -744,10 +935,17 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
             let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
             write3(w.rotation, [np.rem_euclid(360.0) as f64, ny as f64, roll]);
         }
-        for k in &mut knobs {
-            k.now += (k.want - k.now) * (ZOOM_EASE * dt).min(1.0);
-            game.write(k.at, &k.now.to_le_bytes());
-        }
+        // the camera's room from the pivot (the hero, raised as the mode has it), now and ahead
+        let lift = pivot0.map_or(70.0, |p| p[2] as f32);
+        let pivot = [hero[0], hero[1], hero[2] + lift];
+        let a2 = driver.ahead(ROOM_AHEAD_CM);
+        let ahead = [a2[0], a2[1], pivot[2]];
+        let back = if plan.lens == Lens::Free {
+            read3(w.rotation).map_or([0.0; 3], |r| back_of(wrap(r[0] as f32), r[1] as f32))
+        } else {
+            back_of(pitch.angle, yaw.angle)
+        };
+        ease_knobs(&mut knobs, &mut room, &blocking, [pivot, ahead], back, dt, &game);
         *state.lock().unwrap() = State::Rolling(s.share);
         next += tick;
         let now = Instant::now();
@@ -873,6 +1071,56 @@ mod tests {
             (last.at[0] - 1000.0).abs() < 3.0 && (last.at[1] - 1000.0).abs() < 3.0 && (last.at[2] - 400.0).abs() < 3.0
         );
         assert!(fastest <= FLIGHT_SPEED + 1.0, "{fastest}");
+    }
+
+    fn wall(x0: f32, x1: f32, y0: f32, y1: f32, zmax: f32) -> crate::obstacles::Obstacle {
+        crate::obstacles::Obstacle { hull: vec![[x0, y0], [x1, y0], [x1, y1], [x0, y1]], zmin: 0.0, zmax, water: false }
+    }
+
+    #[test]
+    fn a_flight_climbs_over_a_low_obstacle_early_and_smoothly() {
+        let scene = crate::obstacles::Scene {
+            obstacles: vec![wall(900.0, 1100.0, -500.0, 500.0, 300.0)],
+            ..Default::default()
+        };
+        let b = scene.blocking();
+        let path = clear_flight(&[[0.0, 0.0, 200.0], [2000.0, 0.0, 200.0]], &b);
+        for w in path.windows(2) {
+            assert!(!b.blocks(w[0], w[1]), "through the obstacle at {:?}", w[0]);
+            // never steeper than 1 in 2
+            let run = (w[1][0] - w[0][0]).hypot(w[1][1] - w[0][1]);
+            assert!((w[1][2] - w[0][2]).abs() <= run * 0.5 + 1.0, "too steep at {:?}", w[0]);
+        }
+        // the climb starts well before the obstacle
+        let at = |x: f32| path.iter().min_by(|a, b| (a[0] - x).abs().total_cmp(&(b[0] - x).abs())).unwrap()[2];
+        assert!(at(700.0) > 250.0, "late climb: {}", at(700.0));
+        assert_eq!(path.first().unwrap()[2], 200.0);
+        assert_eq!(path.last().unwrap()[2], 200.0);
+    }
+
+    #[test]
+    fn a_flight_goes_round_a_tall_wall() {
+        let scene = crate::obstacles::Scene {
+            obstacles: vec![wall(900.0, 1100.0, -300.0, 100.0, 3000.0)],
+            ..Default::default()
+        };
+        let b = scene.blocking();
+        let path = clear_flight(&[[0.0, 0.0, 200.0], [2000.0, 0.0, 200.0]], &b);
+        assert!(path.iter().all(|p| p[2] < 400.0), "not over a tall wall");
+        assert!(path.windows(2).all(|w| !b.blocks(w[0], w[1])), "through the wall");
+    }
+
+    #[test]
+    fn the_camera_keeps_its_room() {
+        let scene = crate::obstacles::Scene {
+            obstacles: vec![wall(-400.0, -350.0, -500.0, 500.0, 1000.0)],
+            ..Default::default()
+        };
+        let b = scene.blocking();
+        let back = back_of(0.0, 0.0);
+        let r = room_behind(&b, [0.0, 0.0, 100.0], back, 800.0);
+        assert!((r - (350.0 - ROOM_MARGIN)).abs() < 15.0, "{r}");
+        assert_eq!(room_behind(&b, [0.0, 0.0, 100.0], back_of(0.0, 180.0), 800.0), 800.0);
     }
 
     #[test]

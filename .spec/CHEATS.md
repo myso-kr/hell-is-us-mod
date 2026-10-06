@@ -187,3 +187,26 @@ not the camera's. Circle (Orbit) on a flight turned the camera about its pivot, 
 the camera's distance (1500 cm in the user's take), so it seemed to circle the hero and lose
 it; on a flight it looks at the hero instead, and the card does not offer it there. Confirmed in
 play: a flight with Spotlight holds the hero steadily.
+
+### Obstacles (2026-10-06)
+
+The user found the camera catching on obstacles and then leaping on. The game's own camera keeps
+out of walls (`bPreventCameraPenetration`): when something comes between the pivot and the camera
+it pulls the camera in within `PenetrationBlendInTime` (0.15 s) and lets it out within
+`PenetrationBlendOutTime` (0.25 s) — a snap each way. DJI's practice for filming (APAS): bypass
+rather than brake, the avoidance planned ahead so the path stays smooth (ActiveTrack 4.0). Here,
+with the obstacles the scene pass already reads (convex outlines with height ranges):
+
+- **A flight's path** (`clear_flight`), checked every 50 cm before it starts: a point inside an
+  obstacle standing at most 4.5 m above it is lifted over its top (+1.2 m); inside a taller one
+  it is moved square to the way, on the side away from the obstacle's middle, out past it
+  (+1.2 m). Each need is spread: the most any point within 4 m needs, then the mean over the same
+  reach, so the obstacle's own stretch keeps all of it and the avoidance eases in and out over
+  4 m either side (a climb at most 1 in 2). Three rounds; the ends stay put.
+- **The camera's room** (`room_behind`, `ease_knobs`): every tick the line behind the pivot along
+  the view is tested against the obstacles, from the pivot now and from where it will be (0.8 s
+  of a flight, 2.5 m of a walk); the distance is kept within the room (less 60 cm, never under
+  80 cm), the room eased in at 2.5/s and out at 0.7/s. The distance is held through a take even
+  when none is asked (the game's own), so the room applies on a walk too.
+- **The game's pull-in, slowed**: the camera mode's blend times are 0.6 s in and 1.2 s out during
+  a take, and put back after.

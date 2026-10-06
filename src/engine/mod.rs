@@ -429,6 +429,11 @@ impl Engine {
         let body = crate::mem::read_u64(m, hero + chain.root)
             .filter(|&r| crate::mem::plausible(r))
             .and_then(|r| n.field(m, r, "RelativeRotation").map(|p| r + p.offset as u64));
+        let blend = pcm.and_then(|p| n.follow(m, p, "CameraModeInstance").ok()).and_then(|mode| {
+            let i = n.field(m, mode, "PenetrationBlendInTime")?;
+            let o = n.field(m, mode, "PenetrationBlendOutTime")?;
+            Some((mode + i.offset as u64, mode + o.offset as u64))
+        });
         let wiring = crate::film::Wiring {
             input: hero + input.offset as u64,
             rotation: pc + chain.rotation,
@@ -437,6 +442,8 @@ impl Engine {
             fov,
             pivot,
             body,
+            blend,
+            scene: a.obstacles(),
         };
         self.take = Some(crate::film::roll(plan, wiring, state, ended));
         Ok(())

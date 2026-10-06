@@ -122,6 +122,18 @@ impl Scene {
 }
 
 impl Blocking<'_> {
+    /// The obstacles whose outline holds (x, y), water left out (filming's flights).
+    pub fn under(&self, x: f32, y: f32) -> Vec<&Obstacle> {
+        let c = |v: f32| (v / BLOCK_CELL).floor() as i32;
+        self.cells
+            .get(&(c(x), c(y)))
+            .into_iter()
+            .flatten()
+            .map(|&i| &self.scene.obstacles[i as usize])
+            .filter(|o| !o.water && inside(&o.hull, x, y))
+            .collect()
+    }
+
     /// Whether the segment a→b passes through an obstacle (a wall, a rock): its part over the
     /// obstacle's outline is within the obstacle's heights.
     pub fn blocks(&self, a: [f32; 3], b: [f32; 3]) -> bool {
@@ -152,6 +164,25 @@ impl Blocking<'_> {
         }
         false
     }
+}
+
+/// Whether (x, y) is inside the convex outline `hull` (either winding).
+pub fn inside(hull: &[[f32; 2]], x: f32, y: f32) -> bool {
+    if hull.len() < 3 {
+        return false;
+    }
+    let mut sign = 0.0f32;
+    for i in 0..hull.len() {
+        let (a, b) = (hull[i], hull[(i + 1) % hull.len()]);
+        let cross = (b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]);
+        if cross != 0.0 {
+            if sign != 0.0 && cross.signum() != sign {
+                return false;
+            }
+            sign = cross.signum();
+        }
+    }
+    true
 }
 
 /// The part [t0, t1] of the segment `a + t·d` (t in `lo..hi`) over a convex outline (x/y), if any
