@@ -1,6 +1,6 @@
 [package]
 name = "hiumod"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2021"
 rust-version = "1.82"
 description = "A companion for Hell Is Us on PC: minimap, quest guide, puzzle answers and single-player cheats — no game files modified"
