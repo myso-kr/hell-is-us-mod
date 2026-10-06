@@ -854,3 +854,30 @@ HINT_NEXT	Outra dica
 HINT_DEVICES	{n} mecanismos para ajustar, aqui:
 FOG_UNEXPLORED	Escurecer o que não foi explorado
 FORGET_EXPLORED	Esquecer o explorado
+FILMING	Modo de filmagem
+FILM_NOTE	O herói percorre a rota sozinho e a câmera se move como um drone. Após Iniciar, clique no jogo em 3 segundos; qualquer tecla ou mouse para.
+FILM_SOURCE_ROUTE	Pela rota guiada
+FILM_SOURCE_POINTS	Pelos pontos do mapa 3D ({n})
+FILM_CLEAR_POINTS	Limpar pontos
+FILM_POINTS_HOW	Clique duas vezes num chão do mapa 3D e depois em «Adicionar à filmagem».
+FILM_PACE	Ritmo
+FILM_LENS	Câmera
+FILM_LENS_FREE	Deixar
+FILM_LENS_FOLLOW	Seguir (à frente)
+FILM_LENS_SPOTLIGHT	Foco (destino)
+FILM_LENS_ORBIT	Órbita (ao redor do herói)
+FILM_START	Iniciar em 3 s
+FILM_STOP	Parar
+FILM_ROLLING	Filmando: mude para o jogo.
+FILM_NO_ROUTE	Nenhuma rota para seguir.
+FILM_STATE_IDLE	Pronto
+FILM_STATE_COUNTDOWN	Começa em {n} s
+FILM_STATE_ROLLING	Filmando · {pct}%
+FILM_STATE_FINISHED	Chegou.
+FILM_STATE_STUCK	Parado: caminho bloqueado.
+FILM_STATE_INTERRUPTED	Parado pela sua entrada.
+FILM_STATE_STOPPED	Parado.
+FILM_STATE_FAILED	Parado: {e}
+MAP3D_ADD_FILM_POINT	Adicionar à filmagem
+THE_HERO_CHANGED	o herói mudou (carregamento ou cena)
+GAME_NOT_RUNNING	o jogo não está rodando

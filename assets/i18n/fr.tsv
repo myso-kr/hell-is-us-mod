@@ -854,3 +854,30 @@ HINT_NEXT	Autre indice
 HINT_DEVICES	{n} mécanismes à régler, ici :
 FOG_UNEXPLORED	Assombrir les zones inexplorées
 FORGET_EXPLORED	Oublier l’exploration
+FILMING	Mode tournage
+FILM_NOTE	Le héros suit l’itinéraire seul, la caméra bouge comme un drone. Après Démarrer, cliquez dans le jeu sous 3 secondes ; toute touche ou souris l’arrête.
+FILM_SOURCE_ROUTE	Le long de l’itinéraire guidé
+FILM_SOURCE_POINTS	Par les points de la carte 3D ({n})
+FILM_CLEAR_POINTS	Effacer les points
+FILM_POINTS_HOW	Double-cliquez sur un sol de la carte 3D, puis « Ajouter au tournage ».
+FILM_PACE	Allure
+FILM_LENS	Caméra
+FILM_LENS_FREE	La laisser
+FILM_LENS_FOLLOW	Suivre (devant)
+FILM_LENS_SPOTLIGHT	Focus (destination)
+FILM_LENS_ORBIT	Orbite (autour du héros)
+FILM_START	Démarrer dans 3 s
+FILM_STOP	Arrêter
+FILM_ROLLING	Tournage : passez au jeu.
+FILM_NO_ROUTE	Aucun itinéraire à suivre.
+FILM_STATE_IDLE	Prêt
+FILM_STATE_COUNTDOWN	Départ dans {n} s
+FILM_STATE_ROLLING	Tournage · {pct} %
+FILM_STATE_FINISHED	Arrivé.
+FILM_STATE_STUCK	Arrêté : passage bloqué.
+FILM_STATE_INTERRUPTED	Arrêté par votre saisie.
+FILM_STATE_STOPPED	Arrêté.
+FILM_STATE_FAILED	Arrêté : {e}
+MAP3D_ADD_FILM_POINT	Ajouter au tournage
+THE_HERO_CHANGED	le héros a changé (chargement ou cinématique)
+GAME_NOT_RUNNING	le jeu ne tourne pas

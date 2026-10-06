@@ -61,6 +61,9 @@ pub enum Request {
     GoBack,
     /// To a spot picked on the 3D map (its world, the spot, cm).
     TeleportHere(String, [f32; 3]),
+    /// Roll a filming take; stop it (film.rs).
+    Film(crate::film::Plan),
+    Cut,
     Quit,
 }
 
@@ -127,6 +130,8 @@ pub struct Shared {
     /// overlay: the route in focus's shortcut down (route.rs `Shortcut`), draped, and its drops'
     /// tops with their heights (cm): the 3D map and the game view draw it beside the route.
     pub shortcut3d: Mutex<Shortcut3d>,
+    /// film thread: where the filming take is (film.rs).
+    pub film: Arc<Mutex<crate::film::State>>,
     /// overlay: the goals left out of the guide by the consent: (hidden places, answers).
     pub withheld: Mutex<(usize, usize)>,
     /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
@@ -234,6 +239,13 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
                 Ok(()) => reply(true, tr!("MOVED_TO_SPOT").to_string()),
                 Err(e) => reply(false, e),
             },
+            Ok(Request::Film(plan)) => match engine.film(plan, shared.film.clone()) {
+                Ok(()) => reply(true, tr!("FILM_ROLLING").to_string()),
+                Err(e) => reply(false, e),
+            },
+            Ok(Request::Cut) => {
+                engine.cut();
+            }
             Ok(Request::GoBack) => match engine.go_back() {
                 Ok(()) => reply(true, tr!("MOVED_BACK").into()),
                 Err(e) => reply(false, e),

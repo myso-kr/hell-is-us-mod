@@ -854,3 +854,30 @@ HINT_NEXT	Altro indizio
 HINT_DEVICES	{n} meccanismi da regolare, qui:
 FOG_UNEXPLORED	Oscura le zone inesplorate
 FORGET_EXPLORED	Dimentica l’esplorato
+FILMING	Modalità riprese
+FILM_NOTE	L’eroe percorre il percorso da solo, la telecamera si muove come un drone. Dopo Avvia, clicca sul gioco entro 3 secondi; qualsiasi tasto o mouse lo ferma.
+FILM_SOURCE_ROUTE	Lungo il percorso guidato
+FILM_SOURCE_POINTS	Per i punti della mappa 3D ({n})
+FILM_CLEAR_POINTS	Cancella punti
+FILM_POINTS_HOW	Doppio clic su un pavimento della mappa 3D, poi «Aggiungi alle riprese».
+FILM_PACE	Andatura
+FILM_LENS	Telecamera
+FILM_LENS_FREE	Lasciarla
+FILM_LENS_FOLLOW	Segui (avanti)
+FILM_LENS_SPOTLIGHT	Fuoco (destinazione)
+FILM_LENS_ORBIT	Orbita (attorno all’eroe)
+FILM_START	Avvia tra 3 s
+FILM_STOP	Ferma
+FILM_ROLLING	Riprese: passa al gioco.
+FILM_NO_ROUTE	Nessun percorso da seguire.
+FILM_STATE_IDLE	Pronto
+FILM_STATE_COUNTDOWN	Inizio tra {n} s
+FILM_STATE_ROLLING	Riprese · {pct}%
+FILM_STATE_FINISHED	Arrivato.
+FILM_STATE_STUCK	Fermato: strada bloccata.
+FILM_STATE_INTERRUPTED	Fermato dal tuo input.
+FILM_STATE_STOPPED	Fermato.
+FILM_STATE_FAILED	Fermato: {e}
+MAP3D_ADD_FILM_POINT	Aggiungi alle riprese
+THE_HERO_CHANGED	l’eroe è cambiato (caricamento o filmato)
+GAME_NOT_RUNNING	il gioco non è in esecuzione

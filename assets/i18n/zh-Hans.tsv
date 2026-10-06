@@ -854,3 +854,30 @@ HINT_NEXT	更多提示
 HINT_DEVICES	需要调整的装置 {n} 个，位置：
 FOG_UNEXPLORED	未探索区域变暗
 FORGET_EXPLORED	清除探索记录
+FILMING	拍摄模式
+FILM_NOTE	主角自动沿路线行走，镜头像无人机一样移动。点击开始后 3 秒内点击游戏窗口；任何按键或鼠标操作都会停止。
+FILM_SOURCE_ROUTE	沿引导路线
+FILM_SOURCE_POINTS	经过 3D 地图的点（{n}）
+FILM_CLEAR_POINTS	清除点
+FILM_POINTS_HOW	在 3D 地图上双击地面，然后点击「添加到拍摄」。
+FILM_PACE	步速
+FILM_LENS	镜头
+FILM_LENS_FREE	不控制
+FILM_LENS_FOLLOW	跟随（前进方向）
+FILM_LENS_SPOTLIGHT	聚焦（目的地）
+FILM_LENS_ORBIT	环绕（主角周围）
+FILM_START	3 秒后开始
+FILM_STOP	停止
+FILM_ROLLING	开始拍摄：请切换到游戏。
+FILM_NO_ROUTE	没有可跟随的路线。
+FILM_STATE_IDLE	就绪
+FILM_STATE_COUNTDOWN	{n} 秒后开始
+FILM_STATE_ROLLING	拍摄中 · {pct}%
+FILM_STATE_FINISHED	已到达。
+FILM_STATE_STUCK	已停止：道路受阻。
+FILM_STATE_INTERRUPTED	因您的输入而停止。
+FILM_STATE_STOPPED	已停止。
+FILM_STATE_FAILED	已停止：{e}
+MAP3D_ADD_FILM_POINT	添加到拍摄
+THE_HERO_CHANGED	主角已改变（读取或过场）
+GAME_NOT_RUNNING	游戏未运行

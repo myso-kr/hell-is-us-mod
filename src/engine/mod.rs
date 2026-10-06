@@ -76,6 +76,8 @@ pub struct Engine {
     /// Where the hero stood before teleporting to a place followed: a slot of its own, kept
     /// through further teleports until gone back to.
     before: Option<(String, [f64; 3])>,
+    /// A filming take rolling (film.rs): dropped, it stops.
+    take: Option<crate::film::Take>,
 }
 
 /// How often to look for the game, or check it is still the same process. Listing
@@ -92,6 +94,7 @@ impl Engine {
             extras: Extras::new(),
             slots: Default::default(),
             before: None,
+            take: None,
             active: Vec::new(),
             notice: None,
         })
@@ -365,6 +368,42 @@ impl Engine {
         Ok(())
     }
 
+    /// Roll a filming take (film.rs): the hero walked along `plan` by the stick's input, the
+    /// camera turned as it says. A take already rolling is stopped first.
+    pub fn film(
+        &mut self,
+        plan: crate::film::Plan,
+        state: std::sync::Arc<std::sync::Mutex<crate::film::State>>,
+    ) -> Result<(), String> {
+        self.take = None;
+        if plan.path.len() < 2 {
+            return Err(tr!("FILM_NO_ROUTE").into());
+        }
+        self.refresh()?;
+        let a = self.attached.as_ref().unwrap();
+        a.gate()?;
+        let (m, n) = (&a.game, &a.anchors.names);
+        let chain = a.chain()?;
+        let hero = chain.hero(m, &a.anchors)?;
+        let pc = chain.controller(m, &a.anchors)?;
+        let input =
+            n.field(m, hero, "ControlInputVector").ok_or_else(|| trf!("NO_PROPERTY", name = "ControlInputVector"))?;
+        let wiring = crate::film::Wiring {
+            input: hero + input.offset as u64,
+            rotation: pc + chain.rotation,
+            pose: chain.pose_source(m, &a.anchors)?,
+        };
+        self.take = Some(crate::film::roll(plan, wiring, state));
+        Ok(())
+    }
+
+    /// Stop the take rolling, if one is.
+    pub fn cut(&mut self) {
+        if let Some(t) = self.take.take() {
+            t.stop();
+        }
+    }
+
     /// Back to where the hero stood before teleporting to a place followed; the slot is
     /// emptied either way.
     pub fn go_back(&mut self) -> Result<(), String> {
@@ -416,6 +455,7 @@ impl Engine {
     /// Switch everything off and put back every original on record. Only while the
     /// hero is in play: the record names attributes, and only the hero's are ours.
     pub fn stop(&mut self) -> Result<(), String> {
+        self.cut();
         self.active.clear();
         if let Some(a) = self.attached.as_ref() {
             self.extras.release(a, &[]);

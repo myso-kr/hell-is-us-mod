@@ -21,7 +21,7 @@ pub mod read;
 pub mod ui;
 pub mod unreal;
 
-pub use cheat::{cheats, extras, hold};
+pub use cheat::{cheats, extras, film, hold};
 pub use guide::{budget, clues, goals, graph, ledger, missables, pathfind, quests, requires, slots, survey, tables};
 pub use infra::{backup, gamedata, log, logfile, memstat, paths, prof, runtime, session, settings, verify};
 pub use map::{icons, minimap, raster, relief, symbols};

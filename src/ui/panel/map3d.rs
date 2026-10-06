@@ -358,6 +358,8 @@ pub struct Map3d {
     pub can_teleport: bool,
     /// A teleport asked for on the view, for the page to send.
     pub teleport: Option<[f32; 3]>,
+    /// A spot to add to the filming take's points, for the page (groups.rs `film_card`).
+    pub film_point: Option<[f32; 3]>,
 }
 
 impl Default for Map3d {
@@ -382,6 +384,7 @@ impl Default for Map3d {
             spot: None,
             can_teleport: false,
             teleport: None,
+            film_point: None,
         }
     }
 }
@@ -714,10 +717,16 @@ impl Map3d {
                             RichText::new(crate::raster::span(h, at)).small().color(Color32::from_rgb(160, 175, 170)),
                         );
                     }
-                    if self.can_teleport && ui.button(tr!("MAP3D_TELEPORT_HERE")).clicked() {
-                        self.teleport = Some(at);
-                        self.spot = None;
-                    }
+                    ui.horizontal(|ui| {
+                        if self.can_teleport && ui.button(tr!("MAP3D_TELEPORT_HERE")).clicked() {
+                            self.teleport = Some(at);
+                            self.spot = None;
+                        }
+                        if self.can_teleport && ui.button(tr!("MAP3D_ADD_FILM_POINT")).clicked() {
+                            self.film_point = Some(at);
+                            self.spot = None;
+                        }
+                    });
                 });
             }
         });
@@ -1588,6 +1597,9 @@ impl super::Panel {
             tw::block(t, |ui| {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
                 self.map3d.view(ui, height, hero, &route, colour, state, &shortcut);
+                if let Some(at) = self.map3d.film_point.take() {
+                    self.film.points.push(at);
+                }
                 if let Some(at) = self.map3d.teleport.take() {
                     let _ = self.tx.send(crate::ui::Request::TeleportHere(full_world.clone(), at));
                     // "back to where it was" in the teleport card

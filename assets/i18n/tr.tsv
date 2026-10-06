@@ -854,3 +854,30 @@ HINT_NEXT	Bir ipucu daha
 HINT_DEVICES	Ayarlanacak {n} düzenek, konumları:
 FOG_UNEXPLORED	Keşfedilmemiş yerleri karart
 FORGET_EXPLORED	Keşfi unut
+FILMING	Çekim modu
+FILM_NOTE	Kahraman rotayı kendi yürür, kamera drone gibi hareket eder. Başlat’tan sonra 3 saniye içinde oyuna tıklayın; herhangi bir tuş ya da fare durdurur.
+FILM_SOURCE_ROUTE	Rehber rotası boyunca
+FILM_SOURCE_POINTS	3D haritadaki noktalardan ({n})
+FILM_CLEAR_POINTS	Noktaları temizle
+FILM_POINTS_HOW	3D haritada bir zemine çift tıklayın, sonra «Çekime ekle».
+FILM_PACE	Tempo
+FILM_LENS	Kamera
+FILM_LENS_FREE	Dokunma
+FILM_LENS_FOLLOW	Takip (ileri)
+FILM_LENS_SPOTLIGHT	Odak (varış)
+FILM_LENS_ORBIT	Yörünge (kahramanın çevresi)
+FILM_START	3 sn sonra başlat
+FILM_STOP	Durdur
+FILM_ROLLING	Çekim: oyuna geçin.
+FILM_NO_ROUTE	İzlenecek rota yok.
+FILM_STATE_IDLE	Hazır
+FILM_STATE_COUNTDOWN	{n} sn sonra başlıyor
+FILM_STATE_ROLLING	Çekim · %{pct}
+FILM_STATE_FINISHED	Varıldı.
+FILM_STATE_STUCK	Durdu: yol kapalı.
+FILM_STATE_INTERRUPTED	Girişinizle durdu.
+FILM_STATE_STOPPED	Durduruldu.
+FILM_STATE_FAILED	Durdu: {e}
+MAP3D_ADD_FILM_POINT	Çekime ekle
+THE_HERO_CHANGED	kahraman değişti (yükleme ya da ara sahne)
+GAME_NOT_RUNNING	oyun çalışmıyor

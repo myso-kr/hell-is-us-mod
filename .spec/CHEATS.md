@@ -133,3 +133,22 @@ enemies were mid-fight. In play that left every enemy cut by one panel at 10 % f
 panels did not know them, and with the share at 100 % enemies still died in one hit. Frail
 enemies had the same flaw (a panel started with frail on recorded 1 as the original); see
 `extras.rs` for both fixes.
+
+## Filming mode (2026-10-06)
+
+`cheat/film.rs`, a card on the Movement page; probes in ROADMAP §4.1. The worker finds the hero's
+`Pawn.ControlInputVector`, the controller's `ControlRotation` and the pose, and a thread of its own
+(the game opened for writing there) rolls the take at 250 Hz after a 3-second countdown:
+
+- **The walk** (`Driver`): the route from the guide (`Shared.route3d`) or from the hero through the
+  3D map's points, each leg on the navmesh. The stick points at the route 1.5 m ahead of the
+  nearest place on it (never going back); its length is the pace, eased in over 1.5 s and out
+  over the last 3.5 m. Within 60 cm of the end it stops; gaining under 30 cm in 2.5 s is stuck.
+  The game consumes the input every frame, so the hero stops when the writes do.
+- **The camera** (`Axis`, `aim`), after DJI's: each axis a critically damped spring (ω 2.2) under a
+  70°/s cap. Track looks 4.5 m ahead along the route, 8° down; Spotlight at the route's end from
+  the hero's head; Circle turns about the hero at 18°/s; Free leaves it.
+- **Stopping**: the Stop button, any keyboard or mouse input (`GetLastInputInfo` changed since the
+  countdown ended), the hero changed, the panel closed (`Engine::stop`).
+
+Not yet: named routes kept, a key to start and stop, looping, the camera's distance and FOV.

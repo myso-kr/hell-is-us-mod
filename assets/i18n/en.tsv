@@ -854,3 +854,30 @@ HINT_NEXT	Another hint
 HINT_DEVICES	{n} devices to set, here:
 FOG_UNEXPLORED	Darken where you have not been
 FORGET_EXPLORED	Forget explored
+FILMING	Filming mode
+FILM_NOTE	The hero walks the route by itself while the camera moves like a drone’s. After Start, click the game window within 3 seconds; any key or mouse move stops it.
+FILM_SOURCE_ROUTE	Along the guide’s route
+FILM_SOURCE_POINTS	Through the 3D map’s points ({n})
+FILM_CLEAR_POINTS	Clear points
+FILM_POINTS_HOW	Double-click a floor on the 3D map, then "Add to filming".
+FILM_PACE	Pace
+FILM_LENS	Camera
+FILM_LENS_FREE	Leave it
+FILM_LENS_FOLLOW	Track (the way ahead)
+FILM_LENS_SPOTLIGHT	Spotlight (the destination)
+FILM_LENS_ORBIT	Circle (around the hero)
+FILM_START	Start in 3 s
+FILM_STOP	Stop
+FILM_ROLLING	Filming: switch to the game.
+FILM_NO_ROUTE	No route to follow.
+FILM_STATE_IDLE	Ready
+FILM_STATE_COUNTDOWN	Starting in {n} s
+FILM_STATE_ROLLING	Filming · {pct}%
+FILM_STATE_FINISHED	Arrived.
+FILM_STATE_STUCK	Stopped: the way is blocked.
+FILM_STATE_INTERRUPTED	Stopped by your input.
+FILM_STATE_STOPPED	Stopped.
+FILM_STATE_FAILED	Stopped: {e}
+MAP3D_ADD_FILM_POINT	Add to filming
+THE_HERO_CHANGED	the hero changed (a load or a cutscene)
+GAME_NOT_RUNNING	the game is not running

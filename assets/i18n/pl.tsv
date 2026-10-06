@@ -854,3 +854,30 @@ HINT_NEXT	Kolejna wskazówka
 HINT_DEVICES	{n} mechanizmów do ustawienia, tutaj:
 FOG_UNEXPLORED	Przyciemnij niezbadane miejsca
 FORGET_EXPLORED	Zapomnij zbadane
+FILMING	Tryb filmowania
+FILM_NOTE	Bohater sam idzie trasą, kamera porusza się jak dron. Po Start kliknij okno gry w ciągu 3 sekund; klawisz lub mysz zatrzymuje.
+FILM_SOURCE_ROUTE	Wzdłuż trasy przewodnika
+FILM_SOURCE_POINTS	Przez punkty mapy 3D ({n})
+FILM_CLEAR_POINTS	Wyczyść punkty
+FILM_POINTS_HOW	Kliknij dwukrotnie podłogę na mapie 3D, potem „Dodaj do filmowania”.
+FILM_PACE	Tempo
+FILM_LENS	Kamera
+FILM_LENS_FREE	Bez zmian
+FILM_LENS_FOLLOW	Śledź (przed siebie)
+FILM_LENS_SPOTLIGHT	Skupienie (cel)
+FILM_LENS_ORBIT	Orbita (wokół bohatera)
+FILM_START	Start za 3 s
+FILM_STOP	Zatrzymaj
+FILM_ROLLING	Filmowanie: przełącz na grę.
+FILM_NO_ROUTE	Brak trasy do przejścia.
+FILM_STATE_IDLE	Gotowe
+FILM_STATE_COUNTDOWN	Start za {n} s
+FILM_STATE_ROLLING	Filmowanie · {pct}%
+FILM_STATE_FINISHED	Dotarł.
+FILM_STATE_STUCK	Zatrzymano: droga zablokowana.
+FILM_STATE_INTERRUPTED	Zatrzymano przez twoje wejście.
+FILM_STATE_STOPPED	Zatrzymano.
+FILM_STATE_FAILED	Zatrzymano: {e}
+MAP3D_ADD_FILM_POINT	Dodaj do filmowania
+THE_HERO_CHANGED	bohater się zmienił (wczytanie lub przerywnik)
+GAME_NOT_RUNNING	gra nie działa

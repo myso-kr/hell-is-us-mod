@@ -854,3 +854,30 @@ HINT_NEXT	次のヒント
 HINT_DEVICES	合わせる装置 {n} 個、位置:
 FOG_UNEXPLORED	未探索の場所を暗くする
 FORGET_EXPLORED	探索記録を消す
+FILMING	撮影モード
+FILM_NOTE	主人公が経路を自動で歩き、カメラはドローンのように動きます。開始後3秒以内にゲーム画面をクリックしてください。キーやマウスを使うと止まります。
+FILM_SOURCE_ROUTE	案内経路に沿って
+FILM_SOURCE_POINTS	3D地図の地点を通って（{n}）
+FILM_CLEAR_POINTS	地点を消す
+FILM_POINTS_HOW	3D地図で床をダブルクリックし、「撮影地点に追加」を押してください。
+FILM_PACE	歩く速さ
+FILM_LENS	カメラ
+FILM_LENS_FREE	そのまま
+FILM_LENS_FOLLOW	追従（進む方向）
+FILM_LENS_SPOTLIGHT	注視（目的地）
+FILM_LENS_ORBIT	旋回（主人公の周り）
+FILM_START	3秒後に開始
+FILM_STOP	止める
+FILM_ROLLING	撮影開始。ゲーム画面に切り替えてください。
+FILM_NO_ROUTE	辿る経路がありません。
+FILM_STATE_IDLE	待機
+FILM_STATE_COUNTDOWN	{n}秒後に開始
+FILM_STATE_ROLLING	撮影中 · {pct}%
+FILM_STATE_FINISHED	到着しました。
+FILM_STATE_STUCK	道が塞がれて止まりました。
+FILM_STATE_INTERRUPTED	入力があったため止まりました。
+FILM_STATE_STOPPED	止めました。
+FILM_STATE_FAILED	停止: {e}
+MAP3D_ADD_FILM_POINT	撮影地点に追加
+THE_HERO_CHANGED	主人公が変わりました（ロードまたはムービー）
+GAME_NOT_RUNNING	ゲームが起動していません

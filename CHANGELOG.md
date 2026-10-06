@@ -6,6 +6,16 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## Unreleased
+
+### Added
+
+- Filming mode (Movement page): the hero walks the guide's route, or through points added from the
+  3D map, by the stick's own input — the game's walk, collisions and stairs — while the camera
+  moves as a drone's: eased in and out, turned by a damped gimbal, tracking the way ahead,
+  watching the destination, circling the hero, or left alone. A 3-second countdown to switch to
+  the game; any key or mouse move stops it, as does a blocked way.
+
 ## 0.6.0 — 2026-10-06
 
 ### Added

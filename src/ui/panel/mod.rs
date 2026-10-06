@@ -330,6 +330,8 @@ pub struct Panel {
     clue_open: Option<String>,
     /// Puzzle answers and vault codes asked for, by id (not kept between runs).
     revealed: std::collections::HashSet<u64>,
+    /// The filming card's choices (groups.rs `film_card`).
+    film: FilmChoices,
     /// How far a logic puzzle's hints are opened (deep.rs `hint`): 0 shut, 1 where its devices
     /// are, 2 the first step too, 3 the whole answer.
     hints: std::collections::HashMap<u64, u8>,
@@ -382,6 +384,16 @@ pub struct Panel {
     resume: Option<Vec<Active>>,
     /// settings.txt as last written, and when.
     saved: (String, Instant),
+}
+
+/// The filming card's choices: the take's points from the 3D map, whether to follow them (else
+/// the guide's route), the pace and the camera.
+#[derive(Default)]
+struct FilmChoices {
+    points: Vec<[f32; 3]>,
+    use_points: bool,
+    pace: f32,
+    lens: crate::film::Lens,
 }
 
 impl Panel {
@@ -460,6 +472,7 @@ impl Panel {
             clue_query: String::new(),
             clue_open: None,
             revealed: Default::default(),
+            film: FilmChoices { pace: 0.6, ..Default::default() },
             hints: Default::default(),
             shown_quest: None,
             slot_hints: Default::default(),
@@ -834,12 +847,13 @@ impl Panel {
             // Movement adds the teleport to what is followed and the saved positions.
             g => {
                 let cols = self.columns;
-                let spans: &[u16] = if g == Group::Movement { &[2, 1, 2, 1] } else { &[2, 1] };
+                let spans: &[u16] = if g == Group::Movement { &[2, 1, 2, 1, 2] } else { &[2, 1] };
                 tw::spans(t, cols, spans, |t, i| match i {
                     0 => card(t, g.label(), |t| self.held(t, g, snap)),
                     1 => self.summary(t, snap),
                     2 => self.teleports(t, snap),
-                    _ => self.positions(t, snap),
+                    3 => self.positions(t, snap),
+                    _ => self.film_card(t, snap),
                 })
             }
         }

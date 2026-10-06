@@ -2,4 +2,5 @@
 
 pub mod cheats;
 pub mod extras;
+pub mod film;
 pub mod hold;

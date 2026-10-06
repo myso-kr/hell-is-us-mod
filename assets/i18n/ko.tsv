@@ -854,3 +854,30 @@ HINT_NEXT	힌트 더 보기
 HINT_DEVICES	맞춰야 할 장치 {n}개, 위치:
 FOG_UNEXPLORED	가보지 않은 곳 어둡게 (탐험 안개)
 FORGET_EXPLORED	탐험 기록 지우기
+FILMING	촬영 모드
+FILM_NOTE	영웅이 경로를 스스로 걷고 카메라는 드론처럼 움직입니다. 시작을 누른 뒤 3초 안에 게임 창을 클릭하세요. 키보드나 마우스를 쓰면 바로 멈춥니다.
+FILM_SOURCE_ROUTE	안내 경로를 따라
+FILM_SOURCE_POINTS	3D 지도 지점을 따라 ({n}개)
+FILM_CLEAR_POINTS	지점 비우기
+FILM_POINTS_HOW	3D 지도에서 바닥을 더블클릭한 뒤 「촬영 지점에 추가」를 누르세요.
+FILM_PACE	걷는 속도
+FILM_LENS	카메라
+FILM_LENS_FREE	그대로 두기
+FILM_LENS_FOLLOW	추적 (진행 방향)
+FILM_LENS_SPOTLIGHT	주시 (도착 지점)
+FILM_LENS_ORBIT	궤도 (영웅 주위 회전)
+FILM_START	3초 뒤 시작
+FILM_STOP	멈추기
+FILM_ROLLING	촬영을 시작합니다. 게임 창으로 전환하세요.
+FILM_NO_ROUTE	따라갈 경로가 없습니다.
+FILM_STATE_IDLE	대기
+FILM_STATE_COUNTDOWN	{n}초 뒤 시작
+FILM_STATE_ROLLING	촬영 중 · {pct}%
+FILM_STATE_FINISHED	도착했습니다.
+FILM_STATE_STUCK	막혀서 멈췄습니다.
+FILM_STATE_INTERRUPTED	입력이 들어와 멈췄습니다.
+FILM_STATE_STOPPED	멈췄습니다.
+FILM_STATE_FAILED	멈춤: {e}
+MAP3D_ADD_FILM_POINT	촬영 지점에 추가
+THE_HERO_CHANGED	영웅이 바뀌었습니다 (불러오기 또는 컷신)
+GAME_NOT_RUNNING	게임이 실행 중이 아닙니다

@@ -854,3 +854,30 @@ HINT_NEXT	Otra pista
 HINT_DEVICES	{n} mecanismos que ajustar, aquí:
 FOG_UNEXPLORED	Oscurecer lo no explorado
 FORGET_EXPLORED	Olvidar lo explorado
+FILMING	Modo de grabación
+FILM_NOTE	El héroe recorre la ruta solo y la cámara se mueve como un dron. Tras Iniciar, haz clic en el juego en 3 segundos; cualquier tecla o ratón lo detiene.
+FILM_SOURCE_ROUTE	Por la ruta guiada
+FILM_SOURCE_POINTS	Por los puntos del mapa 3D ({n})
+FILM_CLEAR_POINTS	Borrar puntos
+FILM_POINTS_HOW	Doble clic en un suelo del mapa 3D y luego «Añadir a la grabación».
+FILM_PACE	Ritmo
+FILM_LENS	Cámara
+FILM_LENS_FREE	Dejarla
+FILM_LENS_FOLLOW	Seguir (hacia delante)
+FILM_LENS_SPOTLIGHT	Foco (destino)
+FILM_LENS_ORBIT	Órbita (alrededor del héroe)
+FILM_START	Iniciar en 3 s
+FILM_STOP	Detener
+FILM_ROLLING	Grabando: cambia al juego.
+FILM_NO_ROUTE	No hay ruta que seguir.
+FILM_STATE_IDLE	Listo
+FILM_STATE_COUNTDOWN	Empieza en {n} s
+FILM_STATE_ROLLING	Grabando · {pct} %
+FILM_STATE_FINISHED	Llegó.
+FILM_STATE_STUCK	Detenido: camino bloqueado.
+FILM_STATE_INTERRUPTED	Detenido por tu entrada.
+FILM_STATE_STOPPED	Detenido.
+FILM_STATE_FAILED	Detenido: {e}
+MAP3D_ADD_FILM_POINT	Añadir a la grabación
+THE_HERO_CHANGED	el héroe cambió (carga o cinemática)
+GAME_NOT_RUNNING	el juego no está en marcha

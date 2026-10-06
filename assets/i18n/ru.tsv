@@ -854,3 +854,30 @@ HINT_NEXT	Ещё подсказка
 HINT_DEVICES	Нужно настроить устройств: {n}, где:
 FOG_UNEXPLORED	Затемнять неисследованное
 FORGET_EXPLORED	Забыть исследованное
+FILMING	Режим съёмки
+FILM_NOTE	Герой сам идёт по маршруту, камера движется как дрон. После «Старт» за 3 секунды щёлкните по окну игры; любая клавиша или мышь останавливают.
+FILM_SOURCE_ROUTE	По маршруту подсказки
+FILM_SOURCE_POINTS	Через точки 3D-карты ({n})
+FILM_CLEAR_POINTS	Очистить точки
+FILM_POINTS_HOW	Дважды щёлкните по полу на 3D-карте, затем «Добавить в съёмку».
+FILM_PACE	Темп
+FILM_LENS	Камера
+FILM_LENS_FREE	Не трогать
+FILM_LENS_FOLLOW	Следовать (вперёд)
+FILM_LENS_SPOTLIGHT	Фокус (цель)
+FILM_LENS_ORBIT	Орбита (вокруг героя)
+FILM_START	Старт через 3 с
+FILM_STOP	Стоп
+FILM_ROLLING	Съёмка: переключитесь на игру.
+FILM_NO_ROUTE	Нет маршрута.
+FILM_STATE_IDLE	Готово
+FILM_STATE_COUNTDOWN	Старт через {n} с
+FILM_STATE_ROLLING	Съёмка · {pct}%
+FILM_STATE_FINISHED	Прибыл.
+FILM_STATE_STUCK	Остановлено: путь перекрыт.
+FILM_STATE_INTERRUPTED	Остановлено вашим вводом.
+FILM_STATE_STOPPED	Остановлено.
+FILM_STATE_FAILED	Остановлено: {e}
+MAP3D_ADD_FILM_POINT	Добавить в съёмку
+THE_HERO_CHANGED	герой сменился (загрузка или ролик)
+GAME_NOT_RUNNING	игра не запущена

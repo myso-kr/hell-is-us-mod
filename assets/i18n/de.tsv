@@ -854,3 +854,30 @@ HINT_NEXT	Weiterer Hinweis
 HINT_DEVICES	{n} Vorrichtungen einzustellen, hier:
 FOG_UNEXPLORED	Unerkundetes abdunkeln
 FORGET_EXPLORED	Erkundetes vergessen
+FILMING	Filmmodus
+FILM_NOTE	Der Held geht den Weg selbst, die Kamera bewegt sich wie eine Drohne. Nach Start binnen 3 Sekunden ins Spielfenster klicken; jede Taste oder Mausbewegung stoppt.
+FILM_SOURCE_ROUTE	Entlang der Führungsroute
+FILM_SOURCE_POINTS	Über die Punkte der 3D-Karte ({n})
+FILM_CLEAR_POINTS	Punkte leeren
+FILM_POINTS_HOW	Auf der 3D-Karte doppelt auf einen Boden klicken, dann „Zum Filmen hinzufügen“.
+FILM_PACE	Tempo
+FILM_LENS	Kamera
+FILM_LENS_FREE	Nicht steuern
+FILM_LENS_FOLLOW	Verfolgen (voraus)
+FILM_LENS_SPOTLIGHT	Fokus (Ziel)
+FILM_LENS_ORBIT	Kreisen (um den Helden)
+FILM_START	Start in 3 s
+FILM_STOP	Stopp
+FILM_ROLLING	Filmen: zum Spiel wechseln.
+FILM_NO_ROUTE	Keine Route zum Folgen.
+FILM_STATE_IDLE	Bereit
+FILM_STATE_COUNTDOWN	Start in {n} s
+FILM_STATE_ROLLING	Filmen · {pct} %
+FILM_STATE_FINISHED	Angekommen.
+FILM_STATE_STUCK	Gestoppt: Weg versperrt.
+FILM_STATE_INTERRUPTED	Durch Ihre Eingabe gestoppt.
+FILM_STATE_STOPPED	Gestoppt.
+FILM_STATE_FAILED	Gestoppt: {e}
+MAP3D_ADD_FILM_POINT	Zum Filmen hinzufügen
+THE_HERO_CHANGED	der Held hat gewechselt (Laden oder Zwischensequenz)
+GAME_NOT_RUNNING	das Spiel läuft nicht
