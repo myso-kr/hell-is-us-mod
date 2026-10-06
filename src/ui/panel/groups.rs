@@ -126,7 +126,7 @@ impl Panel {
             });
             if setup.use_points {
                 if n == 0 {
-                    note(t, tr!("FILM_POINTS_HOW"));
+                    note(t, trf!("FILM_POINTS_HOW", key = format!("F{}", setup.point_key)));
                 }
                 // routes kept by name: the points saved, loaded back, removed
                 let mut load = None;
@@ -205,7 +205,16 @@ impl Panel {
                 field(t, tr!("FILM_FOV_DEG"), |t| tw::slider(t, f, crate::film::FOV, 1.0, "°"));
             }
             switch(t, &mut setup.repeat, tr!("FILM_REPEAT"));
-            field(t, tr!("FILM_KEY"), |t| w(t, |ui| super::map::keycap_picker(ui, "film_key", &mut setup.key, &taken)));
+            let mut taken_film = taken.clone();
+            taken_film.push(setup.point_key);
+            field(t, tr!("FILM_KEY"), |t| {
+                w(t, |ui| super::map::keycap_picker(ui, "film_key", &mut setup.key, &taken_film))
+            });
+            let mut taken_point = taken.clone();
+            taken_point.push(setup.key);
+            field(t, tr!("FILM_POINT_KEY"), |t| {
+                w(t, |ui| super::map::keycap_picker(ui, "film_point_key", &mut setup.point_key, &taken_point))
+            });
             choices(t, |t| {
                 let start = w(t, |ui| ui.add_enabled(may && !rolling, egui::Button::new(tr!("FILM_START"))));
                 if start.clicked() {

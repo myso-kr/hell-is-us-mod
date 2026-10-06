@@ -19,6 +19,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   the obstacle and easing back after; the camera's distance closes in ahead of what stands behind
   it — checked now and a moment ahead — and backs out slowly after, instead of the game's sudden
   pull-in, which is itself slowed during a take.
+- Filming points from the game: a key (F8 by default; F7 is Steam's) adds where the hero stands
+  to the take's points, and with Ctrl takes the last away, said in the banner — no trip to the
+  3D map needed.
 
 ## 0.7.0 — 2026-10-06
 

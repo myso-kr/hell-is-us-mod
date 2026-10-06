@@ -859,7 +859,7 @@ FILM_NOTE	Le héros suit l’itinéraire seul, la caméra bouge comme un drone. 
 FILM_SOURCE_ROUTE	Le long de l’itinéraire guidé
 FILM_SOURCE_POINTS	Par les points de la carte 3D ({n})
 FILM_CLEAR_POINTS	Effacer les points
-FILM_POINTS_HOW	Double-cliquez sur un sol de la carte 3D, puis « Ajouter au tournage ».
+FILM_POINTS_HOW	Appuyez sur {key} en jeu là où vous êtes, ou double-cliquez sur un sol de la carte 3D puis « Ajouter au tournage ».
 FILM_PACE	Allure
 FILM_LENS	Caméra
 FILM_LENS_FREE	La laisser
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	Le jeu continue quand vous passez au panneau (désactive 
 FILM_FLIGHT	Seule la caméra vole (le héros reste)
 FILM_FLIGHT_NOTE	La caméra vole droit entre les points, à 1,8 m du sol, coins arrondis. Focus garde le héros en vue.
 FILM_ORBIT_NOT_IN_FLIGHT	Pas pendant le vol de la caméra : elle tournerait autour d’un point du trajet, pas du héros (elle regarde le héros à la place).
+FILM_POINT_KEY	Touche de point (en jeu ; Ctrl : retirer le dernier)
+FILM_POINT_ADDED	Point {n} ajouté
+FILM_POINT_REMOVED	Dernier point retiré ({n} restants)

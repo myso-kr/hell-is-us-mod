@@ -859,7 +859,7 @@ FILM_NOTE	Bohater sam idzie trasą, kamera porusza się jak dron. Po Start klikn
 FILM_SOURCE_ROUTE	Wzdłuż trasy przewodnika
 FILM_SOURCE_POINTS	Przez punkty mapy 3D ({n})
 FILM_CLEAR_POINTS	Wyczyść punkty
-FILM_POINTS_HOW	Kliknij dwukrotnie podłogę na mapie 3D, potem „Dodaj do filmowania”.
+FILM_POINTS_HOW	Naciśnij {key} w grze tam, gdzie stoisz, lub kliknij dwukrotnie podłogę na mapie 3D i „Dodaj do filmowania”.
 FILM_PACE	Tempo
 FILM_LENS	Kamera
 FILM_LENS_FREE	Bez zmian
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	Gra działa dalej po przejściu do panelu (wyłącza pauz
 FILM_FLIGHT	Leci tylko kamera (bohater zostaje)
 FILM_FLIGHT_NOTE	Kamera leci prosto między punktami, 1,8 m nad podłogą, z zaokrąglonymi zakrętami. Skupienie patrzy na bohatera.
 FILM_ORBIT_NOT_IN_FLIGHT	Nie podczas lotu kamery: krążyłaby wokół punktu trasy, nie bohatera (zamiast tego patrzy na bohatera).
+FILM_POINT_KEY	Klawisz punktu (w grze; Ctrl: usuń ostatni)
+FILM_POINT_ADDED	Dodano punkt {n}
+FILM_POINT_REMOVED	Usunięto ostatni punkt (zostało {n})

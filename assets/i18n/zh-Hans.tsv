@@ -859,7 +859,7 @@ FILM_NOTE	主角自动沿路线行走，镜头像无人机一样移动。点击�
 FILM_SOURCE_ROUTE	沿引导路线
 FILM_SOURCE_POINTS	经过 3D 地图的点（{n}）
 FILM_CLEAR_POINTS	清除点
-FILM_POINTS_HOW	在 3D 地图上双击地面，然后点击「添加到拍摄」。
+FILM_POINTS_HOW	在游戏中按 {key} 添加所站位置，或在 3D 地图上双击地面后点击「添加到拍摄」。
 FILM_PACE	步速
 FILM_LENS	镜头
 FILM_LENS_FREE	不控制
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	切换到面板时游戏不暂停（面板运行时关闭
 FILM_FLIGHT	仅镜头飞行（主角原地）
 FILM_FLIGHT_NOTE	镜头在点之间离地 1.8 米直线飞行，拐角圆滑。「聚焦」始终看向主角。
 FILM_ORBIT_NOT_IN_FLIGHT	仅镜头飞行时不可用：会绕路线上的点而非主角旋转（改为看向主角）。
+FILM_POINT_KEY	添加点键（游戏内；Ctrl：删除最后一个）
+FILM_POINT_ADDED	已添加拍摄点 {n}
+FILM_POINT_REMOVED	已删除最后一个点（剩 {n} 个）

@@ -859,7 +859,7 @@ FILM_NOTE	Der Held geht den Weg selbst, die Kamera bewegt sich wie eine Drohne. 
 FILM_SOURCE_ROUTE	Entlang der Führungsroute
 FILM_SOURCE_POINTS	Über die Punkte der 3D-Karte ({n})
 FILM_CLEAR_POINTS	Punkte leeren
-FILM_POINTS_HOW	Auf der 3D-Karte doppelt auf einen Boden klicken, dann „Zum Filmen hinzufügen“.
+FILM_POINTS_HOW	{key} im Spiel drücken, wo Sie stehen, oder auf der 3D-Karte doppelt auf einen Boden klicken, dann „Zum Filmen hinzufügen“.
 FILM_PACE	Tempo
 FILM_LENS	Kamera
 FILM_LENS_FREE	Nicht steuern
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	Spiel läuft weiter, wenn Sie zum Panel wechseln (Pause b
 FILM_FLIGHT	Nur die Kamera fliegt (der Held bleibt)
 FILM_FLIGHT_NOTE	Die Kamera fliegt gerade zwischen den Punkten, 1,8 m über dem Boden, Ecken gerundet. Fokus bleibt auf dem Helden.
 FILM_ORBIT_NOT_IN_FLIGHT	Nicht beim Kameraflug: sie würde einen Punkt der Route umkreisen, nicht den Helden (sie blickt stattdessen auf ihn).
+FILM_POINT_KEY	Punkt-Taste (im Spiel; Strg: letzten entfernen)
+FILM_POINT_ADDED	Punkt {n} hinzugefügt
+FILM_POINT_REMOVED	Letzter Punkt entfernt ({n} übrig)

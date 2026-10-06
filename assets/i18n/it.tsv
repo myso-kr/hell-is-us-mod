@@ -859,7 +859,7 @@ FILM_NOTE	L’eroe percorre il percorso da solo, la telecamera si muove come un 
 FILM_SOURCE_ROUTE	Lungo il percorso guidato
 FILM_SOURCE_POINTS	Per i punti della mappa 3D ({n})
 FILM_CLEAR_POINTS	Cancella punti
-FILM_POINTS_HOW	Doppio clic su un pavimento della mappa 3D, poi «Aggiungi alle riprese».
+FILM_POINTS_HOW	Premi {key} in gioco dove ti trovi, o doppio clic su un pavimento della mappa 3D e «Aggiungi alle riprese».
 FILM_PACE	Andatura
 FILM_LENS	Telecamera
 FILM_LENS_FREE	Lasciarla
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	Il gioco continua quando passi al pannello (disattiva la 
 FILM_FLIGHT	Vola solo la telecamera (l’eroe resta)
 FILM_FLIGHT_NOTE	La telecamera vola dritta tra i punti, a 1,8 m dal suolo, con curve morbide. Fuoco guarda l’eroe.
 FILM_ORBIT_NOT_IN_FLIGHT	Non durante il volo della telecamera: girerebbe attorno a un punto del percorso, non all’eroe (guarda l’eroe invece).
+FILM_POINT_KEY	Tasto punto (in gioco; Ctrl: rimuovi l’ultimo)
+FILM_POINT_ADDED	Punto {n} aggiunto
+FILM_POINT_REMOVED	Ultimo punto rimosso ({n} rimasti)

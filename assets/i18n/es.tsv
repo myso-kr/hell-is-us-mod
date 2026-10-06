@@ -859,7 +859,7 @@ FILM_NOTE	El héroe recorre la ruta solo y la cámara se mueve como un dron. Tra
 FILM_SOURCE_ROUTE	Por la ruta guiada
 FILM_SOURCE_POINTS	Por los puntos del mapa 3D ({n})
 FILM_CLEAR_POINTS	Borrar puntos
-FILM_POINTS_HOW	Doble clic en un suelo del mapa 3D y luego «Añadir a la grabación».
+FILM_POINTS_HOW	Pulsa {key} en el juego donde estés, o doble clic en un suelo del mapa 3D y «Añadir a la grabación».
 FILM_PACE	Ritmo
 FILM_LENS	Cámara
 FILM_LENS_FREE	Dejarla
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	El juego sigue al cambiar al panel (desactiva la pausa al
 FILM_FLIGHT	Solo vuela la cámara (el héroe se queda)
 FILM_FLIGHT_NOTE	La cámara vuela recta entre los puntos, a 1,8 m del suelo, con esquinas suaves. Foco mira al héroe.
 FILM_ORBIT_NOT_IN_FLIGHT	No mientras vuela la cámara sola: rodearía un punto de la ruta, no al héroe (mira al héroe en su lugar).
+FILM_POINT_KEY	Tecla de punto (en el juego; Ctrl: quitar el último)
+FILM_POINT_ADDED	Punto {n} añadido
+FILM_POINT_REMOVED	Último punto quitado (quedan {n})

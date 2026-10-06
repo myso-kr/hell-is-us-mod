@@ -859,7 +859,7 @@ FILM_NOTE	O herói percorre a rota sozinho e a câmera se move como um drone. Ap
 FILM_SOURCE_ROUTE	Pela rota guiada
 FILM_SOURCE_POINTS	Pelos pontos do mapa 3D ({n})
 FILM_CLEAR_POINTS	Limpar pontos
-FILM_POINTS_HOW	Clique duas vezes num chão do mapa 3D e depois em «Adicionar à filmagem».
+FILM_POINTS_HOW	Aperte {key} no jogo onde estiver, ou clique duas vezes num chão do mapa 3D e em «Adicionar à filmagem».
 FILM_PACE	Ritmo
 FILM_LENS	Câmera
 FILM_LENS_FREE	Deixar
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	O jogo continua ao mudar para o painel (desliga a pausa a
 FILM_FLIGHT	Só a câmera voa (o herói fica)
 FILM_FLIGHT_NOTE	A câmera voa reta entre os pontos, 1,8 m acima do chão, com curvas suaves. Foco mira o herói.
 FILM_ORBIT_NOT_IN_FLIGHT	Não durante o voo da câmera: ela circularia um ponto da rota, não o herói (olha para o herói em vez disso).
+FILM_POINT_KEY	Tecla de ponto (no jogo; Ctrl: remover o último)
+FILM_POINT_ADDED	Ponto {n} adicionado
+FILM_POINT_REMOVED	Último ponto removido ({n} restantes)

@@ -39,7 +39,7 @@ use crate::raster::{draw_compass, draw_map, Canvas};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F1};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_CONTROL, VK_F1};
 use windows_sys::Win32::UI::WindowsAndMessaging::{GetCursorInfo, GetForegroundWindow, CURSORINFO, CURSOR_SHOWING};
 
 /// The minimap is this many pixels square.
@@ -120,6 +120,8 @@ const ENCLOSED_WITHIN: Duration = Duration::from_secs(5);
 const ENCLOSED_NEAR: f32 = 1000.0;
 const DISTRUST_FOR: Duration = Duration::from_secs(20);
 const BANNER_FOR: Duration = Duration::from_secs(15);
+/// How long the banner says a filming point was added or taken away.
+const POINT_SAID_FOR: Duration = Duration::from_millis(2500);
 const KEY_NOTE_FOR: Duration = Duration::from_secs(20);
 /// Gap from the game window's edges.
 const MARGIN: i32 = 24;
@@ -258,6 +260,7 @@ pub fn run(shared: Arc<Shared>) {
     let mut icons_small = make((icon_px / 2).max(8));
     let mut was = [false; 4];
     let mut film_was = false;
+    let mut point_was = false;
     // A route per thing followed (guide/track.rs), and since when a goal followed has been
     // gone.
     let mut routes: std::collections::HashMap<u64, route::Route> = Default::default();
@@ -433,9 +436,34 @@ pub fn run(shared: Arc<Shared>) {
             now[i] = pressed(fkey(keys[i]), &mut was[i]) && focused;
         }
         let [toggle_now, marker_now, compass_now, cycle_now] = now;
-        let film_key = shared.film_setup.lock().unwrap().key;
+        let (film_key, point_key) = {
+            let s = shared.film_setup.lock().unwrap();
+            (s.key, s.point_key)
+        };
         if film_key > 0 && pressed(fkey(film_key), &mut film_was) && focused {
             shared.film_key.store(true, Ordering::SeqCst);
+        }
+        // The filming point key: where the hero stands (its feet) added to the take's points;
+        // with Ctrl, the last one taken away. Said in the banner for a moment.
+        if point_key > 0 && pressed(fkey(point_key), &mut point_was) && focused {
+            if let Some((p, _)) = here {
+                let ctrl = unsafe { GetAsyncKeyState(VK_CONTROL as i32) } as u16 & 0x8000 != 0;
+                let mut setup = shared.film_setup.lock().unwrap();
+                let said = if ctrl {
+                    setup.points.pop().map(|_| trf!("FILM_POINT_REMOVED", n = setup.points.len()))
+                } else {
+                    setup.points.push([p[0], p[1], p[2] - crate::film::FEET]);
+                    setup.use_points = true;
+                    Some(trf!("FILM_POINT_ADDED", n = setup.points.len()))
+                };
+                setup.save();
+                drop(setup);
+                if let Some(said) = said {
+                    banner_shown = Some((tr!("FILMING").to_string(), said));
+                    banner_until = Instant::now() + POINT_SAID_FOR;
+                    banner_used = 0;
+                }
+            }
         }
         if toggle_now {
             state.display = state.next_display();

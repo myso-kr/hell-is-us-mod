@@ -353,6 +353,9 @@ pub struct Setup {
     pub fov: Option<f32>,
     pub repeat: bool,
     pub key: u8,
+    /// The key that adds where the hero stands to the points (with Ctrl, takes the last away).
+    /// F8 by default: F7 is Steam's.
+    pub point_key: u8,
     /// Fly the camera alone; the hero stays.
     pub flight: bool,
     pub routes: Vec<(String, Vec<[f32; 3]>)>,
@@ -369,11 +372,16 @@ impl Default for Setup {
             fov: None,
             repeat: false,
             key: 6,
+            point_key: 8,
             flight: false,
             routes: Vec::new(),
         }
     }
 }
+
+/// From the hero's root to its feet (cm): a point taken where it stands is on the floor, as the
+/// 3D map's are.
+pub const FEET: f32 = 90.0;
 
 /// The distance (cm) and field of view (degrees) the card offers.
 pub const DISTANCE: std::ops::RangeInclusive<f32> = 250.0..=1500.0;
@@ -406,7 +414,7 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nflight {}\n",
+            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\npoint_key {}\nflight {}\n",
             self.use_points,
             self.pace,
             self.lens.word(),
@@ -414,6 +422,7 @@ impl Setup {
             self.fov.map_or("none".to_string(), |d| d.to_string()),
             self.repeat,
             self.key,
+            self.point_key,
             self.flight
         );
         for p in &self.points {
@@ -448,6 +457,7 @@ impl Setup {
                 ["repeat", v] => s.repeat = v == "true",
                 ["flight", v] => s.flight = v == "true",
                 ["key", v] => s.key = v.parse().unwrap_or(s.key).min(12),
+                ["point_key", v] => s.point_key = v.parse().unwrap_or(s.point_key).min(12),
                 ["point", ..] => s.points.extend(point(&f[1..])),
                 ["route", ..] => s.routes.push((line["route ".len()..].trim().to_string(), Vec::new())),
                 ["route_point", ..] => {
@@ -1041,6 +1051,7 @@ mod tests {
             fov: Some(55.0),
             repeat: true,
             key: 7,
+            point_key: 9,
             flight: true,
             routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],
         };

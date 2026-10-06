@@ -859,7 +859,7 @@ FILM_NOTE	The hero walks the route by itself while the camera moves like a drone
 FILM_SOURCE_ROUTE	Along the guide’s route
 FILM_SOURCE_POINTS	Through the 3D map’s points ({n})
 FILM_CLEAR_POINTS	Clear points
-FILM_POINTS_HOW	Double-click a floor on the 3D map, then "Add to filming".
+FILM_POINTS_HOW	Press {key} in the game where you stand, or double-click a floor on the 3D map and "Add to filming".
 FILM_PACE	Pace
 FILM_LENS	Camera
 FILM_LENS_FREE	Leave it
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	Keep the game running when you switch to the panel (turns
 FILM_FLIGHT	Fly the camera alone (the hero stays)
 FILM_FLIGHT_NOTE	The camera flies straight between the points, 1.8 m above the floor, its corners rounded. Spotlight keeps it on the hero.
 FILM_ORBIT_NOT_IN_FLIGHT	Not while the camera flies alone: it would circle a point on the path, not the hero (it looks at the hero instead).
+FILM_POINT_KEY	Point key (in the game; Ctrl: remove the last)
+FILM_POINT_ADDED	Point {n} added where you stand
+FILM_POINT_REMOVED	Last point removed ({n} left)

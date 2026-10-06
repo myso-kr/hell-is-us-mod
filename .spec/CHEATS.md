@@ -210,3 +210,10 @@ with the obstacles the scene pass already reads (convex outlines with height ran
   when none is asked (the game's own), so the room applies on a walk too.
 - **The game's pull-in, slowed**: the camera mode's blend times are 0.6 s in and 1.2 s out during
   a take, and put back after.
+
+### Points from the game (2026-10-06)
+
+`Setup.point_key` (F8 by default — F7 is Steam's, the user found): the overlay, which has the hero's
+pose every frame, adds where the hero stands (its root less `FEET`, 90 cm, so on the floor like
+the 3D map's points) to `Setup.points`, switches the take to the points, saves `film.txt` and
+says "point N added" in the banner for 2.5 s; with Ctrl held it takes the last point away.

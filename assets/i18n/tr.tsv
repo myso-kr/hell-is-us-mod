@@ -859,7 +859,7 @@ FILM_NOTE	Kahraman rotayı kendi yürür, kamera drone gibi hareket eder. Başla
 FILM_SOURCE_ROUTE	Rehber rotası boyunca
 FILM_SOURCE_POINTS	3D haritadaki noktalardan ({n})
 FILM_CLEAR_POINTS	Noktaları temizle
-FILM_POINTS_HOW	3D haritada bir zemine çift tıklayın, sonra «Çekime ekle».
+FILM_POINTS_HOW	Oyunda durduğunuz yerde {key} tuşuna basın ya da 3D haritada bir zemine çift tıklayıp «Çekime ekle».
 FILM_PACE	Tempo
 FILM_LENS	Kamera
 FILM_LENS_FREE	Dokunma
@@ -893,3 +893,6 @@ KEEP_RUNNING_UNFOCUSED	Panele geçince oyun durmasın (panel açıkken odak kayb
 FILM_FLIGHT	Yalnızca kamera uçar (kahraman kalır)
 FILM_FLIGHT_NOTE	Kamera noktalar arasında zeminden 1,8 m yukarıda düz uçar, köşeler yumuşatılır. Odak kahramana bakar.
 FILM_ORBIT_NOT_IN_FLIGHT	Kamera tek başına uçarken olmaz: kahramanın değil rotadaki bir noktanın çevresinde döner (bunun yerine kahramana bakar).
+FILM_POINT_KEY	Nokta tuşu (oyunda; Ctrl: sonuncuyu sil)
+FILM_POINT_ADDED	{n}. nokta eklendi
+FILM_POINT_REMOVED	Son nokta silindi ({n} kaldı)
