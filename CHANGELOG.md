@@ -22,15 +22,21 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   (solid backs behind the tracker, notices and compass); reduced motion (no drifting backdrop).
 - Streamer mode (Map page, the game view tab): every overlay is kept out of recordings and streams
   (Windows 10 2004 and later), so the player sees the maps and the viewers see the game.
-- A cheat for enemies' health share (10–100 %): each enemy's health is cut to that share of what
-  it had when first seen, once, and the fight goes on from there; lowering the share cuts again,
-  switching it off heals no one. Frail enemies win over it.
+- A cheat for enemies' health share (10–100 %): each enemy's health is cut to that share of its
+  maximum; moving the share, switching it off or closing the panel moves each enemy's health by
+  the same ratio, so damage taken stays taken. Frail enemies win over it.
 - Puzzle answers show what the game shows, not a number, where guides tell it: a sconce lit or
   left out (the Sconces of Knowledge, the Forge Foyer), and the Hermit's plinths by the glyph
   each turns inward (up and down arrows, bow, open ring, claws), drawn as SVG beside each line.
 - Teleport from the 3D map (cheats agreed to): a double click on a floor picks the spot under it,
   shown with a ring and a card with how far it is; "Teleport here" sends the hero there, and the
   picked place's card has the same. The teleport card's "back to where it was" covers it.
+
+### Fixed
+
+- Frail enemies no longer leave enemies at 1 health when switched off after the panel was
+  restarted with them on; enemies left that way by earlier panels are healed once.
+- Overlay text stays sharp at overlay sizes other than 100 %.
 
 ## 0.5.0 — 2026-10-06
 

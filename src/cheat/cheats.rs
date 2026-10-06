@@ -182,7 +182,7 @@ pub const CHEATS: &[Cheat] = &[
     slider("enemy_time", Group::Combat, "ENEMY_SPEED_DEFAULT_1", &[Effect::EnemyTime], 0.05, 1.0, 0.3, true),
     toggle("frail", Group::Combat, "FRAIL_ENEMIES_ONE_HIT_KILLS", &[Effect::EnemyFrail], true),
     // Above 1 the game clamps health to its maximum: weaker only.
-    slider("enemy_health", Group::Combat, "ENEMY_HEALTH_SHARE_DEFAULT_1", &[Effect::EnemyHealth], 0.1, 1.0, 0.5, false),
+    slider("enemy_health", Group::Combat, "ENEMY_HEALTH_SHARE_DEFAULT_1", &[Effect::EnemyHealth], 0.1, 1.0, 0.5, true),
     // Items: the stack counts in the inventory (extras.rs).
     toggle("stock", Group::Items, "CONSUMABLES_NEVER_RUN_OUT", &[Effect::Stock("Useable")], true),
     slider("weapon_xp", Group::Items, "WEAPON_XP_MULTIPLIER_DEFAULT_1", &[Effect::WeaponXp], 1.0, 10.0, 3.0, true),

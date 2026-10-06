@@ -125,7 +125,8 @@ and faction back; another hero (another game) is left alone; the file is removed
 `HealthAttributeSet.Health` (base and current) to the share of its `HealthMax`, once, when first
 seen. When the share moves, each enemy's health moves by the same ratio, so damage taken stays
 taken: half lost at 10 % is half lost at 100 %. Switching it off (or closing the panel) puts each
-back the same way. It does nothing while frail is on or its records are being put back.
+back the same way. It does nothing while frail is on or its records are being put back. Confirmed in play
+(2026-10-06): 100 % plays as normal, 50 % about half the hits, back to 100 % restored.
 
 The first version cut from the health it found and never healed back, on the grounds that
 enemies were mid-fight. In play that left every enemy cut by one panel at 10 % for good: later
