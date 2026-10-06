@@ -45,6 +45,9 @@ clue board, shard budget, Haze links. Its §4 lists the research some of them ne
 
 ### 4.1 Filming mode (proposed by the user, 2026-10-06)
 
+**Done (2026-10-06)**, confirmed in play: `cheat/film.rs`, CHEATS.md "Filming mode". Left for later:
+a camera path of its own (the camera on points, not the hero), and the combat camera's settings.
+
 The hero and the camera driven along a route for recording: the route from the navmesh (the
 guide's) or from points placed on the 3D map, smoothed; the hero moved along it at 60 Hz with the
 teleport write (root location and ComponentToWorld, velocity), the camera turned with the
@@ -65,7 +68,7 @@ from breaking the shot; streamer mode hides the overlays from the recording.
     pace, and the way is corrected every tick toward the route's next point.
   - `ControlRotation` turns the camera: 90° over 2 s followed about 6° behind (the rig's own
     smoothing), FOV 70 read from the camera manager.
-- **Next:** a "filming" card in the cheats group: route from the guide or the 3D map's points,
+- **Built:** a "filming" card in the cheats group: route from the guide or the 3D map's points,
   speed, look ahead / at a point, loop, start and stop keys, routes kept by name.
 - Input simulation (keys and mouse) is not the way: it takes the cursor and focus, and is not exact.
 
