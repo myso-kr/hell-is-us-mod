@@ -204,6 +204,7 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         pace: setup.pace,
         lens: setup.lens,
         distance: setup.distance,
+        fov: setup.fov,
         repeat: setup.repeat,
         countdown,
     };

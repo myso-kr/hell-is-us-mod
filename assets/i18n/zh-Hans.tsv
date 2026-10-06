@@ -887,3 +887,5 @@ FILM_DISTANCE	设置镜头距离
 FILM_DISTANCE_CM	距离
 FILM_REPEAT	往返直到停止
 FILM_KEY	开始/停止键（游戏内）
+FILM_FOV	设置视野（变焦）
+FILM_FOV_DEG	视野（游戏：70°）

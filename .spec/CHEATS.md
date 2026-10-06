@@ -151,12 +151,14 @@ enemies had the same flaw (a panel started with frail on recorded 1 as the origi
 - **Stopping**: the Stop button, any keyboard or mouse input (`GetLastInputInfo` changed since the
   countdown ended), the hero changed, the panel closed (`Engine::stop`).
 
-- **The camera's distance** (probed): `ExplorationConfig.DefaultDistanceFromPlayer` is only read
-  when the camera mode starts; the mode's `CameraToPivotTranslationInterpolator` holds it live,
-  as six doubles (`ZOOM_AT`, −550 at rest): held at −900, the camera went from 487 to 827 cm from
-  the hero, smoothly. A take eases them to the distance asked for and puts the first value back
-  after. The field of view did not move from any of `PadCamera.FieldOfView`, the manager's
-  `DefaultFOV`, its cached views, or the mode: the game sets it each frame from elsewhere.
+- **The camera's distance and field of view** (probed, the game in focus — it opens its menu and
+  pauses when it loses focus, which spoiled the first probes): the exploration camera's
+  `ExplorationConfig.DefaultDistanceFromPlayer` and `FieldOfView` are read every frame, and the
+  game interpolates toward them itself: 484 → 832 cm with not a centimetre of tremor, 70° → 55°.
+  A take eases them to the values asked for and puts them back after. The first version held
+  the camera mode's `CameraToPivotTranslationInterpolator` instead (six doubles at −550): the
+  game rewrites its target (the third) every frame, so the two fought and the picture shook.
+  `PadCamera.FieldOfView` and the manager's `DefaultFOV` do nothing.
 - **Back and forth**: at the end the route is reversed and walked again, until stopped.
 - **The key** (F6 by default, `Setup.key`): the overlay sees it in the game and sets
   `Shared.film_key`; the worker stops a take rolling, or rolls one at once from the card's

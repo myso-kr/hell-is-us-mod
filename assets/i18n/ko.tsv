@@ -887,3 +887,5 @@ FILM_DISTANCE	카메라 거리 조절
 FILM_DISTANCE_CM	거리
 FILM_REPEAT	멈출 때까지 왕복
 FILM_KEY	시작/정지 키 (게임 안)
+FILM_FOV	시야각 조절 (줌)
+FILM_FOV_DEG	시야각 (기본 70°)

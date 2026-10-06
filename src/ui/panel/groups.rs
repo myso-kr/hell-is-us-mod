@@ -184,6 +184,16 @@ impl Panel {
             if let Some(d) = setup.distance.as_mut() {
                 field(t, tr!("FILM_DISTANCE_CM"), |t| tw::slider(t, d, crate::film::DISTANCE, 50.0, " cm"));
             }
+            let mut zoom = setup.fov.is_some();
+            switch(t, &mut zoom, tr!("FILM_FOV"));
+            match (zoom, setup.fov) {
+                (true, None) => setup.fov = Some(55.0),
+                (false, Some(_)) => setup.fov = None,
+                _ => {}
+            }
+            if let Some(f) = setup.fov.as_mut() {
+                field(t, tr!("FILM_FOV_DEG"), |t| tw::slider(t, f, crate::film::FOV, 1.0, "°"));
+            }
             switch(t, &mut setup.repeat, tr!("FILM_REPEAT"));
             field(t, tr!("FILM_KEY"), |t| w(t, |ui| super::map::keycap_picker(ui, "film_key", &mut setup.key, &taken)));
             choices(t, |t| {

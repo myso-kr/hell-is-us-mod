@@ -389,17 +389,16 @@ impl Engine {
         let pc = chain.controller(m, &a.anchors)?;
         let input =
             n.field(m, hero, "ControlInputVector").ok_or_else(|| trf!("NO_PROPERTY", name = "ControlInputVector"))?;
-        // The camera mode's distance: the manager's mode, its CameraToPivot interpolator.
-        let zoom = n.follow(m, pc, "PlayerCameraManager").ok().and_then(|pcm| {
-            let mode = n.follow(m, pcm, "CameraModeInstance").ok()?;
-            let interp = n.field(m, mode, "CameraToPivotTranslationInterpolator")?;
-            Some(crate::film::ZOOM_AT.map(|o| mode + interp.offset as u64 + o))
-        });
+        // The exploration camera's own settings, which the game reads every frame.
+        let config =
+            n.follow(m, pc, "PlayerCameraManager").ok().and_then(|pcm| n.follow(m, pcm, "ExplorationConfig").ok());
+        let setting = |name: &str| config.and_then(|c| n.field(m, c, name).map(|p| c + p.offset as u64));
         let wiring = crate::film::Wiring {
             input: hero + input.offset as u64,
             rotation: pc + chain.rotation,
             pose: chain.pose_source(m, &a.anchors)?,
-            zoom,
+            distance: setting("DefaultDistanceFromPlayer"),
+            fov: setting("FieldOfView"),
         };
         self.take = Some(crate::film::roll(plan, wiring, state, ended));
         Ok(())

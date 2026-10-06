@@ -887,3 +887,5 @@ FILM_DISTANCE	Kameraabstand festlegen
 FILM_DISTANCE_CM	Abstand
 FILM_REPEAT	Hin und zurück bis zum Stopp
 FILM_KEY	Start/Stopp-Taste (im Spiel)
+FILM_FOV	Sichtfeld festlegen (Zoom)
+FILM_FOV_DEG	Sichtfeld (Spiel: 70°)

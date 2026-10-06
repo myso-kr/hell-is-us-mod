@@ -887,3 +887,5 @@ FILM_DISTANCE	カメラの距離を設定
 FILM_DISTANCE_CM	距離
 FILM_REPEAT	止めるまで往復
 FILM_KEY	開始/停止キー（ゲーム内）
+FILM_FOV	視野角を設定（ズーム）
+FILM_FOV_DEG	視野角（標準 70°）

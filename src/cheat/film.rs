@@ -9,9 +9,11 @@
 //! The camera follows drone practice (DJI's): every move eased in and out (Cine), the gimbal a
 //! critically damped spring under a turn-rate cap, and four modes — left alone, ActiveTrack
 //! (looking the way ahead), Spotlight (on the destination while walking) and Circle (turning
-//! about the hero at a steady rate). The camera's distance is eased to the one asked for and
-//! put back after: the camera mode's CameraToPivot interpolator, held (probed: 487 → 827 cm
-//! with −900 written, smoothly); the field of view could not be moved from outside.
+//! about the hero at a steady rate). The camera's distance and field of view are eased to the
+//! ones asked for and put back after, through the exploration camera's own settings, which the
+//! game reads every frame and interpolates toward itself (probed with the game in focus:
+//! 484 → 832 cm without a tremor, 70° → 55°). Holding the camera mode's interpolator instead
+//! fought the game's own target each frame and shook.
 
 use crate::mem::Memory;
 use crate::player::PoseSource;
@@ -46,31 +48,30 @@ impl Lens {
     }
 }
 
-/// A take: the route (cm), the pace (the stick's length, 0–1), the camera, its distance (cm,
-/// `None` as it is), whether to walk back and forth until stopped, and the countdown (s).
+/// A take: the route (cm), the pace (the stick's length, 0–1), the camera, its distance (cm)
+/// and field of view (degrees) (`None`, as they are), whether to walk back and forth until
+/// stopped, and the countdown (s).
 #[derive(Clone, Debug, PartialEq)]
 pub struct Plan {
     pub path: Vec<[f32; 3]>,
     pub pace: f32,
     pub lens: Lens,
     pub distance: Option<f32>,
+    pub fov: Option<f32>,
     pub repeat: bool,
     pub countdown: u32,
 }
 
 /// Where a take writes and reads, found by the worker: the hero's `ControlInputVector`, the
-/// controller's `ControlRotation`, the pose, and the camera mode's distance (the
-/// interpolator's values, held together), when it was found.
+/// controller's `ControlRotation`, the pose, and the exploration camera's
+/// `DefaultDistanceFromPlayer` and `FieldOfView` (floats), when found.
 pub struct Wiring {
     pub input: u64,
     pub rotation: u64,
     pub pose: PoseSource,
-    pub zoom: Option<[u64; 6]>,
+    pub distance: Option<u64>,
+    pub fov: Option<u64>,
 }
-
-/// In the camera mode's `CameraToPivotTranslationInterpolator`, the doubles that hold the
-/// camera's distance behind the pivot (negative cm): found on build 24045435.
-pub const ZOOM_AT: [u64; 6] = [0x40, 0x68, 0x80, 0xb0, 0xd8, 0xf0];
 
 /// The filming card's settings, kept in `Mods\film.txt`: the points from the 3D map, whether
 /// to walk them (else the guide's route), the pace, the camera, its distance, back and forth,
@@ -82,6 +83,7 @@ pub struct Setup {
     pub pace: f32,
     pub lens: Lens,
     pub distance: Option<f32>,
+    pub fov: Option<f32>,
     pub repeat: bool,
     pub key: u8,
     pub routes: Vec<(String, Vec<[f32; 3]>)>,
@@ -95,6 +97,7 @@ impl Default for Setup {
             pace: 0.6,
             lens: Lens::Follow,
             distance: None,
+            fov: None,
             repeat: false,
             key: 6,
             routes: Vec::new(),
@@ -102,8 +105,9 @@ impl Default for Setup {
     }
 }
 
-/// The distance the card offers (cm).
+/// The distance (cm) and field of view (degrees) the card offers.
 pub const DISTANCE: std::ops::RangeInclusive<f32> = 250.0..=1500.0;
+pub const FOV: std::ops::RangeInclusive<f32> = 30.0..=100.0;
 
 impl Lens {
     fn word(self) -> &'static str {
@@ -132,11 +136,12 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "use_points {}\npace {}\nlens {}\ndistance {}\nrepeat {}\nkey {}\n",
+            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\n",
             self.use_points,
             self.pace,
             self.lens.word(),
             self.distance.map_or("none".to_string(), |d| d.to_string()),
+            self.fov.map_or("none".to_string(), |d| d.to_string()),
             self.repeat,
             self.key
         );
@@ -168,6 +173,7 @@ impl Setup {
                 ["distance", v] => {
                     s.distance = v.parse().ok().map(|d: f32| d.clamp(*DISTANCE.start(), *DISTANCE.end()))
                 }
+                ["fov", v] => s.fov = v.parse().ok().map(|d: f32| d.clamp(*FOV.start(), *FOV.end())),
                 ["repeat", v] => s.repeat = v == "true",
                 ["key", v] => s.key = v.parse().unwrap_or(s.key).min(12),
                 ["point", ..] => s.points.extend(point(&f[1..])),
@@ -266,8 +272,16 @@ const RATE_HZ: f64 = 250.0;
 /// moment for the key to be let go of before input is watched.
 pub const COUNTDOWN_S: u32 = 3;
 pub const KEY_GRACE: Duration = Duration::from_millis(600);
-/// How fast the camera's distance eases to the one asked for (share a second).
+/// How fast the camera's distance and field of view ease to the ones asked for (share a second).
 const ZOOM_EASE: f32 = 1.2;
+
+/// A camera setting a take eases to the value asked for, and puts back after.
+struct Knob {
+    at: u64,
+    was: f32,
+    now: f32,
+    want: f32,
+}
 
 /// The walk along a route: the stick's input each moment from where the hero is.
 pub struct Driver {
@@ -497,16 +511,19 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
     let mut route = plan.path.clone();
     let mut driver = Driver::new(&route);
     let mut end3 = *route.last().unwrap_or(&[0.0; 3]);
-    // The camera's distance as it was, put back after; eased from there to the one asked for.
-    let read1 = |at: u64| -> Option<f64> {
-        let mut b = [0u8; 8];
-        game.read(at, &mut b).then(|| f64::from_le_bytes(b))
+    // The camera's distance and field of view as they were, put back after; eased from there.
+    let read_f = |at: u64| -> Option<f32> {
+        let mut b = [0u8; 4];
+        game.read(at, &mut b).then(|| f32::from_le_bytes(b)).filter(|v| v.is_finite())
     };
-    let zoom: Option<([u64; 6], f64)> = plan.distance.and(w.zoom).and_then(|z| {
-        let v = read1(z[0])?;
-        (-3000.0..-50.0).contains(&v).then_some((z, v))
-    });
-    let mut zoom_now = zoom.map_or(0.0, |(_, v)| v);
+    let mut knobs: Vec<Knob> = [(w.distance, plan.distance), (w.fov, plan.fov)]
+        .into_iter()
+        .filter_map(|(at, want)| {
+            let (at, want) = (at?, want?);
+            let was = read_f(at)?;
+            Some(Knob { at, was, now: was, want })
+        })
+        .collect();
     let touched = last_input();
     let tick = Duration::from_secs_f64(1.0 / RATE_HZ);
     let mut next = Instant::now();
@@ -545,11 +562,9 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
             let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
             write3(w.rotation, [np.rem_euclid(360.0) as f64, ny as f64, roll]);
         }
-        if let (Some((z, _)), Some(d)) = (zoom, plan.distance) {
-            zoom_now += (-(d as f64) - zoom_now) * (ZOOM_EASE * dt).min(1.0) as f64;
-            for at in z {
-                game.write(at, &zoom_now.to_le_bytes());
-            }
+        for k in &mut knobs {
+            k.now += (k.want - k.now) * (ZOOM_EASE * dt).min(1.0);
+            game.write(k.at, &k.now.to_le_bytes());
         }
         *state.lock().unwrap() = State::Rolling(s.share);
         next += tick;
@@ -561,10 +576,8 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         }
     };
     write3(w.input, [0.0, 0.0, 0.0]);
-    if let Some((z, v)) = zoom {
-        for at in z {
-            game.write(at, &v.to_le_bytes());
-        }
+    for k in &knobs {
+        game.write(k.at, &k.was.to_le_bytes());
     }
     outcome
 }
@@ -640,6 +653,7 @@ mod tests {
             pace: 0.8,
             lens: Lens::Orbit,
             distance: Some(900.0),
+            fov: Some(55.0),
             repeat: true,
             key: 7,
             routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],

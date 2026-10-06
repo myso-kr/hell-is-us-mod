@@ -887,3 +887,5 @@ FILM_DISTANCE	Ustaw odległość kamery
 FILM_DISTANCE_CM	Odległość
 FILM_REPEAT	Tam i z powrotem do zatrzymania
 FILM_KEY	Klawisz start/stop (w grze)
+FILM_FOV	Ustaw pole widzenia (zoom)
+FILM_FOV_DEG	Pole widzenia (gra: 70°)

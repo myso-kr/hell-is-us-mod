@@ -887,3 +887,5 @@ FILM_DISTANCE	Definir a distância da câmera
 FILM_DISTANCE_CM	Distância
 FILM_REPEAT	Ida e volta até parar
 FILM_KEY	Tecla iniciar/parar (no jogo)
+FILM_FOV	Definir o campo de visão (zoom)
+FILM_FOV_DEG	Campo de visão (jogo: 70°)
