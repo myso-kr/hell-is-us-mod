@@ -16,10 +16,15 @@ use crate::obstacles::Blocking;
 /// How far before a beat's end the next shot starts to take over (cm, ~1.5 s at a walk), how fast
 /// the camera rises when the hero is hidden and settles back after (degrees a second), and how
 /// high it may rise for it (degrees).
-const ANTICIPATE: f32 = 300.0;
+const ANTICIPATE: f32 = 550.0;
 const HIDDEN_RISE: f32 = 25.0;
 const HIDDEN_SETTLE: f32 = 12.0;
 const HIDDEN_MOST: f32 = 35.0;
+/// How long the hero must be in sight again before the camera settles back (s): a pillar passing
+/// does not make it bob.
+const HIDDEN_HOLD: f32 = 0.5;
+/// The most the camera looks down (degrees): the game's own limit is 70.
+const MOST_DOWN: f32 = 65.0;
 
 /// What the camera should do now: its pitch and yaw (Unreal degrees), the point it turns about in
 /// the hero's frame (cm), its distance (cm) and field of view (degrees), and the shot playing.
@@ -35,8 +40,10 @@ pub struct Cue {
 
 pub struct Director {
     beats: Vec<Beat>,
-    /// How much the camera is raised now to see the hero past something (degrees).
+    /// How much the camera is raised now to see the hero past something (degrees), and how long
+    /// the hero has been in sight since (s).
     raised: f32,
+    clear: f32,
 }
 
 impl Director {
@@ -44,7 +51,7 @@ impl Director {
     pub fn new(route: &[[f32; 3]], b: &Blocking) -> Director {
         let senses = read::read(route, b);
         let length = senses.last().map_or(0.0, |s| s.at);
-        Director { beats: beats::plan(&senses, length), raised: 0.0 }
+        Director { beats: beats::plan(&senses, length), raised: 0.0, clear: 0.0 }
     }
 
     pub fn beats(&self) -> &[Beat] {
@@ -87,14 +94,18 @@ impl Director {
         };
         let eye = [hero[0], hero[1], hero[2] + 60.0];
         let hidden = b.blocks(place(rig.el + self.raised), eye);
-        self.raised = if hidden {
-            (self.raised + HIDDEN_RISE * dt).min(HIDDEN_MOST)
+        if hidden {
+            self.clear = 0.0;
+            self.raised = (self.raised + HIDDEN_RISE * dt).min(HIDDEN_MOST);
         } else {
-            (self.raised - HIDDEN_SETTLE * dt).max(0.0)
-        };
+            self.clear += dt;
+            if self.clear > HIDDEN_HOLD {
+                self.raised = (self.raised - HIDDEN_SETTLE * dt).max(0.0);
+            }
+        }
         Cue {
             // the camera looks back at the hero from its place: the azimuth turned round
-            pitch: -(rig.el + self.raised),
+            pitch: -(rig.el + self.raised).min(MOST_DOWN),
             yaw: crate::film::wrap(heading + rig.az + 180.0),
             pivot: [rig.ahead, 0.0, rig.lift],
             distance: rig.dist,

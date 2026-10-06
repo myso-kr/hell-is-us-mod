@@ -9,8 +9,9 @@ use crate::obstacles::Blocking;
 /// the lowest of it a point must be to have one (cm).
 pub const STEP: f32 = 200.0;
 const SIDE: f32 = 600.0;
-const RISE_AHEAD: f32 = 1000.0;
-const TURN_AHEAD: f32 = 600.0;
+const RISE_AHEAD: f32 = 600.0;
+const RISE_BEHIND: f32 = 400.0;
+const TURN_AHEAD: f32 = 1000.0;
 const VIEW_ROUND: f32 = 5000.0;
 const VIEW_ABOVE: f32 = 600.0;
 /// The height the sides are looked at from, above the route (cm).
@@ -23,9 +24,10 @@ pub struct Sense {
     pub at: f32,
     pub open_left: bool,
     pub open_right: bool,
-    /// The rise over the next `RISE_AHEAD` (cm; negative going down).
+    /// The rise over the window round the point, `RISE_BEHIND` back to `RISE_AHEAD` on (cm;
+    /// negative going down): a flight of stairs is found where it is, not 10 m before it.
     pub rise: f32,
-    /// The turn over the next `TURN_AHEAD` (degrees; positive to the left).
+    /// The turn between the chords `TURN_AHEAD` before and after (degrees; positive to the left).
     pub turn: f32,
     /// Higher than the land round it, with nothing either side: a view.
     pub view: bool,
@@ -76,8 +78,18 @@ pub fn read(route: &[[f32; 3]], b: &Blocking) -> Vec<Sense> {
             let side = |s: f32| [p[0] + left[0] * SIDE * s, p[1] + left[1] * SIDE * s, p[2] + CHEST];
             let open_left = !b.blocks(from, side(1.0));
             let open_right = !b.blocks(from, side(-1.0));
-            let rise = pts[(i + k(RISE_AHEAD)).min(n - 1)].1[2] - p[2];
-            let turn = crate::film::wrap(heading((i + k(TURN_AHEAD)).min(n - 1)) - heading(i));
+            let rise = pts[(i + k(RISE_AHEAD)).min(n - 1)].1[2] - pts[i.saturating_sub(k(RISE_BEHIND))].1[2];
+            // the turn between the chords before and after: a zig-zag round obstacles is none
+            let chord = |a: usize, b: usize| {
+                let (p, q) = (pts[a.min(n - 1)].1, pts[b.min(n - 1)].1);
+                (q[1] - p[1]).atan2(q[0] - p[0]).to_degrees()
+            };
+            let r = k(TURN_AHEAD);
+            let turn = if i > 0 && i + 1 < n {
+                crate::film::wrap(chord(i, i + r) - chord(i.saturating_sub(r), i))
+            } else {
+                0.0
+            };
             let r = k(VIEW_ROUND);
             let lowest = pts[i.saturating_sub(r)..(i + r + 1).min(n)].iter().map(|q| q.1[2]).fold(f32::MAX, f32::min);
             let view = open_left && open_right && p[2] - lowest > VIEW_ABOVE;
@@ -96,7 +108,7 @@ mod tests {
         let route = [[0.0, 0.0, 0.0], [2000.0, 0.0, 500.0], [2000.0, 2000.0, 500.0]];
         let s = read(&route, &scene.blocking());
         assert!((s[1].at - STEP).abs() < 1e-3);
-        assert!(s[0].rise > 200.0, "climbing at the start: {}", s[0].rise);
+        assert!(s[3].rise > 200.0, "climbing at the start: {}", s[3].rise);
         let corner = s.iter().find(|x| (x.at - 1800.0).abs() < 1.0).unwrap();
         assert!(corner.turn > 60.0, "turning left before the corner: {}", corner.turn);
         assert!(s.iter().all(|x| x.open_left && x.open_right));

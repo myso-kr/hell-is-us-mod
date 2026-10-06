@@ -40,8 +40,11 @@ pub enum Shot {
     PushIn,
     /// A long stretch in the open: alongside, on one side, rising slowly (truck with a boom up).
     SideTrack,
-    /// A corridor, or nothing better: low and close behind, a wide lens (Steadicam).
+    /// A corridor: low and close behind, a wide lens (Steadicam).
     Steadicam,
+    /// Behind at the game's own rest, the way ahead in view: what a stretch needs when it calls
+    /// for nothing more (the long open stretch's middle, a short route).
+    Follow,
     /// A turn: swinging round the hero through it (arc).
     Arc,
     /// Climbing: low, looking up, rising with the hero (pedestal up, low angle).
@@ -64,30 +67,36 @@ impl Shot {
         match self {
             Shot::CraneDown => Rig { el: lerp(55.0, 16.0), dist: lerp(1400.0, 560.0), ahead: 150.0, ..base },
             Shot::PushIn => Rig { el: 8.0, dist: lerp(750.0, 360.0), fov: lerp(78.0, 68.0), ..base },
+            // a rear three-quarter rather than a profile: where the hero goes stays in view, and
+            // the camera stays within what the reading looked at (6 m out)
             Shot::SideTrack => {
-                Rig { az: 180.0 - 95.0 * side, el: lerp(8.0, 26.0), dist: 680.0, fov: 60.0, ahead: 220.0, ..base }
+                Rig { az: 180.0 - 75.0 * side, el: lerp(8.0, 26.0), dist: 580.0, fov: 60.0, ahead: 220.0, ..base }
             }
+            Shot::Follow => Rig { el: 12.0, dist: 550.0, fov: 70.0, ahead: 150.0, ..base },
             Shot::Steadicam => Rig { el: 9.0, dist: 380.0, fov: 82.0, ahead: 140.0, lift: 60.0, ..base },
-            Shot::Arc => Rig { az: lerp(180.0, 180.0 + 70.0 * side), el: 16.0, dist: 560.0, ..base },
+            // round the outside of the turn (+1 is left, as everywhere), restrained
+            Shot::Arc => Rig { az: lerp(180.0, 180.0 - 40.0 * side), el: 16.0, dist: 560.0, ..base },
             Shot::LowRise => Rig {
                 az: 180.0 - 30.0 * side,
-                el: lerp(-14.0, -6.0),
+                el: lerp(-8.0, -2.0),
                 dist: 480.0,
                 fov: 76.0,
                 ahead: 60.0,
-                lift: lerp(40.0, 110.0),
+                lift: lerp(60.0, 110.0),
             },
             Shot::HighFall => Rig { el: lerp(30.0, 48.0), dist: lerp(600.0, 760.0), fov: 64.0, ahead: 200.0, ..base },
             Shot::CraneReveal => Rig {
-                az: lerp(180.0, 180.0 + 25.0 * side),
+                az: lerp(180.0, 180.0 - 25.0 * side),
                 el: lerp(14.0, 50.0),
                 dist: lerp(560.0, 1350.0),
                 fov: lerp(70.0, 80.0),
                 ahead: lerp(150.0, 600.0),
                 ..base
             },
+            // from behind, rising and pulling back: the hero left small in the place (swinging to
+            // the front was a 170° turn as the take ended)
             Shot::Dronie => {
-                Rig { az: 10.0 * side, el: lerp(12.0, 42.0), dist: lerp(450.0, 1500.0), ahead: 0.0, ..base }
+                Rig { az: 180.0 - 20.0 * side, el: lerp(12.0, 42.0), dist: lerp(450.0, 1500.0), ahead: 0.0, ..base }
             }
         }
     }
@@ -99,6 +108,7 @@ impl Shot {
             Shot::PushIn => tr!("SHOT_PUSH_IN"),
             Shot::SideTrack => tr!("SHOT_SIDE_TRACK"),
             Shot::Steadicam => tr!("SHOT_STEADICAM"),
+            Shot::Follow => tr!("SHOT_FOLLOW"),
             Shot::Arc => tr!("SHOT_ARC"),
             Shot::LowRise => tr!("SHOT_LOW_RISE"),
             Shot::HighFall => tr!("SHOT_HIGH_FALL"),

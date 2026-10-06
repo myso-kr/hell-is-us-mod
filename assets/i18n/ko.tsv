@@ -914,3 +914,4 @@ FILM_PLAN_OFF	걷기 촬영에서 카메라를 「감독」으로 고르면 경�
 FILM_DIRECTOR_NOTE	감독이 경로와 주변 구조를 읽고 구간마다 샷을 고릅니다. 연출 계획에서 확인하세요.
 FILM_KEY_HOVER	단독: 촬영 시작/정지. Ctrl과 함께: 서 있는 곳에 지점 추가, 근처 지점이면 삭제.
 FILM_AS_THE_GAME	게임 기본값
+SHOT_FOLLOW	추적

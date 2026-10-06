@@ -914,3 +914,4 @@ FILM_PLAN_OFF	Choose the Director camera for a walk to see the shot it gives eac
 FILM_DIRECTOR_NOTE	The director reads the route and what stands about it, and gives each stretch its shot: see the plan.
 FILM_KEY_HOVER	Alone: start or stop a take. With Ctrl: add a point where you stand, or remove the one you stand by.
 FILM_AS_THE_GAME	as the game has it
+SHOT_FOLLOW	follow

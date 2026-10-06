@@ -914,3 +914,4 @@ FILM_PLAN_OFF	歩き撮影でカメラを「監督」にすると、区間ごと
 FILM_DIRECTOR_NOTE	監督が経路と周囲を読み、区間ごとにショットを選びます。演出プランを見てください。
 FILM_KEY_HOVER	単独：開始/停止。Ctrl同時：立っている場所に地点を追加、近くの地点なら削除。
 FILM_AS_THE_GAME	ゲームのまま
+SHOT_FOLLOW	追従

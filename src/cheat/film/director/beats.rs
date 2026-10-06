@@ -14,28 +14,22 @@ pub struct Beat {
     pub side: f32,
 }
 
-/// How long the opening and the closing are (cm), the shortest a beat may be (cm, ~4 s at a
-/// walk), how long one open stretch may run before it changes (cm), how much a rise or fall
-/// counts (cm over 10 m), and how much a turn does (degrees over 6 m).
-const OPENING: f32 = 700.0;
-const CLOSING: f32 = 800.0;
-const MIN_BEAT: f32 = 800.0;
+/// How long the opening and the closing are (cm), the shortest a beat may be (cm, ~4 s at the
+/// hero's 300–450 cm/s), how long one open stretch may run before it changes (cm), the shortest
+/// route given beats at all (cm; under it, one follow), how much a rise or fall counts (cm over
+/// 10 m), and how much a turn does (degrees between the 10 m before and after).
+const OPENING: f32 = 1500.0;
+const CLOSING: f32 = 1800.0;
+const MIN_BEAT: f32 = 1400.0;
 const LONG_BEAT: f32 = 2600.0;
+const SHORT_ROUTE: f32 = 3000.0;
 const CLIMB: f32 = 180.0;
 const FALL: f32 = -250.0;
-const TURN: f32 = 45.0;
+const TURN: f32 = 60.0;
 
-/// The shot a point calls for, and the side: the outside of a turn (so the camera swings round
-/// it), else the open side.
+/// The shot a point calls for (and, for a turn, which way it turns: +1 left).
 fn call(s: &Sense, along: f32, length: f32) -> (Shot, f32) {
     let open = s.open_left && s.open_right;
-    let side = if s.turn.abs() > 10.0 {
-        -s.turn.signum()
-    } else if s.open_left || !s.open_right {
-        1.0
-    } else {
-        -1.0
-    };
     let shot = if along < OPENING {
         if open {
             Shot::CraneDown
@@ -44,69 +38,84 @@ fn call(s: &Sense, along: f32, length: f32) -> (Shot, f32) {
         }
     } else if length - along < CLOSING {
         Shot::Dronie
+    } else if !s.open_left && !s.open_right {
+        // a corridor first: its navmesh corners are no turns to swing round
+        Shot::Steadicam
     } else if s.rise > CLIMB {
         Shot::LowRise
     } else if s.rise < FALL {
         Shot::HighFall
     } else if s.turn.abs() > TURN {
         Shot::Arc
-    } else if !s.open_left && !s.open_right {
-        Shot::Steadicam
     } else if s.view {
         Shot::CraneReveal
     } else if open {
         Shot::SideTrack
     } else {
-        Shot::Steadicam
+        Shot::Follow
     };
-    (shot, side)
+    (shot, s.turn.signum())
 }
 
 /// The beats of a route `length` cm long, from its reading.
 pub fn plan(senses: &[Sense], length: f32) -> Vec<Beat> {
-    // runs of one shot
-    let mut beats: Vec<Beat> = Vec::new();
+    // The line's side (the 180° rule): the side more often open, kept for the whole take and
+    // changed only by a move that carries the camera across (an arc, the long stretch's turn).
+    let left = senses.iter().filter(|s| s.open_left).count();
+    let right = senses.iter().filter(|s| s.open_right).count();
+    let mut line = if left >= right { 1.0 } else { -1.0 };
+    if length < SHORT_ROUTE {
+        return vec![Beat { from: 0.0, to: length, shot: Shot::Follow, side: line }];
+    }
+    // runs of one shot (a turn's run: which way it turns, from its first point)
+    let mut beats: Vec<(Beat, f32)> = Vec::new();
     for (i, s) in senses.iter().enumerate() {
-        let (shot, side) = call(s, s.at, length);
+        let (shot, turn) = call(s, s.at, length);
         let to = senses.get(i + 1).map_or(length, |n| n.at);
         match beats.last_mut() {
-            Some(b) if b.shot == shot => b.to = to,
-            _ => beats.push(Beat { from: s.at, to, shot, side }),
+            Some((b, _)) if b.shot == shot => b.to = to,
+            _ => beats.push((Beat { from: s.at, to, shot, side: 0.0 }, turn)),
         }
     }
     // too short to read: into the longer neighbour (the opening and closing kept)
     loop {
+        let len = |b: &Beat| b.to - b.from;
         let short = (0..beats.len())
-            .filter(|&i| beats[i].to - beats[i].from < MIN_BEAT)
-            .filter(|&i| !matches!(beats[i].shot, Shot::CraneDown | Shot::PushIn | Shot::Dronie))
-            .min_by(|&a, &b| (beats[a].to - beats[a].from).total_cmp(&(beats[b].to - beats[b].from)));
+            .filter(|&i| len(&beats[i].0) < MIN_BEAT)
+            .filter(|&i| !matches!(beats[i].0.shot, Shot::CraneDown | Shot::PushIn | Shot::Dronie))
+            .min_by(|&a, &b| len(&beats[a].0).total_cmp(&len(&beats[b].0)));
         let Some(i) = short else { break };
-        let before = i.checked_sub(1).map(|j| beats[j].to - beats[j].from);
-        let after = beats.get(i + 1).map(|b| b.to - b.from);
+        let before = i.checked_sub(1).map(|j| len(&beats[j].0));
+        let after = beats.get(i + 1).map(|b| len(&b.0));
         let into = match (before, after) {
             (Some(x), Some(y)) if y > x => i + 1,
             (Some(_), _) => i - 1,
             (None, Some(_)) => i + 1,
             (None, None) => break,
         };
-        let gone = beats.remove(i);
+        let (gone, _) = beats.remove(i);
         let j = if into > i { into - 1 } else { into };
-        beats[j].from = beats[j].from.min(gone.from);
-        beats[j].to = beats[j].to.max(gone.to);
+        beats[j].0.from = beats[j].0.from.min(gone.from);
+        beats[j].0.to = beats[j].0.to.max(gone.to);
         // neighbours that now share a shot become one
         let mut k = 0;
         while k + 1 < beats.len() {
-            if beats[k].shot == beats[k + 1].shot {
-                beats[k].to = beats[k + 1].to;
+            if beats[k].0.shot == beats[k + 1].0.shot {
+                beats[k].0.to = beats[k + 1].0.to;
                 beats.remove(k + 1);
             } else {
                 k += 1;
             }
         }
     }
-    // a long open stretch alternates: alongside, then behind, then alongside on the other side
+    // the sides along the take; a long open stretch alongside, then behind, then on the other
     let mut out: Vec<Beat> = Vec::new();
-    for b in beats {
+    for (mut b, turn) in beats {
+        if b.shot == Shot::Arc && turn != 0.0 {
+            // round the outside of the turn: the camera crosses the line, and stays across
+            line = -turn;
+        }
+        b.side = line;
         if b.shot != Shot::SideTrack || b.to - b.from < LONG_BEAT * 1.5 {
             out.push(b);
             continue;
@@ -114,12 +123,16 @@ pub fn plan(senses: &[Sense], length: f32) -> Vec<Beat> {
         let parts = ((b.to - b.from) / LONG_BEAT).round().max(2.0) as usize;
         let len = (b.to - b.from) / parts as f32;
         for p in 0..parts {
-            let (shot, side) = match p % 3 {
-                0 => (Shot::SideTrack, b.side),
-                1 => (Shot::Steadicam, b.side),
-                _ => (Shot::SideTrack, -b.side),
+            let shot = match p % 3 {
+                0 => Shot::SideTrack,
+                1 => Shot::Follow,
+                _ => {
+                    // behind, then across: a continuous move takes the camera over the line
+                    line = -line;
+                    Shot::SideTrack
+                }
             };
-            out.push(Beat { from: b.from + len * p as f32, to: b.from + len * (p + 1) as f32, shot, side });
+            out.push(Beat { from: b.from + len * p as f32, to: b.from + len * (p + 1) as f32, shot, side: line });
         }
     }
     out
@@ -155,19 +168,33 @@ mod tests {
     #[test]
     fn climbing_and_corridors_have_their_shots() {
         let b = plan(
-            &line(6000.0, |at| {
-                if (2000.0..3200.0).contains(&at) {
+            &line(8000.0, |at| {
+                if (2000.0..3800.0).contains(&at) {
                     Sense { rise: 300.0, ..open() }
-                } else if at > 3600.0 {
+                } else if (4200.0..6400.0).contains(&at) {
                     Sense::default()
                 } else {
                     open()
                 }
             }),
-            6000.0,
+            8000.0,
         );
         assert!(b.iter().any(|x| x.shot == Shot::LowRise), "{b:?}");
         assert!(b.iter().any(|x| x.shot == Shot::Steadicam), "{b:?}");
+    }
+
+    #[test]
+    fn a_short_route_is_one_follow_and_the_line_holds() {
+        let b = plan(&line(2000.0, |_| open()), 2000.0);
+        assert_eq!(b.len(), 1);
+        assert_eq!(b[0].shot, Shot::Follow);
+        // no beat changes side but an arc or the long stretch's turn
+        let b = plan(&line(20000.0, |_| open()), 20000.0);
+        for w in b.windows(2) {
+            if w[0].side != w[1].side {
+                assert!(w[1].shot == Shot::Arc || (w[0].shot == Shot::Follow && w[1].shot == Shot::SideTrack), "{w:?}");
+            }
+        }
     }
 
     #[test]

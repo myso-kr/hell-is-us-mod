@@ -112,7 +112,14 @@ impl Driver {
         let to_end = (end[0] - p[0]).hypot(end[1] - p[1]);
         let share = if self.length() > 0.0 { self.along / self.length() } else { 1.0 };
         let yaw_to = |q: [f32; 2]| (q[1] - p[1]).atan2(q[0] - p[0]).to_degrees();
-        let ahead_yaw = yaw_to(self.point(self.along + LOOK_AHEAD));
+        // within LOOK_AHEAD of the end the look point closes in on the hero and its way swings:
+        // the last stretch's way instead
+        let ahead_yaw = if left > LOOK_AHEAD {
+            yaw_to(self.point(self.along + LOOK_AHEAD))
+        } else {
+            let (a, b) = (self.point(self.length() - LOOK_AHEAD), self.point(self.length()));
+            (b[1] - a[1]).atan2(b[0] - a[0]).to_degrees()
+        };
         if left < ARRIVED && to_end < ARRIVED * 2.0 {
             return Steer { input: [0.0, 0.0], ahead_yaw, share: 1.0, done: true, stuck: false };
         }

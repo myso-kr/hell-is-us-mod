@@ -914,3 +914,4 @@ FILM_PLAN_OFF	步行拍摄时选择「导演」镜头，即可在此看到每段
 FILM_DIRECTOR_NOTE	导演读取路线和周围结构，为每段选择镜头：见导演计划。
 FILM_KEY_HOVER	单按：开始/停止。配合 Ctrl：在所站处添加点，或删除附近的点。
 FILM_AS_THE_GAME	游戏默认
+SHOT_FOLLOW	跟随
