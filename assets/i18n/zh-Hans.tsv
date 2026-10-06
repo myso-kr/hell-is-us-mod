@@ -855,7 +855,6 @@ HINT_DEVICES	需要调整的装置 {n} 个，位置：
 FOG_UNEXPLORED	未探索区域变暗
 FORGET_EXPLORED	清除探索记录
 FILMING	拍摄模式
-FILM_NOTE	主角沿路线行走，镜头像无人机跟随。开始后 3 秒内点击游戏；任何输入都会停止。
 FILM_SOURCE_ROUTE	沿引导路线
 FILM_SOURCE_POINTS	经过 3D 地图的点（{n}）
 FILM_CLEAR_POINTS	清除点
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	导演读取路线和周围结构，为每段选择镜头：�
 FILM_KEY_HOVER	单按：开始/停止。配合 Ctrl：在所站处添加点，或删除附近的点。
 FILM_AS_THE_GAME	游戏默认
 SHOT_FOLLOW	跟随
+FILM_MODE_WALK	自动行走
+FILM_MODE_LIVE	自己操作
+FILM_MODE_FLIGHT	仅镜头
+FILM_MODE_WALK_ABOUT	主角自动沿路线行走，镜头拍摄；任何输入都会停止。开始后 3 秒内点击游戏。
+FILM_MODE_LIVE_ABOUT	您自己行走、战斗，只有镜头被导演，始终拍到主角；输入不会停止，只有拍摄键或停止按钮可以。导演模式会跟随变化的引导路线。
+FILM_PLAN_LIVE	本次由您操作：计划跟随当前引导路线，路线变化时随之变化。
+AERIAL_GLIDE	滑翔
+AERIAL_RISE	上升揭示
+AERIAL_DIVE	俯冲
+AERIAL_BANK	转弯前瞻
+AERIAL_OVERHEAD	俯瞰
+AERIAL_ARRIVE	到达推镜

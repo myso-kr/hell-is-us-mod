@@ -855,7 +855,6 @@ HINT_DEVICES	{n} mechanizmów do ustawienia, tutaj:
 FOG_UNEXPLORED	Przyciemnij niezbadane miejsca
 FORGET_EXPLORED	Zapomnij zbadane
 FILMING	Tryb filmowania
-FILM_NOTE	Bohater idzie trasą, kamera podąża jak dron. Kliknij grę w 3 s; każde wejście zatrzymuje.
 FILM_SOURCE_ROUTE	Wzdłuż trasy przewodnika
 FILM_SOURCE_POINTS	Przez punkty mapy 3D ({n})
 FILM_CLEAR_POINTS	Wyczyść punkty
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	Reżyser czyta trasę i otoczenie i daje każdemu odcinkowi u
 FILM_KEY_HOVER	Sam: start/stop. Z Ctrl: dodaj punkt tutaj lub usuń pobliski.
 FILM_AS_THE_GAME	jak w grze
 SHOT_FOLLOW	śledzenie
+FILM_MODE_WALK	Auto-marsz
+FILM_MODE_LIVE	Grasz sam
+FILM_MODE_FLIGHT	Tylko kamera
+FILM_MODE_WALK_ABOUT	Bohater sam idzie trasą, kamera filmuje; każde wejście zatrzymuje. Kliknij grę w 3 s.
+FILM_MODE_LIVE_ABOUT	Grasz sam — idziesz, walczysz — a reżyserowana jest tylko kamera, z bohaterem w kadrze; wejścia jej nie zatrzymują, tylko klawisz lub Stop. Z reżyserem podąża za trasą przewodnika.
+FILM_PLAN_LIVE	Grasz to ujęcie: plan podąża za obecną trasą i zmienia się z nią.
+AERIAL_GLIDE	szybowanie
+AERIAL_RISE	wznosząca odsłona
+AERIAL_DIVE	nurkowanie
+AERIAL_BANK	w zakręt
+AERIAL_OVERHEAD	z góry
+AERIAL_ARRIVE	przybycie

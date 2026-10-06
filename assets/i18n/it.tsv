@@ -855,7 +855,6 @@ HINT_DEVICES	{n} meccanismi da regolare, qui:
 FOG_UNEXPLORED	Oscura le zone inesplorate
 FORGET_EXPLORED	Dimentica l’esplorato
 FILMING	Modalità riprese
-FILM_NOTE	L’eroe percorre il percorso, la telecamera segue come un drone. Clicca sul gioco entro 3 s; ogni input lo ferma.
 FILM_SOURCE_ROUTE	Lungo il percorso guidato
 FILM_SOURCE_POINTS	Per i punti della mappa 3D ({n})
 FILM_CLEAR_POINTS	Cancella punti
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	Il regista legge il percorso e i dintorni e dà a ogni tratto
 FILM_KEY_HOVER	Da solo: avvia o ferma. Con Ctrl: aggiungi un punto qui o rimuovi quello vicino.
 FILM_AS_THE_GAME	come nel gioco
 SHOT_FOLLOW	inseguimento
+FILM_MODE_WALK	Camminata auto
+FILM_MODE_LIVE	Giochi tu
+FILM_MODE_FLIGHT	Solo telecamera
+FILM_MODE_WALK_ABOUT	L’eroe percorre il percorso da solo mentre la telecamera riprende; ogni input lo ferma. Clicca sul gioco entro 3 s.
+FILM_MODE_LIVE_ABOUT	Giochi tu — cammini, combatti — e solo la telecamera è diretta, con l’eroe in quadro; i tuoi input non la fermano, solo il tasto o Ferma. Col regista segue il percorso guidato.
+FILM_PLAN_LIVE	Giochi tu questa ripresa: il piano segue il percorso guidato e cambia con esso.
+AERIAL_GLIDE	planata
+AERIAL_RISE	salita rivelatrice
+AERIAL_DIVE	picchiata
+AERIAL_BANK	dentro la curva
+AERIAL_OVERHEAD	dall’alto
+AERIAL_ARRIVE	arrivo

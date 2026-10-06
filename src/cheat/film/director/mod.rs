@@ -4,10 +4,13 @@
 //! the change (anticipation), the camera raised and slid aside when something hides the hero.
 //! One continuous take, no cuts (.spec/FILMING-RESEARCH.md §4).
 
+mod aerial;
 mod beats;
 mod read;
+mod runs;
 mod shot;
 
+pub use aerial::{Aerial, AerialPlan};
 pub use beats::Beat;
 pub use shot::{Rig, Shot};
 
@@ -62,15 +65,14 @@ impl Director {
     /// the next over the last `ANTICIPATE` of it.
     pub fn rig(&self, along: f32) -> (Rig, Shot) {
         let Some(i) = self.beats.iter().position(|b| along < b.to).or(self.beats.len().checked_sub(1)) else {
-            return (Shot::Steadicam.rig(0.0, 1.0), Shot::Steadicam);
+            return (Shot::Follow.rig(0.0, 1.0), Shot::Follow);
         };
         let b = self.beats[i];
         let u = ((along - b.from) / (b.to - b.from).max(1.0)).clamp(0.0, 1.0);
         let here = b.shot.rig(u, b.side);
         match self.beats.get(i + 1) {
             Some(n) if b.to - along < ANTICIPATE => {
-                let k = 1.0 - (b.to - along).max(0.0) / ANTICIPATE;
-                let k = k * k * (3.0 - 2.0 * k);
+                let k = runs::ahead_of(along, b.to, ANTICIPATE);
                 (here.mix(n.shot.rig(0.0, n.side), k), if k > 0.5 { n.shot } else { b.shot })
             }
             _ => (here, b.shot),
@@ -82,6 +84,16 @@ impl Director {
     /// hero from where the camera would be.
     pub fn cue(&mut self, along: f32, heading: f32, hero: [f32; 3], b: &Blocking, dt: f32) -> Cue {
         let (rig, shot) = self.rig(along);
+        self.cue_rig(rig, shot, heading, hero, b, dt)
+    }
+
+    /// The cue for a hero off the route (a player gone their own way): behind them as they go,
+    /// raised as ever when something hides them.
+    pub fn cue_follow(&mut self, heading: f32, hero: [f32; 3], b: &Blocking, dt: f32) -> Cue {
+        self.cue_rig(Shot::Follow.rig(0.0, 1.0), Shot::Follow, heading, hero, b, dt)
+    }
+
+    fn cue_rig(&mut self, rig: Rig, shot: Shot, heading: f32, hero: [f32; 3], b: &Blocking, dt: f32) -> Cue {
         // from where the camera would be (azimuth about the hero, its elevation, its distance)
         let place = |el: f32| {
             let (a, e) = ((heading + rig.az).to_radians(), el.to_radians());

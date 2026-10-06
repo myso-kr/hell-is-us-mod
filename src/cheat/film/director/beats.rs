@@ -3,6 +3,7 @@
 //! stretches; then beats too short to read merged into a neighbour, and long ones varied.
 
 use super::read::Sense;
+use super::runs::{merge, runs};
 use super::shot::Shot;
 
 /// A stretch of the route (cm along it) and its shot, on a side of the way (+1 left, −1 right).
@@ -27,10 +28,10 @@ const CLIMB: f32 = 180.0;
 const FALL: f32 = -250.0;
 const TURN: f32 = 60.0;
 
-/// The shot a point calls for (and, for a turn, which way it turns: +1 left).
-fn call(s: &Sense, along: f32, length: f32) -> (Shot, f32) {
+/// The shot a point calls for.
+fn call(s: &Sense, along: f32, length: f32) -> Shot {
     let open = s.open_left && s.open_right;
-    let shot = if along < OPENING {
+    if along < OPENING {
         if open {
             Shot::CraneDown
         } else {
@@ -53,8 +54,7 @@ fn call(s: &Sense, along: f32, length: f32) -> (Shot, f32) {
         Shot::SideTrack
     } else {
         Shot::Follow
-    };
-    (shot, s.turn.signum())
+    }
 }
 
 /// The beats of a route `length` cm long, from its reading.
@@ -67,47 +67,10 @@ pub fn plan(senses: &[Sense], length: f32) -> Vec<Beat> {
     if length < SHORT_ROUTE {
         return vec![Beat { from: 0.0, to: length, shot: Shot::Follow, side: line }];
     }
-    // runs of one shot (a turn's run: which way it turns, from its first point)
-    let mut beats: Vec<(Beat, f32)> = Vec::new();
-    for (i, s) in senses.iter().enumerate() {
-        let (shot, turn) = call(s, s.at, length);
-        let to = senses.get(i + 1).map_or(length, |n| n.at);
-        match beats.last_mut() {
-            Some((b, _)) if b.shot == shot => b.to = to,
-            _ => beats.push((Beat { from: s.at, to, shot, side: 0.0 }, turn)),
-        }
-    }
-    // too short to read: into the longer neighbour (the opening and closing kept)
-    loop {
-        let len = |b: &Beat| b.to - b.from;
-        let short = (0..beats.len())
-            .filter(|&i| len(&beats[i].0) < MIN_BEAT)
-            .filter(|&i| !matches!(beats[i].0.shot, Shot::CraneDown | Shot::PushIn | Shot::Dronie))
-            .min_by(|&a, &b| len(&beats[a].0).total_cmp(&len(&beats[b].0)));
-        let Some(i) = short else { break };
-        let before = i.checked_sub(1).map(|j| len(&beats[j].0));
-        let after = beats.get(i + 1).map(|b| len(&b.0));
-        let into = match (before, after) {
-            (Some(x), Some(y)) if y > x => i + 1,
-            (Some(_), _) => i - 1,
-            (None, Some(_)) => i + 1,
-            (None, None) => break,
-        };
-        let (gone, _) = beats.remove(i);
-        let j = if into > i { into - 1 } else { into };
-        beats[j].0.from = beats[j].0.from.min(gone.from);
-        beats[j].0.to = beats[j].0.to.max(gone.to);
-        // neighbours that now share a shot become one
-        let mut k = 0;
-        while k + 1 < beats.len() {
-            if beats[k].0.shot == beats[k + 1].0.shot {
-                beats[k].0.to = beats[k + 1].0.to;
-                beats.remove(k + 1);
-            } else {
-                k += 1;
-            }
-        }
-    }
+    let mut beats = runs(senses, length, |s| call(s, s.at, length));
+    merge(&mut beats, MIN_BEAT, |shot| matches!(shot, Shot::CraneDown | Shot::PushIn | Shot::Dronie));
+    let beats: Vec<(Beat, f32)> =
+        beats.into_iter().map(|r| (Beat { from: r.from, to: r.to, shot: r.what, side: 0.0 }, r.turn)).collect();
     // the sides along the take; a long open stretch alongside, then behind, then on the other
     let mut out: Vec<Beat> = Vec::new();
     for (mut b, turn) in beats {

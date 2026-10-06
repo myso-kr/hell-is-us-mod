@@ -235,3 +235,25 @@ the hero to the pivot (`bValidateSafeLoc`, bit 0, and `bPreventCameraPenetration
 byte with `bDoPredictiveAvoidance`) and holds the pivot short of what it hits. With both cleared:
 20 m → 18.4 m, 40 m → 38 m, 80 m → 77.9 m. A flight clears them while it runs and puts the byte
 back after; a walk keeps them, the camera being behind the hero there.
+
+### Modes and the take's structure (2026-10-07)
+
+`film::Mode`: **Walk** (the mod drives the hero; input stops it), **Live** (the player plays —
+needed for anything with a fight in it — and the take moves only the camera; input does not stop
+it, only the key or the card), **Flight** (the camera alone). `Setup.mode` replaced the flight
+switch (`flight true` reads as Flight). The take is a loop over a `Session` (take/session.rs: the
+game opened for writing, the gimbal, the camera's settings held and their room, what to put
+back) and one runner per mode: `drive.rs`, `live.rs`, `fly.rs`; `run.rs` only counts down,
+watches the input (not for Live), paces and restores.
+
+- **Live**: the route is the guide's as the overlay draws it (`Shared.route3d`, now a
+  `film::RouteFeed` the take holds), looked at again every second and taken up when its end has
+  moved 3 m (a new goal); or the points. `Driver::track` finds the player along it (nearest
+  anywhere: a player may go back). Within 15 m of it the director gives the beat's shot; off it,
+  `Director::cue_follow` keeps behind the player by their body's way. It never ends by itself.
+- **Walk**, directed: on arriving the stick rests and the closing shot plays out for 4 s.
+- **Flight**, directed: `director::aerial` reads the flight's path as a walk's is and gives each
+  stretch a look — glide, a rising reveal (pitch −40 → −6, the lens widening), a dive, leaning
+  22° into a turn before it, overhead (−35 → −60) over high open ground, an arriving push (the
+  lens closing to 58°) — eased ahead of each change; the shared `director::runs` cuts and
+  merges for both.

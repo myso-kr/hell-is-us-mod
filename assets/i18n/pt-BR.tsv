@@ -855,7 +855,6 @@ HINT_DEVICES	{n} mecanismos para ajustar, aqui:
 FOG_UNEXPLORED	Escurecer o que não foi explorado
 FORGET_EXPLORED	Esquecer o explorado
 FILMING	Modo de filmagem
-FILM_NOTE	O herói percorre a rota, a câmera segue como um drone. Clique no jogo em 3 s; qualquer entrada para.
 FILM_SOURCE_ROUTE	Pela rota guiada
 FILM_SOURCE_POINTS	Pelos pontos do mapa 3D ({n})
 FILM_CLEAR_POINTS	Limpar pontos
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	O diretor lê a rota e o entorno e dá a cada trecho seu plan
 FILM_KEY_HOVER	Sozinha: iniciar/parar. Com Ctrl: adicionar ponto aqui ou remover o próximo.
 FILM_AS_THE_GAME	como no jogo
 SHOT_FOLLOW	acompanhamento
+FILM_MODE_WALK	Andar sozinho
+FILM_MODE_LIVE	Você joga
+FILM_MODE_FLIGHT	Só a câmera
+FILM_MODE_WALK_ABOUT	O herói percorre a rota sozinho enquanto a câmera filma; qualquer entrada para. Clique no jogo em 3 s.
+FILM_MODE_LIVE_ABOUT	Você joga — anda, luta — e só a câmera é dirigida, com o herói em quadro; suas entradas não a param, só a tecla ou Parar. Com diretor, segue a rota guiada.
+FILM_PLAN_LIVE	Você joga esta tomada: o plano segue a rota guiada atual e muda com ela.
+AERIAL_GLIDE	planar
+AERIAL_RISE	subida reveladora
+AERIAL_DIVE	mergulho
+AERIAL_BANK	na curva
+AERIAL_OVERHEAD	zenital
+AERIAL_ARRIVE	chegada

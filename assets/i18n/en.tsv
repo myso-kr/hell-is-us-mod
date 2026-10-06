@@ -855,7 +855,6 @@ HINT_DEVICES	{n} devices to set, here:
 FOG_UNEXPLORED	Darken where you have not been
 FORGET_EXPLORED	Forget explored
 FILMING	Filming mode
-FILM_NOTE	The hero walks the route, the camera follows like a drone. Click the game within 3 s of Start; any input stops it.
 FILM_SOURCE_ROUTE	Along the guide’s route
 FILM_SOURCE_POINTS	Through the 3D map’s points ({n})
 FILM_CLEAR_POINTS	Clear points
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	The director reads the route and what stands about it, and gi
 FILM_KEY_HOVER	Alone: start or stop a take. With Ctrl: add a point where you stand, or remove the one you stand by.
 FILM_AS_THE_GAME	as the game has it
 SHOT_FOLLOW	follow
+FILM_MODE_WALK	Auto walk
+FILM_MODE_LIVE	You play
+FILM_MODE_FLIGHT	Camera only
+FILM_MODE_WALK_ABOUT	The hero walks the route by itself while the camera films; any key or mouse move stops it. Click the game within 3 s of Start.
+FILM_MODE_LIVE_ABOUT	You play — walk, fight — and the camera alone is directed, keeping the hero in view; your input does not stop it, only the filming key or Stop does. Directed, it follows the guide’s route as it changes.
+FILM_PLAN_LIVE	You play this take: the plan follows the guide’s route as it is now, and changes with it.
+AERIAL_GLIDE	glide
+AERIAL_RISE	rising reveal
+AERIAL_DIVE	dive
+AERIAL_BANK	leaning into the turn
+AERIAL_OVERHEAD	overhead
+AERIAL_ARRIVE	arriving push

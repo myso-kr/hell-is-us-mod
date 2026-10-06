@@ -13,6 +13,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - Filming has a page of its own under a new sidebar group, Video, rather than a card among the
   cheats: the take (start and stop in its header), the route, the camera, and the director's
   plan — the shot it gives each stretch of the route as it stands.
+- Filming has three ways to take: the mod walks the hero (any input stops it), you play (walk,
+  fight — only the camera is directed, the hero kept in view, and your input does not stop it;
+  directed, it follows the guide's route as it changes, or behind you when you leave it), or the
+  camera flies alone. The director works in all three: on a flight it films the land, gliding,
+  rising to reveal, diving, leaning into turns, looking down over high ground, pushing in at the
+  end.
 - Filming: the camera can fly alone, the hero left where it stands — straight between the 3D map's
   points (or along the guide's route), 1.8 m above the floor, its corners rounded, eased in and
   out; Spotlight keeps it on the hero. The camera's distance and field of view now apply to the

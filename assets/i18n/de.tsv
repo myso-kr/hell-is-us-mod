@@ -855,7 +855,6 @@ HINT_DEVICES	{n} Vorrichtungen einzustellen, hier:
 FOG_UNEXPLORED	Unerkundetes abdunkeln
 FORGET_EXPLORED	Erkundetes vergessen
 FILMING	Filmmodus
-FILM_NOTE	Der Held geht die Route, die Kamera folgt wie eine Drohne. Binnen 3 s nach Start ins Spiel klicken; jede Eingabe stoppt.
 FILM_SOURCE_ROUTE	Entlang der Führungsroute
 FILM_SOURCE_POINTS	Über die Punkte der 3D-Karte ({n})
 FILM_CLEAR_POINTS	Punkte leeren
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	Die Regie liest die Route und ihre Umgebung und gibt jedem Ab
 FILM_KEY_HOVER	Allein: Aufnahme starten/stoppen. Mit Strg: Punkt setzen oder den nahen entfernen.
 FILM_AS_THE_GAME	wie im Spiel
 SHOT_FOLLOW	Folgen
+FILM_MODE_WALK	Automatisch gehen
+FILM_MODE_LIVE	Selbst spielen
+FILM_MODE_FLIGHT	Nur Kamera
+FILM_MODE_WALK_ABOUT	Der Held geht den Weg selbst, die Kamera filmt; jede Eingabe stoppt. Binnen 3 s nach Start ins Spiel klicken.
+FILM_MODE_LIVE_ABOUT	Sie spielen — gehen, kämpfen — und nur die Kamera wird geführt und behält den Helden im Bild; Eingaben stoppen nicht, nur die Filmtaste oder Stopp. Mit Regie folgt sie der Führungsroute.
+FILM_PLAN_LIVE	Sie spielen diese Aufnahme: der Plan folgt der Führungsroute und ändert sich mit ihr.
+AERIAL_GLIDE	Gleiten
+AERIAL_RISE	aufsteigende Enthüllung
+AERIAL_DIVE	Sturzflug
+AERIAL_BANK	in die Kurve
+AERIAL_OVERHEAD	Draufsicht
+AERIAL_ARRIVE	Ankunft

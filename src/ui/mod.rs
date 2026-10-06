@@ -126,7 +126,7 @@ pub struct Shared {
     /// overlay's "previously" banner.
     pub previous: Mutex<Option<crate::session::Session>>,
     /// overlay: the route in focus in 3D (cm), from the hero's feet: the 3D map draws it.
-    pub route3d: Mutex<(Vec<[f32; 3]>, [u8; 3])>,
+    pub route3d: crate::film::RouteFeed,
     /// overlay: the route in focus's shortcut down (route.rs `Shortcut`), draped, and its drops'
     /// tops with their heights (cm): the 3D map and the game view draw it beside the route.
     pub shortcut3d: Mutex<Shortcut3d>,
@@ -198,12 +198,14 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         let (p, _) = s.pose.ok_or(tr!("FILM_NO_ROUTE"))?;
         ([p[0] as f32, p[1] as f32, p[2] as f32], s.nav.clone())
     };
-    let path = if setup.flight {
-        crate::film::flight_path(&setup, &route)
-    } else {
-        crate::film::path(&setup, hero, &route, &nav)
+    let path = match setup.mode {
+        crate::film::Mode::Flight => crate::film::flight_path(&setup, &route),
+        crate::film::Mode::Walk => crate::film::path(&setup, hero, &route, &nav),
+        // a live take may have no route yet: it follows the player, and the guide's when one comes
+        crate::film::Mode::Live => Some(crate::film::path(&setup, hero, &route, &nav).unwrap_or_default()),
     }
     .ok_or(tr!("FILM_NO_ROUTE"))?;
+    let feed = (setup.mode == crate::film::Mode::Live && !setup.use_points).then(|| shared.route3d.clone());
     let plan = crate::film::Plan {
         path,
         pace: setup.pace,
@@ -212,7 +214,8 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         fov: setup.fov,
         repeat: setup.repeat,
         countdown,
-        flight: setup.flight,
+        mode: setup.mode,
+        feed,
     };
     engine.film(plan, shared.film.clone(), shared.film_ended.clone())
 }

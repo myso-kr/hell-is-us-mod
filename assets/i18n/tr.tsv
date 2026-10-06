@@ -855,7 +855,6 @@ HINT_DEVICES	Ayarlanacak {n} düzenek, konumları:
 FOG_UNEXPLORED	Keşfedilmemiş yerleri karart
 FORGET_EXPLORED	Keşfi unut
 FILMING	Çekim modu
-FILM_NOTE	Kahraman rotayı yürür, kamera drone gibi izler. 3 sn içinde oyuna tıklayın; her giriş durdurur.
 FILM_SOURCE_ROUTE	Rehber rotası boyunca
 FILM_SOURCE_POINTS	3D haritadaki noktalardan ({n})
 FILM_CLEAR_POINTS	Noktaları temizle
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	Yönetmen rotayı ve çevresini okur, her bölüme bir çekim
 FILM_KEY_HOVER	Tek başına: başlat/durdur. Ctrl ile: burada nokta ekle ya da yakındakini sil.
 FILM_AS_THE_GAME	oyundaki gibi
 SHOT_FOLLOW	takip
+FILM_MODE_WALK	Otomatik yürüyüş
+FILM_MODE_LIVE	Siz oynayın
+FILM_MODE_FLIGHT	Yalnızca kamera
+FILM_MODE_WALK_ABOUT	Kahraman rotayı kendi yürür, kamera çeker; her giriş durdurur. 3 sn içinde oyuna tıklayın.
+FILM_MODE_LIVE_ABOUT	Siz oynarsınız — yürür, savaşırsınız — yalnızca kamera yönetilir, kahraman kadrede kalır; girişler durdurmaz, yalnızca tuş ya da Durdur. Yönetmenle rehber rotasını izler.
+FILM_PLAN_LIVE	Bu çekimi siz oynuyorsunuz: plan şu anki rehber rotasını izler, onunla değişir.
+AERIAL_GLIDE	süzülme
+AERIAL_RISE	yükselen açılış
+AERIAL_DIVE	dalış
+AERIAL_BANK	dönüşe yatış
+AERIAL_OVERHEAD	tepeden
+AERIAL_ARRIVE	varış

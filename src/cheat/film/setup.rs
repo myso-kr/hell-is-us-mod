@@ -1,6 +1,6 @@
 //! The filming card's settings, kept in `Mods\\film.txt`, and the defaults they start from.
 
-use super::Lens;
+use super::{Lens, Mode};
 
 /// The filming card's settings, kept in `Mods\film.txt`: the points from the 3D map, whether
 /// to walk them (else the guide's route), the pace, the camera, its distance, back and forth,
@@ -17,8 +17,8 @@ pub struct Setup {
     /// The key (F8): alone, it starts and stops a take; with Ctrl, it adds where the hero stands
     /// to the points, or takes away the one it stands by — as the map's marker key does.
     pub key: u8,
-    /// Fly the camera alone; the hero stays.
-    pub flight: bool,
+    /// Who moves what: the mod walking the hero, the player playing, the camera alone.
+    pub mode: Mode,
     pub routes: Vec<(String, Vec<[f32; 3]>)>,
 }
 
@@ -33,7 +33,7 @@ impl Default for Setup {
             fov: None,
             repeat: false,
             key: KEY,
-            flight: false,
+            mode: Mode::Walk,
             routes: Vec::new(),
         }
     }
@@ -68,7 +68,7 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nflight {}\n",
+            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nmode {}\n",
             self.use_points,
             self.pace,
             self.lens.word(),
@@ -76,7 +76,7 @@ impl Setup {
             self.fov.map_or("none".to_string(), |d| d.to_string()),
             self.repeat,
             self.key,
-            self.flight
+            self.mode.word()
         );
         for p in &self.points {
             out += &format!("point {}\n", pt(p));
@@ -110,7 +110,9 @@ impl Setup {
                 }
                 ["fov", v] => s.fov = v.parse().ok().map(|d: f32| d.clamp(*FOV.start(), *FOV.end())),
                 ["repeat", v] => s.repeat = v == "true",
-                ["flight", v] => s.flight = v == "true",
+                ["mode", v] => s.mode = Mode::from_word(v).unwrap_or_default(),
+                // before modes: the flight's switch
+                ["flight", "true"] => s.mode = Mode::Flight,
                 ["key", v] => s.key = v.parse().unwrap_or(s.key).min(12),
                 ["point", ..] => s.points.extend(point(&f[1..])),
                 ["route", ..] => s.routes.push((line["route ".len()..].trim().to_string(), Vec::new())),
@@ -145,7 +147,7 @@ mod tests {
             fov: Some(55.0),
             repeat: true,
             key: 9,
-            flight: true,
+            mode: Mode::Live,
             routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],
         };
         assert_eq!(Setup::parse(&s.render()), s);

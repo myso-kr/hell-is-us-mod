@@ -5,14 +5,15 @@
 //! The settings are shared with the worker (`Shared.film_setup`) and kept in `Mods\film.txt`.
 
 use super::*;
-use crate::film::{Director, Lens, Setup};
+use crate::film::{AerialPlan, Director, Lens, Mode, Setup};
 use crate::ui::theme::INLINE;
 
-/// The director's plan, kept while the route and the camera it was made for stay the same.
+/// The director's plan, kept while the route and the take it was made for stay the same: each
+/// stretch (cm along) and the name of how it is shot.
 #[derive(Default)]
 pub(super) struct PlanCache {
     key: u64,
-    beats: Vec<crate::film::Beat>,
+    rows: Vec<(f32, f32, &'static str)>,
 }
 
 impl Panel {
@@ -52,7 +53,18 @@ impl Panel {
             },
             |t| {
                 text(t, RichText::new(state.text()).strong().color(if rolling { OK } else { DIM }));
-                note(t, tr!("FILM_NOTE"));
+                choices(t, |t| {
+                    for m in Mode::ALL {
+                        if w(t, |ui| ui.radio(setup.mode == m, m.label())).clicked() && setup.mode != m {
+                            setup.mode = m;
+                            // a flight mostly looks the way it goes; circling has no subject there
+                            if m == Mode::Flight && setup.lens == Lens::Orbit {
+                                setup.lens = Lens::Follow;
+                            }
+                        }
+                    }
+                });
+                note(t, setup.mode.about());
                 let taken = self.shared.map.lock().unwrap().keys().to_vec();
                 field(t, tr!("FILM_KEY"), |t| {
                     w(t, |ui| {
@@ -134,19 +146,14 @@ impl Panel {
         });
     }
 
-    /// The camera: a flight or a walk, the lens, distance and field of view (each a switch and its
+    /// The camera: the lens, distance and field of view (each a switch and its
     /// slider on one row).
     fn film_camera(&mut self, t: &mut Tui, setup: &mut Setup) {
         card(t, tr!("FILM_LENS"), |t| {
-            let flight = switch(t, &mut setup.flight, tr!("FILM_FLIGHT")).on_hover_text(tr!("FILM_FLIGHT_NOTE"));
-            // a flight mostly looks the way it goes
-            if flight.changed() && setup.flight {
-                setup.lens = Lens::Follow;
-            }
             choices(t, |t| {
                 for l in Lens::ALL {
-                    // circling and directing turn about the pivot, which on a flight is on the path
-                    let off = setup.flight && matches!(l, Lens::Orbit | Lens::Director);
+                    // circling turns about the pivot, which on a flight is on the path, not the hero
+                    let off = setup.mode == Mode::Flight && l == Lens::Orbit;
                     let r = w(t, |ui| {
                         ui.add_enabled(!off, egui::RadioButton::new(setup.lens == l, l.label()))
                             .on_disabled_hover_text(tr!("FILM_ORBIT_NOT_IN_FLIGHT"))
@@ -156,7 +163,7 @@ impl Panel {
                     }
                 }
             });
-            if setup.lens == Lens::Director && !setup.flight {
+            if setup.lens == Lens::Director {
                 note(t, tr!("FILM_DIRECTOR_NOTE"));
             }
             optional(t, tr!("FILM_DISTANCE_CM"), &mut setup.distance, 800.0, crate::film::DISTANCE, 50.0, " cm");
@@ -167,14 +174,26 @@ impl Panel {
     /// The director's plan for the route as it stands: each beat's shot and where it plays.
     fn film_plan(&mut self, t: &mut Tui, snap: Option<&Snapshot>, setup: &Setup) {
         card(t, tr!("FILM_PLAN"), |t| {
-            if setup.flight || setup.lens != Lens::Director {
+            if setup.lens != Lens::Director {
                 note(t, tr!("FILM_PLAN_OFF"));
                 return;
             }
+            if setup.mode == Mode::Live {
+                note(t, tr!("FILM_PLAN_LIVE"));
+            }
             let route = self.shared.route3d.lock().unwrap().0.clone();
+            let flight = setup.mode == Mode::Flight;
             let path = snap.and_then(|s| {
                 let (p, _) = s.pose?;
-                crate::film::path(setup, [p[0] as f32, p[1] as f32, p[2] as f32], &route, &s.nav)
+                let hero = [p[0] as f32, p[1] as f32, p[2] as f32];
+                if flight {
+                    // the camera starts about where the hero stands
+                    let mut path = vec![[hero[0], hero[1], hero[2] + 160.0]];
+                    path.extend(crate::film::flight_path(setup, &route)?);
+                    Some(path)
+                } else {
+                    crate::film::path(setup, hero, &route, &s.nav)
+                }
             });
             let Some((path, snap)) = path.zip(snap) else {
                 note(t, tr!("FILM_NO_ROUTE"));
@@ -187,18 +206,29 @@ impl Panel {
                 for p in path.iter().skip(1) {
                     p.map(|v| (v / 50.0) as i32).hash(&mut h);
                 }
+                flight.hash(&mut h);
                 h.finish()
             };
             if self.film_plan.key != key {
                 let blocking = snap.obstacles.blocking();
-                self.film_plan = PlanCache { key, beats: Director::new(&path, &blocking).beats().to_vec() };
+                let rows = if flight {
+                    let path = crate::film::clear_flight(&path, &blocking);
+                    AerialPlan::new(&path, &blocking)
+                        .stretches()
+                        .into_iter()
+                        .map(|(a, b, x)| (a, b, x.label()))
+                        .collect()
+                } else {
+                    Director::new(&path, &blocking).beats().iter().map(|b| (b.from, b.to, b.shot.label())).collect()
+                };
+                self.film_plan = PlanCache { key, rows };
             }
             tw::scroll_list(t, "film_plan", 260.0, |t| {
-                for (i, b) in self.film_plan.beats.iter().enumerate() {
-                    let span = format!("{:.0}–{:.0} m", b.from / 100.0, b.to / 100.0);
+                for (i, &(from, to, label)) in self.film_plan.rows.iter().enumerate() {
+                    let span = format!("{:.0}–{:.0} m", from / 100.0, to / 100.0);
                     t.style(tw::row(INLINE)).add(|t| {
                         block(t, |ui| {
-                            ui.label(RichText::new(format!("{}. {}", i + 1, b.shot.label())));
+                            ui.label(RichText::new(format!("{}. {label}", i + 1)));
                         });
                         w(t, |ui| ui.label(RichText::new(span).monospace().small().color(DIM)));
                     });

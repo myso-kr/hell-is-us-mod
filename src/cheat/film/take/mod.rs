@@ -2,8 +2,12 @@
 //! thread that rolls it (`roll`; the loop in `run`, the camera's settings in `knobs`).
 
 mod direct;
+mod drive;
+mod fly;
 mod knobs;
+mod live;
 mod run;
+mod session;
 
 use crate::player::PoseSource;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -14,8 +18,9 @@ pub use super::Lens;
 
 /// A take: the route (cm), the pace (the stick's length, 0–1), the camera, its distance (cm)
 /// and field of view (degrees) (`None`, as they are), whether to walk back and forth until
-/// stopped, and the countdown (s).
-#[derive(Clone, Debug, PartialEq)]
+/// stopped, the countdown (s), who moves what, and — a live take following the guide — the
+/// guide's route as it changes.
+#[derive(Clone, Debug)]
 pub struct Plan {
     pub path: Vec<[f32; 3]>,
     pub pace: f32,
@@ -24,8 +29,14 @@ pub struct Plan {
     pub fov: Option<f32>,
     pub repeat: bool,
     pub countdown: u32,
-    /// Fly the camera alone along the path; the hero stays.
-    pub flight: bool,
+    pub mode: crate::film::Mode,
+    pub feed: Option<crate::film::RouteFeed>,
+}
+
+/// What one tick of a take came to: on, standing so; or over.
+pub(super) enum Step {
+    Go(State),
+    End(State),
 }
 
 /// Where a take writes and reads, found by the worker: the hero's `ControlInputVector`, the
@@ -58,8 +69,8 @@ pub enum State {
     Countdown(u32),
     /// Rolling: how much of the route is walked (0–1).
     Rolling(f32),
-    /// Rolling, directed: how much is walked, and the shot playing.
-    Directing(f32, crate::film::Shot),
+    /// Rolling, directed: how much is walked, and the shot playing (its name).
+    Directing(f32, &'static str),
     Finished,
     Stuck,
     /// Stopped by the player's keyboard or mouse.
@@ -74,9 +85,7 @@ impl State {
             State::Idle => tr!("FILM_STATE_IDLE").into(),
             State::Countdown(n) => trf!("FILM_STATE_COUNTDOWN", n = n),
             State::Rolling(k) => trf!("FILM_STATE_ROLLING", pct = (k * 100.0).round() as u32),
-            State::Directing(k, shot) => {
-                trf!("FILM_STATE_DIRECTING", pct = (k * 100.0).round() as u32, shot = shot.label())
-            }
+            State::Directing(k, shot) => trf!("FILM_STATE_DIRECTING", pct = (k * 100.0).round() as u32, shot = shot),
             State::Finished => tr!("FILM_STATE_FINISHED").into(),
             State::Stuck => tr!("FILM_STATE_STUCK").into(),
             State::Interrupted => tr!("FILM_STATE_INTERRUPTED").into(),

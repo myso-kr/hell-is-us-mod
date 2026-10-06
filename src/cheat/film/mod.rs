@@ -33,23 +33,30 @@
 //! The parts: `lens` (the camera's modes), `setup` (the card's settings, kept), `route` (a take's
 //! way from the setup), `walk` (steering the hero along it), `flight` (the camera's own path),
 //! `avoid` (obstacles: a flight's path cleared, the camera's room), `gimbal` (turning the
-//! camera), `director` (choosing each beat's shot), `take` (a take rolling on its own thread).
+//! camera), `director` (choosing each beat's shot), `mode` (who moves what), `take` (a take rolling
+//! on its own thread).
 
 mod avoid;
 mod director;
 mod flight;
 mod gimbal;
 mod lens;
+mod mode;
 mod route;
 mod setup;
 mod take;
 mod walk;
 
 pub use avoid::{clear_flight, room_behind};
-pub use director::{Beat, Cue, Director, Rig, Shot};
+pub use director::{Aerial, AerialPlan, Beat, Cue, Director, Rig, Shot};
 pub use flight::{rounded, Flight, Fly, FLIGHT_DISTANCE};
 pub use gimbal::{aim, wrap, Axis, ORBIT_DPS};
 pub use lens::Lens;
+pub use mode::Mode;
+
+/// The guide's route as the overlay draws it (Unreal cm, and its colour): a live take follows it
+/// as it changes.
+pub type RouteFeed = std::sync::Arc<std::sync::Mutex<(Vec<[f32; 3]>, [u8; 3])>>;
 pub use route::{flight_path, path};
 pub use setup::{Setup, DISTANCE, FEET, FOV, KEY, NEAR};
 pub use take::{roll, Plan, State, Take, Wiring, COUNTDOWN_S, KEY_GRACE};

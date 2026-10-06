@@ -855,7 +855,6 @@ HINT_DEVICES	맞춰야 할 장치 {n}개, 위치:
 FOG_UNEXPLORED	가보지 않은 곳 어둡게 (탐험 안개)
 FORGET_EXPLORED	탐험 기록 지우기
 FILMING	촬영 모드
-FILM_NOTE	영웅이 경로를 걷고 카메라가 드론처럼 따라갑니다. 시작 후 3초 안에 게임 창을 클릭하세요. 아무 입력이나 하면 멈춥니다.
 FILM_SOURCE_ROUTE	안내 경로를 따라
 FILM_SOURCE_POINTS	3D 지도 지점을 따라 ({n}개)
 FILM_CLEAR_POINTS	지점 비우기
@@ -915,3 +914,15 @@ FILM_DIRECTOR_NOTE	감독이 경로와 주변 구조를 읽고 구간마다 샷�
 FILM_KEY_HOVER	단독: 촬영 시작/정지. Ctrl과 함께: 서 있는 곳에 지점 추가, 근처 지점이면 삭제.
 FILM_AS_THE_GAME	게임 기본값
 SHOT_FOLLOW	추적
+FILM_MODE_WALK	자동 걷기
+FILM_MODE_LIVE	직접 조작
+FILM_MODE_FLIGHT	카메라만 비행
+FILM_MODE_WALK_ABOUT	영웅이 경로를 스스로 걷고 카메라가 촬영합니다. 아무 입력이나 하면 멈춥니다. 시작 후 3초 안에 게임 창을 클릭하세요.
+FILM_MODE_LIVE_ABOUT	직접 걷고 싸우는 동안 카메라만 연출해 영웅을 계속 화면에 담습니다. 입력해도 멈추지 않고 촬영 키나 멈추기로만 멈춥니다. 감독 모드는 바뀌는 안내 경로를 따라 연출합니다.
+FILM_PLAN_LIVE	직접 조작 촬영입니다. 계획은 지금의 안내 경로를 따르고, 경로가 바뀌면 함께 바뀝니다.
+AERIAL_GLIDE	활공
+AERIAL_RISE	상승 리빌
+AERIAL_DIVE	하강
+AERIAL_BANK	회전 선행
+AERIAL_OVERHEAD	부감
+AERIAL_ARRIVE	도착 푸시

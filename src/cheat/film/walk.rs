@@ -104,6 +104,34 @@ impl Driver {
         best.1
     }
 
+    /// Where `p` (a player walking their own way) is along the route, without steering: the way
+    /// ahead, the share walked, and how far off the route it is (cm). Nearest anywhere along it:
+    /// a player may go back.
+    pub fn track(&mut self, p: [f32; 2]) -> (Steer, f32) {
+        let mut best = (f32::MAX, self.along);
+        for i in 1..self.path.len() {
+            let (a, b) = (self.path[i - 1], self.path[i]);
+            let (dx, dy) = (b[0] - a[0], b[1] - a[1]);
+            let len2 = dx * dx + dy * dy;
+            let k = if len2 > 0.0 { (((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / len2).clamp(0.0, 1.0) } else { 0.0 };
+            let d = (p[0] - (a[0] + dx * k)).hypot(p[1] - (a[1] + dy * k));
+            if d < best.0 {
+                best = (d, self.at_len[i - 1] + k * len2.sqrt());
+            }
+        }
+        self.along = best.1;
+        let left = self.length() - self.along;
+        let ahead_yaw = if left > LOOK_AHEAD {
+            let q = self.point(self.along + LOOK_AHEAD);
+            (q[1] - p[1]).atan2(q[0] - p[0]).to_degrees()
+        } else {
+            let (a, b) = (self.point(self.length() - LOOK_AHEAD), self.point(self.length()));
+            (b[1] - a[1]).atan2(b[0] - a[0]).to_degrees()
+        };
+        let share = if self.length() > 0.0 { self.along / self.length() } else { 1.0 };
+        (Steer { input: [0.0, 0.0], ahead_yaw, share, done: false, stuck: false }, best.0)
+    }
+
     pub fn step(&mut self, p: [f32; 2], pace: f32, dt: f32) -> Steer {
         self.t += dt;
         self.along = self.locate(p);
