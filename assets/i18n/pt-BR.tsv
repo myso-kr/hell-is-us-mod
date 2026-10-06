@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Gravação parada: você não se moveu.
 FILM_RECORDING_NAME	Gravação {n}
 FILM_RECORDING_KEPT	{name} guardada ({m} m, {s} s)
 FILM_RECORDING_NOW	Gravando: {n} pontos
+FILM_CUTS	Trocas de plano
+FILM_CUTS_SMOOTH	Suave
+FILM_CUTS_MIXED	Misto
+FILM_CUTS_CUTS	Cortes
+FILM_CUTS_ABOUT	Como o diretor troca de plano quando o herói anda, para, escala ou luta: suave, corte quando a situação muda ou sempre corte.
+COVER_SHOULDER	Ombro
+COVER_BEHIND	Atrás
+COVER_LOW_CHASE	Perseguição baixa
+COVER_HIGH_CHASE	Perseguição alta
+COVER_PROFILE	Perfil
+COVER_LEAD	À frente
+COVER_CLOSE	Close
+COVER_WIDE	Plano aberto
+COVER_OVERHEAD	Plongê
+COVER_SWOOP	Rasante
+COVER_LOW_HERO	Contra-plongê
+COVER_OVER_SHOULDER	Sobre o ombro
+COVER_TWO_SHOT	Plano de dois
+COVER_FOCUS	Foco
+COVER_GLANCE	Olhada
+COVER_REVEAL	Revelação
+COVER_ORBIT	Órbita
+COVER_VERTIGO	Efeito vertigo
+COVER_PULLBACK	Afastamento
+COVER_FLY_BY	Passagem
+AERIAL_SKIM	Voo rasante
+AERIAL_TRACK	Travelling lateral
+AERIAL_ASCEND	Subida
+AERIAL_TILT_UP	Tilt para cima
+AERIAL_DESCEND	Descida
+AERIAL_EAGLE	Águia
+AERIAL_HUNT	Águia: zoom
+AERIAL_SPIRAL	Espiral
+AERIAL_LOOK_BACK	Olhar para trás
+AERIAL_FLY_BY	Passagem
+AERIAL_VERTIGO	Vertigo subindo

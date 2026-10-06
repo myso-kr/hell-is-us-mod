@@ -8,8 +8,27 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ## Unreleased
 
+### Fixed
+
+- A take the mod moves no longer stops when nobody touched anything. It used Windows' last-input
+  time, which virtual devices (a mouse or keyboard suite's driver) and a mouse's sensor touch on
+  their own; now only a key or button newly pressed, or the camera turned by the mouse, stops it,
+  and the log says which.
+- A flight's camera now changes height: each look has its own, kept under what is above.
+
 ### Added
 
+- Directing that answers the hero's situation, in every kind of take: moving, standing, turning,
+  climbing, going down, fighting, and (when the mod drives) meeting someone, coming on an item or
+  a thing to work; open places get wide shots, narrow ones close shots. New shots: shoulder,
+  chases, profile, lead, close-up, wide, overhead, swoop, low angle, over the shoulder, two-shot,
+  focus, reveal, 360° orbit, Vertigo dolly zoom, pull-back, fly-by. The route's planned shots stay
+  among the choices. Shots change smoothly, mixed, or as cuts (the camera's card). A live take
+  keeps the camera behind the player while they move, and leaves people and things to them.
+- Flights vary far more: a kilometre gives some forty shots of uneven length, in no set order,
+  with new looks (skim, side track, pedestal up, tilt up, descend, spiral, look back, fly-by,
+  Vertigo climb) and, over wide open ground, the eagle: soaring high, looking about, and zooming
+  in on what it spots. Things passed are glanced at.
 - Recording your own way for filming: Ctrl+Shift+F8 in the game records where you walk (a point
   every 50 cm, with when), again to stop and keep it; a take can then walk it again at the pace it
   was walked, or fly it, directed or not. The take's way now comes from the guide's route, the

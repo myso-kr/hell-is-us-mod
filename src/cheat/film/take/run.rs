@@ -4,9 +4,10 @@
 
 use super::drive::Drive;
 use super::fly::Fly;
+use super::input::{Touch, Watch};
 use super::live::Live;
 use super::session::Session;
-use super::{last_input, Plan, State, Step, Wiring, KEY_GRACE, RATE_HZ};
+use super::{Plan, State, Step, Wiring, KEY_GRACE, RATE_HZ};
 use crate::film::Mode;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
@@ -44,7 +45,7 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
     };
     // the player's input stops a take the mod moves; a live take is theirs to play
     let watch = plan.mode != Mode::Live;
-    let touched = last_input();
+    let mut touch = Watch::new();
     let tick = Duration::from_secs_f64(1.0 / RATE_HZ);
     let mut next = Instant::now();
     let mut last = Instant::now();
@@ -52,11 +53,21 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
         if stop.load(Ordering::SeqCst) {
             break State::Stopped;
         }
-        if watch && last_input() != touched {
-            break State::Interrupted;
+        let dt = last.elapsed().as_secs_f32().min(0.05);
+        if watch {
+            match touch.touch(s.drift(), dt) {
+                Some(Touch::Key(vk)) => {
+                    crate::logfile::line(&format!("film: stopped by the player: key 0x{vk:02x}"));
+                    break State::Interrupted;
+                }
+                Some(Touch::Turned(d)) => {
+                    crate::logfile::line(&format!("film: stopped by the player: the camera turned {d:.1}°"));
+                    break State::Interrupted;
+                }
+                None => {}
+            }
         }
         let Some(hero) = s.hero() else { break State::Failed(tr!("THE_HERO_CHANGED").into()) };
-        let dt = last.elapsed().as_secs_f32().min(0.05);
         last = Instant::now();
         s.tick(dt);
         let step = match &mut runner {

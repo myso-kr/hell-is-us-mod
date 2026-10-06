@@ -5,7 +5,7 @@
 //! The settings are shared with the worker (`Shared.film_setup`) and kept in `Mods\film.txt`.
 
 use super::*;
-use crate::film::{AerialPlan, Director, Lens, Mode, Setup, Source};
+use crate::film::{AerialPlan, Cuts, Director, Lens, Mode, Setup, Source};
 use crate::ui::theme::INLINE;
 
 /// The director's plan, kept while the route and the take it was made for stay the same: each
@@ -197,6 +197,17 @@ impl Panel {
             });
             if setup.lens == Lens::Director {
                 note(t, tr!("FILM_DIRECTOR_NOTE"));
+                field(t, tr!("FILM_CUTS"), |t| {
+                    choices(t, |t| {
+                        for c in Cuts::ALL {
+                            if w(t, |ui| ui.radio(setup.cuts == c, c.label()).on_hover_text(tr!("FILM_CUTS_ABOUT")))
+                                .clicked()
+                            {
+                                setup.cuts = c;
+                            }
+                        }
+                    });
+                });
             }
             optional(t, tr!("FILM_DISTANCE_CM"), &mut setup.distance, 800.0, crate::film::DISTANCE, 50.0, " cm");
             optional(t, tr!("FILM_FOV_DEG"), &mut setup.fov, 55.0, crate::film::FOV, 1.0, "°");

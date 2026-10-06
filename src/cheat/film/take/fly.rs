@@ -5,12 +5,22 @@ use super::session::Session;
 use super::{State, Step};
 use crate::film::avoid::ROOM_AHEAD_S;
 use crate::film::gimbal::EYE;
-use crate::film::{aim, clear_flight, AerialPlan, Flight, Lens};
+use crate::film::FLIGHT_DISTANCE;
+use crate::film::{aim, clear_flight, Aerial, AerialPlan, Flight, Glance, Lens};
 
 pub(super) struct Fly {
     flight: Flight,
     aerial: Option<AerialPlan>,
+    glance: Glance,
+    /// The camera's height over the path now (cm), eased toward the look's, and the most there is
+    /// room for above, looked at now and then.
+    lift: f32,
+    room: (f32, f32),
 }
+
+/// How fast the height changes at most (cm/s), how often the room above is looked at (s).
+const LIFT_SPEED: f32 = 350.0;
+const ROOM_EVERY: f32 = 0.1;
 
 impl Fly {
     /// From where the camera turns about now (the pivot, in the hero's frame) along the plan's path.
@@ -25,7 +35,7 @@ impl Fly {
         path.extend(s.plan.path.iter().copied());
         let path = clear_flight(&path, &s.blocking);
         let aerial = (s.plan.lens == Lens::Director).then(|| AerialPlan::new(&path, &s.blocking));
-        Ok(Fly { flight: Flight::new(&path), aerial })
+        Ok(Fly { flight: Flight::new(&path), aerial, glance: Glance::default(), lift: 0.0, room: (f32::MAX, 0.0) })
     }
 
     pub fn tick(&mut self, s: &mut Session, hero: [f32; 3], dt: f32) -> Step {
@@ -40,18 +50,48 @@ impl Fly {
         if fly.done {
             return Step::End(State::Finished);
         }
-        let ahead = self.flight.ahead(s.plan.pace, ROOM_AHEAD_S);
+        let mut ahead = self.flight.ahead(s.plan.pace, ROOM_AHEAD_S);
+        // directed, the look's own height over the path: eased, kept under what is above
+        let look = self.aerial.as_ref().map(|plan| plan.cue(fly.share, fly.ahead_yaw));
+        let want = look.map_or(0.0, |(l, _)| l.lift);
+        self.room.1 += dt;
+        if self.room.1 >= ROOM_EVERY {
+            self.room = (crate::film::headroom(&s.blocking, fly.at, want.max(self.lift)), 0.0);
+        }
+        let target = want.min(self.room.0);
+        self.lift += ((target - self.lift) * (2.0 * dt).min(1.0)).clamp(-LIFT_SPEED * dt, LIFT_SPEED * dt);
+        let mut fly = fly;
+        fly.at[2] += self.lift;
+        ahead[2] += self.lift;
         // into the hero's frame: the body's yaw undone
         let (sn, c) = body.to_radians().sin_cos();
         let (dx, dy) = (fly.at[0] - hero[0], fly.at[1] - hero[1]);
         s.write3(pv, [(dx * c + dy * sn) as f64, (-dx * sn + dy * c) as f64, (fly.at[2] - hero[2]) as f64]);
         s.hold_checks_off();
         let state = match &self.aerial {
-            Some(plan) => {
-                let (p, y, f, what) = plan.cue(fly.share, fly.ahead_yaw);
-                s.turn((p, y), dt);
-                s.want(None, Some(f));
-                State::Directing(fly.share, what.label())
+            Some(_) => {
+                let (l, what) = look.unwrap();
+                let (p, y, f) = (l.pitch, l.yaw, l.fov);
+                // something passed near is looked at for a moment; soaring, the eagle hunts
+                let subjects = s.plan.subjects.as_ref().map(|f| f.lock().unwrap().clone()).unwrap_or_default();
+                let hunt = what == Aerial::Eagle;
+                match self.glance.look(fly.at, &subjects, dt, s.plan.cuts, hunt) {
+                    Some(g) if g.cut => s.cut((g.pitch, g.yaw), FLIGHT_DISTANCE, g.fov.unwrap_or(f)),
+                    Some(g) => {
+                        s.turn((g.pitch, g.yaw), dt);
+                        s.want(None, Some(g.fov.unwrap_or(f)));
+                    }
+                    None => {
+                        s.turn((p, y), dt);
+                        s.want(None, Some(f));
+                    }
+                }
+                let label = match (self.glance.hunting(), self.glance.on()) {
+                    (true, _) => tr!("AERIAL_HUNT"),
+                    (_, true) => tr!("COVER_GLANCE"),
+                    _ => what.label(),
+                };
+                State::Directing(fly.share, label)
             }
             None => {
                 // Circling turns the camera about its pivot, which on a flight is on the path, not

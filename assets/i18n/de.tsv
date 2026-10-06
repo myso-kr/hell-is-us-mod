@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Aufnahme beendet: nicht bewegt.
 FILM_RECORDING_NAME	Aufnahme {n}
 FILM_RECORDING_KEPT	{name} gespeichert ({m} m, {s} s)
 FILM_RECORDING_NOW	Aufnahme läuft: {n} Punkte
+FILM_CUTS	Schnittwechsel
+FILM_CUTS_SMOOTH	Weich
+FILM_CUTS_MIXED	Gemischt
+FILM_CUTS_CUTS	Schnitte
+FILM_CUTS_ABOUT	Wie die Regie die Einstellung wechselt, wenn die Figur läuft, steht, klettert oder kämpft: weich, Schnitt bei neuer Lage oder immer Schnitt.
+COVER_SHOULDER	Schulter
+COVER_BEHIND	Hinterher
+COVER_LOW_CHASE	Tiefe Verfolgung
+COVER_HIGH_CHASE	Hohe Verfolgung
+COVER_PROFILE	Profil
+COVER_LEAD	Voraus
+COVER_CLOSE	Nah
+COVER_WIDE	Totale
+COVER_OVERHEAD	Vogelperspektive
+COVER_SWOOP	Schwenkflug
+COVER_LOW_HERO	Untersicht
+COVER_OVER_SHOULDER	Über die Schulter
+COVER_TWO_SHOT	Zweier
+COVER_FOCUS	Fokus
+COVER_GLANCE	Seitenblick
+COVER_REVEAL	Enthüllung
+COVER_ORBIT	Umkreisung
+COVER_VERTIGO	Vertigo-Zoom
+COVER_PULLBACK	Rückzug
+COVER_FLY_BY	Vorbeiflug
+AERIAL_SKIM	Tiefflug
+AERIAL_TRACK	Seitenfahrt
+AERIAL_ASCEND	Aufsteigen
+AERIAL_TILT_UP	Hochschwenk
+AERIAL_DESCEND	Absinken
+AERIAL_EAGLE	Adler
+AERIAL_HUNT	Adler: herangezoomt
+AERIAL_SPIRAL	Spirale
+AERIAL_LOOK_BACK	Rückblick
+AERIAL_FLY_BY	Vorbeiflug
+AERIAL_VERTIGO	Vertigo-Aufstieg

@@ -1,6 +1,7 @@
 //! A walk the mod drives: the stick toward the route, the camera aimed by the lens or cued by the
 //! director; at the end, a directed take lets the closing shot play out before it stops.
 
+use super::cover::Cover;
 use super::session::Session;
 use super::{direct, State, Step};
 use crate::film::avoid::ROOM_AHEAD_CM;
@@ -15,6 +16,7 @@ pub(super) struct Drive {
     route: Vec<[f32; 3]>,
     driver: Driver,
     director: Option<Director>,
+    cover: Cover,
     end: [f32; 3],
     /// When the hero arrived, for the closing shot to play out.
     arrived: Option<Instant>,
@@ -67,7 +69,11 @@ impl Drive {
         }
         let along = if self.arrived.is_some() { self.driver.length() } else { self.driver.along() };
         let heading = if self.arrived.is_some() { s.body_yaw().unwrap_or(step.ahead_yaw) } else { step.ahead_yaw };
-        let cue = self.director.as_mut().map(|d| d.cue(along, heading, hero, &s.blocking, dt));
+        let planned = self.director.as_ref().map(|d| {
+            let (rig, shot) = d.rig(along);
+            (rig, shot.label())
+        });
+        let cue = planned.is_some().then(|| self.cover.cue(s, hero, heading, planned, false, dt));
         match &cue {
             Some(cue) => direct::apply(s, cue, dt),
             None => {
@@ -83,7 +89,7 @@ impl Drive {
         let a2 = self.driver.ahead(ROOM_AHEAD_CM);
         s.ease([pivot, [a2[0], a2[1], pivot[2]]], dt);
         Step::Go(match cue {
-            Some(c) => State::Directing(step.share, c.shot.label()),
+            Some(c) => State::Directing(step.share, c.label),
             None => State::Rolling(step.share),
         })
     }
@@ -94,6 +100,7 @@ impl Drive {
             route: route.to_vec(),
             driver: Driver::new(route),
             director: (s.plan.lens == Lens::Director).then(|| Director::new(route, &s.blocking)),
+            cover: Cover::default(),
             end: *route.last().unwrap_or(&[0.0; 3]),
             arrived: None,
         }

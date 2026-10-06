@@ -139,6 +139,8 @@ pub struct Shared {
     pub film_key: AtomicBool,
     /// overlay: the player's way, while it is being recorded (Ctrl+Shift+the key).
     pub film_recorder: Mutex<Option<crate::film::Recorder>>,
+    /// overlay: what stands about the hero, for a take's director to look at.
+    pub film_subjects: crate::film::SubjectFeed,
     /// overlay: the goals left out of the guide by the consent: (hidden places, answers).
     pub withheld: Mutex<(usize, usize)>,
     /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
@@ -226,6 +228,8 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         mode: setup.mode,
         feed,
         paces,
+        cuts: setup.cuts,
+        subjects: Some(shared.film_subjects.clone()),
     };
     engine.film(plan, shared.film.clone(), shared.film_ended.clone())
 }

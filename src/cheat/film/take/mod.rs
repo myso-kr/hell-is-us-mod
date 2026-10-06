@@ -1,9 +1,11 @@
 //! A take: what it is (`Plan`), where it writes (`Wiring`), where it stands (`State`), and the
 //! thread that rolls it (`roll`; the loop in `run`, the camera's settings in `knobs`).
 
+mod cover;
 mod direct;
 mod drive;
 mod fly;
+mod input;
 mod knobs;
 mod live;
 mod run;
@@ -34,6 +36,9 @@ pub struct Plan {
     /// A recording played: its pace along it (shares of the fastest), and where in the path it
     /// begins (cm): a walk goes at the pace it was walked.
     pub paces: Option<(f32, Vec<(f32, f32)>)>,
+    /// How the director changes shots, and what stands about the hero for it to look at.
+    pub cuts: crate::film::Cuts,
+    pub subjects: Option<crate::film::SubjectFeed>,
 }
 
 /// What one tick of a take came to: on, standing so; or over.
@@ -46,6 +51,10 @@ pub(super) enum Step {
 /// controller's `ControlRotation`, the pose, the cameras' (exploration, combat, APC)
 /// `DefaultDistanceFromPlayer` and `FieldOfView` (floats), the camera mode's pivot translation
 /// (`PivotToViewTarget` + 0x20, three doubles) and the hero root's `RelativeRotation`.
+/// Where in `CameraToPivotTranslationInterpolator` the camera's distance is held (its current,
+/// start and target, twice), found on build 24045435.
+pub const ZOOM_AT: [u64; 6] = [0x40, 0x68, 0x80, 0xb0, 0xd8, 0xf0];
+
 pub struct Wiring {
     pub input: u64,
     pub rotation: u64,
@@ -59,6 +68,10 @@ pub struct Wiring {
     /// The camera mode's byte of `bValidateSafeLoc` (bit 0) and `bPreventCameraPenetration`
     /// (bit 1): cleared on a flight, which plans its own way round obstacles.
     pub safety: Option<u64>,
+    /// The camera mode's `CameraToPivotTranslationInterpolator` doubles that hold the camera's
+    /// distance behind the pivot (negative cm; `ZOOM_AT` into it, build 24045435): written for a
+    /// cut, where the game would ease the distance.
+    pub zoom: Option<[u64; 6]>,
     /// What stands in the way (obstacles.rs), for the flight's path and the camera's room.
     pub scene: std::sync::Arc<crate::obstacles::Scene>,
 }
@@ -124,15 +137,6 @@ impl Drop for Take {
     fn drop(&mut self) {
         self.stop();
     }
-}
-
-/// When the player last touched the keyboard or mouse (the system's tick count).
-pub(super) fn last_input() -> u32 {
-    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO};
-    let mut info = LASTINPUTINFO { cbSize: std::mem::size_of::<LASTINPUTINFO>() as u32, dwTime: 0 };
-    // SAFETY: `info` is a valid LASTINPUTINFO with its size set.
-    unsafe { GetLastInputInfo(&mut info) };
-    info.dwTime
 }
 
 /// Roll a take on a thread of its own, the game opened for writing there: a countdown, then

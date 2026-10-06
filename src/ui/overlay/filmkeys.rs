@@ -77,6 +77,24 @@ pub fn follow(shared: &Shared, hero: Option<[f32; 3]>) {
     }
 }
 
+/// What stands about the hero, for a take's director: from the last scan, a few times a second.
+pub fn subjects(shared: &Shared, hero: Option<[f32; 3]>) {
+    use std::sync::Mutex;
+    use std::time::{Duration, Instant};
+    static LAST: Mutex<Option<Instant>> = Mutex::new(None);
+    let mut last = LAST.lock().unwrap();
+    if last.is_some_and(|t| t.elapsed() < Duration::from_millis(250)) {
+        return;
+    }
+    *last = Some(Instant::now());
+    let Some(hero) = hero else { return };
+    let about = match shared.snap.lock().unwrap().as_ref() {
+        Some(s) => crate::film::about(&s.things, hero),
+        None => Vec::new(),
+    };
+    *shared.film_subjects.lock().unwrap() = about;
+}
+
 /// The setup's points, for the maps (what they draw for the take).
 pub fn drawn(setup: &Setup) -> Vec<[f32; 3]> {
     match setup.source {

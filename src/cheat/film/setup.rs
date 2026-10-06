@@ -1,6 +1,6 @@
 //! The filming card's settings, kept in `Mods\\film.txt`, and the defaults they start from.
 
-use super::{Lens, Mode, Recording, Source};
+use super::{Cuts, Lens, Mode, Recording, Source};
 
 /// The filming card's settings, kept in `Mods\film.txt`: the points taken, where the way comes
 /// from, the pace, the camera, its distance, back and forth, the key (F1–F12, 0 none), the routes
@@ -22,6 +22,8 @@ pub struct Setup {
     pub routes: Vec<(String, Vec<[f32; 3]>)>,
     pub recordings: Vec<Recording>,
     pub recording: usize,
+    /// How the director changes shots.
+    pub cuts: Cuts,
 }
 
 impl Default for Setup {
@@ -39,6 +41,7 @@ impl Default for Setup {
             routes: Vec::new(),
             recordings: Vec::new(),
             recording: 0,
+            cuts: Cuts::default(),
         }
     }
 }
@@ -72,7 +75,7 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "source {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nmode {}\nrecording_chosen {}\n",
+            "source {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nmode {}\nrecording_chosen {}\ncuts {}\n",
             self.source.word(),
             self.pace,
             self.lens.word(),
@@ -81,7 +84,8 @@ impl Setup {
             self.repeat,
             self.key,
             self.mode.word(),
-            self.recording
+            self.recording,
+            self.cuts.word()
         );
         for p in &self.points {
             out += &format!("point {}\n", pt(p));
@@ -116,6 +120,7 @@ impl Setup {
                 // before recordings: points or the guide's route
                 ["use_points", v] => s.source = if v == "true" { Source::Points } else { Source::Guide },
                 ["source", v] => s.source = Source::from_word(v).unwrap_or_default(),
+                ["cuts", v] => s.cuts = Cuts::from_word(v).unwrap_or_default(),
                 ["recording_chosen", v] => s.recording = v.parse().unwrap_or(0),
                 ["recording", ..] => s.recordings.push(Recording {
                     name: line["recording ".len()..].trim().to_string(),
@@ -181,6 +186,7 @@ mod tests {
                 times: vec![0.0, 0.5],
             }],
             recording: 0,
+            cuts: Cuts::Cuts,
         };
         assert_eq!(Setup::parse(&s.render()), s);
         assert_eq!(Setup::parse(""), Setup::default());

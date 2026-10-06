@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Kayıt durdu: hareket etmediniz.
 FILM_RECORDING_NAME	Kayıt {n}
 FILM_RECORDING_KEPT	{name} saklandı ({m} m, {s} sn)
 FILM_RECORDING_NOW	Kaydediliyor: {n} nokta
+FILM_CUTS	Çekim geçişleri
+FILM_CUTS_SMOOTH	Yumuşak
+FILM_CUTS_MIXED	Karma
+FILM_CUTS_CUTS	Kesmeler
+FILM_CUTS_ABOUT	Kahraman yürürken, dururken, tırmanırken ya da dövüşürken yönetmenin çekimi nasıl değiştirdiği: yumuşak, durum değişince kesme ya da hep kesme.
+COVER_SHOULDER	Omuz
+COVER_BEHIND	Arkadan
+COVER_LOW_CHASE	Alçak takip
+COVER_HIGH_CHASE	Yüksek takip
+COVER_PROFILE	Profil
+COVER_LEAD	Önden
+COVER_CLOSE	Yakın çekim
+COVER_WIDE	Geniş çekim
+COVER_OVERHEAD	Kuşbakışı
+COVER_SWOOP	Süzülüş
+COVER_LOW_HERO	Alt açı
+COVER_OVER_SHOULDER	Omuz üstü
+COVER_TWO_SHOT	İkili çekim
+COVER_FOCUS	Odak
+COVER_GLANCE	Göz atış
+COVER_REVEAL	Açılış
+COVER_ORBIT	Yörünge
+COVER_VERTIGO	Vertigo efekti
+COVER_PULLBACK	Geri çekilme
+COVER_FLY_BY	Yanından geçiş
+AERIAL_SKIM	Alçak uçuş
+AERIAL_TRACK	Yan takip
+AERIAL_ASCEND	Yükseliş
+AERIAL_TILT_UP	Yukarı eğim
+AERIAL_DESCEND	İniş
+AERIAL_EAGLE	Kartal
+AERIAL_HUNT	Kartal: yakınlaştırma
+AERIAL_SPIRAL	Sarmal
+AERIAL_LOOK_BACK	Geriye bakış
+AERIAL_FLY_BY	Yanından geçiş
+AERIAL_VERTIGO	Vertigo tırmanışı

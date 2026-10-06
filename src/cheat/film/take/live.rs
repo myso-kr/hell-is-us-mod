@@ -3,6 +3,7 @@
 //! where the player is along it, or behind them as they go when they leave it. The player's input
 //! does not stop it; the key or the card does.
 
+use super::cover::Cover;
 use super::session::Session;
 use super::{direct, State, Step};
 use crate::film::avoid::ROOM_AHEAD_CM;
@@ -20,6 +21,7 @@ pub(super) struct Live {
     route: Vec<[f32; 3]>,
     driver: Driver,
     director: Director,
+    cover: Cover,
     read_at: Instant,
 }
 
@@ -30,6 +32,7 @@ impl Live {
             driver: Driver::new(&route),
             director: Director::new(&route, &s.blocking),
             route,
+            cover: Cover::default(),
             read_at: Instant::now(),
         }
     }
@@ -68,13 +71,13 @@ impl Live {
         // the way the player goes: the route's, on it; their body's, off it
         let heading = if on_route { ahead_yaw } else { body };
         let state = if s.plan.lens == Lens::Director {
-            let cue = if on_route {
-                self.director.cue(along, heading, hero, &s.blocking, dt)
-            } else {
-                self.director.cue_follow(heading, hero, &s.blocking, dt)
-            };
+            let planned = on_route.then(|| {
+                let (rig, shot) = self.director.rig(along);
+                (rig, shot.label())
+            });
+            let cue = self.cover.cue(s, hero, heading, planned, true, dt);
             direct::apply(s, &cue, dt);
-            State::Directing(share, cue.shot.label())
+            State::Directing(share, cue.label)
         } else {
             let eye = [hero[0], hero[1], hero[2] + EYE];
             let end = self.route.last().copied().unwrap_or(eye);

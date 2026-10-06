@@ -128,6 +128,29 @@ pub fn room_behind(b: &crate::obstacles::Blocking, pivot: [f32; 3], back: [f32; 
     (lo - ROOM_MARGIN).clamp(ROOM_MIN, want)
 }
 
+/// How far up from `at` the camera may go, up to `want` (cm): short of the first thing above (a
+/// ceiling, an overhang), `CLEAR` under it.
+pub fn headroom(b: &crate::obstacles::Blocking, at: [f32; 3], want: f32) -> f32 {
+    if want <= 0.0 {
+        return 0.0;
+    }
+    let top = [at[0], at[1], at[2] + want + CLEAR];
+    if !b.blocks(at, top) {
+        return want;
+    }
+    // the free height found by halving
+    let (mut lo, mut hi) = (0.0f32, want + CLEAR);
+    for _ in 0..8 {
+        let mid = (lo + hi) / 2.0;
+        if b.blocks(at, [at[0], at[1], at[2] + mid]) {
+            hi = mid;
+        } else {
+            lo = mid;
+        }
+    }
+    (lo - CLEAR).max(0.0)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

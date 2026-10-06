@@ -46,22 +46,27 @@ mod record;
 mod route;
 mod setup;
 mod source;
+mod subjects;
 mod take;
 mod walk;
 
-pub use avoid::{clear_flight, room_behind};
-pub use director::{Aerial, AerialPlan, Beat, Cue, Director, Rig, Shot};
+pub use avoid::{clear_flight, headroom, room_behind};
+pub use director::{
+    judge, openness, Aerial, AerialPlan, Angle, Beat, Coverage, Ctx, Cue, Cuts, Director, Glance, GlanceLook, Motion,
+    Rig, Shot, Sight, Situation,
+};
 pub use flight::{rounded, Flight, Fly, FLIGHT_DISTANCE};
 pub use gimbal::{aim, wrap, Axis, ORBIT_DPS};
 pub use lens::Lens;
 pub use mode::Mode;
 pub use record::{pace_at, Recorder, Recording};
 pub use source::Source;
+pub use subjects::{about, Subject, SubjectFeed, SubjectKind};
 
 /// The guide's route as the overlay draws it (Unreal cm, and its colour): a live take follows it
 /// as it changes.
 pub type RouteFeed = std::sync::Arc<std::sync::Mutex<(Vec<[f32; 3]>, [u8; 3])>>;
 pub use route::{flight_path, path, recording_starts};
 pub use setup::{Setup, DISTANCE, FEET, FOV, KEY, NEAR};
-pub use take::{roll, Plan, State, Take, Wiring, COUNTDOWN_S, KEY_GRACE};
+pub use take::{roll, Plan, State, Take, Wiring, COUNTDOWN_S, KEY_GRACE, ZOOM_AT};
 pub use walk::{Driver, Steer};

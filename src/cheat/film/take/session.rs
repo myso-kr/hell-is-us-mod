@@ -34,6 +34,8 @@ pub(super) struct Session<'a> {
     /// on a flight: put back after.
     pub pivot0: Option<[f64; 3]>,
     safety0: Option<(u64, u8)>,
+    /// Where the take last put the camera (pitch, yaw), to tell the mouse's turn from its own.
+    written: Option<(f32, f32)>,
 }
 
 impl<'a> Session<'a> {
@@ -55,6 +57,7 @@ impl<'a> Session<'a> {
             blocking: w.scene.blocking(),
             pivot0: None,
             safety0: None,
+            written: None,
         };
         let Some(rot0) = s.read3(w.rotation) else { return Err(State::Failed(tr!("ROTATION_UNREADABLE").into())) };
         (s.pitch, s.yaw) = (Axis::new(wrap(rot0[0] as f32)), Axis::new(wrap(rot0[1] as f32)));
@@ -129,6 +132,36 @@ impl<'a> Session<'a> {
         let (p, y) = (self.pitch.toward(pitch, dt), self.yaw.toward(yaw, dt));
         let roll = self.read3(self.w.rotation).map_or(0.0, |r| r[2]);
         self.write3(self.w.rotation, [p.rem_euclid(360.0) as f64, y as f64, roll]);
+        self.written = Some((p, y));
+    }
+
+    /// A cut: the camera put at once at (pitch, yaw), the distance and field of view asked made
+    /// what they are (the distance within the room behind the camera), the game's own easing of the
+    /// distance skipped.
+    pub fn cut(&mut self, (pitch, yaw): (f32, f32), distance: f32, fov: f32) {
+        self.pitch = Axis::new(wrap(pitch));
+        self.yaw = Axis::new(wrap(yaw));
+        let roll = self.read3(self.w.rotation).map_or(0.0, |r| r[2]);
+        self.write3(self.w.rotation, [pitch.rem_euclid(360.0) as f64, yaw as f64, roll]);
+        self.written = Some((wrap(pitch), wrap(yaw)));
+        self.want(Some(distance), Some(fov));
+        let room = if self.room == f32::MAX { distance } else { self.room };
+        for k in self.knobs.iter_mut().filter(|k| k.distance || k.fov) {
+            k.now = if k.distance { k.want.min(room) } else { k.want };
+            self.game.write(k.at, &k.now.to_le_bytes());
+        }
+        if let Some(zoom) = self.w.zoom {
+            let d = -(distance.min(room) as f64);
+            for at in zoom {
+                self.game.write(at, &d.to_le_bytes());
+            }
+        }
+    }
+
+    /// How far the camera is from where the take last put it (degrees): the mouse's turn since.
+    pub fn drift(&self) -> f32 {
+        let (Some((p, y)), Some(r)) = (self.written, self.read3(self.w.rotation)) else { return 0.0 };
+        wrap(r[0] as f32 - p).abs() + wrap(r[1] as f32 - y).abs()
     }
 
     /// Behind the view: as the gimbal holds it, or (the camera left alone) as the game has it.

@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Запись остановлена: вы не двигал
 FILM_RECORDING_NAME	Запись {n}
 FILM_RECORDING_KEPT	{name} сохранена ({m} м, {s} с)
 FILM_RECORDING_NOW	Идёт запись: {n} точек
+FILM_CUTS	Смена планов
+FILM_CUTS_SMOOTH	Плавно
+FILM_CUTS_MIXED	Смешанно
+FILM_CUTS_CUTS	Склейки
+FILM_CUTS_ABOUT	Как режиссёр меняет планы, когда герой идёт, стоит, лезет или сражается: плавно, склейка при смене ситуации или всегда склейка.
+COVER_SHOULDER	Плечо
+COVER_BEHIND	Сзади
+COVER_LOW_CHASE	Низкая погоня
+COVER_HIGH_CHASE	Высокая погоня
+COVER_PROFILE	Профиль
+COVER_LEAD	Спереди
+COVER_CLOSE	Крупный план
+COVER_WIDE	Общий план
+COVER_OVERHEAD	Сверху
+COVER_SWOOP	Облёт
+COVER_LOW_HERO	Снизу
+COVER_OVER_SHOULDER	Из-за плеча
+COVER_TWO_SHOT	Двое в кадре
+COVER_FOCUS	Фокус
+COVER_GLANCE	Взгляд
+COVER_REVEAL	Раскрытие
+COVER_ORBIT	Облёт 360°
+COVER_VERTIGO	Эффект «Головокружение»
+COVER_PULLBACK	Отъезд
+COVER_FLY_BY	Пролёт мимо
+AERIAL_SKIM	Бреющий полёт
+AERIAL_TRACK	Боковой проезд
+AERIAL_ASCEND	Подъём
+AERIAL_TILT_UP	Наклон вверх
+AERIAL_DESCEND	Снижение
+AERIAL_EAGLE	Орёл
+AERIAL_HUNT	Орёл: приближение
+AERIAL_SPIRAL	Спираль
+AERIAL_LOOK_BACK	Взгляд назад
+AERIAL_FLY_BY	Пролёт мимо
+AERIAL_VERTIGO	Подъём с «Головокружением»

@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Registrazione fermata: non ti sei mosso.
 FILM_RECORDING_NAME	Registrazione {n}
 FILM_RECORDING_KEPT	{name} salvata ({m} m, {s} s)
 FILM_RECORDING_NOW	Registrazione: {n} punti
+FILM_CUTS	Cambi di inquadratura
+FILM_CUTS_SMOOTH	Morbido
+FILM_CUTS_MIXED	Misto
+FILM_CUTS_CUTS	Stacchi
+FILM_CUTS_ABOUT	Come la regia cambia inquadratura quando l’eroe si muove, si ferma, sale o combatte: morbido, stacco al cambio di situazione o sempre stacco.
+COVER_SHOULDER	Spalla
+COVER_BEHIND	Dietro
+COVER_LOW_CHASE	Inseguimento basso
+COVER_HIGH_CHASE	Inseguimento alto
+COVER_PROFILE	Profilo
+COVER_LEAD	Davanti
+COVER_CLOSE	Primo piano
+COVER_WIDE	Campo lungo
+COVER_OVERHEAD	Dall’alto
+COVER_SWOOP	Volteggio
+COVER_LOW_HERO	Dal basso
+COVER_OVER_SHOULDER	Sopra la spalla
+COVER_TWO_SHOT	Due in campo
+COVER_FOCUS	Fuoco
+COVER_GLANCE	Occhiata
+COVER_REVEAL	Rivelazione
+COVER_ORBIT	Orbita
+COVER_VERTIGO	Effetto vertigo
+COVER_PULLBACK	Allontanamento
+COVER_FLY_BY	Passaggio
+AERIAL_SKIM	Radente
+AERIAL_TRACK	Carrellata laterale
+AERIAL_ASCEND	Salita
+AERIAL_TILT_UP	Tilt in su
+AERIAL_DESCEND	Discesa
+AERIAL_EAGLE	Aquila
+AERIAL_HUNT	Aquila: zoom
+AERIAL_SPIRAL	Spirale
+AERIAL_LOOK_BACK	Sguardo indietro
+AERIAL_FLY_BY	Passaggio
+AERIAL_VERTIGO	Vertigo in salita

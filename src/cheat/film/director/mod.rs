@@ -2,17 +2,24 @@
 //! cuts it into beats and gives each a shot (`read`, `beats`, `shot`); while it rolls, it gives
 //! the camera's targets for where the hero is — the shot's rig eased into the next one ahead of
 //! the change (anticipation), the camera raised and slid aside when something hides the hero.
-//! One continuous take, no cuts (.spec/FILMING-RESEARCH.md §4).
+//! Its route's shots are one continuous take; coverage (`coverage`) cuts among them and the shots
+//! about the hero as the hero's situation changes (`situation`).
 
 mod aerial;
 mod beats;
+mod coverage;
+mod glance;
 mod read;
 mod runs;
 mod shot;
+mod situation;
 
 pub use aerial::{Aerial, AerialPlan};
 pub use beats::Beat;
+pub use coverage::{Angle, Coverage, Ctx, Cuts};
+pub use glance::{Glance, GlanceLook};
 pub use shot::{Rig, Shot};
+pub use situation::{judge, openness, Motion, Sight, Situation};
 
 use crate::obstacles::Blocking;
 
@@ -30,7 +37,8 @@ const HIDDEN_HOLD: f32 = 0.5;
 const MOST_DOWN: f32 = 65.0;
 
 /// What the camera should do now: its pitch and yaw (Unreal degrees), the point it turns about in
-/// the hero's frame (cm), its distance (cm) and field of view (degrees), and the shot playing.
+/// the hero's frame (cm), its distance (cm) and field of view (degrees), the shot's name, and
+/// whether to cut to it (else eased).
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Cue {
     pub pitch: f32,
@@ -38,7 +46,8 @@ pub struct Cue {
     pub pivot: [f32; 3],
     pub distance: f32,
     pub fov: f32,
-    pub shot: Shot,
+    pub label: &'static str,
+    pub cut: bool,
 }
 
 pub struct Director {
@@ -122,7 +131,8 @@ impl Director {
             pivot: [rig.ahead, 0.0, rig.lift],
             distance: rig.dist,
             fov: rig.fov,
-            shot,
+            label: shot.label(),
+            cut: false,
         }
     }
 }

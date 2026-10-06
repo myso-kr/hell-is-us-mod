@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Enregistrement arrêté : aucun déplacement.
 FILM_RECORDING_NAME	Enregistrement {n}
 FILM_RECORDING_KEPT	{name} gardé ({m} m, {s} s)
 FILM_RECORDING_NOW	Enregistrement : {n} points
+FILM_CUTS	Changements de plan
+FILM_CUTS_SMOOTH	Fluide
+FILM_CUTS_MIXED	Mixte
+FILM_CUTS_CUTS	Coupes
+FILM_CUTS_ABOUT	Comment la réalisation change de plan quand le héros bouge, s’arrête, grimpe ou combat : en fondu, coupe quand la situation change, ou toujours coupe.
+COVER_SHOULDER	Épaule
+COVER_BEHIND	Derrière
+COVER_LOW_CHASE	Poursuite basse
+COVER_HIGH_CHASE	Poursuite haute
+COVER_PROFILE	Profil
+COVER_LEAD	Devant
+COVER_CLOSE	Gros plan
+COVER_WIDE	Plan large
+COVER_OVERHEAD	Plongée
+COVER_SWOOP	Survol plongeant
+COVER_LOW_HERO	Contre-plongée
+COVER_OVER_SHOULDER	Par-dessus l’épaule
+COVER_TWO_SHOT	Plan à deux
+COVER_FOCUS	Focus
+COVER_GLANCE	Coup d’œil
+COVER_REVEAL	Révélation
+COVER_ORBIT	Orbite
+COVER_VERTIGO	Effet vertigo
+COVER_PULLBACK	Recul
+COVER_FLY_BY	Passage
+AERIAL_SKIM	Rase-mottes
+AERIAL_TRACK	Travelling latéral
+AERIAL_ASCEND	Élévation
+AERIAL_TILT_UP	Panoramique haut
+AERIAL_DESCEND	Descente
+AERIAL_EAGLE	Aigle
+AERIAL_HUNT	Aigle : zoom
+AERIAL_SPIRAL	Spirale
+AERIAL_LOOK_BACK	Regard en arrière
+AERIAL_FLY_BY	Passage
+AERIAL_VERTIGO	Vertigo ascendant

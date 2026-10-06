@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Nagrywanie zatrzymane: bez ruchu.
 FILM_RECORDING_NAME	Nagranie {n}
 FILM_RECORDING_KEPT	Zapisano {name} ({m} m, {s} s)
 FILM_RECORDING_NOW	Nagrywanie: {n} punktów
+FILM_CUTS	Zmiany ujęć
+FILM_CUTS_SMOOTH	Płynnie
+FILM_CUTS_MIXED	Mieszane
+FILM_CUTS_CUTS	Cięcia
+FILM_CUTS_ABOUT	Jak reżyser zmienia ujęcia, gdy bohater idzie, stoi, wspina się lub walczy: płynnie, cięcie przy zmianie sytuacji lub zawsze cięcie.
+COVER_SHOULDER	Ramię
+COVER_BEHIND	Za plecami
+COVER_LOW_CHASE	Niski pościg
+COVER_HIGH_CHASE	Wysoki pościg
+COVER_PROFILE	Profil
+COVER_LEAD	Z przodu
+COVER_CLOSE	Zbliżenie
+COVER_WIDE	Plan ogólny
+COVER_OVERHEAD	Z góry
+COVER_SWOOP	Przelot
+COVER_LOW_HERO	Żabia perspektywa
+COVER_OVER_SHOULDER	Zza ramienia
+COVER_TWO_SHOT	Ujęcie dwójki
+COVER_FOCUS	Skupienie
+COVER_GLANCE	Spojrzenie
+COVER_REVEAL	Odsłonięcie
+COVER_ORBIT	Orbita
+COVER_VERTIGO	Efekt Vertigo
+COVER_PULLBACK	Odjazd
+COVER_FLY_BY	Przelot obok
+AERIAL_SKIM	Lot koszący
+AERIAL_TRACK	Jazda boczna
+AERIAL_ASCEND	Wznoszenie
+AERIAL_TILT_UP	Odchył w górę
+AERIAL_DESCEND	Opadanie
+AERIAL_EAGLE	Orzeł
+AERIAL_HUNT	Orzeł: zbliżenie
+AERIAL_SPIRAL	Spirala
+AERIAL_LOOK_BACK	Spojrzenie wstecz
+AERIAL_FLY_BY	Przelot obok
+AERIAL_VERTIGO	Wznoszący Vertigo

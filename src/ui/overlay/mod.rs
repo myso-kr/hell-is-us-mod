@@ -454,6 +454,7 @@ pub fn run(shared: Arc<Shared>) {
             }
         }
         filmkeys::follow(&shared, feet);
+        filmkeys::subjects(&shared, feet);
         // the take's way, drawn on the maps: points numbered, a recording as a line
         {
             let setup = shared.film_setup.lock().unwrap();

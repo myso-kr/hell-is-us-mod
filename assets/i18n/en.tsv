@@ -933,3 +933,39 @@ FILM_RECORDING_EMPTY	Recording stopped: you did not move.
 FILM_RECORDING_NAME	Recording {n}
 FILM_RECORDING_KEPT	{name} kept ({m} m, {s} s)
 FILM_RECORDING_NOW	Recording now: {n} points
+FILM_CUTS	Shot changes
+FILM_CUTS_SMOOTH	Smooth
+FILM_CUTS_MIXED	Mixed
+FILM_CUTS_CUTS	Cuts
+FILM_CUTS_ABOUT	How the director changes shots as the hero moves, stops, climbs or fights: eased, cut when the situation changes, or cut each time.
+COVER_SHOULDER	Shoulder
+COVER_BEHIND	Behind
+COVER_LOW_CHASE	Low chase
+COVER_HIGH_CHASE	High chase
+COVER_PROFILE	Profile
+COVER_LEAD	Lead
+COVER_CLOSE	Close-up
+COVER_WIDE	Wide
+COVER_OVERHEAD	Overhead
+COVER_SWOOP	Swoop
+COVER_LOW_HERO	Low hero
+COVER_OVER_SHOULDER	Over the shoulder
+COVER_TWO_SHOT	Two-shot
+COVER_FOCUS	Focus
+COVER_GLANCE	Glance
+COVER_REVEAL	Reveal
+COVER_ORBIT	Orbit
+COVER_VERTIGO	Vertigo
+COVER_PULLBACK	Pull back
+COVER_FLY_BY	Fly-by
+AERIAL_SKIM	Skim
+AERIAL_TRACK	Side track
+AERIAL_ASCEND	Pedestal up
+AERIAL_TILT_UP	Tilt up
+AERIAL_DESCEND	Descend
+AERIAL_EAGLE	Eagle
+AERIAL_HUNT	Eagle: zoomed in
+AERIAL_SPIRAL	Spiral
+AERIAL_LOOK_BACK	Look back
+AERIAL_FLY_BY	Fly-by
+AERIAL_VERTIGO	Vertigo climb

@@ -451,6 +451,10 @@ impl Engine {
             safety: pcm
                 .and_then(|p| n.follow(m, p, "CameraModeInstance").ok())
                 .and_then(|mode| n.field(m, mode, "bValidateSafeLoc").map(|f| mode + f.offset as u64)),
+            zoom: pcm.and_then(|p| n.follow(m, p, "CameraModeInstance").ok()).and_then(|mode| {
+                let interp = n.field(m, mode, "CameraToPivotTranslationInterpolator")?;
+                Some(crate::film::ZOOM_AT.map(|o| mode + interp.offset as u64 + o))
+            }),
             scene: a.obstacles(),
         };
         self.take = Some(crate::film::roll(plan, wiring, state, ended));

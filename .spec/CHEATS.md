@@ -269,3 +269,36 @@ point, at the pace it was walked: `Recording::paces` (speed over a 3 m window as
 fastest, never under 0.2) times the card's pace, from `recording_starts` on. A flight takes every
 other point (a metre apart). The maps draw it as a line (`MapState::film_track`), not numbered.
 `Setup.use_points` gave way to `Setup.source` (Guide, Points, Recording); old files read as before.
+
+### Coverage: directing by situation (2026-10-07)
+
+Researched after RDR2's cinematic camera, God of War's shoulder camera, Cinemachine's state-driven
+camera / ClearShot / target groups, and racing replays (.spec/FILMING-RESEARCH.md). Shared by walk
+and live takes through `take/cover.rs`:
+
+- `director/situation.rs`: `Motion` keeps the hero's last second; `judge` gives a `Situation`
+  (Moving, Still, Turning, Climbing, Descending, Combat; and, not in live takes, Meeting (an NPC
+  within 8 m), Find (an item ahead within 6 m), Landmark (a lever, door or save point ahead)),
+  the target, and `openness` (8 rays at head height, 8 m).
+- `director/coverage.rs`: candidate `Angle`s per situation, scored by order, freshness (not one of
+  the last three), a change of size, openness (wide shots in open places), and ClearShot (−20
+  when the hero cannot be seen). The route's planned rig is an `Angle::Planned` candidate. A shot
+  holds 4–8 s; a new situation must last 0.4 s (a fight at once). `Cuts::{Smooth, Mixed, Cuts}`:
+  Mixed cuts on a situation change or a change of size; a cut moving the camera less than 30°
+  is eased instead (no jump cuts). In a live take, while moving, only angles within ±35° of
+  behind are used, so the controls stay camera-relative.
+- A cut (`Session::cut`) snaps the gimbal, sets the distance and FOV knobs, and writes the six
+  doubles of `CameraToPivotTranslationInterpolator` (`ZOOM_AT`) to skip the game's easing.
+- `film::subjects`: the overlay puts enemies, NPCs, items and things within 30 m into
+  `Shared.film_subjects` four times a second.
+
+Flights: `director/aerial/` is now `look.rs` (each `Aerial` look's pitch, yaw, FOV and lift
+over the path), `vary.rs` (runs over 32 m cut into 16–36 m shots drawn from the place, never one
+of the last two again; the eagle at least 60 m) and the plan. `Fly` eases the lift (at most
+3.5 m/s) under `avoid::headroom`. `director/glance.rs`: something within 25 m is looked at for
+3 s at most every 10 s; as an eagle, it hunts within 50 m every 6 s with a 30° lens.
+
+The take's stop on input (`take/input.rs`) no longer uses `GetLastInputInfo`, which a Logitech
+G HUB virtual keyboard or a mouse sensor can touch while nobody does: a key or button newly
+pressed (held ones ignored until let go), or the camera turned by more than 3° (summed, fading
+over 0.5 s) from where the take put it. The reason goes to the log file.
