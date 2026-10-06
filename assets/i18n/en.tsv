@@ -886,13 +886,12 @@ FILM_ROUTE_NAME	Name this route
 FILM_DISTANCE	Set the camera’s distance
 FILM_DISTANCE_CM	Distance
 FILM_REPEAT	Back and forth until stopped
-FILM_KEY	Start/stop key (in the game)
+FILM_KEY	Filming key (in the game): start/stop; with Ctrl, add or remove a point
 FILM_FOV	Set the field of view (zoom)
 FILM_FOV_DEG	Field of view (game: 70°)
 KEEP_RUNNING_UNFOCUSED	Keep the game running when you switch to the panel (turns off the game’s pause on losing focus while the panel runs)
 FILM_FLIGHT	Fly the camera alone (the hero stays)
 FILM_FLIGHT_NOTE	The camera flies straight between the points, 1.8 m above the floor, its corners rounded. Spotlight keeps it on the hero.
 FILM_ORBIT_NOT_IN_FLIGHT	Not while the camera flies alone: it would circle a point on the path, not the hero (it looks at the hero instead).
-FILM_POINT_KEY	Point key (in the game; Ctrl: remove the last)
 FILM_POINT_ADDED	Point {n} added where you stand
-FILM_POINT_REMOVED	Last point removed ({n} left)
+FILM_POINT_REMOVED	Point {k} removed ({n} left)

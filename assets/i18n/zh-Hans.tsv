@@ -886,13 +886,12 @@ FILM_ROUTE_NAME	路线名称
 FILM_DISTANCE	设置镜头距离
 FILM_DISTANCE_CM	距离
 FILM_REPEAT	往返直到停止
-FILM_KEY	开始/停止键（游戏内）
+FILM_KEY	拍摄键（游戏内）：开始/停止；配合 Ctrl 添加或删除点
 FILM_FOV	设置视野（变焦）
 FILM_FOV_DEG	视野（游戏：70°）
 KEEP_RUNNING_UNFOCUSED	切换到面板时游戏不暂停（面板运行时关闭「失去焦点时暂停」）
 FILM_FLIGHT	仅镜头飞行（主角原地）
 FILM_FLIGHT_NOTE	镜头在点之间离地 1.8 米直线飞行，拐角圆滑。「聚焦」始终看向主角。
 FILM_ORBIT_NOT_IN_FLIGHT	仅镜头飞行时不可用：会绕路线上的点而非主角旋转（改为看向主角）。
-FILM_POINT_KEY	添加点键（游戏内；Ctrl：删除最后一个）
 FILM_POINT_ADDED	已添加拍摄点 {n}
-FILM_POINT_REMOVED	已删除最后一个点（剩 {n} 个）
+FILM_POINT_REMOVED	已删除拍摄点 {k}（剩 {n} 个）

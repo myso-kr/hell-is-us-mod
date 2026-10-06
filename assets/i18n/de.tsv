@@ -886,13 +886,12 @@ FILM_ROUTE_NAME	Route benennen
 FILM_DISTANCE	Kameraabstand festlegen
 FILM_DISTANCE_CM	Abstand
 FILM_REPEAT	Hin und zurück bis zum Stopp
-FILM_KEY	Start/Stopp-Taste (im Spiel)
+FILM_KEY	Filmtaste (im Spiel): Start/Stopp; mit Strg Punkt setzen/entfernen
 FILM_FOV	Sichtfeld festlegen (Zoom)
 FILM_FOV_DEG	Sichtfeld (Spiel: 70°)
 KEEP_RUNNING_UNFOCUSED	Spiel läuft weiter, wenn Sie zum Panel wechseln (Pause bei Fokusverlust aus, solange das Panel läuft)
 FILM_FLIGHT	Nur die Kamera fliegt (der Held bleibt)
 FILM_FLIGHT_NOTE	Die Kamera fliegt gerade zwischen den Punkten, 1,8 m über dem Boden, Ecken gerundet. Fokus bleibt auf dem Helden.
 FILM_ORBIT_NOT_IN_FLIGHT	Nicht beim Kameraflug: sie würde einen Punkt der Route umkreisen, nicht den Helden (sie blickt stattdessen auf ihn).
-FILM_POINT_KEY	Punkt-Taste (im Spiel; Strg: letzten entfernen)
 FILM_POINT_ADDED	Punkt {n} hinzugefügt
-FILM_POINT_REMOVED	Letzter Punkt entfernt ({n} übrig)
+FILM_POINT_REMOVED	Punkt {k} entfernt ({n} übrig)

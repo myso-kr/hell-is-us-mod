@@ -108,6 +108,7 @@ impl Panel {
         let rolling = state.rolling();
         let may = self.grants(crate::settings::Consent::CHEATS) && snap.is_some_and(|s| s.gate.is_ok());
         let taken = self.shared.map.lock().unwrap().keys().to_vec();
+        // the map's keys and these: chosen here or on the map settings' keys tab
         let mut setup = self.shared.film_setup.lock().unwrap().clone();
         let before = setup.clone();
         card(t, tr!("FILMING"), |t| {
@@ -126,7 +127,7 @@ impl Panel {
             });
             if setup.use_points {
                 if n == 0 {
-                    note(t, trf!("FILM_POINTS_HOW", key = format!("F{}", setup.point_key)));
+                    note(t, trf!("FILM_POINTS_HOW", key = format!("Ctrl+F{}", setup.key)));
                 }
                 // routes kept by name: the points saved, loaded back, removed
                 let mut load = None;
@@ -205,16 +206,7 @@ impl Panel {
                 field(t, tr!("FILM_FOV_DEG"), |t| tw::slider(t, f, crate::film::FOV, 1.0, "°"));
             }
             switch(t, &mut setup.repeat, tr!("FILM_REPEAT"));
-            let mut taken_film = taken.clone();
-            taken_film.push(setup.point_key);
-            field(t, tr!("FILM_KEY"), |t| {
-                w(t, |ui| super::map::keycap_picker(ui, "film_key", &mut setup.key, &taken_film))
-            });
-            let mut taken_point = taken.clone();
-            taken_point.push(setup.key);
-            field(t, tr!("FILM_POINT_KEY"), |t| {
-                w(t, |ui| super::map::keycap_picker(ui, "film_point_key", &mut setup.point_key, &taken_point))
-            });
+            field(t, tr!("FILM_KEY"), |t| w(t, |ui| super::map::keycap_picker(ui, "film_key", &mut setup.key, &taken)));
             choices(t, |t| {
                 let start = w(t, |ui| ui.add_enabled(may && !rolling, egui::Button::new(tr!("FILM_START"))));
                 if start.clicked() {

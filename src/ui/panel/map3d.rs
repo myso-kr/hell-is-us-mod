@@ -360,6 +360,8 @@ pub struct Map3d {
     pub teleport: Option<[f32; 3]>,
     /// A spot to add to the filming take's points, for the page (groups.rs `film_card`).
     pub film_point: Option<[f32; 3]>,
+    /// The filming take's points, drawn joined and numbered.
+    pub film: Vec<[f32; 3]>,
 }
 
 impl Default for Map3d {
@@ -385,6 +387,7 @@ impl Default for Map3d {
             can_teleport: false,
             teleport: None,
             film_point: None,
+            film: Vec::new(),
         }
     }
 }
@@ -606,6 +609,30 @@ impl Map3d {
             }
         }
         // markers over the scene: the route's end, the picked place, the hero
+        // the filming take's points: joined in order, numbered
+        if !self.film.is_empty() {
+            let colour = Color32::from_rgb(255, 236, 170);
+            let at: Vec<Option<egui::Pos2>> =
+                self.film.iter().map(|&p| project(&vp, scene.to_scene([p[0], p[1], p[2] + 30.0]), rect)).collect();
+            for w in at.windows(2) {
+                if let (Some(a), Some(b)) = (w[0], w[1]) {
+                    painter.line_segment([a, b], egui::Stroke::new(3.5, OUTLINE));
+                    painter.line_segment([a, b], egui::Stroke::new(2.0, colour));
+                }
+            }
+            for (i, q) in at.iter().enumerate() {
+                let Some(q) = *q else { continue };
+                painter.circle_filled(q, 9.0, OUTLINE);
+                painter.circle_filled(q, 7.5, colour);
+                painter.text(
+                    q,
+                    egui::Align2::CENTER_CENTER,
+                    (i + 1).to_string(),
+                    egui::FontId::proportional(10.0),
+                    OUTLINE,
+                );
+            }
+        }
         // the spot picked, a ring on the floor
         if let Some(q) = self.spot.and_then(|at| project(&vp, scene.to_scene(at), rect)) {
             painter.circle_stroke(q, 8.0, egui::Stroke::new(2.5, OUTLINE));
@@ -1596,6 +1623,7 @@ impl super::Panel {
             }
             tw::block(t, |ui| {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
+                self.map3d.film = self.shared.film_setup.lock().unwrap().points.clone();
                 self.map3d.view(ui, height, hero, &route, colour, state, &shortcut);
                 if let Some(at) = self.map3d.film_point.take() {
                     let mut setup = self.shared.film_setup.lock().unwrap();

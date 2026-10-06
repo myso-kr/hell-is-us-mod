@@ -886,13 +886,12 @@ FILM_ROUTE_NAME	Nazwa trasy
 FILM_DISTANCE	Ustaw odległość kamery
 FILM_DISTANCE_CM	Odległość
 FILM_REPEAT	Tam i z powrotem do zatrzymania
-FILM_KEY	Klawisz start/stop (w grze)
+FILM_KEY	Klawisz filmowania (w grze): start/stop; z Ctrl dodaj lub usuń punkt
 FILM_FOV	Ustaw pole widzenia (zoom)
 FILM_FOV_DEG	Pole widzenia (gra: 70°)
 KEEP_RUNNING_UNFOCUSED	Gra działa dalej po przejściu do panelu (wyłącza pauzę po utracie fokusu, gdy panel działa)
 FILM_FLIGHT	Leci tylko kamera (bohater zostaje)
 FILM_FLIGHT_NOTE	Kamera leci prosto między punktami, 1,8 m nad podłogą, z zaokrąglonymi zakrętami. Skupienie patrzy na bohatera.
 FILM_ORBIT_NOT_IN_FLIGHT	Nie podczas lotu kamery: krążyłaby wokół punktu trasy, nie bohatera (zamiast tego patrzy na bohatera).
-FILM_POINT_KEY	Klawisz punktu (w grze; Ctrl: usuń ostatni)
 FILM_POINT_ADDED	Dodano punkt {n}
-FILM_POINT_REMOVED	Usunięto ostatni punkt (zostało {n})
+FILM_POINT_REMOVED	Usunięto punkt {k} (zostało {n})

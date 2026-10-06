@@ -19,9 +19,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   the obstacle and easing back after; the camera's distance closes in ahead of what stands behind
   it — checked now and a moment ahead — and backs out slowly after, instead of the game's sudden
   pull-in, which is itself slowed during a take.
-- Filming points from the game: a key (F8 by default; F7 is Steam's) adds where the hero stands
-  to the take's points, and with Ctrl takes the last away, said in the banner — no trip to the
-  3D map needed.
+- Filming from the game with one key (F8 by default; F7 is the game's photo mode): alone it starts
+  and stops a take; with Ctrl it adds where the hero stands to the take's points, or, standing by
+  one, takes that one away, as the map's marker key does — said in the banner. The key can be
+  set on the map settings' keys tab too.
+- The take's points are drawn on the minimap, the big map and the 3D map: joined in order and
+  numbered, in a colour of their own.
 
 ## 0.7.0 — 2026-10-06
 

@@ -352,10 +352,9 @@ pub struct Setup {
     pub distance: Option<f32>,
     pub fov: Option<f32>,
     pub repeat: bool,
+    /// The key (F8): alone, it starts and stops a take; with Ctrl, it adds where the hero stands
+    /// to the points, or takes away the one it stands by — as the map's marker key does.
     pub key: u8,
-    /// The key that adds where the hero stands to the points (with Ctrl, takes the last away).
-    /// F8 by default: F7 is Steam's.
-    pub point_key: u8,
     /// Fly the camera alone; the hero stays.
     pub flight: bool,
     pub routes: Vec<(String, Vec<[f32; 3]>)>,
@@ -371,13 +370,17 @@ impl Default for Setup {
             distance: None,
             fov: None,
             repeat: false,
-            key: 6,
-            point_key: 8,
+            key: KEY,
             flight: false,
             routes: Vec::new(),
         }
     }
 }
+
+/// The key by default (F7 is the game's photo mode).
+pub const KEY: u8 = 8;
+/// A point taken within this of another takes that one away instead (cm), as the map's marker.
+pub const NEAR: f32 = 500.0;
 
 /// From the hero's root to its feet (cm): a point taken where it stands is on the floor, as the
 /// 3D map's are.
@@ -414,7 +417,7 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\npoint_key {}\nflight {}\n",
+            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nflight {}\n",
             self.use_points,
             self.pace,
             self.lens.word(),
@@ -422,7 +425,6 @@ impl Setup {
             self.fov.map_or("none".to_string(), |d| d.to_string()),
             self.repeat,
             self.key,
-            self.point_key,
             self.flight
         );
         for p in &self.points {
@@ -444,9 +446,11 @@ impl Setup {
             let v: Vec<f32> = f.iter().filter_map(|x| x.parse().ok()).filter(|v: &f32| v.is_finite()).collect();
             (v.len() == 3).then(|| [v[0], v[1], v[2]])
         };
+        let mut keys_version = 1;
         for line in text.lines() {
             let f: Vec<&str> = line.split_whitespace().collect();
             match f[..] {
+                ["keys_version", v] => keys_version = v.parse().unwrap_or(1),
                 ["use_points", v] => s.use_points = v == "true",
                 ["pace", v] => s.pace = v.parse().unwrap_or(s.pace).clamp(0.2, 1.0),
                 ["lens", v] => s.lens = Lens::ALL.into_iter().find(|l| l.word() == v).unwrap_or_default(),
@@ -457,7 +461,6 @@ impl Setup {
                 ["repeat", v] => s.repeat = v == "true",
                 ["flight", v] => s.flight = v == "true",
                 ["key", v] => s.key = v.parse().unwrap_or(s.key).min(12),
-                ["point_key", v] => s.point_key = v.parse().unwrap_or(s.point_key).min(12),
                 ["point", ..] => s.points.extend(point(&f[1..])),
                 ["route", ..] => s.routes.push((line["route ".len()..].trim().to_string(), Vec::new())),
                 ["route_point", ..] => {
@@ -467,6 +470,10 @@ impl Setup {
                 }
                 _ => {}
             }
+        }
+        // the first keys (F6 to start, F8 for points) gave way to F8, with Ctrl for points
+        if keys_version < 2 && !text.is_empty() {
+            s.key = KEY;
         }
         s
     }
@@ -1050,13 +1057,15 @@ mod tests {
             distance: Some(900.0),
             fov: Some(55.0),
             repeat: true,
-            key: 7,
-            point_key: 9,
+            key: 9,
             flight: true,
             routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],
         };
         assert_eq!(Setup::parse(&s.render()), s);
         assert_eq!(Setup::parse(""), Setup::default());
+        // the first keys move to the new ones
+        let old = Setup::parse("key 6\npoint_key 8\npace 0.5\n");
+        assert_eq!((old.key, old.pace), (KEY, 0.5));
     }
 
     #[test]

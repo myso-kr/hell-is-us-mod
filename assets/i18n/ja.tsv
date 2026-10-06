@@ -886,13 +886,12 @@ FILM_ROUTE_NAME	経路の名前
 FILM_DISTANCE	カメラの距離を設定
 FILM_DISTANCE_CM	距離
 FILM_REPEAT	止めるまで往復
-FILM_KEY	開始/停止キー（ゲーム内）
+FILM_KEY	撮影キー（ゲーム内）：開始/停止、Ctrl同時押しで地点の追加・削除
 FILM_FOV	視野角を設定（ズーム）
 FILM_FOV_DEG	視野角（標準 70°）
 KEEP_RUNNING_UNFOCUSED	パネルに切り替えてもゲームを止めない（パネル実行中は「フォーカスを失ったら一時停止」をオフ）
 FILM_FLIGHT	カメラだけ飛ぶ（主人公はその場）
 FILM_FLIGHT_NOTE	カメラは地点間を床から1.8m上でまっすぐ飛び、角は丸めます。「注視」は主人公を見続けます。
 FILM_ORBIT_NOT_IN_FLIGHT	カメラだけ飛ぶときは使えません。主人公ではなく経路上の点を回るため、代わりに主人公を見ます。
-FILM_POINT_KEY	地点キー（ゲーム内、Ctrl: 最後を削除）
 FILM_POINT_ADDED	撮影地点 {n} を追加
-FILM_POINT_REMOVED	最後の地点を削除（残り {n}）
+FILM_POINT_REMOVED	撮影地点 {k} を削除（残り {n}）

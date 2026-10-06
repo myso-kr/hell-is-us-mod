@@ -434,6 +434,9 @@ pub struct Drawn {
 
 /// A shortcut's line, and its drops' marks by the harm the fall does (FallDamageConfig):
 /// none, some, much.
+/// The filming take's points (film.rs): a warm white, apart from every route and marker.
+const FILM: Rgba = Rgba(255, 236, 170, 255);
+
 fn rgba([r, g, b]: [u8; 3], a: u8) -> Rgba {
     Rgba(r, g, b, a)
 }
@@ -827,6 +830,27 @@ pub fn draw_above(
                 let (pa, pb) = (clip(pa), clip(pb));
                 cv.line((cx + pa.0, cy + pa.1), (cx + pb.0, cy + pb.1), width, colour);
             }
+        }
+    }
+
+    // The filming take's points: joined in order, each numbered, in their own colour.
+    if !state.film_points.is_empty() {
+        let colour = faded(FILM, marks);
+        let shadow = faded(OUTLINE, marks);
+        let at: Vec<(f32, f32)> = state.film_points.iter().map(|&p| view.project(p)).collect();
+        for w in at.windows(2) {
+            let (a, b) = ((cx + w[0].0, cy + w[0].1), (cx + w[1].0, cy + w[1].1));
+            cv.line(a, b, 3.2, shadow);
+            cv.line(a, b, 1.6, colour);
+        }
+        for (i, p) in at.iter().enumerate() {
+            if !inside(*p) && !view.full {
+                continue;
+            }
+            let (x, y) = (cx + p.0, cy + p.1);
+            cv.disc(x, y, 7.5, shadow);
+            cv.disc(x, y, 6.2, colour);
+            cv.text(x, y + 0.5, 7.0, &(i + 1).to_string(), shadow);
         }
     }
 

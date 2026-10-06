@@ -741,6 +741,8 @@ impl Panel {
 
     /// The overlay's keys.
     pub(super) fn keys_card(&mut self, t: &mut Tui, state: &mut crate::minimap::MapState) {
+        let mut film = self.shared.film_setup.lock().unwrap().clone();
+        let before = film.clone();
         bare(t, |t| {
             for (label, id) in [
                 (tr!("SWITCH_MAP_DISPLAY"), "toggle_key"),
@@ -754,7 +756,8 @@ impl Panel {
                     "compass_key" => state.compass_key,
                     _ => state.cycle_key,
                 };
-                let taken = others(state, mine);
+                let mut taken = others(state, mine);
+                taken.push(film.key);
                 let key = match id {
                     "toggle_key" => &mut state.toggle_key,
                     "marker_key" => &mut state.marker_key,
@@ -763,7 +766,14 @@ impl Panel {
                 };
                 field(t, label, |t| w(t, |ui| keycap_picker(ui, id, key, &taken)));
             }
+            // filming (cheats › movement): a take, and with Ctrl a point
+            let taken = state.keys().to_vec();
+            field(t, tr!("FILM_KEY"), |t| w(t, |ui| keycap_picker(ui, "film_key_tab", &mut film.key, &taken)));
         });
+        if film != before {
+            film.save();
+            *self.shared.film_setup.lock().unwrap() = film;
+        }
     }
 }
 

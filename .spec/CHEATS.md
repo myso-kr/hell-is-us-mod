@@ -213,7 +213,15 @@ with the obstacles the scene pass already reads (convex outlines with height ran
 
 ### Points from the game (2026-10-06)
 
-`Setup.point_key` (F8 by default — F7 is Steam's, the user found): the overlay, which has the hero's
-pose every frame, adds where the hero stands (its root less `FEET`, 90 cm, so on the floor like
-the 3D map's points) to `Setup.points`, switches the take to the points, saves `film.txt` and
-says "point N added" in the banner for 2.5 s; with Ctrl held it takes the last point away.
+One key, `Setup.key` (F8 by default; F7 is the game's photo mode, F12 Steam's — the user asked for
+this layout): alone, the overlay sets `Shared.film_key` and the worker starts or stops a take;
+with Ctrl, the overlay, which has the hero's pose every frame, takes a point as the map's marker
+key does — where the hero stands (its root less `FEET`, 90 cm, on the floor like the 3D map's
+points) is added to `Setup.points` (the take switched to the points), or, within `NEAR` (5 m) of
+one, that one is taken away — saves `film.txt` and says so in the banner for 2.5 s. Settings from
+before (`keys_version` absent: F6 to start, a point key of its own) move to F8. The key is chosen
+on the filming card or the map settings' keys tab, never one the map's keys hold.
+
+The points are drawn on every map: `MapState.film_points` (put there by the overlay, never saved)
+joined and numbered in a warm white on the minimap and the big map (raster.rs), and the same on
+the 3D map (map3d.rs, 30 cm above the floor).
