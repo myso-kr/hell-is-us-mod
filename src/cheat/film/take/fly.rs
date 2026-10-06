@@ -72,6 +72,14 @@ impl Fly {
         let mut fly = fly;
         fly.at[2] += self.lift;
         ahead[2] += self.lift;
+        // never into the ground or the water: the camera kept above the floor where it is
+        if let Some(low) = crate::film::above_floor(&s.blocking, fly.at, crate::film::CAMERA_OVER_FLOOR) {
+            if fly.at[2] < low {
+                self.lift += low - fly.at[2];
+                ahead[2] += low - fly.at[2];
+                fly.at[2] = low;
+            }
+        }
         // the hero carried just behind the camera's back and above it (carry.rs; kept alive and
         // ignored by the worker's guard)
         hero = self.carry.place(s, hero, fly.at);

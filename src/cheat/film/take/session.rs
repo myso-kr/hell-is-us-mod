@@ -13,6 +13,11 @@ use crate::obstacles::Blocking;
 /// How long the hero is held where it stood when a flight ends, and Unreal's falling mode.
 const PUT_BACK: std::time::Duration = std::time::Duration::from_millis(500);
 const MOVE_FALLING: u8 = 3;
+/// Unreal's walking mode: the hero has landed. How long to wait for it at most, and how long
+/// after it before the take ends (the guard's cheats, no fall damage among them, go with it).
+const MOVE_WALKING: u8 = 1;
+const LANDING_WAIT: std::time::Duration = std::time::Duration::from_secs(3);
+const LANDED_GRACE: std::time::Duration = std::time::Duration::from_millis(500);
 /// The carried hero's mesh's scale: nothing to see, not quite nothing (a zero scale can upset the
 /// engine's maths).
 const HIDDEN_SCALE: f64 = 0.001;
@@ -80,7 +85,8 @@ impl<'a> Session<'a> {
         // either way, kept within the room behind the camera (the game's own when none is asked);
         // the field of view too when the director moves it.
         let directed = plan.lens == Lens::Director;
-        let distance = plan.distance.or(flight.then_some(FLIGHT_DISTANCE));
+        // a flight is a drone's: its lens turns about itself, whatever distance the card asks
+        let distance = if flight { Some(FLIGHT_DISTANCE) } else { plan.distance };
         let read_f = |game: &Game, at: u64| -> Option<f32> {
             let mut b = [0u8; 4];
             game.read(at, &mut b).then(|| f32::from_le_bytes(b)).filter(|v| v.is_finite())
@@ -221,6 +227,23 @@ impl<'a> Session<'a> {
         self.put(p);
     }
 
+    /// Waits until the hero has landed (its movement walking again), and a moment more: the fall
+    /// is weighed as it lands, and the cheats guarding it must outlast that.
+    fn landed(&self, mode: u64) {
+        let until = std::time::Instant::now() + LANDING_WAIT;
+        // the game takes up the falling mode on its next frame
+        std::thread::sleep(std::time::Duration::from_millis(50));
+        while std::time::Instant::now() < until {
+            let mut b = [0u8; 1];
+            if self.game.read(mode, &mut b) && b[0] == MOVE_WALKING {
+                std::thread::sleep(LANDED_GRACE);
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        }
+        crate::logfile::line("film: the hero put back did not land within 3 s");
+    }
+
     /// The hero's place written, as a teleport does: its root, its world transform, still.
     fn put(&self, p: [f64; 3]) {
         let Some(h) = self.w.hero_root else { return };
@@ -256,6 +279,7 @@ impl<'a> Session<'a> {
             }
             if let Some(m) = self.w.hero_root.and_then(|h| h.mode) {
                 self.game.write(m, &[MOVE_FALLING]);
+                self.landed(m);
             }
         }
         if self.plan.mode.drives() {

@@ -360,3 +360,17 @@ values as first read are put back when it goes off (`release`), forgotten when t
 On 24045435 they were 150 / 450 / 900 / 1500 / 450 / 0.1 / 900 / 1200 / 0.7 / 1500. The landing
 ability reads the default object at each landing (as `GetDefault` does): seen in play.
 The flight's guard now adds it with god and ghost.
+
+### Drone view, landing, floor (2026-10-07)
+
+Three findings in play. (1) With the camera 150 cm behind its pivot, a flight's turns swung it
+round a point ahead, which read as player-centred; `FLIGHT_DISTANCE` is now 10 cm on every flight
+(the card's distance is not offered in flight), and aerial looks get a drone's wide lens:
+`fov + 10 × clamp((fov − 40) / 40, 0, 1)`, at most 92°, so a narrowing move keeps its end.
+(2) The guard let go before the hero landed, and the landing hurt: `Session::restore` now waits,
+after setting the hero falling, until `MovementMode` reads walking (1) and 0.5 s more (3 s at
+most), before the take reports it has ended and the guard lets go. (3) The camera sank under the
+ground and the hero carried behind it drowned: `Blocking::floor` is the landscape's height or the
+surface of water (pools and water boxes) over it; `avoid::above_floor` keeps the camera 150 cm
+and the hero's feet 50 cm above it, unless the floor is over 8 m above (under the landscape:
+a cave, a hall), where nothing is known of the floor.

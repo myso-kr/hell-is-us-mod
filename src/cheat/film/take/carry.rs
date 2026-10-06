@@ -5,7 +5,7 @@
 //! would swing into the frame as the camera turns). Its mesh is shrunk as well (session.rs).
 
 use super::session::Session;
-use crate::film::{FLIGHT_DISTANCE, HERO_ABOVE, HERO_BEHIND};
+use crate::film::{above_floor, FEET, FEET_OVER_FLOOR, FLIGHT_DISTANCE, HERO_ABOVE, HERO_BEHIND};
 
 #[derive(Default)]
 pub(super) struct Carry;
@@ -21,8 +21,12 @@ impl Carry {
         let (p, y) = (s.pitch.angle.to_radians(), s.yaw.angle.to_radians());
         let look = [p.cos() * y.cos(), p.cos() * y.sin(), p.sin()];
         // the lens: the camera's distance back from the pivot along its look
-        let back = s.plan.distance.unwrap_or(FLIGHT_DISTANCE) + HERO_BEHIND;
-        let at = [pivot[0] - look[0] * back, pivot[1] - look[1] * back, pivot[2] - look[2] * back + HERO_ABOVE];
+        let back = FLIGHT_DISTANCE + HERO_BEHIND;
+        let mut at = [pivot[0] - look[0] * back, pivot[1] - look[1] * back, pivot[2] - look[2] * back + HERO_ABOVE];
+        // never into the ground or the water (it would drown): its feet above the floor
+        if let Some(low) = above_floor(&s.blocking, [at[0], at[1], at[2] - FEET], FEET_OVER_FLOOR) {
+            at[2] = at[2].max(low + FEET);
+        }
         s.place_hero(at.map(|v| v as f64));
         at
     }

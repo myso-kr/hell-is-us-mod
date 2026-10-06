@@ -209,7 +209,12 @@ impl Panel {
                     });
                 });
             }
-            optional(t, tr!("FILM_DISTANCE_CM"), &mut setup.distance, 800.0, crate::film::DISTANCE, 50.0, " cm");
+            // a flight's lens turns about itself, as a drone's: no distance to choose
+            if setup.mode == Mode::Flight {
+                note(t, tr!("FILM_DISTANCE_DRONE"));
+            } else {
+                optional(t, tr!("FILM_DISTANCE_CM"), &mut setup.distance, 800.0, crate::film::DISTANCE, 50.0, " cm");
+            }
             optional(t, tr!("FILM_FOV_DEG"), &mut setup.fov, 55.0, crate::film::FOV, 1.0, "°");
         });
     }

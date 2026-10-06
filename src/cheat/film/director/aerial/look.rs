@@ -37,6 +37,16 @@ pub enum Aerial {
     Vertigo,
 }
 
+/// How much wider a drone's lens makes a look (degrees, at the widest), and the field of view a
+/// look must have to be widened at all: a lens closing in stays as narrow, so the move is kept.
+const DRONE_WIDEN: f32 = 10.0;
+const NARROW: f32 = 40.0;
+const MOST: f32 = 92.0;
+
+fn drone(fov: f32) -> f32 {
+    (fov + DRONE_WIDEN * ((fov - NARROW) / NARROW).clamp(0.0, 1.0)).min(MOST)
+}
+
 /// A look: pitch, turn from the way ahead (degrees), field of view (degrees), height over the
 /// flight's path (cm).
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -84,7 +94,8 @@ impl Aerial {
         let u = u.clamp(0.0, 1.0);
         let e = u * u * (3.0 - 2.0 * u);
         let lerp = |a: f32, b: f32| a + (b - a) * e;
-        let look = |pitch, yaw, fov, lift| Look { pitch, yaw, fov, lift };
+        // a drone's lens is wide (about 84°): the wide looks widened, the closing-in ones left
+        let look = |pitch, yaw, fov: f32, lift| Look { pitch, yaw, fov: drone(fov), lift };
         match self {
             Aerial::Glide => look(-10.0, 0.0, 74.0, 350.0),
             Aerial::Rise => look(lerp(-40.0, -8.0), 0.0, lerp(68.0, 82.0), lerp(150.0, 1400.0)),

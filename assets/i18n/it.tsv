@@ -966,3 +966,4 @@ AERIAL_FLY_BY	Passaggio
 AERIAL_VERTIGO	Vertigo in salita
 NO_FALL_DAMAGE	Nessun danno da caduta
 NO_FALL_DAMAGE_NOT_FOUND	Nessun danno da caduta: impostazioni di caduta non trovate
+FILM_DISTANCE_DRONE	Un volo è la vista di un drone: l’obiettivo ruota su se stesso, quindi non c’è distanza da scegliere.

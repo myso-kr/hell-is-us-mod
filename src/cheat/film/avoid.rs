@@ -151,10 +151,44 @@ pub fn headroom(b: &crate::obstacles::Blocking, at: [f32; 3], want: f32) -> f32 
     (lo - CLEAR).max(0.0)
 }
 
+/// How far above the floor (the landscape or water over it) a flight's camera stays, and a carried
+/// hero's feet (cm); and how far the floor may be above before it is taken for the landscape over
+/// a cave or a hall the flight is in, and left alone (cm).
+pub const CAMERA_OVER_FLOOR: f32 = 150.0;
+pub const FEET_OVER_FLOOR: f32 = 50.0;
+const FLOOR_ABOVE_INDOORS: f32 = 800.0;
+
+/// The lowest `p` may be at its (x, y) to be `over` the floor: the landscape or water there — not
+/// sunk into the ground, not drowned. `None` where there is no floor, or where it lies far above
+/// (a flight under the landscape, indoors).
+pub fn above_floor(b: &crate::obstacles::Blocking, p: [f32; 3], over: f32) -> Option<f32> {
+    let f = b.floor(p[0], p[1])?;
+    (f - p[2] < FLOOR_ABOVE_INDOORS).then_some(f + over)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::film::gimbal::back_of;
+
+    #[test]
+    fn a_flight_stays_above_the_water_but_not_indoors_below_it() {
+        let scene = crate::obstacles::Scene {
+            pools: vec![crate::obstacles::Pool {
+                hull: vec![[-1000.0, -1000.0], [1000.0, -1000.0], [1000.0, 1000.0], [-1000.0, 1000.0]],
+                bottom: -500.0,
+                top: 0.0,
+            }],
+            ..Default::default()
+        };
+        let b = scene.blocking();
+        // over the water: kept above its surface
+        assert_eq!(above_floor(&b, [0.0, 0.0, -100.0], CAMERA_OVER_FLOOR), Some(CAMERA_OVER_FLOOR));
+        // far below it: a hall under it, left alone
+        assert_eq!(above_floor(&b, [0.0, 0.0, -2000.0], CAMERA_OVER_FLOOR), None);
+        // beside it: no floor known
+        assert_eq!(above_floor(&b, [5000.0, 0.0, 0.0], CAMERA_OVER_FLOOR), None);
+    }
 
     fn wall(x0: f32, x1: f32, y0: f32, y1: f32, zmax: f32) -> crate::obstacles::Obstacle {
         crate::obstacles::Obstacle { hull: vec![[x0, y0], [x1, y0], [x1, y1], [x0, y1]], zmin: 0.0, zmax, water: false }

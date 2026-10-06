@@ -966,3 +966,4 @@ AERIAL_FLY_BY	지나치며 주시
 AERIAL_VERTIGO	버티고 상승
 NO_FALL_DAMAGE	낙사 데미지 없음
 NO_FALL_DAMAGE_NOT_FOUND	낙사 데미지 없음: 게임의 낙하 설정을 찾지 못했습니다
+FILM_DISTANCE_DRONE	비행은 드론 시점입니다. 렌즈가 제자리에서 회전하므로 거리를 정하지 않습니다.

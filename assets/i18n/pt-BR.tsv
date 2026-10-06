@@ -966,3 +966,4 @@ AERIAL_FLY_BY	Passagem
 AERIAL_VERTIGO	Vertigo subindo
 NO_FALL_DAMAGE	Sem dano de queda
 NO_FALL_DAMAGE_NOT_FOUND	Sem dano de queda: configuração de queda não encontrada
+FILM_DISTANCE_DRONE	Um voo é a visão de um drone: a lente gira em torno de si, então não há distância a escolher.

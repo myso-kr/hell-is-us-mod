@@ -50,7 +50,7 @@ mod subjects;
 mod take;
 mod walk;
 
-pub use avoid::{clear_flight, headroom, room_behind};
+pub use avoid::{above_floor, clear_flight, headroom, room_behind, CAMERA_OVER_FLOOR, FEET_OVER_FLOOR};
 pub use director::{
     judge, openness, Aerial, AerialPlan, Angle, Beat, Coverage, Ctx, Cue, Cuts, Director, Glance, GlanceLook, Motion,
     Rig, Shot, Sight, Situation,

@@ -88,6 +88,8 @@ pub struct Blocking<'a> {
     scene: &'a Scene,
     cells: HashMap<(i32, i32), Vec<u32>>,
     bounds: Vec<[f32; 4]>,
+    /// The water boxes among the obstacles, for `floor`.
+    water: Vec<u32>,
 }
 
 const BLOCK_CELL: f32 = 1000.0;
@@ -112,7 +114,8 @@ impl Scene {
                 }
             }
         }
-        Blocking { scene: self, cells, bounds }
+        let water = (0..self.obstacles.len() as u32).filter(|&i| self.obstacles[i as usize].water).collect();
+        Blocking { scene: self, cells, bounds, water }
     }
 
     /// Whether `p` is in deadly water.
@@ -122,6 +125,19 @@ impl Scene {
 }
 
 impl Blocking<'_> {
+    /// What a camera or a carried hero must stay above at (x, y): the landscape's height, or the
+    /// surface of water over it, whichever is higher (cm). `None` where neither is known.
+    pub fn floor(&self, x: f32, y: f32) -> Option<f32> {
+        let ground = self.scene.terrain.height(x, y);
+        let pools = self.scene.pools.iter().filter(|w| inside(&w.hull, x, y)).map(|w| w.top);
+        let boxes = self.water.iter().map(|&i| &self.scene.obstacles[i as usize]).filter(|o| inside(&o.hull, x, y));
+        let water = pools.chain(boxes.map(|o| o.zmax)).reduce(f32::max);
+        match (ground, water) {
+            (Some(g), Some(w)) => Some(g.max(w)),
+            (g, w) => g.or(w),
+        }
+    }
+
     /// The obstacles whose outline holds (x, y), water left out (filming's flights).
     pub fn under(&self, x: f32, y: f32) -> Vec<&Obstacle> {
         let c = |v: f32| (v / BLOCK_CELL).floor() as i32;

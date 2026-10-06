@@ -2,13 +2,14 @@
 //! out.
 
 /// A flight: how high above the floor points it goes (cm), how fast at full pace (cm/s), how
-/// long it eases in (s) and over how far it eases out (cm), and the camera's distance behind
-/// the pivot when none is asked for (cm), so the camera is on the path.
+/// long it eases in (s) and over how far it eases out (cm), and the camera's distance behind the
+/// pivot (cm): next to none, so the lens turns about itself as a drone's does, not round a point
+/// ahead of it (150 cm read as circling something).
 pub(super) const FLIGHT_LIFT: f32 = 180.0;
 const FLIGHT_SPEED: f32 = 450.0;
 const FLIGHT_EASE_IN: f32 = 2.0;
 const FLIGHT_EASE_OUT: f32 = 600.0;
-pub const FLIGHT_DISTANCE: f32 = 150.0;
+pub const FLIGHT_DISTANCE: f32 = 10.0;
 /// How far behind the camera's lens, along its look, the hero is carried, and how much higher
 /// (cm): out of the frame whatever it looks at, near enough that the land it sees is drawn finely.
 pub const HERO_BEHIND: f32 = 300.0;

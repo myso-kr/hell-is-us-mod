@@ -966,3 +966,4 @@ AERIAL_FLY_BY	Passage
 AERIAL_VERTIGO	Vertigo ascendant
 NO_FALL_DAMAGE	Pas de dégâts de chute
 NO_FALL_DAMAGE_NOT_FOUND	Pas de dégâts de chute : réglages de chute introuvables
+FILM_DISTANCE_DRONE	Un vol est une vue de drone : l’objectif tourne sur lui-même, il n’y a pas de distance à choisir.

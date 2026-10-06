@@ -966,3 +966,4 @@ AERIAL_FLY_BY	Yanından geçiş
 AERIAL_VERTIGO	Vertigo tırmanışı
 NO_FALL_DAMAGE	Düşme hasarı yok
 NO_FALL_DAMAGE_NOT_FOUND	Düşme hasarı yok: oyunun düşme ayarları bulunamadı
+FILM_DISTANCE_DRONE	Uçuş bir drone görüşüdür: mercek kendi etrafında döner, bu yüzden mesafe seçilmez.
