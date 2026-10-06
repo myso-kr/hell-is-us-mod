@@ -13,7 +13,14 @@
 //! ones asked for and put back after, through the exploration camera's own settings, which the
 //! game reads every frame and interpolates toward itself (probed with the game in focus:
 //! 484 → 832 cm without a tremor, 70° → 55°). Holding the camera mode's interpolator instead
-//! fought the game's own target each frame and shook.
+//! fought the game's own target each frame and shook. The exploration, combat and APC cameras
+//! are all set, so a fight on the way keeps the shot.
+//!
+//! A flight moves the camera alone, the hero left where it stands: the camera mode's
+//! `PivotToViewTarget` (an FTransform, its translation 70 cm up at rest) is where the camera
+//! turns about, in the hero's frame (its body's yaw), and the game follows it smoothly
+//! (probed: 500 cm ahead moved the camera 480 cm the way the hero faced). The path is flown
+//! straight between the points, its corners rounded, lifted above the floor.
 
 use crate::mem::Memory;
 use crate::player::PoseSource;
@@ -60,17 +67,126 @@ pub struct Plan {
     pub fov: Option<f32>,
     pub repeat: bool,
     pub countdown: u32,
+    /// Fly the camera alone along the path; the hero stays.
+    pub flight: bool,
 }
 
 /// Where a take writes and reads, found by the worker: the hero's `ControlInputVector`, the
-/// controller's `ControlRotation`, the pose, and the exploration camera's
-/// `DefaultDistanceFromPlayer` and `FieldOfView` (floats), when found.
+/// controller's `ControlRotation`, the pose, the cameras' (exploration, combat, APC)
+/// `DefaultDistanceFromPlayer` and `FieldOfView` (floats), the camera mode's pivot translation
+/// (`PivotToViewTarget` + 0x20, three doubles) and the hero root's `RelativeRotation`.
 pub struct Wiring {
     pub input: u64,
     pub rotation: u64,
     pub pose: PoseSource,
-    pub distance: Option<u64>,
-    pub fov: Option<u64>,
+    pub distance: Vec<u64>,
+    pub fov: Vec<u64>,
+    pub pivot: Option<u64>,
+    pub body: Option<u64>,
+}
+
+/// A flight: how high above the floor points it goes (cm), how fast at full pace (cm/s), how
+/// long it eases in (s) and over how far it eases out (cm), and the camera's distance behind
+/// the pivot when none is asked for (cm), so the camera is on the path.
+const FLIGHT_LIFT: f32 = 180.0;
+const FLIGHT_SPEED: f32 = 450.0;
+const FLIGHT_EASE_IN: f32 = 2.0;
+const FLIGHT_EASE_OUT: f32 = 600.0;
+pub const FLIGHT_DISTANCE: f32 = 150.0;
+
+/// Corners rounded: Chaikin's corner cutting, `rounds` times, the ends kept.
+pub fn rounded(path: &[[f32; 3]], rounds: usize) -> Vec<[f32; 3]> {
+    let mut p = path.to_vec();
+    for _ in 0..rounds {
+        if p.len() < 3 {
+            break;
+        }
+        let mut q = vec![p[0]];
+        for w in p.windows(2) {
+            let lerp = |k: f32| [0, 1, 2].map(|i| w[0][i] + (w[1][i] - w[0][i]) * k);
+            q.push(lerp(0.25));
+            q.push(lerp(0.75));
+        }
+        q.push(*p.last().unwrap());
+        p = q;
+    }
+    p
+}
+
+/// The camera along a flight: where it is each moment, eased in and out.
+pub struct Flight {
+    path: Vec<[f32; 3]>,
+    at_len: Vec<f32>,
+    s: f32,
+    t: f32,
+}
+
+/// One moment of a flight: where the camera turns about, the way ahead (yaw, degrees), the
+/// share flown, whether it is over.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Fly {
+    pub at: [f32; 3],
+    pub ahead_yaw: f32,
+    pub share: f32,
+    pub done: bool,
+}
+
+impl Flight {
+    pub fn new(path: &[[f32; 3]]) -> Flight {
+        let path = rounded(path, 3);
+        let mut at_len = vec![0.0];
+        for w in path.windows(2) {
+            let d = ((w[1][0] - w[0][0]).powi(2) + (w[1][1] - w[0][1]).powi(2) + (w[1][2] - w[0][2]).powi(2)).sqrt();
+            at_len.push(at_len.last().unwrap() + d);
+        }
+        Flight { path, at_len, s: 0.0, t: 0.0 }
+    }
+
+    pub fn length(&self) -> f32 {
+        *self.at_len.last().unwrap_or(&0.0)
+    }
+
+    fn point(&self, s: f32) -> [f32; 3] {
+        if self.path.len() < 2 {
+            return self.path.first().copied().unwrap_or([0.0; 3]);
+        }
+        let s = s.clamp(0.0, self.length());
+        let i = self.at_len.partition_point(|&l| l <= s).clamp(1, self.path.len() - 1);
+        let seg = self.at_len[i] - self.at_len[i - 1];
+        let k = if seg > 0.0 { (s - self.at_len[i - 1]) / seg } else { 0.0 };
+        [0, 1, 2].map(|j| self.path[i - 1][j] + (self.path[i][j] - self.path[i - 1][j]) * k)
+    }
+
+    pub fn step(&mut self, pace: f32, dt: f32) -> Fly {
+        self.t += dt;
+        let left = self.length() - self.s;
+        let ease_in = {
+            let k = (self.t / FLIGHT_EASE_IN).clamp(0.0, 1.0);
+            k * k * (3.0 - 2.0 * k)
+        };
+        let ease_out = (left / FLIGHT_EASE_OUT).clamp(0.0, 1.0).sqrt().max(0.04);
+        self.s = (self.s + pace.clamp(0.05, 1.0) * FLIGHT_SPEED * ease_in.max(0.05) * ease_out * dt).min(self.length());
+        let at = self.point(self.s);
+        let ahead = self.point(self.s + 300.0);
+        let ahead_yaw = if (ahead[0] - at[0]).hypot(ahead[1] - at[1]) > 1.0 {
+            (ahead[1] - at[1]).atan2(ahead[0] - at[0]).to_degrees()
+        } else {
+            let back = self.point(self.s - 300.0);
+            (at[1] - back[1]).atan2(at[0] - back[0]).to_degrees()
+        };
+        let share = if self.length() > 0.0 { self.s / self.length() } else { 1.0 };
+        Fly { at, ahead_yaw, share, done: self.length() - self.s < 2.0 }
+    }
+}
+
+/// A flight's points from the setup: the 3D map's, or the guide's route, lifted above the floor
+/// (the camera's own start is put in front when it rolls).
+pub fn flight_path(setup: &Setup, route: &[[f32; 3]]) -> Option<Vec<[f32; 3]>> {
+    let lift = |p: &[f32; 3]| [p[0], p[1], p[2] + FLIGHT_LIFT];
+    if setup.use_points {
+        return (!setup.points.is_empty()).then(|| setup.points.iter().map(lift).collect());
+    }
+    (route.len() >= 2).then(|| route.iter().map(lift).collect())
 }
 
 /// The filming card's settings, kept in `Mods\film.txt`: the points from the 3D map, whether
@@ -86,6 +202,8 @@ pub struct Setup {
     pub fov: Option<f32>,
     pub repeat: bool,
     pub key: u8,
+    /// Fly the camera alone; the hero stays.
+    pub flight: bool,
     pub routes: Vec<(String, Vec<[f32; 3]>)>,
 }
 
@@ -100,6 +218,7 @@ impl Default for Setup {
             fov: None,
             repeat: false,
             key: 6,
+            flight: false,
             routes: Vec::new(),
         }
     }
@@ -136,14 +255,15 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\n",
+            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nflight {}\n",
             self.use_points,
             self.pace,
             self.lens.word(),
             self.distance.map_or("none".to_string(), |d| d.to_string()),
             self.fov.map_or("none".to_string(), |d| d.to_string()),
             self.repeat,
-            self.key
+            self.key,
+            self.flight
         );
         for p in &self.points {
             out += &format!("point {}\n", pt(p));
@@ -175,6 +295,7 @@ impl Setup {
                 }
                 ["fov", v] => s.fov = v.parse().ok().map(|d: f32| d.clamp(*FOV.start(), *FOV.end())),
                 ["repeat", v] => s.repeat = v == "true",
+                ["flight", v] => s.flight = v == "true",
                 ["key", v] => s.key = v.parse().unwrap_or(s.key).min(12),
                 ["point", ..] => s.points.extend(point(&f[1..])),
                 ["route", ..] => s.routes.push((line["route ".len()..].trim().to_string(), Vec::new())),
@@ -424,13 +545,14 @@ impl Axis {
     }
 }
 
-/// Where the gimbal aims for `lens`: (pitch, yaw), or `None` to leave the camera be.
-pub fn aim(lens: Lens, hero: [f32; 3], ahead_yaw: f32, end: [f32; 3], orbit: f32) -> Option<(f32, f32)> {
+/// Where the gimbal aims for `lens` from `eye`: (pitch, yaw), or `None` to leave the camera be.
+/// Spotlight looks at `look_at`: the route's end on a walk, the hero on a flight.
+pub fn aim(lens: Lens, eye: [f32; 3], ahead_yaw: f32, look_at: [f32; 3], orbit: f32) -> Option<(f32, f32)> {
     match lens {
         Lens::Free => None,
         Lens::Follow => Some((FOLLOW_PITCH, ahead_yaw)),
         Lens::Spotlight => {
-            let (dx, dy, dz) = (end[0] - hero[0], end[1] - hero[1], end[2] - (hero[2] + EYE));
+            let (dx, dy, dz) = (look_at[0] - eye[0], look_at[1] - eye[1], look_at[2] - eye[2]);
             let flat = dx.hypot(dy);
             if flat < 100.0 {
                 return Some((FOLLOW_PITCH, ahead_yaw));
@@ -516,14 +638,33 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         let mut b = [0u8; 4];
         game.read(at, &mut b).then(|| f32::from_le_bytes(b)).filter(|v| v.is_finite())
     };
-    let mut knobs: Vec<Knob> = [(w.distance, plan.distance), (w.fov, plan.fov)]
-        .into_iter()
+    // a flight keeps the camera close to its pivot unless asked otherwise
+    let distance = plan.distance.or(plan.flight.then_some(FLIGHT_DISTANCE));
+    let mut knobs: Vec<Knob> = w
+        .distance
+        .iter()
+        .map(|&at| (at, distance))
+        .chain(w.fov.iter().map(|&at| (at, plan.fov)))
         .filter_map(|(at, want)| {
-            let (at, want) = (at?, want?);
+            let want = want?;
             let was = read_f(at)?;
             Some(Knob { at, was, now: was, want })
         })
         .collect();
+    // A flight: from where the camera turns about now (the pivot, in the hero's frame).
+    let pivot0 = w.pivot.and_then(read3);
+    let mut flight = None;
+    if plan.flight {
+        let (Some(p0), Some(body), Some((hp, _))) = (pivot0, w.body.and_then(read3), w.pose.read(&game)) else {
+            return State::Failed(trf!("NO_PROPERTY", name = "PivotToViewTarget"));
+        };
+        let (s, c) = (body[1] as f32).to_radians().sin_cos();
+        let (lx, ly) = (p0[0] as f32, p0[1] as f32);
+        let start = [hp[0] as f32 + lx * c - ly * s, hp[1] as f32 + lx * s + ly * c, hp[2] as f32 + p0[2] as f32];
+        let mut path = vec![start];
+        path.extend(plan.path.iter().copied());
+        flight = Some(Flight::new(&path));
+    }
     let touched = last_input();
     let tick = Duration::from_secs_f64(1.0 / RATE_HZ);
     let mut next = Instant::now();
@@ -539,6 +680,44 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         let dt = last.elapsed().as_secs_f32().min(0.05);
         last = Instant::now();
         let hero = [p[0] as f32, p[1] as f32, p[2] as f32];
+        orbit = wrap(orbit + ORBIT_DPS * dt);
+        if let (Some(f), Some(pv), Some(body)) = (flight.as_mut(), w.pivot, w.body) {
+            let fly = f.step(plan.pace, dt);
+            if fly.done && plan.repeat {
+                let mut back = f.path.clone();
+                back.reverse();
+                *f = Flight::new(&back);
+                continue;
+            }
+            if fly.done {
+                break State::Finished;
+            }
+            // into the hero's frame: the body's yaw undone
+            let yaw_b = read3(body).map_or(0.0, |r| r[1] as f32).to_radians();
+            let (s, c) = yaw_b.sin_cos();
+            let (dx, dy) = (fly.at[0] - hero[0], fly.at[1] - hero[1]);
+            let local = [(dx * c + dy * s) as f64, (-dx * s + dy * c) as f64, (fly.at[2] - hero[2]) as f64];
+            write3(pv, local);
+            let head = [hero[0], hero[1], hero[2] + EYE - 90.0];
+            if let Some((tp, ty)) = aim(plan.lens, fly.at, fly.ahead_yaw, head, orbit) {
+                let (np, ny) = (pitch.toward(tp, dt), yaw.toward(ty, dt));
+                let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
+                write3(w.rotation, [np.rem_euclid(360.0) as f64, ny as f64, roll]);
+            }
+            for k in &mut knobs {
+                k.now += (k.want - k.now) * (ZOOM_EASE * dt).min(1.0);
+                game.write(k.at, &k.now.to_le_bytes());
+            }
+            *state.lock().unwrap() = State::Rolling(fly.share);
+            next += tick;
+            let now = Instant::now();
+            if next > now {
+                std::thread::sleep(next - now);
+            } else {
+                next = now;
+            }
+            continue;
+        }
         let s = driver.step([hero[0], hero[1]], plan.pace, dt);
         if s.done && plan.repeat {
             // back the way it came, the camera and the clock carried on
@@ -556,8 +735,8 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         if !write3(w.input, [s.input[0] as f64, s.input[1] as f64, 0.0]) {
             break State::Failed(tr!("COULD_NOT_WRITE_THE_HEROS_POSITION").into());
         }
-        orbit = wrap(orbit + ORBIT_DPS * dt);
-        if let Some((tp, ty)) = aim(plan.lens, hero, s.ahead_yaw, end3, orbit) {
+        let eye = [hero[0], hero[1], hero[2] + EYE];
+        if let Some((tp, ty)) = aim(plan.lens, eye, s.ahead_yaw, end3, orbit) {
             let (np, ny) = (pitch.toward(tp, dt), yaw.toward(ty, dt));
             let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
             write3(w.rotation, [np.rem_euclid(360.0) as f64, ny as f64, roll]);
@@ -575,7 +754,12 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
             next = now;
         }
     };
-    write3(w.input, [0.0, 0.0, 0.0]);
+    if !plan.flight {
+        write3(w.input, [0.0, 0.0, 0.0]);
+    }
+    if let (Some(pv), Some(p0)) = (w.pivot, pivot0) {
+        write3(pv, p0);
+    }
     for k in &knobs {
         game.write(k.at, &k.was.to_le_bytes());
     }
@@ -656,6 +840,7 @@ mod tests {
             fov: Some(55.0),
             repeat: true,
             key: 7,
+            flight: true,
             routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],
         };
         assert_eq!(Setup::parse(&s.render()), s);
@@ -663,8 +848,33 @@ mod tests {
     }
 
     #[test]
+    fn a_flight_rounds_its_corners_and_lands_at_the_end() {
+        let path = [[0.0, 0.0, 200.0], [1000.0, 0.0, 200.0], [1000.0, 1000.0, 400.0]];
+        let r = rounded(&path, 3);
+        assert_eq!(r[0], path[0]);
+        assert_eq!(*r.last().unwrap(), path[2]);
+        // the corner is cut: no point of the rounded path is at it
+        assert!(r.iter().all(|p| (p[0] - 1000.0).hypot(p[1]) > 50.0));
+        let mut f = Flight::new(&path);
+        let (mut last, mut n) = (f.step(1.0, 0.02), 0);
+        let mut fastest: f32 = 0.0;
+        while !last.done {
+            let next = f.step(1.0, 0.02);
+            let d = ((next.at[0] - last.at[0]).powi(2) + (next.at[1] - last.at[1]).powi(2)).sqrt();
+            fastest = fastest.max(d / 0.02);
+            last = next;
+            n += 1;
+            assert!(n < 10_000);
+        }
+        assert!(
+            (last.at[0] - 1000.0).abs() < 3.0 && (last.at[1] - 1000.0).abs() < 3.0 && (last.at[2] - 400.0).abs() < 3.0
+        );
+        assert!(fastest <= FLIGHT_SPEED + 1.0, "{fastest}");
+    }
+
+    #[test]
     fn spotlight_looks_at_the_end() {
-        let (p, y) = aim(Lens::Spotlight, [0.0, 0.0, 0.0], 0.0, [0.0, 1000.0, 160.0], 0.0).unwrap();
+        let (p, y) = aim(Lens::Spotlight, [0.0, 0.0, 160.0], 0.0, [0.0, 1000.0, 160.0], 0.0).unwrap();
         assert!((y - 90.0).abs() < 0.01 && p.abs() < 0.01);
         assert_eq!(aim(Lens::Free, [0.0; 3], 0.0, [0.0; 3], 0.0), None);
     }

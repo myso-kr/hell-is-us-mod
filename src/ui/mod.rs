@@ -198,7 +198,12 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         let (p, _) = s.pose.ok_or(tr!("FILM_NO_ROUTE"))?;
         ([p[0] as f32, p[1] as f32, p[2] as f32], s.nav.clone())
     };
-    let path = crate::film::path(&setup, hero, &route, &nav).ok_or(tr!("FILM_NO_ROUTE"))?;
+    let path = if setup.flight {
+        crate::film::flight_path(&setup, &route)
+    } else {
+        crate::film::path(&setup, hero, &route, &nav)
+    }
+    .ok_or(tr!("FILM_NO_ROUTE"))?;
     let plan = crate::film::Plan {
         path,
         pace: setup.pace,
@@ -207,6 +212,7 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         fov: setup.fov,
         repeat: setup.repeat,
         countdown,
+        flight: setup.flight,
     };
     engine.film(plan, shared.film.clone(), shared.film_ended.clone())
 }

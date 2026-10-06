@@ -399,7 +399,7 @@ impl Engine {
         ended: std::sync::Arc<std::sync::Mutex<Option<Instant>>>,
     ) -> Result<(), String> {
         self.take = None;
-        if plan.path.len() < 2 {
+        if plan.path.len() < if plan.flight { 1 } else { 2 } {
             return Err(tr!("FILM_NO_ROUTE").into());
         }
         self.refresh()?;
@@ -411,16 +411,32 @@ impl Engine {
         let pc = chain.controller(m, &a.anchors)?;
         let input =
             n.field(m, hero, "ControlInputVector").ok_or_else(|| trf!("NO_PROPERTY", name = "ControlInputVector"))?;
-        // The exploration camera's own settings, which the game reads every frame.
-        let config =
-            n.follow(m, pc, "PlayerCameraManager").ok().and_then(|pcm| n.follow(m, pcm, "ExplorationConfig").ok());
-        let setting = |name: &str| config.and_then(|c| n.field(m, c, name).map(|p| c + p.offset as u64));
+        // The cameras' own settings (exploration, combat, APC), which the game reads every
+        // frame; the camera mode's pivot and the hero's body, for a flight.
+        let pcm = n.follow(m, pc, "PlayerCameraManager").ok();
+        let mut distance = Vec::new();
+        let mut fov = Vec::new();
+        for name in ["ExplorationConfig", "CombatConfig", "APCConfig"] {
+            let Some(c) = pcm.and_then(|p| n.follow(m, p, name).ok()) else { continue };
+            distance.extend(n.field(m, c, "DefaultDistanceFromPlayer").map(|p| c + p.offset as u64));
+            fov.extend(n.field(m, c, "FieldOfView").map(|p| c + p.offset as u64));
+        }
+        distance.dedup();
+        fov.dedup();
+        let pivot = pcm
+            .and_then(|p| n.follow(m, p, "CameraModeInstance").ok())
+            .and_then(|mode| n.field(m, mode, "PivotToViewTarget").map(|p| mode + p.offset as u64 + 0x20));
+        let body = crate::mem::read_u64(m, hero + chain.root)
+            .filter(|&r| crate::mem::plausible(r))
+            .and_then(|r| n.field(m, r, "RelativeRotation").map(|p| r + p.offset as u64));
         let wiring = crate::film::Wiring {
             input: hero + input.offset as u64,
             rotation: pc + chain.rotation,
             pose: chain.pose_source(m, &a.anchors)?,
-            distance: setting("DefaultDistanceFromPlayer"),
-            fov: setting("FieldOfView"),
+            distance,
+            fov,
+            pivot,
+            body,
         };
         self.take = Some(crate::film::roll(plan, wiring, state, ended));
         Ok(())

@@ -890,3 +890,5 @@ FILM_KEY	Tecla iniciar/parar (no jogo)
 FILM_FOV	Definir o campo de visão (zoom)
 FILM_FOV_DEG	Campo de visão (jogo: 70°)
 KEEP_RUNNING_UNFOCUSED	O jogo continua ao mudar para o painel (desliga a pausa ao perder o foco enquanto o painel roda)
+FILM_FLIGHT	Só a câmera voa (o herói fica)
+FILM_FLIGHT_NOTE	A câmera voa reta entre os pontos, 1,8 m acima do chão, com curvas suaves. Foco mira o herói.

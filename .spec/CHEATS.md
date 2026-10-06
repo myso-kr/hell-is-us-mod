@@ -167,3 +167,16 @@ enemies had the same flaw (a panel started with frail on recorded 1 as the origi
   not taken as a start.
 - **Settings and routes kept**: `Shared.film_setup`, written to `Modsilm.txt` when changed; the
   3D map's points can be saved under a name and loaded back.
+
+### Flight (2026-10-06)
+
+The camera alone along a path, the hero left standing: `Flight` in film.rs. The camera mode's
+`PivotToViewTarget` (an FTransform; translation at +0x20, (0, 0, 70) at rest) is the point the
+camera turns about, in the hero's frame (the root's `RelativeRotation` yaw); the game follows it
+smoothly. Probed with the game in focus: 500 cm ahead moved the camera 480 cm along the hero's
+facing, 500 cm right 480 cm to its right, 300 cm up 294 cm up. A flight starts where the pivot is,
+flies straight to each point (lifted 1.8 m; the guide's route lifted alike), the corners cut three
+times (Chaikin), at up to 4.5 m/s eased in over 2 s and out over the last 6 m; each tick the point
+is turned into the hero's frame and written. Spotlight looks at the hero from it; the distance
+defaults to 150 cm so the camera is on the path. The pivot is put back at the end. The distance
+and field of view are written to the exploration, combat and APC cameras alike.

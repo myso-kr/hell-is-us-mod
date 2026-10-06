@@ -890,3 +890,5 @@ FILM_KEY	Touche démarrer/arrêter (en jeu)
 FILM_FOV	Régler le champ de vision (zoom)
 FILM_FOV_DEG	Champ de vision (jeu : 70°)
 KEEP_RUNNING_UNFOCUSED	Le jeu continue quand vous passez au panneau (désactive la pause à la perte de focus tant que le panneau tourne)
+FILM_FLIGHT	Seule la caméra vole (le héros reste)
+FILM_FLIGHT_NOTE	La caméra vole droit entre les points, à 1,8 m du sol, coins arrondis. Focus garde le héros en vue.

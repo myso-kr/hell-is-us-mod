@@ -45,8 +45,8 @@ clue board, shard budget, Haze links. Its §4 lists the research some of them ne
 
 ### 4.1 Filming mode (proposed by the user, 2026-10-06)
 
-**Done (2026-10-06)**, confirmed in play: `cheat/film.rs`, CHEATS.md "Filming mode". Left for later:
-a camera path of its own (the camera on points, not the hero), and the combat camera's settings.
+**Done (2026-10-06)**, confirmed in play: `cheat/film.rs`, CHEATS.md "Filming mode". The camera's
+own flight and the combat camera's settings followed (CHEATS.md "Flight").
 
 The hero and the camera driven along a route for recording: the route from the navmesh (the
 guide's) or from points placed on the 3D map, smoothed; the hero moved along it at 60 Hz with the

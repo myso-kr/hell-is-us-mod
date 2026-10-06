@@ -164,6 +164,10 @@ impl Panel {
                     });
                 }
             }
+            switch(t, &mut setup.flight, tr!("FILM_FLIGHT"));
+            if setup.flight {
+                note(t, tr!("FILM_FLIGHT_NOTE"));
+            }
             field(t, tr!("FILM_PACE"), |t| tw::slider(t, &mut setup.pace, 0.2..=1.0, 0.05, ""));
             field(t, tr!("FILM_LENS"), |t| {
                 choices(t, |t| {

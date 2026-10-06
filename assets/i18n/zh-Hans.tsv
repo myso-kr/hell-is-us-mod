@@ -890,3 +890,5 @@ FILM_KEY	开始/停止键（游戏内）
 FILM_FOV	设置视野（变焦）
 FILM_FOV_DEG	视野（游戏：70°）
 KEEP_RUNNING_UNFOCUSED	切换到面板时游戏不暂停（面板运行时关闭「失去焦点时暂停」）
+FILM_FLIGHT	仅镜头飞行（主角原地）
+FILM_FLIGHT_NOTE	镜头在点之间离地 1.8 米直线飞行，拐角圆滑。「聚焦」始终看向主角。

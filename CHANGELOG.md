@@ -6,6 +6,15 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
+## Unreleased
+
+### Added
+
+- Filming: the camera can fly alone, the hero left where it stands — straight between the 3D map's
+  points (or along the guide's route), 1.8 m above the floor, its corners rounded, eased in and
+  out; Spotlight keeps it on the hero. The camera's distance and field of view now apply to the
+  combat camera too, so a fight on the way keeps the shot.
+
 ## 0.7.0 — 2026-10-06
 
 ### Added
