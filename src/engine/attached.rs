@@ -38,6 +38,9 @@ pub struct Attached {
     geometry: RefCell<Geometry>,
     /// The hero's inventory, once found (checked on every use).
     inventory: RefCell<Option<u64>>,
+    /// The player's profile (`CharlieProfileSaveGame`) as found, and when it was last looked
+    /// for (a search walks every object).
+    profile: RefCell<(Option<u64>, Option<Instant>)>,
     /// The guide: what the hero knows (from the save state) and where there is more.
     guide: RefCell<Guide>,
     /// The attribute session's layout, by what it was found from (the set array's data and
@@ -217,6 +220,7 @@ pub fn attach() -> Result<Attached, String> {
         guide: RefCell::default(),
         geometry: RefCell::default(),
         inventory: RefCell::default(),
+        profile: RefCell::default(),
     })
 }
 
@@ -352,6 +356,30 @@ impl Attached {
             }
         }
         Ok(())
+    }
+
+    /// Where the game's option "pause when the window loses focus" is kept: the profile's
+    /// `Settings` (CharlieProfileSettings), its `bPauseGameOnFocusLost` (+0x14, reflected on
+    /// build 24045435). The profile is looked for at most every 30 s while not found.
+    pub fn pause_on_focus_lost(&self) -> Option<u64> {
+        let (m, n) = (&self.game, &self.anchors.names);
+        let ok = |o: u64| n.class(m, o).as_deref() == Some("CharlieProfileSaveGame");
+        let mut p = self.profile.borrow_mut();
+        let found = match p.0.filter(|&o| ok(o)) {
+            Some(o) => o,
+            None => {
+                if p.1.is_some_and(|t| t.elapsed() < Duration::from_secs(30)) {
+                    return None;
+                }
+                p.1 = Some(Instant::now());
+                let objects = gobjects::discover(m, self.game.base).ok()?;
+                let o = objects.of_class(m, n, "CharlieProfileSaveGame").into_iter().find(|&o| ok(o))?;
+                p.0 = Some(o);
+                o
+            }
+        };
+        let settings = n.field(m, found, "Settings")?;
+        Some(found + settings.offset as u64 + 0x14)
     }
 
     /// Enemies still alive in the loaded levels, as the minimap last scanned them.

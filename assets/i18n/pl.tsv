@@ -889,3 +889,4 @@ FILM_REPEAT	Tam i z powrotem do zatrzymania
 FILM_KEY	Klawisz start/stop (w grze)
 FILM_FOV	Ustaw pole widzenia (zoom)
 FILM_FOV_DEG	Pole widzenia (gra: 70°)
+KEEP_RUNNING_UNFOCUSED	Gra działa dalej po przejściu do panelu (wyłącza pauzę po utracie fokusu, gdy panel działa)

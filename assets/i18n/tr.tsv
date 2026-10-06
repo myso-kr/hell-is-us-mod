@@ -889,3 +889,4 @@ FILM_REPEAT	Durdurulana dek gidip gel
 FILM_KEY	Başlat/durdur tuşu (oyunda)
 FILM_FOV	Görüş açısını ayarla (yakınlaştırma)
 FILM_FOV_DEG	Görüş açısı (oyun: 70°)
+KEEP_RUNNING_UNFOCUSED	Panele geçince oyun durmasın (panel açıkken odak kaybında duraklatmayı kapatır)

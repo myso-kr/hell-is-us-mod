@@ -889,3 +889,4 @@ FILM_REPEAT	Aller-retour jusqu’à l’arrêt
 FILM_KEY	Touche démarrer/arrêter (en jeu)
 FILM_FOV	Régler le champ de vision (zoom)
 FILM_FOV_DEG	Champ de vision (jeu : 70°)
+KEEP_RUNNING_UNFOCUSED	Le jeu continue quand vous passez au panneau (désactive la pause à la perte de focus tant que le panneau tourne)

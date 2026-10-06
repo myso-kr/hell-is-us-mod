@@ -889,3 +889,4 @@ FILM_REPEAT	Back and forth until stopped
 FILM_KEY	Start/stop key (in the game)
 FILM_FOV	Set the field of view (zoom)
 FILM_FOV_DEG	Field of view (game: 70°)
+KEEP_RUNNING_UNFOCUSED	Keep the game running when you switch to the panel (turns off the game’s pause on losing focus while the panel runs)

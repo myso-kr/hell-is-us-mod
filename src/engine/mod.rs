@@ -78,6 +78,12 @@ pub struct Engine {
     before: Option<(String, [f64; 3])>,
     /// A filming take rolling (film.rs): dropped, it stops.
     take: Option<crate::film::Take>,
+    /// Keep the game running when its window loses focus (the panel's setting): the game's
+    /// own option is switched off while the panel runs, and back on after if it was.
+    pub keep_running: bool,
+    /// Where that option was switched off by the panel, to switch it back on; when last looked.
+    unpaused: Option<u64>,
+    focus_checked: Option<Instant>,
 }
 
 /// How often to look for the game, or check it is still the same process. Listing
@@ -95,6 +101,9 @@ impl Engine {
             slots: Default::default(),
             before: None,
             take: None,
+            keep_running: true,
+            unpaused: None,
+            focus_checked: None,
             active: Vec::new(),
             notice: None,
         })
@@ -298,6 +307,19 @@ impl Engine {
                         snap.values = cheats::attributes().into_iter().map(|a| (a, s.current(a).ok())).collect();
                     }
                 }
+                // The game's pause on losing focus, every 2 s: off while asked, back after.
+                if self.focus_checked.is_none_or(|t| t.elapsed() >= Duration::from_secs(2)) {
+                    self.focus_checked = Some(Instant::now());
+                    if let Some(at) = a.pause_on_focus_lost() {
+                        let now = crate::mem::read_u64(&a.game, at).map(|v| (v & 0xFF) as u8);
+                        if self.keep_running && now == Some(1) && a.game.write(at, &[0]) {
+                            self.unpaused = Some(at);
+                        } else if !self.keep_running && self.unpaused == Some(at) {
+                            a.game.write(at, &[1]);
+                            self.unpaused = None;
+                        }
+                    }
+                }
                 let errors = self.extras.tick(a, &self.active);
                 if !errors.is_empty() && snap.notice.is_none() {
                     snap.notice = Some(errors.join("; "));
@@ -468,6 +490,12 @@ impl Engine {
     /// hero is in play: the record names attributes, and only the hero's are ours.
     pub fn stop(&mut self) -> Result<(), String> {
         self.cut();
+        // the game's own pause on losing focus, as the player had it
+        if let (Some(at), Some(a)) = (self.unpaused.take(), self.attached.as_ref()) {
+            if a.pause_on_focus_lost() == Some(at) {
+                a.game.write(at, &[1]);
+            }
+        }
         self.active.clear();
         if let Some(a) = self.attached.as_ref() {
             self.extras.release(a, &[]);

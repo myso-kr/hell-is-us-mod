@@ -889,3 +889,4 @@ FILM_REPEAT	멈출 때까지 왕복
 FILM_KEY	시작/정지 키 (게임 안)
 FILM_FOV	시야각 조절 (줌)
 FILM_FOV_DEG	시야각 (기본 70°)
+KEEP_RUNNING_UNFOCUSED	패널로 전환해도 게임이 멈추지 않게 (패널 실행 중에는 게임의 「포커스를 잃으면 일시정지」를 끕니다)

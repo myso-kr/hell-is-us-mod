@@ -123,6 +123,8 @@ pub struct MapState {
     pub high_contrast: bool,
     /// The minimap, compass, tracker, notices and markers at this size (%, `OVERLAY_PCT`).
     pub overlay_pct: u32,
+    /// Keep the game running when its window loses focus (engine.rs `keep_running`).
+    pub keep_running: bool,
     /// The maps' icons over what is near in the game's view (enemies, items, people…), as the
     /// minimap's kinds and sorts are shown.
     pub screen_marks: bool,
@@ -188,6 +190,7 @@ impl MapState {
             safe_colours: self.safe_colours,
             high_contrast: self.high_contrast,
             overlay_pct: self.overlay_pct,
+            keep_running: self.keep_running,
             auto: self.auto,
             trails: self
                 .trails
@@ -254,6 +257,7 @@ impl Default for MapState {
             safe_colours: false,
             high_contrast: false,
             overlay_pct: 100,
+            keep_running: true,
             screen_marks: true,
             trails: BTreeMap::new(),
             explored: BTreeMap::new(),
@@ -372,14 +376,15 @@ impl MapState {
             self.tracker
         );
         out += &format!(
-            "screen_route {}\nscreen_marks {}\nstreamer {}\nsafe_colours {}\nhigh_contrast {}\noverlay_scale {}\nfog {}\n",
+            "screen_route {}\nscreen_marks {}\nstreamer {}\nsafe_colours {}\nhigh_contrast {}\noverlay_scale {}\nfog {}\nkeep_running {}\n",
             self.screen_route,
             self.screen_marks,
             self.streamer,
             self.safe_colours,
             self.high_contrast,
             self.overlay_pct,
-            self.fog
+            self.fog,
+            self.keep_running
         );
         for s in &self.hidden {
             out += &format!("hide {}\n", s.id());
@@ -458,6 +463,7 @@ impl MapState {
                 ["streamer", v] => s.streamer = v == "true",
                 ["safe_colours", v] => s.safe_colours = v == "true",
                 ["high_contrast", v] => s.high_contrast = v == "true",
+                ["keep_running", v] => s.keep_running = v == "true",
                 ["overlay_scale", v] => {
                     if let Ok(n) = v.parse::<u32>() {
                         s.overlay_pct = n.clamp(OVERLAY_PCT.0, OVERLAY_PCT.1);

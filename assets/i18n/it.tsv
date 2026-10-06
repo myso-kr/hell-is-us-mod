@@ -889,3 +889,4 @@ FILM_REPEAT	Avanti e indietro fino allo stop
 FILM_KEY	Tasto avvio/stop (in gioco)
 FILM_FOV	Imposta il campo visivo (zoom)
 FILM_FOV_DEG	Campo visivo (gioco: 70°)
+KEEP_RUNNING_UNFOCUSED	Il gioco continua quando passi al pannello (disattiva la pausa alla perdita di focus mentre il pannello è attivo)

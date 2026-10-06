@@ -302,6 +302,7 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
             continue;
         }
         due = Instant::now() + STEP;
+        engine.keep_running = shared.map.lock().unwrap().keep_running;
         let snap = {
             let _t = crate::prof::span("step");
             engine.step()

@@ -889,3 +889,4 @@ FILM_REPEAT	Hin und zurück bis zum Stopp
 FILM_KEY	Start/Stopp-Taste (im Spiel)
 FILM_FOV	Sichtfeld festlegen (Zoom)
 FILM_FOV_DEG	Sichtfeld (Spiel: 70°)
+KEEP_RUNNING_UNFOCUSED	Spiel läuft weiter, wenn Sie zum Panel wechseln (Pause bei Fokusverlust aus, solange das Panel läuft)

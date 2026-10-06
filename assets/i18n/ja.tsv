@@ -889,3 +889,4 @@ FILM_REPEAT	止めるまで往復
 FILM_KEY	開始/停止キー（ゲーム内）
 FILM_FOV	視野角を設定（ズーム）
 FILM_FOV_DEG	視野角（標準 70°）
+KEEP_RUNNING_UNFOCUSED	パネルに切り替えてもゲームを止めない（パネル実行中は「フォーカスを失ったら一時停止」をオフ）

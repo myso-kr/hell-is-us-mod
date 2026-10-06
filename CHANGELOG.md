@@ -10,6 +10,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- The game keeps running when you switch to the panel (Accessibility tab, on by default): the
+  game's own option to pause on losing focus is switched off while the panel runs, and back on
+  when it closes if it was on.
 - Filming mode (Movement page): the hero walks the guide's route, or through points added from the
   3D map, by the stick's own input — the game's walk, collisions and stairs — while the camera
   moves as a drone's: eased in and out, turned by a damped gimbal, tracking the way ahead,

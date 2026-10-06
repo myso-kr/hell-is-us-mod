@@ -404,3 +404,15 @@ single icon share one inset), then the goals' icons. As one run of rows it read 
   slider under them, the game's value now at the foot), every row's tiles as tall as each other;
   what is on beside them. Movement adds the teleport to what is followed (two wide) and the saved
   positions.
+
+## Keeping the game running (2026-10-06)
+
+The game opens its menu and pauses whenever its window loses focus — every switch to the panel —
+unless its option is off. That option lives in the player's profile:
+`CharlieProfileSaveGame.Settings` (CharlieProfileSettings) `.bPauseGameOnFocusLost` (+0x14); the
+engine's own `bPauseOnLossOfFocus` stays off. With `MapState.keep_running` (on by default, the
+Accessibility tab), the worker finds the profile (`Attached::pause_on_focus_lost`, a search of the
+objects at most every 30 s until found) and every 2 s switches the option off if it is on,
+remembering that it did; on closing (`Engine::stop`) or when the setting is turned off, it puts it
+back on. The game saves the profile when its options are saved, so a change of the player's own
+there is theirs.
