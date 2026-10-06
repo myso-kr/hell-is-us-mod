@@ -892,3 +892,4 @@ FILM_FOV_DEG	Field of view (game: 70°)
 KEEP_RUNNING_UNFOCUSED	Keep the game running when you switch to the panel (turns off the game’s pause on losing focus while the panel runs)
 FILM_FLIGHT	Fly the camera alone (the hero stays)
 FILM_FLIGHT_NOTE	The camera flies straight between the points, 1.8 m above the floor, its corners rounded. Spotlight keeps it on the hero.
+FILM_ORBIT_NOT_IN_FLIGHT	Not while the camera flies alone: it would circle a point on the path, not the hero (it looks at the hero instead).

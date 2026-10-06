@@ -172,7 +172,13 @@ impl Panel {
             field(t, tr!("FILM_LENS"), |t| {
                 choices(t, |t| {
                     for l in crate::film::Lens::ALL {
-                        if w(t, |ui| ui.radio(setup.lens == l, l.label())).clicked() {
+                        // circling turns about the pivot, which on a flight is on the path
+                        let off = setup.flight && l == crate::film::Lens::Orbit;
+                        let r = w(t, |ui| {
+                            ui.add_enabled(!off, egui::RadioButton::new(setup.lens == l, l.label()))
+                                .on_disabled_hover_text(tr!("FILM_ORBIT_NOT_IN_FLIGHT"))
+                        });
+                        if r.clicked() {
                             setup.lens = l;
                         }
                     }

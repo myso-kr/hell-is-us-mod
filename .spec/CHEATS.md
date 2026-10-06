@@ -180,3 +180,10 @@ times (Chaikin), at up to 4.5 m/s eased in over 2 s and out over the last 6 m; e
 is turned into the hero's frame and written. Spotlight looks at the hero from it; the distance
 defaults to 150 cm so the camera is on the path. The pivot is put back at the end. The distance
 and field of view are written to the exploration, combat and APC cameras alike.
+
+The pivot's frame was checked again (the game in focus): with the pivot held 500 cm ahead and the
+controller's yaw turned 90° and 180°, the camera's place matched the body's frame to within 5 cm,
+not the camera's. Circle (Orbit) on a flight turned the camera about its pivot, on the path, at
+the camera's distance (1500 cm in the user's take), so it seemed to circle the hero and lose
+it; on a flight it looks at the hero instead, and the card does not offer it there. Confirmed in
+play: a flight with Spotlight holds the hero steadily.

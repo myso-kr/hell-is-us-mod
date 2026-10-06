@@ -892,3 +892,4 @@ FILM_FOV_DEG	Görüş açısı (oyun: 70°)
 KEEP_RUNNING_UNFOCUSED	Panele geçince oyun durmasın (panel açıkken odak kaybında duraklatmayı kapatır)
 FILM_FLIGHT	Yalnızca kamera uçar (kahraman kalır)
 FILM_FLIGHT_NOTE	Kamera noktalar arasında zeminden 1,8 m yukarıda düz uçar, köşeler yumuşatılır. Odak kahramana bakar.
+FILM_ORBIT_NOT_IN_FLIGHT	Kamera tek başına uçarken olmaz: kahramanın değil rotadaki bir noktanın çevresinde döner (bunun yerine kahramana bakar).

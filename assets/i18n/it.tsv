@@ -892,3 +892,4 @@ FILM_FOV_DEG	Campo visivo (gioco: 70°)
 KEEP_RUNNING_UNFOCUSED	Il gioco continua quando passi al pannello (disattiva la pausa alla perdita di focus mentre il pannello è attivo)
 FILM_FLIGHT	Vola solo la telecamera (l’eroe resta)
 FILM_FLIGHT_NOTE	La telecamera vola dritta tra i punti, a 1,8 m dal suolo, con curve morbide. Fuoco guarda l’eroe.
+FILM_ORBIT_NOT_IN_FLIGHT	Non durante il volo della telecamera: girerebbe attorno a un punto del percorso, non all’eroe (guarda l’eroe invece).
