@@ -66,7 +66,8 @@ back for the nights you want them — and every answer starts hidden.
 | **Vaults and puzzles** | Every dial, keypad and item placement, and the six Vaults of Forbidden Knowledge drawn as the game's own symbols — each behind *Show answer* |
 | **Collect** | Collectibles per region, enemy groups left for the every-Hollow achievement, NPCs with more to tell, Steam achievements with progress |
 | **Saves** | Each game save copied to `Mods\backups` (the last 20) |
-| **Cheats** | Health, stamina, Lymbic energy, speed, time scale, frail enemies, consumables, weapon XP, saved positions — off until switched on, put back when switched off |
+| **Cheats** | Health, stamina, Lymbic energy, speed, time scale, frail enemies, no fall damage, consumables, weapon XP, saved positions — off until switched on, put back when switched off |
+| **Filming** | The hero walked along the guide's route, your points, a recording of your own walk or a tour of the world, or the camera flown alone as a drone — directed shot by shot, the hero kept out of the frame and put back after |
 
 Every overlay hides while a game menu is open.
 
@@ -80,6 +81,9 @@ Every overlay hides while a game menu is open.
 | <kbd>F3</kbd> | compass |
 | <kbd>F4</kbd> | guide to the next goal |
 | <kbd>F5</kbd> | place or remove a pin |
+| <kbd>F8</kbd> | start or stop a take (filming) |
+| <kbd>Ctrl</kbd> + <kbd>F8</kbd> | add or remove a filming point where you stand |
+| <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F8</kbd> | start or stop recording your own way |
 
 The function keys can be changed on the panel's Map page. The game's own <kbd>F1</kbd> (HUD) and
 <kbd>F7</kbd> (photo mode) and Steam's <kbd>F12</kbd> (screenshot) are left to them: the panel does
@@ -99,7 +103,8 @@ machine. Each language had a native-speaker pass against the game's own terms.
 hiumod doctor          # checks everything, writes nothing — load a save first
 hiumod doctor survey   # the guide's data from your game files (the panel does this itself)
 hiumod hold god stamina speed=1200  # until Ctrl+C, then puts things back
-hiumod restore         # if a hold was killed rather than stopped
+hiumod restore         # if a hold or a take was killed rather than stopped
+hiumod rescue          # the hero out of the ground after a take that ended badly
 hiumod help            # every command
 ```
 

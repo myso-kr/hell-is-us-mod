@@ -6,117 +6,74 @@ Every release records the Steam build it was verified on. Steam's `buildid` is i
 `steamapps\appmanifest_1620730.acf`, and `hiumod doctor` prints it. What the tool relies on in the
 game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md).
 
-## Unreleased
+## 0.8.0 — 2026-10-07
 
-### Added (filming)
-
-- A tour of the world as a way to film, with no guide's route, points or recording: worked out
-  from where the hero can walk — places all over the region, the sights (save points, people,
-  things to work) first, each next the nearest not yet seen — as long as asked (0.5–20 km),
-  made from where the hero stands and kept. Walked or flown, and drawn on the maps.
-- A walk caught on a wall or in a narrow place steps back to one side and the other, then lifts
-  the hero a little on along the route, before it gives up.
-
-### Added (command line)
-
-- `hiumod rescue`: gets the hero out of the ground after a take that ended badly — its size back,
-  set on the nearest walkable floor above or about it (else the landscape) — and puts the camera
-  back as at rest: the camera mode's pivot, checks and blend from its own defaults, the configs'
-  distance and field of view at their probed rest (484 cm, 70°; a restart of the game brings
-  every value back exactly).
-
-### Added (cheats)
-
-- No fall damage (Survival): the game's fall damage heights put out of reach while it is on, and
-  back as they were after. A flight turns it on with god and ghost for the hero it carries, which
-  otherwise took the height it was carried at as a fall when put back.
-
-### Fixed
-
-- The panel no longer closes when a flight's camera comes down near the ground: the room behind
-  the camera was clamped between 80 cm and the 10 cm a drone asks for, and a clamp whose floor
-  is over its ceiling stops the program — leaving the carried hero where it was, in the ground.
-  A crash now also writes where it happened to `Mods\hiumod.log`.
-- What a take changes is kept on disk while it rolls (`Mods\film_take.txt`), and the fall
-  heights while no fall damage is on (`Mods\falls.txt`): a panel that ends mid-take puts the
-  camera, and a shrunk hero's size and place, back the next time it runs, or with
-  `hiumod restore`.
-- A take the mod moves no longer stops when nobody touched anything. It used Windows' last-input
-  time, which virtual devices (a mouse or keyboard suite's driver) and a mouse's sensor touch on
-  their own; now only a key or button newly pressed, or the camera turned by the mouse, stops it,
-  and the log says which.
-- A flight's camera now changes height: each look has its own, kept under what is above.
+Verified on Steam build **24045435**, where `hiumod doctor` passes every check.
 
 ### Added
 
-- A flight is a drone's view: the lens turns about itself (the camera next to its pivot, not
-  1.5 m behind it, which read as circling something), with a drone's wide lens on the wide
-  looks; the closing-in ones keep their narrow end. Neither the camera nor the hero it carries
-  goes into the ground or under water (the hero drowned): both are kept above the landscape or
-  the water's surface, except under the landscape (a cave, a hall). The carried hero keeps 3 m
-  clear of the ground and of what stands on it, so it never lands and no landing is played.
-- A flight carries the hero along just behind the camera's lens and above it (3 m back along
-  its look, 1 m up: never in the frame, whatever it looks at), since the game draws the land
-  finely only near the hero; the hero is kept alive and ignored by enemies for the take (the god
-  and ghost cheats added to what is on), and put back where it stood at once when the take ends,
-  with the cheats exactly as the player had them once it has landed (not before: the landing
-  is weighed for fall damage). While carried, the hero's mesh is shrunk to nothing,
-  so a glimpse shows nothing; it is its own size again when put back.
-- Directing that answers the hero's situation on a walk: moving, standing, turning, climbing,
-  going down, fighting, meeting someone, coming on an item or a thing to work; open places get
-  wide shots, narrow ones close shots. New shots: shoulder, chases, profile, lead, close-up, wide,
-  overhead, swoop, low angle, over the shoulder, two-shot, focus, reveal, a slow orbit, Vertigo
-  dolly zoom, pull-back, fly-by. The route's planned shots stay the backbone; a shot holds 8–14 s.
-  Shots change smoothly, mixed, or as cuts (the camera's card).
-- Flights vary more: a kilometre gives some twenty shots of uneven length (7–13 s), in no set
-  order, with new looks (skim, side track, pedestal up, tilt up, descend, fly-by, Vertigo climb)
-  and, over wide open ground, the eagle: soaring high, looking slowly about, and zooming in on
-  what it spots. Things passed are glanced at now and then.
-- Recording your own way for filming: Ctrl+Shift+F8 in the game records where you walk (a point
-  every 50 cm, with when), again to stop and keep it; a take can then walk it again at the pace it
-  was walked, or fly it, directed or not. The take's way now comes from the guide's route, the
-  points or a recording; a recording is drawn on every map as a line.
-- Filming has a page of its own under a new sidebar group, Video, rather than a card among the
-  cheats: the take (start and stop in its header), the route, the camera, and the director's
-  plan — the shot it gives each stretch of the route as it stands.
-- Filming has two ways to take: the mod walks the hero (any input stops it), or the camera flies
-  alone. The director works in both: on a flight it films the land, gliding,
-  rising to reveal, diving, leaning into turns, looking down over high ground, pushing in at the
-  end.
-- Filming: the camera can fly alone, the hero left where it stands — straight between the 3D map's
-  points (or along the guide's route), 1.8 m above the floor, its corners rounded, eased in and
-  out; Spotlight keeps it on the hero. The camera's distance and field of view now apply to the
-  combat camera too, so a fight on the way keeps the shot.
-- Filming around obstacles, after DJI's APAS (bypass, planned ahead, rather than brake): a
-  flight's path goes over low obstacles and round tall ones, each avoidance starting well before
-  the obstacle and easing back after; the camera's distance closes in ahead of what stands behind
-  it — checked now and a moment ahead — and backs out slowly after, instead of the game's sudden
-  pull-in, which is itself slowed during a take.
-- Filming from the game with one key (F8 by default; F7 is the game's photo mode): alone it starts
-  and stops a take; with Ctrl it adds where the hero stands to the take's points, or, standing by
-  one, takes that one away, as the map's marker key does — said in the banner. The key can be
-  set on the map settings' keys tab too.
-- The take's points are drawn on the minimap, the big map and the 3D map: joined in order and
-  numbered, in a colour of their own.
-- The 3D map stands up: walls, rocks and pillars raised to their heights and shaded by the sun,
-  the floors' free edges let down to show their steps and levels, ladders drawn with rails and
-  rungs (jumps and drops dashed), and lifts as a shaft with a platform at each stop.
-- A filming flight looks the way it goes (Track) by default.
-- Filming has a director (camera: "Director"): before a walk it reads the route and what stands
-  about it — open or closed either side, rising or falling, turning, a view — cuts it into beats
-  and gives each a shot from film and drone practice (crane down to open, Steadicam in corridors,
-  side tracking in the open, an arc through turns, a low angle rising on a climb, a high angle
-  going down, a crane up reveal on high ground, a dronie to close), eased into one another into
-  one continuous take, the camera raised when something hides the hero. The card shows the shot
-  playing.
+- **Filming has a page of its own**, under a new sidebar group, Video, rather than a card among the
+  cheats: the take (start and stop in its header), the route, the camera, and the director's plan
+  — the shot it gives each stretch of the route as it stands.
+- **Two ways to take**: the mod walks the hero along the route (any input stops it), or the camera
+  flies alone.
+- **Where the way comes from**: the guide's route; points taken in the game or on the 3D map; a
+  recording of your own walk; or a tour of the world.
+  - Points from the game with one key (F8 by default; F7 is the game's photo mode): alone it
+    starts and stops a take; with Ctrl it adds where the hero stands, or takes away the point it
+    stands by, as the map's marker key does. The key can be set on the map settings' keys tab.
+  - Recording: Ctrl+Shift+F8 records where you walk (a point every 50 cm, with when); again to
+    stop and keep it. A walk plays it back at the pace it was walked.
+  - A tour of the world, worked out from where the hero can walk alone: places all over the
+    region, the sights (save points, people, things to work) first, each next the nearest not yet
+    seen, as long as asked (0.5–20 km). Made from the route card and kept.
+  - The take's points, recordings and tour are drawn on the minimap, the big map and the 3D map.
+- **A director** (camera: "Director"). Before a walk it reads the route and what stands about it
+  and gives each beat a shot from film and drone practice (crane down to open, Steadicam in
+  corridors, side tracking in the open, an arc through turns, a low angle on a climb, a crane-up
+  reveal, a dronie to close), eased into one continuous take. As the walk goes it answers the
+  hero's situation — moving, standing, climbing, fighting, meeting someone, coming on an item or a
+  thing to work — and how open the place is, with shoulder, chase, profile, close-up, wide,
+  overhead, low-angle, over-the-shoulder, two-shot, reveal, slow-orbit, Vertigo, pull-back and
+  fly-by shots; each holds 8–14 s, and shots change smoothly, mixed, or as cuts.
+- **A flight is a drone**: the lens turns about itself, with a drone's wide lens, at a height of
+  its own for each look. A kilometre gives some twenty shots of uneven length in no set order —
+  glide, rising reveal, dive, bank, overhead, skim, side track, pedestal, tilt up, descend, fly-by,
+  Vertigo climb — and, over wide open ground, the eagle: soaring high, looking slowly about, and
+  zooming in on what it spots. Its path goes over low obstacles and round tall ones, planned
+  ahead as a drone's (after DJI's APAS), and never into the ground or under water.
+- **A flight carries the hero** just behind the lens and above it, out of the frame and shrunk,
+  since the game draws the land finely only near the hero. For the take it is kept alive, ignored
+  by enemies and spared fall damage (god, ghost and no fall damage added to what is on), and when
+  the take ends it is put back where it stood and the cheats exactly as they were, once it has
+  landed.
+- **No fall damage** (Survival): the game's fall damage heights out of reach while it is on.
+- **`hiumod rescue`** gets the hero out of the ground after a take that ended badly — its size
+  back, on the nearest walkable floor — and puts the camera back as at rest.
+- **The 3D map stands up**: walls, rocks and pillars raised to their heights and shaded by the sun,
+  floors' free edges let down to show their steps, ladders with rails and rungs, lifts as a shaft
+  with a platform at each stop.
 
 ### Changed
 
+- The camera's distance and field of view on a take apply to the combat camera too, so a fight on
+  the way keeps the shot.
+- A walk caught on a wall or in a narrow place steps back to one side and the other, then lifts the
+  hero a little on along the route, before it gives up.
 - Panel layout, after a page-by-page audit: every slider's rail shows against the well it sits in;
-  the map page's settings take two columns (their seven tabs on one row, shorter tab names) with
-  the previews stacked beside them; the 3D map's hint no longer sits under the story round's bar;
-  an empty teleport card is one line; distances on the Now page stand in a column of their own so
-  lines wrap on their words; a handover in another region says the way there under its name.
+  the map page's settings take two columns with the previews stacked beside them; distances on the
+  Now page stand in a column of their own.
+
+### Fixed
+
+- A take no longer stops when nobody touched anything: it used Windows' last-input time, which
+  virtual devices and a mouse's sensor touch on their own. Only a key or button pressed, or the
+  camera turned by the mouse, stops it now, and the log says which.
+- The panel no longer closes when a flight's camera comes down near the ground (a clamp whose floor
+  was over its ceiling). A crash now writes where it happened to `Mods\hiumod.log`.
+- What a take changes is kept on disk while it rolls (`Mods\film_take.txt`), and the fall heights
+  while no fall damage is on (`Mods\falls.txt`): a panel that ends mid-take puts the camera, and a
+  shrunk hero's size and place, back the next time it runs, or with `hiumod restore`.
 
 ## 0.7.0 — 2026-10-06
 
