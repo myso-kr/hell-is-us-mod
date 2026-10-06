@@ -18,6 +18,7 @@
 
 mod bake;
 mod bigmap;
+mod clicks;
 pub(crate) mod context;
 mod glide;
 mod hud;
@@ -260,6 +261,7 @@ pub fn run(shared: Arc<Shared>) {
     let mut icons_small = make((icon_px / 2).max(8));
     let mut was = [false; 4];
     let mut film_was = false;
+    let mut clicks = clicks::Clicks::default();
     // A route per thing followed (guide/track.rs), and since when a goal followed has been
     // gone.
     let mut routes: std::collections::HashMap<u64, route::Route> = Default::default();
@@ -319,6 +321,8 @@ pub fn run(shared: Arc<Shared>) {
         let game = shared.game_pid.load(Ordering::SeqCst);
         let focus = pid_of(unsafe { GetForegroundWindow() });
         let in_game = game != 0 && focus == game;
+        // where the clicks go (the log: some were found ignored)
+        clicks.look(game, shared.film.lock().unwrap().rolling(), in_game && cursor_shown());
         // Only while the game itself has focus: not while the panel does, nor anything else.
         let focused = in_game;
         // What the player agreed to (settings::Consent): without "where hidden things are"
