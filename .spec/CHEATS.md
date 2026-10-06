@@ -33,7 +33,7 @@ holds on build 24045435 before the cheat touches it.
 | `lymbic_cost` | Combat | Player.`LymbicCostModifierCoefficient` = 0 | fixed | 1 | not yet tried; likely fails (see below) |
 | `skill_cooldown` | Combat | Player.`AbilityCooldownModifierCoefficient` = 0.05 | fixed | 1 | not yet tried; likely fails |
 | `enemy_time` | Combat | every live enemy's `CustomTimeDilation`, put back per enemy | slider 0.05–1 (default 0.3) | 1 | works (2026-10-03) |
-| `frail` | Combat | every live enemy's `HealthAttributeSet.Health` held at 1, put back per enemy | toggle | 680–1130 (Tier 1) | works (2026-10-03) |
+| `frail` | Combat | every live enemy's `HealthAttributeSet.Health` held at 1, put back per enemy | toggle | 680–1130 (Tier 1), 1580–2630 (Tier 2) | works (2026-10-03; Tier 2 again 2026-10-06) |
 | `speed` | Movement | movement component `MaxWalkSpeed` (a field) | slider 300–2000 (default 900) | 450 | works |
 | `hero_time` | Movement | hero `CustomTimeDilation` (a field) | slider 1–3 (default 1.5) | 1 | works |
 | `game_speed` | Movement | WorldSettings `TimeDilation` (a field) | slider 0.2–3 (default 0.5) | 1 | works (2026-10-03) |
@@ -127,3 +127,9 @@ and current alike, if the current is above it); a lower share cuts again from th
 is not restored when switched off: the enemies are mid-fight, and putting their health back would
 heal them. Above 1 the game clamps health to the maximum, so it only weakens. With `frail` on,
 frail wins. Not yet tried in play (`verified: false`).
+
+At first it was cut from the health it found, which frail had already held at 1, and frail's
+release then put the original back: in play the two seemed to undo each other, and frail itself
+seemed broken. It now cuts from `HealthMax`, and not while frail records remain. A watch of the
+nearest enemies' Health while the hero fought (frail alone) showed each at 1 die on the first
+hit (1 → 0, gone from the list).
