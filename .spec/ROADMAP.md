@@ -51,11 +51,21 @@ teleport write (root location and ComponentToWorld, velocity), the camera turned
 controller's `ControlRotation` (along the way, or at a point). The ghost and god cheats keep a fight
 from breaking the shot; streamer mode hides the overlays from the recording.
 
-- **First, a probe in play:** whether 60 Hz writes move the hero without stutter or the movement
-  component fighting back; whether writing `CharacterMovement.Velocity` with the position makes the
-  animation walk instead of slide; whether `ControlRotation` turns the third-person camera, and
-  whether the camera rig overrides distance and FOV.
-- **Then:** a "filming" card in the cheats group: route from the guide or the 3D map's points,
+- **Probed in play (2026-10-06):**
+  - Position written at 60 Hz (root `RelativeLocation` and `ComponentToWorld`) with `Velocity`:
+    449 of 450 cm in 3 s, the hero within 0.7 cm (mean) of the last write before the next; the
+    game does not push back, the height follows the floor, and the walk animation plays. The body
+    keeps its own facing unless turned too (`RelativeRotation` yaw and the transform's quaternion):
+    without that it looked like walking backwards.
+  - `Velocity` alone: 68 of 225 cm — the movement component brakes it with no input.
+  - **`Pawn.ControlInputVector` (the stick's input) written at 250 Hz: the game walks the hero
+    itself** — 911 cm in 2 s exactly the way asked (with the speed cheat at 720), the body turned
+    to face it by `bOrientRotationToMovement`. The user found it the most natural: collisions,
+    stairs and slopes are the game's. Chosen for filming mode; the input's length (0–1) sets the
+    pace, and the way is corrected every tick toward the route's next point.
+  - `ControlRotation` turns the camera: 90° over 2 s followed about 6° behind (the rig's own
+    smoothing), FOV 70 read from the camera manager.
+- **Next:** a "filming" card in the cheats group: route from the guide or the 3D map's points,
   speed, look ahead / at a point, loop, start and stop keys, routes kept by name.
 - Input simulation (keys and mouse) is not the way: it takes the cursor and focus, and is not exact.
 
