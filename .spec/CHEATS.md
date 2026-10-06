@@ -121,15 +121,14 @@ and faction back; another hero (another game) is left alone; the file is removed
 
 ## Enemy health share (2026-10-06)
 
-`enemy_health` (slider 0.1–1.0, `Effect::EnemyHealth`, extras.rs): each enemy's
-`HealthAttributeSet.Health` is written once, when first seen, to the share of its base then (base
-and current alike, if the current is above it); a lower share cuts again from that first base. It
-is not restored when switched off: the enemies are mid-fight, and putting their health back would
-heal them. Above 1 the game clamps health to the maximum, so it only weakens. With `frail` on,
-frail wins. Not yet tried in play (`verified: false`).
+`enemy_health` (slider 0.1–1.0, `Effect::EnemyHealth`, extras.rs) cuts each enemy's
+`HealthAttributeSet.Health` (base and current) to the share of its `HealthMax`, once, when first
+seen. When the share moves, each enemy's health moves by the same ratio, so damage taken stays
+taken: half lost at 10 % is half lost at 100 %. Switching it off (or closing the panel) puts each
+back the same way. It does nothing while frail is on or its records are being put back.
 
-At first it was cut from the health it found, which frail had already held at 1, and frail's
-release then put the original back: in play the two seemed to undo each other, and frail itself
-seemed broken. It now cuts from `HealthMax`, and not while frail records remain. A watch of the
-nearest enemies' Health while the hero fought (frail alone) showed each at 1 die on the first
-hit (1 → 0, gone from the list).
+The first version cut from the health it found and never healed back, on the grounds that
+enemies were mid-fight. In play that left every enemy cut by one panel at 10 % for good: later
+panels did not know them, and with the share at 100 % enemies still died in one hit. Frail
+enemies had the same flaw (a panel started with frail on recorded 1 as the original); see
+`extras.rs` for both fixes.

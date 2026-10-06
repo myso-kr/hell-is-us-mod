@@ -325,15 +325,28 @@ impl Extras {
             }
         }
 
-        // Weaker enemies: each cut once to the share of its maximum health (and again, lower
-        // only, when the share is lowered); the fight goes on from there. Frail wins, and while
+        // Weaker enemies: each cut once to the share of its maximum health, and moved by the
+        // same ratio when the share moves; the fight goes on from there. Frail wins, and while
         // any frail record is left (being put back) nothing is cut: its health is not its own.
         let frail = wants(|e| matches!(e, Effect::EnemyFrail)).is_some() || !self.frail.is_empty();
         if let (Some(t), false) = (wants(|e| matches!(e, Effect::EnemyHealth)), frail) {
             let share = t.value.clamp(0.1, 1.0);
             for &e in &alive {
                 let done = self.weaker.get(&e).copied();
-                if done.is_some_and(|(_, _, s)| s <= share + 1e-3) {
+                if let Some((class, b0, s0)) = done {
+                    if (s0 - share).abs() < 1e-3 {
+                        continue;
+                    }
+                    // The share moved: its health by the same ratio, so a hit taken stays taken
+                    // (half its health lost at 10 % is half lost at 100 %).
+                    let Some((_, at)) = health_of(m, n, e) else { continue };
+                    let Some((_, c)) = pair(m, at) else { continue };
+                    let to = (c * share / s0).min(b0);
+                    if !put_pair(m, at, to, to) {
+                        errors.push("weaker enemies: write failed".into());
+                        continue;
+                    }
+                    self.weaker.insert(e, (class, b0, share));
                     continue;
                 }
                 let Some((set, at)) = health_of(m, n, e) else { continue };
@@ -487,9 +500,20 @@ impl Extras {
                 }
             }
         }
-        // weaker enemies are not healed back: they were mid-fight
+        // Weaker enemies back to their strength by the ratio they were cut by: a hit taken
+        // stays taken (half lost at 10 % is half lost after).
         if !kept(|e| matches!(e, Effect::EnemyHealth)) {
-            self.weaker.clear();
+            for (e, (class, base, share)) in self.weaker.drain() {
+                if !same(e, class) || share >= 1.0 {
+                    continue;
+                }
+                if let Some((_, at)) = health_of(m, n, e) {
+                    if let Some((_, c)) = pair(m, at).filter(|&(_, c)| c > 0.0) {
+                        let to = (c / share).min(base);
+                        put_pair(m, at, to, to);
+                    }
+                }
+            }
         }
         if !kept(|e| matches!(e, Effect::Stock(_))) {
             self.stock.clear();
