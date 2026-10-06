@@ -118,6 +118,8 @@ pub struct Extras {
     frail: HashMap<u64, Frail>,
     /// Enemy → (its class, its HealthMax when first cut, the share it was cut to).
     weaker: HashMap<u64, (u64, f32, f32)>,
+    /// Enemies looked at for frail's leftovers since frail was last on (`tick`).
+    mended: std::collections::HashSet<u64>,
     /// Inventory stack → the least it is held at.
     stock: HashMap<u64, u32>,
     /// Weapon item → its total experience as last seen (after any bonus).
@@ -218,6 +220,11 @@ fn health_of(m: &dyn Memory, n: &Names, enemy: u64) -> Option<(u64, u64)> {
     None
 }
 
+/// The health set's HealthMax (current).
+fn max_of(m: &dyn Memory, n: &Names, set: u64) -> Option<f32> {
+    n.field(m, set, "HealthMax").and_then(|p| pair(m, set + p.offset as u64)).map(|(_, c)| c)
+}
+
 /// An attribute's (BaseValue, CurrentValue): FGameplayAttributeData is vtable, base,
 /// current.
 fn pair(m: &dyn Memory, at: u64) -> Option<(f32, f32)> {
@@ -282,12 +289,38 @@ impl Extras {
                         else {
                             continue;
                         };
+                        // Already held at frail's value (a panel started again with frail on):
+                        // what to put back is its maximum, not that.
+                        let (base, current) = match max_of(m, n, set) {
+                            Some(max) if current <= FRAIL => (max, max),
+                            _ => (base, current),
+                        };
                         self.frail.insert(e, Frail { class, at, set, set_class, vtable, base, current });
                         at
                     }
                 };
                 if pair(m, at).is_some_and(|(_, c)| c > FRAIL) && !put_pair(m, at, FRAIL, FRAIL) {
                     errors.push("frail enemies: write failed".into());
+                }
+            }
+        }
+
+        // Frail's leftovers: with frail off, an enemy whose health is exactly frail's (base and
+        // current alike — no hit leaves that) was held by an earlier panel and not let go.
+        // Healed to its maximum, once per enemy.
+        if wants(|e| matches!(e, Effect::EnemyFrail)).is_some() {
+            self.mended.clear();
+        } else if self.frail.is_empty() {
+            self.mended.retain(|e| alive.contains(e));
+            for &e in &alive {
+                if !self.mended.insert(e) {
+                    continue;
+                }
+                let Some((set, at)) = health_of(m, n, e) else { continue };
+                if pair(m, at) == Some((FRAIL, FRAIL)) {
+                    if let Some(max) = max_of(m, n, set).filter(|&x| x > FRAIL) {
+                        put_pair(m, at, max, max);
+                    }
                 }
             }
         }
@@ -306,11 +339,7 @@ impl Extras {
                 let Some((set, at)) = health_of(m, n, e) else { continue };
                 let Some((_, c)) = pair(m, at) else { continue };
                 // The maximum, not the health: that may be cut already (by frail, or a hit).
-                let Some(max) =
-                    n.field(m, set, "HealthMax").and_then(|p| pair(m, set + p.offset as u64)).map(|(_, c)| c)
-                else {
-                    continue;
-                };
+                let Some(max) = max_of(m, n, set) else { continue };
                 let base = done.map_or(max, |(_, b0, _)| b0);
                 let to = base * share;
                 if c > to && !put_pair(m, at, to, to) {
@@ -451,7 +480,10 @@ impl Extras {
             for (e, f) in self.frail.drain() {
                 // and the Health attribute is still the one the record was taken from
                 if same(e, f.class) && f.holds(m) && health_of(m, n, e).map(|(_, at)| at) == Some(f.at) {
-                    put_pair(m, f.at, f.base, f.current);
+                    // never frail's own value back
+                    let max = max_of(m, n, f.set).unwrap_or(f.base);
+                    let (b, c) = if f.current <= FRAIL { (max, max) } else { (f.base, f.current) };
+                    put_pair(m, f.at, b, c);
                 }
             }
         }
