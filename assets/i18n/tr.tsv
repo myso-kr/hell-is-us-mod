@@ -915,11 +915,8 @@ FILM_KEY_HOVER	Tek başına: başlat/durdur. Ctrl ile: burada nokta ekle ya da y
 FILM_AS_THE_GAME	oyundaki gibi
 SHOT_FOLLOW	takip
 FILM_MODE_WALK	Otomatik yürüyüş
-FILM_MODE_LIVE	Siz oynayın
 FILM_MODE_FLIGHT	Yalnızca kamera
 FILM_MODE_WALK_ABOUT	Kahraman rotayı kendi yürür, kamera çeker; her giriş durdurur. 3 sn içinde oyuna tıklayın.
-FILM_MODE_LIVE_ABOUT	Siz oynarsınız — yürür, savaşırsınız — yalnızca kamera yönetilir, kahraman kadrede kalır; girişler durdurmaz, yalnızca tuş ya da Durdur. Yönetmenle rehber rotasını izler.
-FILM_PLAN_LIVE	Bu çekimi siz oynuyorsunuz: plan şu anki rehber rotasını izler, onunla değişir.
 AERIAL_GLIDE	süzülme
 AERIAL_RISE	yükselen açılış
 AERIAL_DIVE	dalış
@@ -965,7 +962,5 @@ AERIAL_TILT_UP	Yukarı eğim
 AERIAL_DESCEND	İniş
 AERIAL_EAGLE	Kartal
 AERIAL_HUNT	Kartal: yakınlaştırma
-AERIAL_SPIRAL	Sarmal
-AERIAL_LOOK_BACK	Geriye bakış
 AERIAL_FLY_BY	Yanından geçiş
 AERIAL_VERTIGO	Vertigo tırmanışı

@@ -238,12 +238,13 @@ back after; a walk keeps them, the camera being behind the hero there.
 
 ### Modes and the take's structure (2026-10-07)
 
-`film::Mode`: **Walk** (the mod drives the hero; input stops it), **Live** (the player plays —
-needed for anything with a fight in it — and the take moves only the camera; input does not stop
-it, only the key or the card), **Flight** (the camera alone). `Setup.mode` replaced the flight
+`film::Mode`: **Walk** (the mod drives the hero; input stops it), **Flight** (the camera alone).
+A third, **Live** (the player played and only the camera was directed), was tried and taken out
+on the user's word: shots changing under the player's hands made the game hard to play and the
+take dizzying; `mode live` in film.txt reads as Walk. `Setup.mode` replaced the flight
 switch (`flight true` reads as Flight). The take is a loop over a `Session` (take/session.rs: the
 game opened for writing, the gimbal, the camera's settings held and their room, what to put
-back) and one runner per mode: `drive.rs`, `live.rs`, `fly.rs`; `run.rs` only counts down,
+back) and one runner per mode: `drive.rs`, `fly.rs`; `run.rs` only counts down,
 watches the input (not for Live), paces and restores.
 
 - **Live**: the route is the guide's as the overlay draws it (`Shared.route3d`, now a
@@ -274,10 +275,10 @@ other point (a metre apart). The maps draw it as a line (`MapState::film_track`)
 
 Researched after RDR2's cinematic camera, God of War's shoulder camera, Cinemachine's state-driven
 camera / ClearShot / target groups, and racing replays (.spec/FILMING-RESEARCH.md). Shared by walk
-and live takes through `take/cover.rs`:
+takes through `take/cover.rs`:
 
 - `director/situation.rs`: `Motion` keeps the hero's last second; `judge` gives a `Situation`
-  (Moving, Still, Turning, Climbing, Descending, Combat; and, not in live takes, Meeting (an NPC
+  (Moving, Still, Turning, Climbing, Descending, Combat, Meeting (an NPC
   within 8 m), Find (an item ahead within 6 m), Landmark (a lever, door or save point ahead)),
   the target, and `openness` (8 rays at head height, 8 m).
 - `director/coverage.rs`: candidate `Angle`s per situation, scored by order, freshness (not one of
@@ -285,8 +286,7 @@ and live takes through `take/cover.rs`:
   when the hero cannot be seen). The route's planned rig is an `Angle::Planned` candidate. A shot
   holds 4–8 s; a new situation must last 0.4 s (a fight at once). `Cuts::{Smooth, Mixed, Cuts}`:
   Mixed cuts on a situation change or a change of size; a cut moving the camera less than 30°
-  is eased instead (no jump cuts). In a live take, while moving, only angles within ±35° of
-  behind are used, so the controls stay camera-relative.
+  is eased instead (no jump cuts).
 - A cut (`Session::cut`) snaps the gimbal, sets the distance and FOV knobs, and writes the six
   doubles of `CameraToPivotTranslationInterpolator` (`ZOOM_AT`) to skip the game's easing.
 - `film::subjects`: the overlay puts enemies, NPCs, items and things within 30 m into
@@ -302,3 +302,12 @@ The take's stop on input (`take/input.rs`) no longer uses `GetLastInputInfo`, wh
 G HUB virtual keyboard or a mouse sensor can touch while nobody does: a key or button newly
 pressed (held ones ignored until let go), or the camera turned by more than 3° (summed, fading
 over 0.5 s) from where the take put it. The reason goes to the log file.
+
+### Calmer pacing (2026-10-07)
+
+The user found the first cut of coverage dizzying and too busy. Taken out: the spiral climb and the
+look back (a whole turn, a 180° swing); the orbit is now a slow quarter circle, the eagle's look
+±40° over 0.6 of a sweep, a fly-by 70°. Shots hold 8–14 s on a walk (the route's planned shot
+scored +6, the backbone), a new situation must last 1.5 s (a fight at once); flight shots are
+30–60 m (7–13 s) with 12 m blends, the eagle at least 80 m; a glance at most every 20 s, a hunt
+every 15 s, and a glance cuts only when every change is a cut.

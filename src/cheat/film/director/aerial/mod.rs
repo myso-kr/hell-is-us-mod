@@ -22,7 +22,7 @@ const CLIMB: f32 = 250.0;
 const FALL: f32 = -250.0;
 const TURN: f32 = 50.0;
 /// How far before a stretch's end the next look starts to take over (cm).
-const ANTICIPATE: f32 = 700.0;
+const ANTICIPATE: f32 = 1200.0;
 
 /// A flight's plan: its stretches and how each is looked at.
 pub struct AerialPlan {
@@ -115,7 +115,7 @@ mod tests {
         let scene = crate::obstacles::Scene::default();
         let path: Vec<[f32; 3]> = (0..=400).map(|i| [i as f32 * 250.0, 0.0, 200.0]).collect();
         let s = AerialPlan::new(&path, &scene.blocking()).stretches();
-        assert!(s.len() >= 30, "{} shots in a kilometre", s.len());
+        assert!((15..=40).contains(&s.len()), "{} shots in a kilometre", s.len());
         let kinds: std::collections::HashSet<_> = s.iter().map(|x| format!("{:?}", x.2)).collect();
         assert!(kinds.len() >= 6, "{kinds:?}");
         let lens: Vec<f32> = s.iter().map(|x| x.1 - x.0).collect();

@@ -63,8 +63,7 @@ pub use record::{pace_at, Recorder, Recording};
 pub use source::Source;
 pub use subjects::{about, Subject, SubjectFeed, SubjectKind};
 
-/// The guide's route as the overlay draws it (Unreal cm, and its colour): a live take follows it
-/// as it changes.
+/// The guide's route as the overlay draws it (Unreal cm, and its colour), shared with the panel.
 pub type RouteFeed = std::sync::Arc<std::sync::Mutex<(Vec<[f32; 3]>, [u8; 3])>>;
 pub use route::{flight_path, path, recording_starts};
 pub use setup::{Setup, DISTANCE, FEET, FOV, KEY, NEAR};

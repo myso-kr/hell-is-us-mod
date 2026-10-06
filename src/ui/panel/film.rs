@@ -221,9 +221,6 @@ impl Panel {
                 note(t, tr!("FILM_PLAN_OFF"));
                 return;
             }
-            if setup.mode == Mode::Live {
-                note(t, tr!("FILM_PLAN_LIVE"));
-            }
             let route = self.shared.route3d.lock().unwrap().0.clone();
             let flight = setup.mode == Mode::Flight;
             let path = snap.and_then(|s| {

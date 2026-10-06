@@ -915,11 +915,8 @@ FILM_KEY_HOVER	Одна: старт/стоп. С Ctrl: добавить точк
 FILM_AS_THE_GAME	как в игре
 SHOT_FOLLOW	следование
 FILM_MODE_WALK	Автоходьба
-FILM_MODE_LIVE	Играете сами
 FILM_MODE_FLIGHT	Только камера
 FILM_MODE_WALK_ABOUT	Герой сам идёт по маршруту, камера снимает; любой ввод останавливает. Щёлкните по игре за 3 с.
-FILM_MODE_LIVE_ABOUT	Вы играете — идёте, сражаетесь — а режиссируется только камера, герой в кадре; ввод её не останавливает, только клавиша или «Стоп». С режиссёром она следует маршруту подсказки.
-FILM_PLAN_LIVE	Этот дубль играете вы: план следует текущему маршруту и меняется вместе с ним.
 AERIAL_GLIDE	планирование
 AERIAL_RISE	подъём с раскрытием
 AERIAL_DIVE	пике
@@ -965,7 +962,5 @@ AERIAL_TILT_UP	Наклон вверх
 AERIAL_DESCEND	Снижение
 AERIAL_EAGLE	Орёл
 AERIAL_HUNT	Орёл: приближение
-AERIAL_SPIRAL	Спираль
-AERIAL_LOOK_BACK	Взгляд назад
 AERIAL_FLY_BY	Пролёт мимо
 AERIAL_VERTIGO	Подъём с «Головокружением»

@@ -18,17 +18,16 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
-- Directing that answers the hero's situation, in every kind of take: moving, standing, turning,
-  climbing, going down, fighting, and (when the mod drives) meeting someone, coming on an item or
-  a thing to work; open places get wide shots, narrow ones close shots. New shots: shoulder,
-  chases, profile, lead, close-up, wide, overhead, swoop, low angle, over the shoulder, two-shot,
-  focus, reveal, 360° orbit, Vertigo dolly zoom, pull-back, fly-by. The route's planned shots stay
-  among the choices. Shots change smoothly, mixed, or as cuts (the camera's card). A live take
-  keeps the camera behind the player while they move, and leaves people and things to them.
-- Flights vary far more: a kilometre gives some forty shots of uneven length, in no set order,
-  with new looks (skim, side track, pedestal up, tilt up, descend, spiral, look back, fly-by,
-  Vertigo climb) and, over wide open ground, the eagle: soaring high, looking about, and zooming
-  in on what it spots. Things passed are glanced at.
+- Directing that answers the hero's situation on a walk: moving, standing, turning, climbing,
+  going down, fighting, meeting someone, coming on an item or a thing to work; open places get
+  wide shots, narrow ones close shots. New shots: shoulder, chases, profile, lead, close-up, wide,
+  overhead, swoop, low angle, over the shoulder, two-shot, focus, reveal, a slow orbit, Vertigo
+  dolly zoom, pull-back, fly-by. The route's planned shots stay the backbone; a shot holds 8–14 s.
+  Shots change smoothly, mixed, or as cuts (the camera's card).
+- Flights vary more: a kilometre gives some twenty shots of uneven length (7–13 s), in no set
+  order, with new looks (skim, side track, pedestal up, tilt up, descend, fly-by, Vertigo climb)
+  and, over wide open ground, the eagle: soaring high, looking slowly about, and zooming in on
+  what it spots. Things passed are glanced at now and then.
 - Recording your own way for filming: Ctrl+Shift+F8 in the game records where you walk (a point
   every 50 cm, with when), again to stop and keep it; a take can then walk it again at the pace it
   was walked, or fly it, directed or not. The take's way now comes from the guide's route, the
@@ -36,10 +35,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - Filming has a page of its own under a new sidebar group, Video, rather than a card among the
   cheats: the take (start and stop in its header), the route, the camera, and the director's
   plan — the shot it gives each stretch of the route as it stands.
-- Filming has three ways to take: the mod walks the hero (any input stops it), you play (walk,
-  fight — only the camera is directed, the hero kept in view, and your input does not stop it;
-  directed, it follows the guide's route as it changes, or behind you when you leave it), or the
-  camera flies alone. The director works in all three: on a flight it films the land, gliding,
+- Filming has two ways to take: the mod walks the hero (any input stops it), or the camera flies
+  alone. The director works in both: on a flight it films the land, gliding,
   rising to reveal, diving, leaning into turns, looking down over high ground, pushing in at the
   end.
 - Filming: the camera can fly alone, the hero left where it stands — straight between the 3D map's

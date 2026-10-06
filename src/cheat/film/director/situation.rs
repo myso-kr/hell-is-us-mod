@@ -1,7 +1,6 @@
 //! What the hero is doing and what is about it, for the camera to answer (Cinemachine's
 //! state-driven camera, RDR2's cinematic mode): moving, standing, turning, climbing, going down,
-//! fighting — and, in a take the mod drives, meeting someone, coming on something to pick up or a
-//! thing to work; and how open the place is. Read from the hero's last second of movement, what
+//! fighting, meeting someone, coming on something to pick up or a thing to work; and how open the place is. Read from the hero's last second of movement, what
 //! stands about it, and the obstacles.
 
 use crate::film::{Subject, SubjectKind};
@@ -15,7 +14,6 @@ pub enum Situation {
     Climbing,
     Descending,
     Combat,
-    // The ones below are left to the player in a live take: their own business.
     /// Someone near: framed together, as a conversation is.
     Meeting,
     /// Something to pick up ahead: looked at, closing in.
@@ -115,9 +113,8 @@ pub fn openness(b: &crate::obstacles::Blocking, hero: [f32; 3]) -> f32 {
     clear as f32 / OPEN_WAYS as f32
 }
 
-/// The hero at `hero` going `heading`, moving as `m`, among `subjects`, in a place `open`; `things`
-/// whether people and things may draw the camera (not in a live take).
-pub fn judge(m: &Motion, hero: [f32; 3], heading: f32, subjects: &[Subject], open: f32, things: bool) -> Sight {
+/// The hero at `hero` going `heading`, moving as `m`, among `subjects`, in a place `open`.
+pub fn judge(m: &Motion, hero: [f32; 3], heading: f32, subjects: &[Subject], open: f32) -> Sight {
     let dist = |s: &Subject| (s.at[0] - hero[0]).hypot(s.at[1] - hero[1]);
     let nearest = |kind: SubjectKind, within: f32, ahead: bool| {
         subjects
@@ -135,16 +132,14 @@ pub fn judge(m: &Motion, hero: [f32; 3], heading: f32, subjects: &[Subject], ope
     if let Some(e) = nearest(SubjectKind::Enemy, FIGHT, false) {
         return at(Situation::Combat, e);
     }
-    if things {
-        if let Some(t) = nearest(SubjectKind::Npc, MEETING, false) {
-            return at(Situation::Meeting, t);
-        }
-        if let Some(t) = nearest(SubjectKind::Item, INTEREST, true) {
-            return at(Situation::Find, t);
-        }
-        if let Some(t) = nearest(SubjectKind::Thing, INTEREST, true) {
-            return at(Situation::Landmark, t);
-        }
+    if let Some(t) = nearest(SubjectKind::Npc, MEETING, false) {
+        return at(Situation::Meeting, t);
+    }
+    if let Some(t) = nearest(SubjectKind::Item, INTEREST, true) {
+        return at(Situation::Find, t);
+    }
+    if let Some(t) = nearest(SubjectKind::Thing, INTEREST, true) {
+        return at(Situation::Landmark, t);
     }
     let (speed, rise) = m.velocity().map_or((0.0, 0.0), |v| (v.0, v.1));
     let situation = if rise > CLIMBING {
@@ -175,23 +170,22 @@ mod tests {
 
     #[test]
     fn what_the_hero_does_is_told() {
-        let at = |m: &Motion| judge(m, m.seen.back().unwrap().1, 0.0, &[], 1.0, true).situation;
+        let at = |m: &Motion| judge(m, m.seen.back().unwrap().1, 0.0, &[], 1.0).situation;
         assert_eq!(at(&walk(|_| [0.0, 0.0, 0.0])), Situation::Still);
         assert_eq!(at(&walk(|t| [t * 300.0, 0.0, 0.0])), Situation::Moving);
         assert_eq!(at(&walk(|t| [t * 300.0, 0.0, t * 150.0])), Situation::Climbing);
         assert_eq!(at(&walk(|t| [(t * 3.0).cos() * 150.0, (t * 3.0).sin() * 150.0, 0.0])), Situation::Turning);
         let enemy = [Subject { kind: SubjectKind::Enemy, at: [500.0, 0.0, 0.0] }];
         let m = walk(|_| [0.0, 0.0, 0.0]);
-        assert_eq!(judge(&m, [0.0; 3], 0.0, &enemy, 1.0, false).situation, Situation::Combat);
+        assert_eq!(judge(&m, [0.0; 3], 0.0, &enemy, 1.0).situation, Situation::Combat);
         let lever = [Subject { kind: SubjectKind::Thing, at: [300.0, 0.0, 0.0] }];
-        assert_eq!(judge(&m, [0.0; 3], 0.0, &lever, 1.0, true).situation, Situation::Landmark);
-        assert_eq!(judge(&m, [0.0; 3], 0.0, &lever, 1.0, false).situation, Situation::Still, "not in a live take");
+        assert_eq!(judge(&m, [0.0; 3], 0.0, &lever, 1.0).situation, Situation::Landmark);
         let item = [Subject { kind: SubjectKind::Item, at: [300.0, 0.0, 0.0] }];
-        assert_eq!(judge(&m, [0.0; 3], 0.0, &item, 1.0, true).situation, Situation::Find);
+        assert_eq!(judge(&m, [0.0; 3], 0.0, &item, 1.0).situation, Situation::Find);
         // behind the hero, an item is not looked for; a person is met from any side
         let behind = [Subject { kind: SubjectKind::Item, at: [-300.0, 0.0, 0.0] }];
-        assert_eq!(judge(&m, [0.0; 3], 0.0, &behind, 1.0, true).situation, Situation::Still);
+        assert_eq!(judge(&m, [0.0; 3], 0.0, &behind, 1.0).situation, Situation::Still);
         let npc = [Subject { kind: SubjectKind::Npc, at: [-500.0, 0.0, 0.0] }];
-        assert_eq!(judge(&m, [0.0; 3], 0.0, &npc, 1.0, true).situation, Situation::Meeting);
+        assert_eq!(judge(&m, [0.0; 3], 0.0, &npc, 1.0).situation, Situation::Meeting);
     }
 }

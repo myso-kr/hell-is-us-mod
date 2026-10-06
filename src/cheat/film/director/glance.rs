@@ -8,11 +8,11 @@ use crate::film::Subject;
 /// How near a thing must be to be glanced at, for how long, and how often at most (cm, s, s); as
 /// an eagle, how far it sees, how long it stares, how often, and how close its lens goes (degrees).
 const NEAR: f32 = 2500.0;
-const FOR: f32 = 3.0;
-const EVERY: f32 = 10.0;
+const FOR: f32 = 4.0;
+const EVERY: f32 = 20.0;
 const HUNT_NEAR: f32 = 5000.0;
-const HUNT_FOR: f32 = 3.5;
-const HUNT_EVERY: f32 = 6.0;
+const HUNT_FOR: f32 = 5.0;
+const HUNT_EVERY: f32 = 15.0;
 const HUNT_FOV: f32 = 30.0;
 
 /// Where to look while glancing: pitch, yaw, the lens if it changes, whether to cut to it.
@@ -70,7 +70,8 @@ impl Glance {
         let found =
             if hunt { pick.max_by(|a, b| d(a).total_cmp(&d(b))) } else { pick.min_by(|a, b| d(a).total_cmp(&d(b))) }?;
         self.on = Some((found.at, self.t, hunt));
-        Some(aim_at(from, found.at, hunt, cuts != Cuts::Smooth))
+        // a glance turns there; only when every change is a cut does it cut
+        Some(aim_at(from, found.at, hunt, cuts == Cuts::Cuts))
     }
 }
 

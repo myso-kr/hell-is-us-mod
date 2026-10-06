@@ -402,7 +402,6 @@ impl Engine {
         let least = match plan.mode {
             crate::film::Mode::Walk => 2,
             crate::film::Mode::Flight => 1,
-            crate::film::Mode::Live => 0,
         };
         if plan.path.len() < least {
             return Err(tr!("FILM_NO_ROUTE").into());

@@ -1,7 +1,8 @@
 //! How a flight looks at a stretch of the land, and from how high: each look's pitch, its turn from
 //! the way ahead, its lens and its height over the path, as they go through the stretch (drone
 //! moves: the glide, the rising reveal, the pedestal up, the tilt up to the horizon, the skim low
-//! over the ground, the side track, the overhead — .spec/FILMING-RESEARCH.md §2).
+//! over the ground, the side track, the overhead — .spec/FILMING-RESEARCH.md §2). Turns stay gentle:
+//! a whole turn round, or a look swung back, is dizzying on screen.
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Aerial {
@@ -30,10 +31,6 @@ pub enum Aerial {
     /// Soaring high over open ground, looking about from side to side: an eagle, hunting (what it
     /// sees below, the lens closes in on: the flight's glance).
     Eagle,
-    /// Climbing in a corkscrew, the land turning round below.
-    Spiral,
-    /// Flying on looking back: the way behind falling away.
-    LookBack,
     /// A point ahead to the side held as it is passed, the camera turning after it.
     FlyBy,
     /// Climbing as the lens closes in (a dolly zoom from the air): the land below stretching.
@@ -77,8 +74,6 @@ impl Aerial {
             Aerial::TiltUp => tr!("AERIAL_TILT_UP"),
             Aerial::Descend => tr!("AERIAL_DESCEND"),
             Aerial::Eagle => tr!("AERIAL_EAGLE"),
-            Aerial::Spiral => tr!("AERIAL_SPIRAL"),
-            Aerial::LookBack => tr!("AERIAL_LOOK_BACK"),
             Aerial::FlyBy => tr!("AERIAL_FLY_BY"),
             Aerial::Vertigo => tr!("AERIAL_VERTIGO"),
         }
@@ -98,18 +93,16 @@ impl Aerial {
             Aerial::Overhead => look(lerp(-40.0, -62.0), 0.0, lerp(74.0, 80.0), lerp(1500.0, 2200.0)),
             Aerial::Arrive => look(lerp(-10.0, -32.0), 0.0, lerp(76.0, 58.0), lerp(700.0, 60.0)),
             Aerial::Skim => look(-4.0, 0.0, 84.0, 40.0),
-            Aerial::Track => look(-14.0, 70.0 * side, 66.0, 500.0),
+            Aerial::Track => look(-14.0, 55.0 * side, 66.0, 500.0),
             Aerial::Ascend => look(lerp(-8.0, -35.0), 0.0, 74.0, lerp(200.0, 1800.0)),
             Aerial::TiltUp => look(lerp(-65.0, -6.0), 0.0, lerp(70.0, 80.0), 900.0),
             Aerial::Descend => look(lerp(-40.0, -10.0), 0.0, 74.0, lerp(1600.0, 250.0)),
             Aerial::Eagle => {
-                // up into the sky, then sweeping left and right, slowly
-                let sweep = (u * std::f32::consts::TAU * 1.2).sin() * 75.0 * side;
+                // up into the sky, then looking slowly to one side and the other
+                let sweep = (u * std::f32::consts::TAU * 0.6).sin() * 40.0 * side;
                 look(-28.0, sweep * e.min(1.0), 72.0, lerp(1800.0, 3000.0))
             }
-            Aerial::Spiral => look(-22.0, 360.0 * e * side, 76.0, lerp(300.0, 1600.0)),
-            Aerial::LookBack => look(lerp(-32.0, -12.0), 180.0, lerp(62.0, 80.0), lerp(400.0, 1200.0)),
-            Aerial::FlyBy => look(-12.0, lerp(25.0, 160.0) * side, 64.0, 320.0),
+            Aerial::FlyBy => look(-12.0, lerp(20.0, 90.0) * side, 64.0, 320.0),
             Aerial::Vertigo => look(lerp(-15.0, -45.0), 0.0, lerp(80.0, 40.0), lerp(300.0, 1500.0)),
         }
     }

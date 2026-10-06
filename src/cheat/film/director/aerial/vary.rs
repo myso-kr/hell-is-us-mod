@@ -6,13 +6,13 @@
 use super::look::Aerial;
 use crate::film::director::runs::Run;
 
-/// How long a stretch may run before it is cut (cm, ~7 s at a flight's 450 cm/s), and the shortest
-/// and longest shots it is cut into (cm).
-const LONGEST: f32 = 3200.0;
-const SHORTEST_PIECE: f32 = 1600.0;
-const LONGEST_PIECE: f32 = 3600.0;
-/// How long the eagle soars at least (cm, ~13 s).
-const EAGLE: f32 = 6000.0;
+/// How long a stretch may run before it is cut (cm, ~13 s at a flight's 450 cm/s), and the shortest
+/// and longest shots it is cut into (cm, ~7–13 s): long enough to watch, not to tire of.
+const LONGEST: f32 = 6000.0;
+const SHORTEST_PIECE: f32 = 3000.0;
+const LONGEST_PIECE: f32 = 6000.0;
+/// How long the eagle soars at least (cm, ~18 s).
+const EAGLE: f32 = 8000.0;
 
 /// What a stretch of each kind may turn into, the likelier first (listed twice: likelier still).
 fn turns(a: Aerial) -> &'static [Aerial] {
@@ -27,23 +27,15 @@ fn turns(a: Aerial) -> &'static [Aerial] {
             Aerial::TiltUp,
             Aerial::Descend,
             Aerial::Overhead,
-            Aerial::Spiral,
-            Aerial::LookBack,
             Aerial::FlyBy,
             Aerial::Vertigo,
         ],
         // high open ground: the eagle's
-        Aerial::Overhead => &[
-            Aerial::Eagle,
-            Aerial::Eagle,
-            Aerial::Overhead,
-            Aerial::TiltUp,
-            Aerial::Spiral,
-            Aerial::Descend,
-            Aerial::Track,
-        ],
-        Aerial::Rise => &[Aerial::Rise, Aerial::Track, Aerial::Ascend, Aerial::Spiral, Aerial::Vertigo],
-        Aerial::Dive => &[Aerial::Dive, Aerial::Skim, Aerial::Descend, Aerial::LookBack],
+        Aerial::Overhead => {
+            &[Aerial::Eagle, Aerial::Eagle, Aerial::Overhead, Aerial::TiltUp, Aerial::Descend, Aerial::Track]
+        }
+        Aerial::Rise => &[Aerial::Rise, Aerial::Track, Aerial::Ascend, Aerial::Vertigo],
+        Aerial::Dive => &[Aerial::Dive, Aerial::Skim, Aerial::Descend],
         _ => &[],
     }
 }
@@ -85,7 +77,7 @@ pub(super) fn vary(stretches: Vec<Run<Aerial>>) -> Vec<Run<Aerial>> {
                 to = r.to;
             }
             let what = pending;
-            let turn = if matches!(what, Aerial::Track | Aerial::Spiral | Aerial::FlyBy | Aerial::Eagle) {
+            let turn = if matches!(what, Aerial::Track | Aerial::FlyBy | Aerial::Eagle) {
                 side = -side;
                 side
             } else {

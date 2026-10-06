@@ -915,11 +915,8 @@ FILM_KEY_HOVER	Sozinha: iniciar/parar. Com Ctrl: adicionar ponto aqui ou remover
 FILM_AS_THE_GAME	como no jogo
 SHOT_FOLLOW	acompanhamento
 FILM_MODE_WALK	Andar sozinho
-FILM_MODE_LIVE	Você joga
 FILM_MODE_FLIGHT	Só a câmera
 FILM_MODE_WALK_ABOUT	O herói percorre a rota sozinho enquanto a câmera filma; qualquer entrada para. Clique no jogo em 3 s.
-FILM_MODE_LIVE_ABOUT	Você joga — anda, luta — e só a câmera é dirigida, com o herói em quadro; suas entradas não a param, só a tecla ou Parar. Com diretor, segue a rota guiada.
-FILM_PLAN_LIVE	Você joga esta tomada: o plano segue a rota guiada atual e muda com ela.
 AERIAL_GLIDE	planar
 AERIAL_RISE	subida reveladora
 AERIAL_DIVE	mergulho
@@ -965,7 +962,5 @@ AERIAL_TILT_UP	Tilt para cima
 AERIAL_DESCEND	Descida
 AERIAL_EAGLE	Águia
 AERIAL_HUNT	Águia: zoom
-AERIAL_SPIRAL	Espiral
-AERIAL_LOOK_BACK	Olhar para trás
 AERIAL_FLY_BY	Passagem
 AERIAL_VERTIGO	Vertigo subindo

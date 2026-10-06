@@ -915,11 +915,8 @@ FILM_KEY_HOVER	単独：開始/停止。Ctrl同時：立っている場所に地
 FILM_AS_THE_GAME	ゲームのまま
 SHOT_FOLLOW	追従
 FILM_MODE_WALK	自動歩行
-FILM_MODE_LIVE	自分で操作
 FILM_MODE_FLIGHT	カメラだけ
 FILM_MODE_WALK_ABOUT	主人公が経路を自動で歩き、カメラが撮影します。入力すると止まります。開始後3秒以内にゲームをクリック。
-FILM_MODE_LIVE_ABOUT	自分で歩き戦う間、カメラだけを演出して主人公を画面に収めます。入力しても止まらず、撮影キーか停止でのみ止まります。監督は変わる案内経路に沿って演出します。
-FILM_PLAN_LIVE	自分で操作する撮影です。プランは今の案内経路に沿い、経路が変われば変わります。
 AERIAL_GLIDE	滑空
 AERIAL_RISE	上昇リビール
 AERIAL_DIVE	降下
@@ -965,7 +962,5 @@ AERIAL_TILT_UP	ティルトアップ
 AERIAL_DESCEND	下降
 AERIAL_EAGLE	イーグル
 AERIAL_HUNT	イーグル：捕捉ズーム
-AERIAL_SPIRAL	スパイラル
-AERIAL_LOOK_BACK	振り返り
 AERIAL_FLY_BY	フライバイ
 AERIAL_VERTIGO	めまい上昇

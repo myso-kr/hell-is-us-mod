@@ -915,11 +915,8 @@ FILM_KEY_HOVER	Allein: Aufnahme starten/stoppen. Mit Strg: Punkt setzen oder den
 FILM_AS_THE_GAME	wie im Spiel
 SHOT_FOLLOW	Folgen
 FILM_MODE_WALK	Automatisch gehen
-FILM_MODE_LIVE	Selbst spielen
 FILM_MODE_FLIGHT	Nur Kamera
 FILM_MODE_WALK_ABOUT	Der Held geht den Weg selbst, die Kamera filmt; jede Eingabe stoppt. Binnen 3 s nach Start ins Spiel klicken.
-FILM_MODE_LIVE_ABOUT	Sie spielen — gehen, kämpfen — und nur die Kamera wird geführt und behält den Helden im Bild; Eingaben stoppen nicht, nur die Filmtaste oder Stopp. Mit Regie folgt sie der Führungsroute.
-FILM_PLAN_LIVE	Sie spielen diese Aufnahme: der Plan folgt der Führungsroute und ändert sich mit ihr.
 AERIAL_GLIDE	Gleiten
 AERIAL_RISE	aufsteigende Enthüllung
 AERIAL_DIVE	Sturzflug
@@ -965,7 +962,5 @@ AERIAL_TILT_UP	Hochschwenk
 AERIAL_DESCEND	Absinken
 AERIAL_EAGLE	Adler
 AERIAL_HUNT	Adler: herangezoomt
-AERIAL_SPIRAL	Spirale
-AERIAL_LOOK_BACK	Rückblick
 AERIAL_FLY_BY	Vorbeiflug
 AERIAL_VERTIGO	Vertigo-Aufstieg

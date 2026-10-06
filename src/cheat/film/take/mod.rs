@@ -7,7 +7,6 @@ mod drive;
 mod fly;
 mod input;
 mod knobs;
-mod live;
 mod run;
 mod session;
 
@@ -20,8 +19,8 @@ pub use super::Lens;
 
 /// A take: the route (cm), the pace (the stick's length, 0–1), the camera, its distance (cm)
 /// and field of view (degrees) (`None`, as they are), whether to walk back and forth until
-/// stopped, the countdown (s), who moves what, and — a live take following the guide — the
-/// guide's route as it changes.
+/// stopped, the countdown (s), who moves what, a recording's pace, how shots change, and what
+/// stands about the hero.
 #[derive(Clone, Debug)]
 pub struct Plan {
     pub path: Vec<[f32; 3]>,
@@ -32,7 +31,6 @@ pub struct Plan {
     pub repeat: bool,
     pub countdown: u32,
     pub mode: crate::film::Mode,
-    pub feed: Option<crate::film::RouteFeed>,
     /// A recording played: its pace along it (shares of the fastest), and where in the path it
     /// begins (cm): a walk goes at the pace it was walked.
     pub paces: Option<(f32, Vec<(f32, f32)>)>,

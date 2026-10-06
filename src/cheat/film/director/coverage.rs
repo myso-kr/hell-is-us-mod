@@ -73,7 +73,7 @@ pub enum Angle {
     Focus,
     /// High behind the hero, the thing ahead and the place about it in frame.
     Reveal,
-    /// A full circle round the hero standing.
+    /// A slow quarter circle round the hero standing (a whole one is dizzying).
     Orbit,
     /// The dolly zoom (Vertigo): the camera backing off as the lens closes in, the hero held, the
     /// world behind stretching.
@@ -102,11 +102,6 @@ impl Angle {
             }
             _ => Size::Medium,
         }
-    }
-
-    /// Behind the hero within ±35°: the player's controls stay as they are (camera-relative).
-    fn keeps_controls(self) -> bool {
-        matches!(self, Angle::Shoulder | Angle::Behind | Angle::LowChase | Angle::HighChase)
     }
 
     fn targeted(self) -> bool {
@@ -165,7 +160,9 @@ impl Angle {
             Angle::LowHero => {
                 Rig { az: 180.0 - 35.0 * side, el: -12.0, dist: 380.0, fov: 74.0, ahead: 60.0, lift: 40.0 }
             }
-            Angle::Orbit => Rig { az: 180.0 + 360.0 * e * side, el: 14.0, dist: 480.0, fov: 66.0, ahead: 0.0, ..r },
+            Angle::Orbit => {
+                Rig { az: 180.0 - 45.0 * side + 90.0 * e * side, el: 14.0, dist: 480.0, fov: 66.0, ahead: 0.0, ..r }
+            }
             // the hero's size held: distance × tan(fov/2) kept as the lens closes
             Angle::Vertigo => {
                 let fov: f32 = lerp(78.0, 34.0);
@@ -227,9 +224,9 @@ fn candidates(s: Situation) -> &'static [Angle] {
 /// last before the camera answers it (s; a fight at once); how far a cut must move the camera
 /// (degrees) not to read as a jump; how fast and how high the camera rises over what hides the
 /// hero, and how long it waits before settling back.
-const HOLD: f32 = 4.0;
-const HOLD_MORE: f32 = 4.0;
-const SETTLE: f32 = 0.4;
+const HOLD: f32 = 8.0;
+const HOLD_MORE: f32 = 6.0;
+const SETTLE: f32 = 1.5;
 const NO_JUMP: f32 = 30.0;
 const HIDDEN_RISE: f32 = 25.0;
 const HIDDEN_SETTLE: f32 = 12.0;
@@ -246,8 +243,6 @@ pub struct Ctx<'a> {
     pub sight: Sight,
     /// The route's planned shot here, with its name, if the take has a route and the hero is on it.
     pub planned: Option<(Rig, &'static str)>,
-    /// The player plays (keep the controls as they are while the hero moves).
-    pub live: bool,
     pub b: &'a Blocking<'a>,
     pub cuts: Cuts,
     pub dt: f32,
@@ -297,10 +292,6 @@ impl Coverage {
     /// The cue for this tick.
     pub fn cue(&mut self, c: &Ctx) -> Cue {
         self.t += c.dt;
-        let moving = matches!(
-            c.sight.situation,
-            Situation::Moving | Situation::Turning | Situation::Climbing | Situation::Descending
-        );
         // a new situation, once it has lasted (a fight at once)
         let mut changed = false;
         if c.sight.situation != self.situation {
@@ -320,14 +311,13 @@ impl Coverage {
             self.coming = None;
         }
         let due = self.t - self.started >= self.hold;
-        // the shot no longer fits (moving with the controls to keep; a target gone)
-        let unfit = (c.live && moving && !self.fits_controls(c))
-            || (self.angle.targeted() && c.sight.target.is_none())
+        // the shot no longer fits (its target gone, the route's shot with no route)
+        let unfit = (self.angle.targeted() && c.sight.target.is_none())
             || (self.angle == Angle::Planned && c.planned.is_none());
         let mut cut = false;
         if changed || due || unfit {
             let before = self.angle;
-            self.angle = self.choose(c, moving);
+            self.angle = self.choose(c);
             self.started = self.t;
             self.hold = HOLD + HOLD_MORE * jitter(self.t, 7);
             self.recent = [Some(before), self.recent[0], self.recent[1]];
@@ -352,16 +342,9 @@ impl Coverage {
         cue
     }
 
-    fn fits_controls(&self, c: &Ctx) -> bool {
-        match self.angle {
-            Angle::Planned => c.planned.is_some_and(|(r, _)| wrap(r.az - 180.0).abs() <= 35.0),
-            a => a.keeps_controls() || a.targeted(),
-        }
-    }
-
     /// The best angle for the situation: in sight of the hero, not one of the last few, a change
     /// of size, the route's plan preferred while going along it.
-    fn choose(&mut self, c: &Ctx, moving: bool) -> Angle {
+    fn choose(&mut self, c: &Ctx) -> Angle {
         let list = candidates(self.situation);
         let mut best = (f32::MIN, self.angle);
         for (i, &a) in list.iter().enumerate() {
@@ -371,19 +354,13 @@ impl Coverage {
             if a.targeted() && c.sight.target.is_none() {
                 continue;
             }
-            if c.live && moving && !(a.keeps_controls() || a.targeted() || a == Angle::Planned) {
-                continue;
-            }
-            if c.live
-                && moving
-                && a == Angle::Planned
-                && !c.planned.is_some_and(|(r, _)| wrap(r.az - 180.0).abs() <= 35.0)
-            {
-                continue;
-            }
             let mut score = 10.0 - i as f32;
             if self.recent.contains(&Some(a)) {
                 score -= 6.0;
+            }
+            // the route's own shot is the backbone of a walk; the others come in between
+            if a == Angle::Planned {
+                score += 6.0;
             }
             if a.size() != self.angle.size() {
                 score += 3.0;
@@ -525,29 +502,16 @@ mod tests {
     use super::*;
     use crate::film::director::situation::{Sight, Situation};
 
-    fn ctx<'a>(b: &'a Blocking<'a>, s: Situation, live: bool, cuts: Cuts) -> Ctx<'a> {
+    fn ctx<'a>(b: &'a Blocking<'a>, s: Situation, cuts: Cuts) -> Ctx<'a> {
         Ctx {
             hero: [0.0; 3],
             heading: 0.0,
             body: 0.0,
             sight: Sight { situation: s, target: None, open: 0.5 },
             planned: None,
-            live,
             b,
             cuts,
             dt: 0.1,
-        }
-    }
-
-    #[test]
-    fn a_live_take_keeps_the_controls_while_moving() {
-        let scene = crate::obstacles::Scene::default();
-        let b = scene.blocking();
-        let mut cov = Coverage::default();
-        for _ in 0..2000 {
-            let cue = cov.cue(&ctx(&b, Situation::Moving, true, Cuts::Mixed));
-            // the camera behind within 35°: it looks the way the hero goes, ±35°
-            assert!(wrap(cue.yaw).abs() <= 35.5, "{:?} looks {}", cov.angle, cue.yaw);
         }
     }
 
@@ -559,14 +523,14 @@ mod tests {
         let mut seen = std::collections::HashSet::new();
         let mut cuts = 0;
         for _ in 0..3000 {
-            let cue = cov.cue(&ctx(&b, Situation::Still, false, Cuts::Cuts));
+            let cue = cov.cue(&ctx(&b, Situation::Still, Cuts::Cuts));
             seen.insert(cov.angle);
             cuts += cue.cut as u32;
         }
         assert!(seen.len() >= 4, "too few angles: {seen:?}");
         assert!(cuts >= 10, "{cuts} cuts in 300 s");
         let mut cov = Coverage::default();
-        let smooth = (0..3000).filter(|_| cov.cue(&ctx(&b, Situation::Still, false, Cuts::Smooth)).cut).count();
+        let smooth = (0..3000).filter(|_| cov.cue(&ctx(&b, Situation::Still, Cuts::Smooth)).cut).count();
         assert_eq!(smooth, 0);
     }
 }

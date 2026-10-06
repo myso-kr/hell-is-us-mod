@@ -205,12 +205,8 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
     let path = match setup.mode {
         crate::film::Mode::Flight => crate::film::flight_path(&setup, &route),
         crate::film::Mode::Walk => crate::film::path(&setup, hero, &route, &nav),
-        // a live take may have no route yet: it follows the player, and the guide's when one comes
-        crate::film::Mode::Live => Some(crate::film::path(&setup, hero, &route, &nav).unwrap_or_default()),
     }
     .ok_or(tr!("FILM_NO_ROUTE"))?;
-    let feed = (setup.mode == crate::film::Mode::Live && setup.source == crate::film::Source::Guide)
-        .then(|| shared.route3d.clone());
     // a recording walked again goes at the pace it was walked
     let paces = (setup.mode == crate::film::Mode::Walk && setup.source == crate::film::Source::Recording)
         .then(|| {
@@ -226,7 +222,6 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         repeat: setup.repeat,
         countdown,
         mode: setup.mode,
-        feed,
         paces,
         cuts: setup.cuts,
         subjects: Some(shared.film_subjects.clone()),

@@ -73,7 +73,7 @@ impl Drive {
             let (rig, shot) = d.rig(along);
             (rig, shot.label())
         });
-        let cue = planned.is_some().then(|| self.cover.cue(s, hero, heading, planned, false, dt));
+        let cue = planned.is_some().then(|| self.cover.cue(s, hero, heading, planned, dt));
         match &cue {
             Some(cue) => direct::apply(s, cue, dt),
             None => {

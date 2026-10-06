@@ -915,11 +915,8 @@ FILM_KEY_HOVER	Da solo: avvia o ferma. Con Ctrl: aggiungi un punto qui o rimuovi
 FILM_AS_THE_GAME	come nel gioco
 SHOT_FOLLOW	inseguimento
 FILM_MODE_WALK	Camminata auto
-FILM_MODE_LIVE	Giochi tu
 FILM_MODE_FLIGHT	Solo telecamera
 FILM_MODE_WALK_ABOUT	L’eroe percorre il percorso da solo mentre la telecamera riprende; ogni input lo ferma. Clicca sul gioco entro 3 s.
-FILM_MODE_LIVE_ABOUT	Giochi tu — cammini, combatti — e solo la telecamera è diretta, con l’eroe in quadro; i tuoi input non la fermano, solo il tasto o Ferma. Col regista segue il percorso guidato.
-FILM_PLAN_LIVE	Giochi tu questa ripresa: il piano segue il percorso guidato e cambia con esso.
 AERIAL_GLIDE	planata
 AERIAL_RISE	salita rivelatrice
 AERIAL_DIVE	picchiata
@@ -965,7 +962,5 @@ AERIAL_TILT_UP	Tilt in su
 AERIAL_DESCEND	Discesa
 AERIAL_EAGLE	Aquila
 AERIAL_HUNT	Aquila: zoom
-AERIAL_SPIRAL	Spirale
-AERIAL_LOOK_BACK	Sguardo indietro
 AERIAL_FLY_BY	Passaggio
 AERIAL_VERTIGO	Vertigo in salita

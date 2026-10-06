@@ -178,7 +178,7 @@ mod tests {
             fov: Some(55.0),
             repeat: true,
             key: 9,
-            mode: Mode::Live,
+            mode: Mode::Flight,
             routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],
             recordings: vec![Recording {
                 name: "the long way".into(),
@@ -193,6 +193,8 @@ mod tests {
         // the first keys move to the new ones
         let old = Setup::parse("key 6\npoint_key 8\npace 0.5\nuse_points true\n");
         assert_eq!(old.source, Source::Points);
+        // the take the player played is gone: a walk
+        assert_eq!(Setup::parse("mode live\n").mode, Mode::Walk);
         assert_eq!((old.key, old.pace), (KEY, 0.5));
     }
 }
