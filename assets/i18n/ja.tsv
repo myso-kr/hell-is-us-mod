@@ -967,3 +967,11 @@ AERIAL_VERTIGO	めまい上昇
 NO_FALL_DAMAGE	落下ダメージなし
 NO_FALL_DAMAGE_NOT_FOUND	落下ダメージなし：ゲームの落下設定が見つかりません
 FILM_DISTANCE_DRONE	飛行はドローン視点です。レンズがその場で回転するため、距離は選びません。
+FILM_SOURCE_TOUR	ワールドツアー
+FILM_TOUR_HOW	歩ける場所をもとに作ります。地域中の地点を巡り、見どころ（セーブ地点・人・仕掛け）を先に、まだ見ていない最も近い所へ順に進みます。
+FILM_TOUR_LENGTH	ツアーの長さ
+FILM_TOUR_MAKE	ツアーを作成
+FILM_TOUR_REMAKE	ここから作り直す
+FILM_TOUR_MAKING	ツアーを計算中…
+FILM_TOUR_MADE	ツアー準備完了：{km} km
+FILM_TOUR_NO_NAV	ここの歩行マップをまだ読み込んでいません。3Dマップを一度開くか、少し待ってください。

@@ -459,7 +459,7 @@ pub fn run(shared: Arc<Shared>) {
         {
             let setup = shared.film_setup.lock().unwrap();
             let (points, track) = match setup.source {
-                crate::film::Source::Recording => (Vec::new(), filmkeys::drawn(&setup)),
+                crate::film::Source::Recording | crate::film::Source::Tour => (Vec::new(), filmkeys::drawn(&setup)),
                 _ => (filmkeys::drawn(&setup), Vec::new()),
             };
             drop(setup);

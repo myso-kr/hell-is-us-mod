@@ -304,6 +304,49 @@ impl NavMesh {
         self.polys.len()
     }
 
+    /// Places spread over all that can be walked to from `from`: one poly's centre for every
+    /// `cell` square the walkable part holds (filming's tour).
+    pub fn spread(&self, from: [f32; 3], cell: f32) -> Vec<[f32; 3]> {
+        let Some((start, _)) = self.locate(from) else { return Vec::new() };
+        let comp = self.components();
+        let mine = comp[start as usize];
+        let mut by: HashMap<(i64, i64), [f32; 3]> = HashMap::new();
+        for (i, p) in self.polys.iter().enumerate() {
+            if comp[i] != mine || p.corners.is_empty() {
+                continue;
+            }
+            let key = ((p.centre[0] / cell).floor() as i64, (p.centre[1] / cell).floor() as i64);
+            by.entry(key).or_insert(p.centre);
+        }
+        let mut out: Vec<_> = by.into_iter().collect();
+        out.sort_by_key(|(k, _)| *k);
+        out.into_iter().map(|(_, p)| p).collect()
+    }
+
+    /// Those of `points` that can be walked to from `from` (on the same walkable part).
+    pub fn walkable_from(&self, from: [f32; 3], points: &[[f32; 3]]) -> Vec<[f32; 3]> {
+        let Some((start, _)) = self.locate(from) else { return Vec::new() };
+        let comp = self.components();
+        let mine = comp[start as usize];
+        points.iter().copied().filter(|&p| self.locate(p).is_some_and(|(i, _)| comp[i as usize] == mine)).collect()
+    }
+
+    /// A walking leg from `a` to `b` with heights: each point's floor found from the one before
+    /// (cm). `None` where it cannot be walked.
+    pub fn leg(&self, a: [f32; 3], b: [f32; 3]) -> Option<Vec<[f32; 3]>> {
+        let (path, _) = self.route(a, b)?;
+        let mut z = a[2];
+        Some(
+            path.points
+                .iter()
+                .map(|q| {
+                    z = self.floor_at([q[0], q[1], z]).unwrap_or(z);
+                    [q[0], q[1], z]
+                })
+                .collect(),
+        )
+    }
+
     /// The height of poly `i` under (x, y), if (x, y) is inside it.
     fn height_in(&self, i: u32, x: f32, y: f32) -> Option<f32> {
         let c = &self.polys[i as usize].corners;

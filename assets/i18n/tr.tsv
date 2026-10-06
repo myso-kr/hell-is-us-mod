@@ -967,3 +967,11 @@ AERIAL_VERTIGO	Vertigo tırmanışı
 NO_FALL_DAMAGE	Düşme hasarı yok
 NO_FALL_DAMAGE_NOT_FOUND	Düşme hasarı yok: oyunun düşme ayarları bulunamadı
 FILM_DISTANCE_DRONE	Uçuş bir drone görüşüdür: mercek kendi etrafında döner, bu yüzden mesafe seçilmez.
+FILM_SOURCE_TOUR	Dünya turu
+FILM_TOUR_HOW	Yürünebilen yerlerden çıkarılır: bölgenin her yerinden noktalar, önce görülecekler (kayıt noktaları, insanlar, mekanizmalar), her seferinde henüz görülmemiş en yakını.
+FILM_TOUR_LENGTH	Uzunluk
+FILM_TOUR_MAKE	Turu oluştur
+FILM_TOUR_REMAKE	Buradan yeniden oluştur
+FILM_TOUR_MAKING	Tur hesaplanıyor…
+FILM_TOUR_MADE	Tur hazır: {km} km
+FILM_TOUR_NO_NAV	Yürünebilir harita burada henüz okunmadı: 3B haritayı bir kez açın ya da biraz bekleyin.

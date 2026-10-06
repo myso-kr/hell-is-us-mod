@@ -374,3 +374,21 @@ ground and the hero carried behind it drowned: `Blocking::floor` is the landscap
 surface of water (pools and water boxes) over it; `avoid::above_floor` keeps the camera 150 cm
 and the hero's feet 50 cm above it, unless the floor is over 8 m above (under the landscape:
 a cave, a hall), where nothing is known of the floor.
+
+### Tour, unstick, carried hero clear of the ground (2026-10-07)
+
+- Skimming low downhill, the carried hero touched the slope behind and the game played a landing
+  (sound, effects; no damage with `nofall`). Its feet now keep `FEET_OVER_FLOOR` = 3 m over the
+  floor and over the top of any obstacle it would be within 3 m of (`Blocking::under`). Raising
+  it keeps it behind the lens: the look's pitch is never above level on a flight.
+- `Source::Tour` (`film/tour.rs`): `NavMesh::spread` takes one poly centre per 40 m square of the
+  walkable part the hero is on; the sights are save points, NPCs and things to work, kept to
+  that part (`NavMesh::walkable_from`). Greedy: the nearest unseen next (a sight at half its
+  distance), each leg walked by `NavMesh::leg` (the route with each point's floor found from the
+  one before), every place within 20 m of a leg counted seen, until `Setup.tour_km`. Made on a
+  thread from the card (`TourJob`), kept as `tour_point` lines in film.txt; a take reaches its
+  start on the navmesh. Drawn as a line, like a recording.
+- `take/unstick.rs`: when the driver reports stuck (30 cm in 2.5 s), two steps aside (0.8 s each,
+  back and to one side, then the other), then a hop of 2.5 m along the route, set down 30 cm
+  over the route's height and let fall (`Session::hop`); after three hops it gives up. Fifteen
+  seconds walking well forgives the count. Every take now has the hero's root wired for this.

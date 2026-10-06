@@ -8,6 +8,65 @@ use super::*;
 use crate::film::{AerialPlan, Cuts, Director, Lens, Mode, Setup, Source};
 use crate::ui::theme::INLINE;
 
+/// A tour of the world being made on a thread of its own (it walks the navmesh many times).
+#[derive(Default)]
+pub(super) struct TourJob {
+    making: Option<std::sync::mpsc::Receiver<Vec<[f32; 3]>>>,
+}
+
+impl TourJob {
+    /// The tour's part of the route card: how long, made or made again, how long it came out.
+    fn card(&mut self, t: &mut Tui, snap: Option<&Snapshot>, setup: &mut Setup) {
+        if let Some(rx) = &self.making {
+            match rx.try_recv() {
+                Ok(tour) => {
+                    setup.tour = tour;
+                    self.making = None;
+                }
+                Err(std::sync::mpsc::TryRecvError::Disconnected) => self.making = None,
+                Err(std::sync::mpsc::TryRecvError::Empty) => {}
+            }
+        }
+        note(t, tr!("FILM_TOUR_HOW"));
+        field(t, tr!("FILM_TOUR_LENGTH"), |t| tw::slider(t, &mut setup.tour_km, crate::film::TOUR_KM, 0.5, " km"));
+        let from = snap.and_then(|s| s.pose.map(|(p, _)| ([p[0] as f32, p[1] as f32, p[2] as f32], s)));
+        let label = if setup.tour.is_empty() { tr!("FILM_TOUR_MAKE") } else { tr!("FILM_TOUR_REMAKE") };
+        let free = self.making.is_none() && from.is_some_and(|(_, s)| !s.nav.is_empty());
+        if w(t, |ui| ui.add_enabled(free, egui::Button::new(label))).clicked() {
+            if let Some((hero, s)) = from {
+                // the sights: save points, people, things to work
+                use crate::actors::Kind;
+                let sights: Vec<[f32; 3]> = s
+                    .things
+                    .iter()
+                    .filter(|x| matches!(x.kind(), Kind::Save | Kind::Npc | Kind::Interact))
+                    .map(|x| x.at)
+                    .collect();
+                let (nav, budget) = (s.nav.clone(), setup.tour_km * 100_000.0);
+                let feet = [hero[0], hero[1], hero[2] - crate::film::FEET];
+                let (tx, rx) = std::sync::mpsc::channel();
+                std::thread::spawn(move || {
+                    let places = nav.spread(feet, crate::film::TOUR_CELL);
+                    // only the sights that can be walked to: none behind a locked door
+                    let sights = nav.walkable_from(feet, &sights);
+                    let way = crate::film::tour(feet, &places, &sights, budget, |a, b| nav.leg(a, b));
+                    let _ = tx.send(way);
+                });
+                self.making = Some(rx);
+            }
+        }
+        if self.making.is_some() {
+            text(t, RichText::new(tr!("FILM_TOUR_MAKING")).color(WAIT));
+        } else if setup.tour.len() >= 2 {
+            let km: f32 =
+                setup.tour.windows(2).map(|w| (w[1][0] - w[0][0]).hypot(w[1][1] - w[0][1])).sum::<f32>() / 100_000.0;
+            text(t, RichText::new(trf!("FILM_TOUR_MADE", km = format!("{km:.1}"))).color(DIM));
+        } else if from.is_some_and(|(_, s)| s.nav.is_empty()) {
+            note(t, tr!("FILM_TOUR_NO_NAV"));
+        }
+    }
+}
+
 /// The director's plan, kept while the route and the take it was made for stay the same: each
 /// stretch (cm along) and the name of how it is shot.
 #[derive(Default)]
@@ -24,7 +83,7 @@ impl Panel {
         let cols = self.columns;
         tw::spans(t, cols, &[1, 1, 1, 3], |t, i| match i {
             0 => self.film_take(t, snap, &mut setup),
-            1 => self.film_route(t, &mut setup),
+            1 => self.film_route(t, snap, &mut setup),
             2 => self.film_camera(t, &mut setup),
             _ => self.film_plan(t, snap, &setup),
         });
@@ -79,7 +138,7 @@ impl Panel {
 
     /// The route: the guide's, or the points (taken in the game or on the 3D map) and the routes
     /// kept by name; the pace, back and forth.
-    fn film_route(&mut self, t: &mut Tui, setup: &mut Setup) {
+    fn film_route(&mut self, t: &mut Tui, snap: Option<&Snapshot>, setup: &mut Setup) {
         card(t, tr!("FILM_ROUTE"), |t| {
             let n = setup.points.len();
             choices(t, |t| {
@@ -87,6 +146,7 @@ impl Panel {
                     (Source::Guide, tr!("FILM_SOURCE_ROUTE").to_string()),
                     (Source::Points, trf!("FILM_SOURCE_POINTS", n = n)),
                     (Source::Recording, trf!("FILM_SOURCE_RECORDING", n = setup.recordings.len())),
+                    (Source::Tour, tr!("FILM_SOURCE_TOUR").to_string()),
                 ] {
                     if w(t, |ui| ui.radio(setup.source == src, label)).clicked() {
                         setup.source = src;
@@ -104,6 +164,7 @@ impl Panel {
                     self.film_routes_kept(t, setup);
                 }
                 Source::Recording => self.film_recordings(t, setup),
+                Source::Tour => self.film_tour.card(t, snap, setup),
             }
             field(t, tr!("FILM_PACE"), |t| tw::slider(t, &mut setup.pace, 0.2..=1.0, 0.05, ""));
             switch(t, &mut setup.repeat, tr!("FILM_REPEAT"));

@@ -967,3 +967,11 @@ AERIAL_VERTIGO	Vertigo ascendant
 NO_FALL_DAMAGE	Pas de dégâts de chute
 NO_FALL_DAMAGE_NOT_FOUND	Pas de dégâts de chute : réglages de chute introuvables
 FILM_DISTANCE_DRONE	Un vol est une vue de drone : l’objectif tourne sur lui-même, il n’y a pas de distance à choisir.
+FILM_SOURCE_TOUR	Une visite du monde
+FILM_TOUR_HOW	Calculé à partir de ce qui est praticable : des lieux partout dans la région, d’abord les points d’intérêt (sauvegardes, personnes, mécanismes), chaque fois le plus proche pas encore vu.
+FILM_TOUR_LENGTH	Longueur
+FILM_TOUR_MAKE	Créer la visite
+FILM_TOUR_REMAKE	Refaire d’ici
+FILM_TOUR_MAKING	Calcul de la visite…
+FILM_TOUR_MADE	Visite prête : {km} km
+FILM_TOUR_NO_NAV	La carte praticable n’est pas encore lue ici : ouvrez la carte 3D une fois ou patientez.

@@ -1801,8 +1801,11 @@ impl super::Panel {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
                 {
                     let setup = self.shared.film_setup.lock().unwrap();
-                    let recorded = setup.source == crate::film::Source::Recording;
-                    let rec = setup.recordings.get(setup.recording).map(|r| r.points.clone()).unwrap_or_default();
+                    let recorded = matches!(setup.source, crate::film::Source::Recording | crate::film::Source::Tour);
+                    let rec = match setup.source {
+                        crate::film::Source::Tour => setup.tour.clone(),
+                        _ => setup.recordings.get(setup.recording).map(|r| r.points.clone()).unwrap_or_default(),
+                    };
                     self.map3d.film = if recorded { Vec::new() } else { setup.points.clone() };
                     self.map3d.film_track = if recorded { rec } else { Vec::new() };
                 }

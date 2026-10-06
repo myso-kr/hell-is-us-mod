@@ -8,6 +8,15 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ## Unreleased
 
+### Added (filming)
+
+- A tour of the world as a way to film, with no guide's route, points or recording: worked out
+  from where the hero can walk — places all over the region, the sights (save points, people,
+  things to work) first, each next the nearest not yet seen — as long as asked (0.5–20 km),
+  made from where the hero stands and kept. Walked or flown, and drawn on the maps.
+- A walk caught on a wall or in a narrow place steps back to one side and the other, then lifts
+  the hero a little on along the route, before it gives up.
+
 ### Added (cheats)
 
 - No fall damage (Survival): the game's fall damage heights put out of reach while it is on, and
@@ -28,7 +37,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   1.5 m behind it, which read as circling something), with a drone's wide lens on the wide
   looks; the closing-in ones keep their narrow end. Neither the camera nor the hero it carries
   goes into the ground or under water (the hero drowned): both are kept above the landscape or
-  the water's surface, except under the landscape (a cave, a hall).
+  the water's surface, except under the landscape (a cave, a hall). The carried hero keeps 3 m
+  clear of the ground and of what stands on it, so it never lands and no landing is played.
 - A flight carries the hero along just behind the camera's lens and above it (3 m back along
   its look, 1 m up: never in the frame, whatever it looks at), since the game draws the land
   finely only near the hero; the hero is kept alive and ignored by enemies for the take (the god

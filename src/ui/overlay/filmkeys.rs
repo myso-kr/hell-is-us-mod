@@ -99,6 +99,7 @@ pub fn subjects(shared: &Shared, hero: Option<[f32; 3]>) {
 pub fn drawn(setup: &Setup) -> Vec<[f32; 3]> {
     match setup.source {
         Source::Recording => setup.recordings.get(setup.recording).map(|r| r.points.clone()).unwrap_or_default(),
+        Source::Tour => setup.tour.clone(),
         _ => setup.points.clone(),
     }
 }

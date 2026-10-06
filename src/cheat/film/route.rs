@@ -1,5 +1,5 @@
 //! A take's way from the card's settings: the guide's route, the points walked on the navmesh, a
-//! recording as it was walked — or any of them flown above the floor.
+//! recording as it was walked, a tour of the world — or any of them flown above the floor.
 
 use super::flight::FLIGHT_LIFT;
 use super::{Setup, Source};
@@ -34,6 +34,14 @@ pub fn path(setup: &Setup, hero: [f32; 3], route: &[[f32; 3]], nav: &crate::navm
             path.extend(rec.points.iter().skip(1).copied());
             Some(path)
         }
+        // the tour as made, reached on the navmesh from where the hero is now
+        Source::Tour => {
+            let first = *setup.tour.first()?;
+            let mut path = vec![hero];
+            leg(hero, first, &mut path);
+            path.extend(setup.tour.iter().skip(1).copied());
+            (path.len() >= 2).then_some(path)
+        }
     }
 }
 
@@ -62,5 +70,6 @@ pub fn flight_path(setup: &Setup, route: &[[f32; 3]]) -> Option<Vec<[f32; 3]>> {
             // a recording is dense: one point a metre is plenty to fly
             (rec.points.len() >= 2).then(|| rec.points.iter().step_by(2).map(lift).collect())
         }
+        Source::Tour => (setup.tour.len() >= 2).then(|| setup.tour.iter().map(lift).collect()),
     }
 }

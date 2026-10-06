@@ -967,3 +967,11 @@ AERIAL_VERTIGO	Vertigo-Aufstieg
 NO_FALL_DAMAGE	Kein Fallschaden
 NO_FALL_DAMAGE_NOT_FOUND	Kein Fallschaden: Falleinstellungen des Spiels nicht gefunden
 FILM_DISTANCE_DRONE	Ein Flug ist Drohnensicht: Die Linse dreht sich um sich selbst, daher gibt es keinen Abstand zu wählen.
+FILM_SOURCE_TOUR	Eine Weltreise
+FILM_TOUR_HOW	Aus den begehbaren Flächen ermittelt: Orte überall in der Region, Sehenswertes (Speicherpunkte, Leute, Mechanismen) zuerst, jeweils der nächste noch nicht gesehene.
+FILM_TOUR_LENGTH	Länge
+FILM_TOUR_MAKE	Reise erstellen
+FILM_TOUR_REMAKE	Von hier neu erstellen
+FILM_TOUR_MAKING	Reise wird berechnet…
+FILM_TOUR_MADE	Reise bereit: {km} km
+FILM_TOUR_NO_NAV	Die begehbare Karte ist hier noch nicht gelesen: einmal die 3D-Karte öffnen oder kurz warten.

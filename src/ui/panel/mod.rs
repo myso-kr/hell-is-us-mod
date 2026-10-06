@@ -341,6 +341,7 @@ pub struct Panel {
     /// A name for the filming route to keep (film.rs), and the director's plan as last made.
     film_name: String,
     film_plan: film::PlanCache,
+    film_tour: film::TourJob,
     /// How far a logic puzzle's hints are opened (deep.rs `hint`): 0 shut, 1 where its devices
     /// are, 2 the first step too, 3 the whole answer.
     hints: std::collections::HashMap<u64, u8>,
@@ -473,6 +474,7 @@ impl Panel {
             revealed: Default::default(),
             film_name: String::new(),
             film_plan: Default::default(),
+            film_tour: Default::default(),
             hints: Default::default(),
             shown_quest: None,
             slot_hints: Default::default(),

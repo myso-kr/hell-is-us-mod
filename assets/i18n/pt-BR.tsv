@@ -967,3 +967,11 @@ AERIAL_VERTIGO	Vertigo subindo
 NO_FALL_DAMAGE	Sem dano de queda
 NO_FALL_DAMAGE_NOT_FOUND	Sem dano de queda: configuração de queda não encontrada
 FILM_DISTANCE_DRONE	Um voo é a visão de um drone: a lente gira em torno de si, então não há distância a escolher.
+FILM_SOURCE_TOUR	Um passeio pelo mundo
+FILM_TOUR_HOW	Calculado a partir de onde se pode andar: lugares por toda a região, primeiro os destaques (salvamentos, pessoas, mecanismos), sempre o mais próximo ainda não visto.
+FILM_TOUR_LENGTH	Comprimento
+FILM_TOUR_MAKE	Criar passeio
+FILM_TOUR_REMAKE	Refazer daqui
+FILM_TOUR_MAKING	Calculando o passeio…
+FILM_TOUR_MADE	Passeio pronto: {km} km
+FILM_TOUR_NO_NAV	O mapa caminhável ainda não foi lido aqui: abra o mapa 3D uma vez ou aguarde.

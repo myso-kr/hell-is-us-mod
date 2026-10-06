@@ -967,3 +967,11 @@ AERIAL_VERTIGO	Wznoszący Vertigo
 NO_FALL_DAMAGE	Brak obrażeń od upadku
 NO_FALL_DAMAGE_NOT_FOUND	Brak obrażeń od upadku: nie znaleziono ustawień upadku
 FILM_DISTANCE_DRONE	Lot to widok z drona: obiektyw obraca się wokół siebie, więc nie wybiera się odległości.
+FILM_SOURCE_TOUR	Wycieczka po świecie
+FILM_TOUR_HOW	Wyznaczona z tego, gdzie da się chodzić: miejsca w całym regionie, najpierw atrakcje (zapisy, ludzie, mechanizmy), za każdym razem najbliższe jeszcze niewidziane.
+FILM_TOUR_LENGTH	Długość
+FILM_TOUR_MAKE	Utwórz wycieczkę
+FILM_TOUR_REMAKE	Utwórz ponownie stąd
+FILM_TOUR_MAKING	Wyznaczanie wycieczki…
+FILM_TOUR_MADE	Wycieczka gotowa: {km} km
+FILM_TOUR_NO_NAV	Mapa przejść nie jest tu jeszcze wczytana: otwórz raz mapę 3D lub chwilę poczekaj.

@@ -48,6 +48,7 @@ mod setup;
 mod source;
 mod subjects;
 mod take;
+mod tour;
 mod walk;
 
 pub use avoid::{above_floor, clear_flight, headroom, room_behind, CAMERA_OVER_FLOOR, FEET_OVER_FLOOR};
@@ -62,10 +63,11 @@ pub use mode::Mode;
 pub use record::{pace_at, Recorder, Recording};
 pub use source::Source;
 pub use subjects::{about, Subject, SubjectFeed, SubjectKind};
+pub use tour::{tour, CELL as TOUR_CELL};
 
 /// The guide's route as the overlay draws it (Unreal cm, and its colour), shared with the panel.
 pub type RouteFeed = std::sync::Arc<std::sync::Mutex<(Vec<[f32; 3]>, [u8; 3])>>;
 pub use route::{flight_path, path, recording_starts};
-pub use setup::{Setup, DISTANCE, FEET, FOV, KEY, NEAR};
+pub use setup::{Setup, DISTANCE, FEET, FOV, KEY, NEAR, TOUR_KM};
 pub use take::{roll, HeroRoot, Plan, State, Take, Wiring, COUNTDOWN_S, KEY_GRACE, ZOOM_AT};
 pub use walk::{Driver, Steer};

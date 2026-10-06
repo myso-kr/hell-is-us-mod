@@ -967,3 +967,11 @@ AERIAL_VERTIGO	Vertigo climb
 NO_FALL_DAMAGE	No fall damage
 NO_FALL_DAMAGE_NOT_FOUND	No fall damage: the game’s fall settings were not found
 FILM_DISTANCE_DRONE	A flight is a drone’s view: the lens turns about itself, so there is no distance to choose.
+FILM_SOURCE_TOUR	A tour of the world
+FILM_TOUR_HOW	Worked out from where you can walk: places all over the region, the sights (save points, people, things to work) first, each next the nearest not yet seen.
+FILM_TOUR_LENGTH	Tour length
+FILM_TOUR_MAKE	Make the tour
+FILM_TOUR_REMAKE	Make it again from here
+FILM_TOUR_MAKING	Working out the tour…
+FILM_TOUR_MADE	Tour ready: {km} km
+FILM_TOUR_NO_NAV	The walkable map is not read yet here: open the 3D map once, or wait a moment.

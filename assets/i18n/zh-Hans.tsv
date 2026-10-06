@@ -967,3 +967,11 @@ AERIAL_VERTIGO	变焦上升
 NO_FALL_DAMAGE	无坠落伤害
 NO_FALL_DAMAGE_NOT_FOUND	无坠落伤害：未找到游戏的坠落设置
 FILM_DISTANCE_DRONE	飞行是无人机视角：镜头原地转动，因此无需选择距离。
+FILM_SOURCE_TOUR	世界巡游
+FILM_TOUR_HOW	根据可行走的区域生成：遍布整个区域的地点，先去看点（存档点、人物、机关），每次去最近的未到之处。
+FILM_TOUR_LENGTH	巡游长度
+FILM_TOUR_MAKE	生成巡游
+FILM_TOUR_REMAKE	从这里重新生成
+FILM_TOUR_MAKING	正在计算巡游…
+FILM_TOUR_MADE	巡游已就绪：{km} 公里
+FILM_TOUR_NO_NAV	此处的可行走地图尚未读取：请打开一次 3D 地图或稍候。

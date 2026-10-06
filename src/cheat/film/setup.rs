@@ -24,6 +24,9 @@ pub struct Setup {
     pub recording: usize,
     /// How the director changes shots.
     pub cuts: Cuts,
+    /// The world's tour as last made (tour.rs), and how long to make it (km).
+    pub tour: Vec<[f32; 3]>,
+    pub tour_km: f32,
 }
 
 impl Default for Setup {
@@ -42,9 +45,14 @@ impl Default for Setup {
             recordings: Vec::new(),
             recording: 0,
             cuts: Cuts::default(),
+            tour: Vec::new(),
+            tour_km: 3.0,
         }
     }
 }
+
+/// The tour lengths the card offers (km).
+pub const TOUR_KM: std::ops::RangeInclusive<f32> = 0.5..=20.0;
 
 /// The key by default (F7 is the game's photo mode).
 pub const KEY: u8 = 8;
@@ -75,7 +83,7 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "source {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nmode {}\nrecording_chosen {}\ncuts {}\n",
+            "source {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nmode {}\nrecording_chosen {}\ncuts {}\ntour_km {}\n",
             self.source.word(),
             self.pace,
             self.lens.word(),
@@ -85,7 +93,8 @@ impl Setup {
             self.key,
             self.mode.word(),
             self.recording,
-            self.cuts.word()
+            self.cuts.word(),
+            self.tour_km
         );
         for p in &self.points {
             out += &format!("point {}\n", pt(p));
@@ -96,6 +105,9 @@ impl Setup {
             for p in pts {
                 out += &format!("route_point {}\n", pt(p));
             }
+        }
+        for p in &self.tour {
+            out += &format!("tour_point {}\n", pt(p));
         }
         for r in &self.recordings {
             out += &format!("recording {}\n", r.name.replace('\n', " "));
@@ -120,6 +132,8 @@ impl Setup {
                 // before recordings: points or the guide's route
                 ["use_points", v] => s.source = if v == "true" { Source::Points } else { Source::Guide },
                 ["source", v] => s.source = Source::from_word(v).unwrap_or_default(),
+                ["tour_km", v] => s.tour_km = v.parse().unwrap_or(s.tour_km).clamp(*TOUR_KM.start(), *TOUR_KM.end()),
+                ["tour_point", ..] => s.tour.extend(point(&f[1..])),
                 ["cuts", v] => s.cuts = Cuts::from_word(v).unwrap_or_default(),
                 ["recording_chosen", v] => s.recording = v.parse().unwrap_or(0),
                 ["recording", ..] => s.recordings.push(Recording {
@@ -187,6 +201,8 @@ mod tests {
             }],
             recording: 0,
             cuts: Cuts::Cuts,
+            tour: vec![[1.0, 2.0, 3.0], [400.0, 5.0, 6.0]],
+            tour_km: 7.5,
         };
         assert_eq!(Setup::parse(&s.render()), s);
         assert_eq!(Setup::parse(""), Setup::default());

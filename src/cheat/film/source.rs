@@ -10,16 +10,19 @@ pub enum Source {
     Points,
     /// A recording (Ctrl+Shift+the key), followed as it was walked.
     Recording,
+    /// A tour of the world worked out from the navmesh alone (tour.rs).
+    Tour,
 }
 
 impl Source {
-    pub const ALL: [Source; 3] = [Source::Guide, Source::Points, Source::Recording];
+    pub const ALL: [Source; 4] = [Source::Guide, Source::Points, Source::Recording, Source::Tour];
 
     pub(super) fn word(self) -> &'static str {
         match self {
             Source::Guide => "guide",
             Source::Points => "points",
             Source::Recording => "recording",
+            Source::Tour => "tour",
         }
     }
 
