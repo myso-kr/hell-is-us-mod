@@ -924,8 +924,8 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
             }
             let head = [hero[0], hero[1], hero[2] + EYE - 90.0];
             // Circling turns the camera about its pivot, which on a flight is on the path, not
-            // the hero: there it looks at the hero instead.
-            let lens = if plan.lens == Lens::Orbit { Lens::Spotlight } else { plan.lens };
+            // the hero: there it looks the way ahead instead.
+            let lens = if plan.lens == Lens::Orbit { Lens::Follow } else { plan.lens };
             if let Some((tp, ty)) = aim(lens, fly.at, fly.ahead_yaw, head, orbit) {
                 let (np, ny) = (pitch.toward(tp, dt), yaw.toward(ty, dt));
                 let roll = read3(w.rotation).map_or(0.0, |r| r[2]);

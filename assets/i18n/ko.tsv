@@ -891,7 +891,7 @@ FILM_FOV	시야각 조절 (줌)
 FILM_FOV_DEG	시야각 (기본 70°)
 KEEP_RUNNING_UNFOCUSED	패널로 전환해도 게임이 멈추지 않게 (패널 실행 중에는 게임의 「포커스를 잃으면 일시정지」를 끕니다)
 FILM_FLIGHT	카메라만 비행 (영웅은 제자리)
-FILM_FLIGHT_NOTE	카메라가 지점 사이를 바닥 1.8m 위로 곧게 날며 모서리는 둥글게 돕니다. 「주시」는 영웅을 계속 바라봅니다.
-FILM_ORBIT_NOT_IN_FLIGHT	카메라만 비행할 때는 쓸 수 없습니다. 영웅이 아니라 경로 위 지점을 돌게 되므로, 대신 영웅을 바라봅니다.
+FILM_FLIGHT_NOTE	카메라가 지점 사이를 바닥 1.8m 위로 곧게 날며 모서리는 둥글게 돕니다. 기본은 진행 방향(추적)을 보고, 「주시」는 영웅을 계속 바라봅니다.
+FILM_ORBIT_NOT_IN_FLIGHT	카메라만 비행할 때는 쓸 수 없습니다. 영웅이 아니라 경로 위 지점을 돌게 되므로, 대신 진행 방향을 봅니다.
 FILM_POINT_ADDED	촬영 지점 {n} 추가
 FILM_POINT_REMOVED	촬영 지점 {k} 삭제 ({n}개 남음)

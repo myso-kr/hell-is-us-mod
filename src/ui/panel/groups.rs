@@ -165,7 +165,10 @@ impl Panel {
                     });
                 }
             }
-            switch(t, &mut setup.flight, tr!("FILM_FLIGHT"));
+            // a flight mostly looks the way it goes: tracking, when it is switched on
+            if switch(t, &mut setup.flight, tr!("FILM_FLIGHT")).changed() && setup.flight {
+                setup.lens = crate::film::Lens::Follow;
+            }
             if setup.flight {
                 note(t, tr!("FILM_FLIGHT_NOTE"));
             }

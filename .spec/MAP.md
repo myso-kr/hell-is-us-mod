@@ -568,3 +568,21 @@ written before it seed it from the trail on load. With `fog` on, `raster::fog` d
 4 px blocks by the share of seen cells around each, bilinear and smoothstepped, so the edge is
 soft; it runs before the trail, so pins, things and the route stay on top. `for_drawing` copies
 the cells only while the fog is on.
+
+## The 3D map stands up (2026-10-07)
+
+The user found the 3D map flat: it drew the landscape, the navmesh's floors and the places'
+icons, and nothing that stands up. `map3d::load` now adds a fourth floor kind, what stands up,
+drawn with the flat program (the shading baked into the colour) and left out of the X-ray pass:
+
+- **Obstacles** from the scene cache (`Mods\cache`, obstacles.rs): each outline raised from its
+  bottom to its top, each side lit by how it faces the sun (outward, away from the outline's
+  middle), a lighter top. Water, and anything over 60 m tall or 200 m across, is left out.
+- **Steps**: an edge of a navmesh polygon no other polygon shares (keyed by its ends to the
+  centimetre) is let down 80 cm as a darker face of its floor's colour, so terraces, ledges and
+  levels read as such.
+- **Ladders and jumps**: the navmesh tiles' off-mesh links (type 1 polygons, skipped before) are
+  kept by their two ends. One rising over 1.5 m within 2 m across is drawn as a ladder (two rails
+  50 cm apart, a rung every 45 cm), the rest dashed, amber.
+- **Lifts**: `Graph::lifts` (no items held) — a shaft from the lowest stop to the highest and a
+  platform at each, cyan.

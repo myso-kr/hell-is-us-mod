@@ -14,6 +14,7 @@ use crate::graph::Graph;
 use eframe::egui::{self, Color32, RichText};
 use eframe::{egui_glow, glow};
 use glow::HasContext;
+use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 /// A region's scene, ready for the GPU: positions in metres, x east, y up, z south, from the
@@ -24,8 +25,15 @@ pub struct Scene {
     /// x, y, z, nx, ny, nz per vertex; triangles by index.
     terrain: Vec<f32>,
     terrain_idx: Vec<u32>,
-    /// x, y, z, r, g, b per vertex, three to a triangle: floors on the ground, under it, indoors.
-    floors: [Vec<f32>; 3],
+    /// x, y, z, r, g, b per vertex, three to a triangle: floors on the ground, under it, indoors;
+    /// and what stands up (the obstacles raised to their heights, the floors' edges let down to
+    /// show their steps), shaded by the sun as they face.
+    floors: [Vec<f32>; 4],
+    /// The navmesh's off-mesh links (scene metres): ladders where they rise steeply, else jumps
+    /// and drops.
+    links: Vec<([f32; 3], [f32; 3])>,
+    /// The lifts: each one's stops, lowest first (scene metres).
+    lifts: Vec<Vec<[f32; 3]>>,
     /// The graph's places: position, colour, round, label.
     nodes: Vec<Node>,
     /// The landscape's height span (m), for the colour ramp.
@@ -189,7 +197,9 @@ pub fn load(world: &str, graph: &Graph, rounds: &[Option<usize>]) -> Option<Scen
             }
         }
     }
-    // the floors, from the cooked navmesh tiles
+    // the floors, from the cooked navmesh tiles; their edges and links kept on the way
+    let mut edges: HashMap<([i32; 3], [i32; 3]), Edge> = HashMap::new();
+    let mut links: Vec<([f32; 3], [f32; 3])> = Vec::new();
     {
         let bytes = &tiles;
         let mut o = 0;
@@ -211,6 +221,11 @@ pub fn load(world: &str, graph: &Graph, rounds: &[Option<usize>]) -> Option<Scen
             for p in 0..pc {
                 let Some(q) = tile.get(po + p * 32..po + p * 32 + 32) else { break };
                 if q[31] >> 6 == 1 {
+                    // an off-mesh link: its two ends
+                    let ends = [0, 1].map(|m| vert(u16::from_le_bytes([q[4 + 2 * m], q[5 + 2 * m]]) as usize));
+                    if let [Some(a), Some(b)] = ends {
+                        links.push((a, b));
+                    }
                     continue;
                 }
                 let cnt = q[30] as usize;
@@ -231,7 +246,76 @@ pub fn load(world: &str, graph: &Graph, rounds: &[Option<usize>]) -> Option<Scen
                         s.floors[kind].extend([sp[0], sp[1] + 0.25, sp[2], colour[0], colour[1], colour[2]]);
                     }
                 }
+                // the polygon's edges, for its steps (an edge no other polygon shares)
+                for m in 0..cnt {
+                    let (a, b) = (pts[m], pts[(m + 1) % cnt]);
+                    let key = |v: [f32; 3]| [v[0].round() as i32, v[1].round() as i32, v[2].round() as i32];
+                    let (ka, kb) = (key(a), key(b));
+                    let k = if ka < kb { (ka, kb) } else { (kb, ka) };
+                    edges.entry(k).or_insert((a, b, colour, 0)).3 += 1;
+                }
             }
+        }
+    }
+    // A floor's edge no other floor shares is a step down (or a drop): let down `STEP_DOWN` as a
+    // face of its own, darker, so the levels and terraces stand out.
+    for (a, b, colour, n) in edges.into_values() {
+        if n != 1 {
+            continue;
+        }
+        let shade = [colour[0] * 0.55, colour[1] * 0.55, colour[2] * 0.55];
+        let drop = |v: [f32; 3]| [v[0], v[1], v[2] - STEP_DOWN];
+        quad(&mut s, [a, b, drop(b), drop(a)], shade);
+    }
+    // What stands up: the obstacles (walls, rocks, pillars) raised from their bottom to their top,
+    // the sides shaded by the sun as they face, a lighter top.
+    if let Some(obs) = crate::scene_cache::load(world) {
+        let sun = [-0.6f32, 0.4];
+        for o in obs.obstacles.iter().filter(|o| !o.water && o.hull.len() >= 3) {
+            let (lo, hi) = (o.zmin, o.zmax);
+            let span = o.hull.iter().fold([f32::MAX, f32::MAX, f32::MIN, f32::MIN], |b, p| {
+                [b[0].min(p[0]), b[1].min(p[1]), b[2].max(p[0]), b[3].max(p[1])]
+            });
+            if hi - lo < 30.0 || hi - lo > 6000.0 || span[2] - span[0] > 20_000.0 || span[3] - span[1] > 20_000.0 {
+                continue;
+            }
+            let mid = o.hull.iter().fold([0.0f32; 2], |m, p| [m[0] + p[0], m[1] + p[1]]);
+            let mid = [mid[0] / o.hull.len() as f32, mid[1] / o.hull.len() as f32];
+            for i in 0..o.hull.len() {
+                let (a, b) = (o.hull[i], o.hull[(i + 1) % o.hull.len()]);
+                // outward: away from the middle
+                let (ex, ey) = (b[0] - a[0], b[1] - a[1]);
+                let len = ex.hypot(ey).max(1e-3);
+                let mut nrm = [ey / len, -ex / len];
+                if (a[0] - mid[0]) * nrm[0] + (a[1] - mid[1]) * nrm[1] < 0.0 {
+                    nrm = [-nrm[0], -nrm[1]];
+                }
+                let lit = 0.5 + 0.5 * (nrm[0] * sun[0] + nrm[1] * sun[1]).max(0.0);
+                let c = [STONE[0] * lit, STONE[1] * lit, STONE[2] * lit];
+                quad(&mut s, [[a[0], a[1], hi], [b[0], b[1], hi], [b[0], b[1], lo], [a[0], a[1], lo]], c);
+            }
+            let top = [STONE[0] * 1.15, STONE[1] * 1.15, STONE[2] * 1.15];
+            for i in 1..o.hull.len() - 1 {
+                for v in [o.hull[0], o.hull[i], o.hull[i + 1]] {
+                    let sp = s.to_scene([v[0], v[1], hi]);
+                    s.floors[3].extend([sp[0], sp[1], sp[2], top[0], top[1], top[2]]);
+                }
+            }
+        }
+    }
+    s.links = links.iter().map(|&(a, b)| (s.to_scene(a), s.to_scene(b))).collect();
+    // the lifts: each one's stops (the elevators' levers, one a floor)
+    {
+        let none = std::collections::HashSet::new();
+        let st = crate::graph::State { used: &none, known: &none, held: &none };
+        let full =
+            graph.nodes.iter().find(|n| crate::survey::Survey::world_of(&n.world) == world).map(|n| n.world.clone());
+        if let Some(full) = full {
+            s.lifts = graph
+                .lifts(&full, &st)
+                .into_iter()
+                .map(|stops| stops.iter().map(|&p| s.to_scene(p)).collect())
+                .collect();
         }
     }
     // the graph's places of the world
@@ -251,6 +335,21 @@ pub fn load(world: &str, graph: &Graph, rounds: &[Option<usize>]) -> Option<Scen
         });
     }
     Some(s)
+}
+
+/// A floor polygon's edge (Unreal cm): its ends, its floor's colour, how many polygons have it.
+type Edge = ([f32; 3], [f32; 3], [f32; 3], u32);
+
+/// How far a floor's free edge is let down to show its step (cm), and the colour of what stands up.
+const STEP_DOWN: f32 = 80.0;
+const STONE: [f32; 3] = [0.40, 0.42, 0.45];
+
+/// A face of four corners (Unreal cm, in order round it) added to what stands up, in `c`.
+fn quad(s: &mut Scene, q: [[f32; 3]; 4], c: [f32; 3]) {
+    for k in [0, 1, 2, 0, 2, 3] {
+        let p = s.to_scene(q[k]);
+        s.floors[3].extend([p[0], p[1], p[2], c[0], c[1], c[2]]);
+    }
 }
 
 /// A region's landscape as `survey --terrain` wrote it (cm).
@@ -609,6 +708,58 @@ impl Map3d {
             }
         }
         // markers over the scene: the route's end, the picked place, the hero
+        // ladders (off-mesh links that rise steeply): two rails and rungs; jumps and drops dashed
+        for &(a, b) in &scene.links {
+            let (dx, dy, dz) = (b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+            let flat = dx.hypot(dz);
+            if dy.abs() > 1.5 && flat < 2.0 {
+                let (lo, hi) = if a[1] < b[1] { (a, b) } else { (b, a) };
+                // the rails apart across the way it faces (or any way, straight up)
+                let (sx, sz) = if flat > 0.05 { (-dz / flat * 0.25, dx / flat * 0.25) } else { (0.25, 0.0) };
+                let at = |p: [f32; 3], side: f32, t: f32| {
+                    let q = [
+                        p[0] + (hi[0] - lo[0]) * t + sx * side,
+                        lo[1] + (hi[1] - lo[1]) * t,
+                        p[2] + (hi[2] - lo[2]) * t + sz * side,
+                    ];
+                    project(&vp, q, rect)
+                };
+                let rail = egui::Stroke::new(2.0, LADDER);
+                for side in [-1.0, 1.0] {
+                    if let (Some(p), Some(q)) = (at(lo, side, 0.0), at(lo, side, 1.0)) {
+                        painter.line_segment([p, q], egui::Stroke::new(3.5, OUTLINE));
+                        painter.line_segment([p, q], rail);
+                    }
+                }
+                let rungs = ((hi[1] - lo[1]) / 0.45).floor() as i32;
+                for r in 1..rungs {
+                    let t = r as f32 / rungs as f32;
+                    if let (Some(p), Some(q)) = (at(lo, -1.0, t), at(lo, 1.0, t)) {
+                        painter.line_segment([p, q], egui::Stroke::new(1.4, LADDER));
+                    }
+                }
+            } else if let (Some(p), Some(q)) = (project(&vp, a, rect), project(&vp, b, rect)) {
+                let n = ((q - p).length() / 6.0).max(1.0) as i32;
+                for k in (0..n).step_by(2) {
+                    let (t0, t1) = (k as f32 / n as f32, ((k + 1) as f32 / n as f32).min(1.0));
+                    painter.line_segment([p + (q - p) * t0, p + (q - p) * t1], egui::Stroke::new(1.6, LADDER));
+                }
+            }
+        }
+        // lifts: a shaft from the lowest stop to the highest, a platform at each
+        for stops in &scene.lifts {
+            let (Some(lo), Some(hi)) = (stops.first(), stops.last()) else { continue };
+            if let (Some(p), Some(q)) = (project(&vp, *lo, rect), project(&vp, [lo[0], hi[1], lo[2]], rect)) {
+                painter.line_segment([p, q], egui::Stroke::new(5.0, OUTLINE));
+                painter.line_segment([p, q], egui::Stroke::new(3.0, LIFT));
+            }
+            for st in stops {
+                if let Some(p) = project(&vp, [lo[0], st[1], lo[2]], rect) {
+                    painter.rect_filled(egui::Rect::from_center_size(p, egui::vec2(14.0, 6.0)), 2.0, OUTLINE);
+                    painter.rect_filled(egui::Rect::from_center_size(p, egui::vec2(12.0, 4.0)), 1.5, LIFT);
+                }
+            }
+        }
         // the filming take's points: joined in order, numbered
         if !self.film.is_empty() {
             let colour = Color32::from_rgb(255, 236, 170);
@@ -992,6 +1143,9 @@ fn viewport(rect: egui::Rect, ppp: f32, screen: [u32; 2]) -> egui::epaint::Viewp
 /// The maps' colours (raster.rs): the north mark, the marks' outline.
 const NORTH: Color32 = Color32::from_rgb(255, 110, 90);
 const OUTLINE: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 200);
+/// Ladders and jumps, and lifts, on the 3D map.
+const LADDER: Color32 = Color32::from_rgb(240, 190, 90);
+const LIFT: Color32 = Color32::from_rgb(110, 210, 235);
 
 /// A goal as the maps draw it: a diamond `s` px from its middle to a corner, outlined, `alpha`
 /// opaque.
@@ -1498,6 +1652,10 @@ impl Gpu {
                 gl.uniform_1_i32(u("uRound").as_ref(), 0);
                 for &(vao, _, n, k) in &self.floors {
                     if k == 0 && f.xray {
+                        continue;
+                    }
+                    // what stands up hides what is behind it: not drawn see-through
+                    if k == 3 && f.xray {
                         continue;
                     }
                     gl.uniform_1_f32(u("uAlpha").as_ref(), if k == 0 { alpha * 0.45 } else { alpha });

@@ -891,7 +891,7 @@ FILM_FOV	視野角を設定（ズーム）
 FILM_FOV_DEG	視野角（標準 70°）
 KEEP_RUNNING_UNFOCUSED	パネルに切り替えてもゲームを止めない（パネル実行中は「フォーカスを失ったら一時停止」をオフ）
 FILM_FLIGHT	カメラだけ飛ぶ（主人公はその場）
-FILM_FLIGHT_NOTE	カメラは地点間を床から1.8m上でまっすぐ飛び、角は丸めます。「注視」は主人公を見続けます。
-FILM_ORBIT_NOT_IN_FLIGHT	カメラだけ飛ぶときは使えません。主人公ではなく経路上の点を回るため、代わりに主人公を見ます。
+FILM_FLIGHT_NOTE	カメラは地点間を床から1.8m上でまっすぐ飛び、角は丸めます。標準は進む方向（追従）を見て、「注視」は主人公を見続けます。
+FILM_ORBIT_NOT_IN_FLIGHT	カメラだけ飛ぶときは使えません。主人公ではなく経路上の点を回るため、代わりに進む方向を見ます。
 FILM_POINT_ADDED	撮影地点 {n} を追加
 FILM_POINT_REMOVED	撮影地点 {k} を削除（残り {n}）

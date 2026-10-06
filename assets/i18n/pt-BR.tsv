@@ -891,7 +891,7 @@ FILM_FOV	Definir o campo de visão (zoom)
 FILM_FOV_DEG	Campo de visão (jogo: 70°)
 KEEP_RUNNING_UNFOCUSED	O jogo continua ao mudar para o painel (desliga a pausa ao perder o foco enquanto o painel roda)
 FILM_FLIGHT	Só a câmera voa (o herói fica)
-FILM_FLIGHT_NOTE	A câmera voa reta entre os pontos, 1,8 m acima do chão, com curvas suaves. Foco mira o herói.
-FILM_ORBIT_NOT_IN_FLIGHT	Não durante o voo da câmera: ela circularia um ponto da rota, não o herói (olha para o herói em vez disso).
+FILM_FLIGHT_NOTE	A câmera voa reta entre os pontos, 1,8 m acima do chão, com curvas suaves, olhando à frente (Seguir). Foco mira o herói.
+FILM_ORBIT_NOT_IN_FLIGHT	Não durante o voo da câmera: ela circularia um ponto da rota, não o herói (olha para a frente em vez disso).
 FILM_POINT_ADDED	Ponto {n} adicionado
 FILM_POINT_REMOVED	Ponto {k} removido ({n} restantes)

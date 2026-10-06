@@ -25,6 +25,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   set on the map settings' keys tab too.
 - The take's points are drawn on the minimap, the big map and the 3D map: joined in order and
   numbered, in a colour of their own.
+- The 3D map stands up: walls, rocks and pillars raised to their heights and shaded by the sun,
+  the floors' free edges let down to show their steps and levels, ladders drawn with rails and
+  rungs (jumps and drops dashed), and lifts as a shaft with a platform at each stop.
+- A filming flight looks the way it goes (Track) by default.
 
 ## 0.7.0 — 2026-10-06
 
