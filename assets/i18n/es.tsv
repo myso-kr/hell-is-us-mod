@@ -926,3 +926,10 @@ AERIAL_DIVE	picado
 AERIAL_BANK	entrando en la curva
 AERIAL_OVERHEAD	cenital
 AERIAL_ARRIVE	llegada
+FILM_SOURCE_RECORDING	Una grabación ({n})
+FILM_RECORD_HOW	Pulsa {key} en el juego para grabar tu camino; otra vez para parar y guardarlo.
+FILM_RECORDING	Grabando tu camino…
+FILM_RECORDING_EMPTY	Grabación detenida: no te moviste.
+FILM_RECORDING_NAME	Grabación {n}
+FILM_RECORDING_KEPT	{name} guardada ({m} m, {s} s)
+FILM_RECORDING_NOW	Grabando: {n} puntos

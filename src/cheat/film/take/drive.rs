@@ -36,7 +36,12 @@ impl Drive {
                 stuck: false,
             }
         } else {
-            self.driver.step([hero[0], hero[1]], s.plan.pace, dt)
+            // a recording walked at its own pace, as a share of the card's
+            let pace = match &s.plan.paces {
+                Some((start, paces)) => s.plan.pace * crate::film::pace_at(paces, *start, self.driver.along()),
+                None => s.plan.pace,
+            };
+            self.driver.step([hero[0], hero[1]], pace, dt)
         };
         if step.done && s.plan.repeat {
             // back the way it came, the camera carried on

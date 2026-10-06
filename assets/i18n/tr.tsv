@@ -926,3 +926,10 @@ AERIAL_DIVE	dalış
 AERIAL_BANK	dönüşe yatış
 AERIAL_OVERHEAD	tepeden
 AERIAL_ARRIVE	varış
+FILM_SOURCE_RECORDING	Bir kayıt ({n})
+FILM_RECORD_HOW	Kendi yolunuzu kaydetmek için oyunda {key}; durdurup saklamak için tekrar.
+FILM_RECORDING	Yolunuz kaydediliyor…
+FILM_RECORDING_EMPTY	Kayıt durdu: hareket etmediniz.
+FILM_RECORDING_NAME	Kayıt {n}
+FILM_RECORDING_KEPT	{name} saklandı ({m} m, {s} sn)
+FILM_RECORDING_NOW	Kaydediliyor: {n} nokta

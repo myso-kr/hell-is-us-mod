@@ -137,6 +137,8 @@ pub struct Shared {
     pub film_setup: Mutex<crate::film::Setup>,
     /// overlay: the filming key was pressed in the game.
     pub film_key: AtomicBool,
+    /// overlay: the player's way, while it is being recorded (Ctrl+Shift+the key).
+    pub film_recorder: Mutex<Option<crate::film::Recorder>>,
     /// overlay: the goals left out of the guide by the consent: (hidden places, answers).
     pub withheld: Mutex<(usize, usize)>,
     /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
@@ -205,7 +207,14 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         crate::film::Mode::Live => Some(crate::film::path(&setup, hero, &route, &nav).unwrap_or_default()),
     }
     .ok_or(tr!("FILM_NO_ROUTE"))?;
-    let feed = (setup.mode == crate::film::Mode::Live && !setup.use_points).then(|| shared.route3d.clone());
+    let feed = (setup.mode == crate::film::Mode::Live && setup.source == crate::film::Source::Guide)
+        .then(|| shared.route3d.clone());
+    // a recording walked again goes at the pace it was walked
+    let paces = (setup.mode == crate::film::Mode::Walk && setup.source == crate::film::Source::Recording)
+        .then(|| {
+            setup.recordings.get(setup.recording).map(|r| (crate::film::recording_starts(&setup, &path), r.paces()))
+        })
+        .flatten();
     let plan = crate::film::Plan {
         path,
         pace: setup.pace,
@@ -216,6 +225,7 @@ fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(),
         countdown,
         mode: setup.mode,
         feed,
+        paces,
     };
     engine.film(plan, shared.film.clone(), shared.film_ended.clone())
 }

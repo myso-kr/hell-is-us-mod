@@ -926,3 +926,10 @@ AERIAL_DIVE	mergulho
 AERIAL_BANK	na curva
 AERIAL_OVERHEAD	zenital
 AERIAL_ARRIVE	chegada
+FILM_SOURCE_RECORDING	Uma gravação ({n})
+FILM_RECORD_HOW	Aperte {key} no jogo para gravar seu caminho; de novo para parar e guardar.
+FILM_RECORDING	Gravando seu caminho…
+FILM_RECORDING_EMPTY	Gravação parada: você não se moveu.
+FILM_RECORDING_NAME	Gravação {n}
+FILM_RECORDING_KEPT	{name} guardada ({m} m, {s} s)
+FILM_RECORDING_NOW	Gravando: {n} pontos

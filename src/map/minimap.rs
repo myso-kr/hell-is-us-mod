@@ -106,6 +106,8 @@ pub struct MapState {
     /// Not a setting: the filming take's points (film.rs), put here by the overlay so the maps
     /// draw them. Never saved.
     pub film_points: Vec<[f32; 3]>,
+    /// Not a setting: the recording chosen for the take, drawn as a line. Never saved.
+    pub film_track: Vec<[f32; 3]>,
     /// How opaque the map's layers are (percent): the ground (disc, relief, terrain
     /// fills), the lines (contours, shore, edges, trail, route) and the icons (things,
     /// pins, goals, the hero). Both maps; the big map's own opacity multiplies them.
@@ -184,6 +186,7 @@ impl MapState {
             dots: self.dots,
             haze_links: self.haze_links.clone(),
             film_points: self.film_points.clone(),
+            film_track: self.film_track.clone(),
             opacity: self.opacity,
             big_radius_m: self.big_radius_m,
             hide_in_menus: self.hide_in_menus,
@@ -254,6 +257,7 @@ impl Default for MapState {
             dots: true,
             haze_links: Vec::new(),
             film_points: Vec::new(),
+            film_track: Vec::new(),
             opacity: [100, 100, 100],
             hide_in_menus: true,
             route: true,
@@ -830,6 +834,7 @@ mod tests {
             dots: false,
             haze_links: Vec::new(),
             film_points: Vec::new(),
+            film_track: Vec::new(),
             opacity: [40, 80, 100],
             north_yaw: 90.0,
             hide_in_menus: false,

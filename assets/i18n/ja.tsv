@@ -926,3 +926,10 @@ AERIAL_DIVE	降下
 AERIAL_BANK	旋回先読み
 AERIAL_OVERHEAD	俯瞰
 AERIAL_ARRIVE	到着プッシュ
+FILM_SOURCE_RECORDING	記録した経路（{n}）
+FILM_RECORD_HOW	ゲーム内で {key} を押すと自分の移動経路を記録し、もう一度押すと止めて保存します。
+FILM_RECORDING	経路の記録を開始
+FILM_RECORDING_EMPTY	記録停止：移動していません。
+FILM_RECORDING_NAME	記録 {n}
+FILM_RECORDING_KEPT	{name} を保存（{m}m・{s}秒）
+FILM_RECORDING_NOW	記録中：{n} 地点

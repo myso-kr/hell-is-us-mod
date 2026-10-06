@@ -20,6 +20,7 @@ mod bake;
 mod bigmap;
 mod clicks;
 pub(crate) mod context;
+mod filmkeys;
 mod glide;
 mod hud;
 mod marker;
@@ -40,7 +41,7 @@ use crate::raster::{draw_compass, draw_map, Canvas};
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_CONTROL, VK_F1};
+use windows_sys::Win32::UI::Input::KeyboardAndMouse::{GetAsyncKeyState, VK_F1};
 use windows_sys::Win32::UI::WindowsAndMessaging::{GetCursorInfo, GetForegroundWindow, CURSORINFO, CURSOR_SHOWING};
 
 /// The minimap is this many pixels square.
@@ -442,43 +443,30 @@ pub fn run(shared: Arc<Shared>) {
         // The filming key: alone, a take starts or stops (the worker's); with Ctrl, as the marker
         // key, where the hero stands (its feet) is added to the take's points — or, standing by
         // one, that one taken away. Said in the banner a moment.
+        // the filming key (filmkeys.rs): a take, a point, a recording; and the recording's way
         let film_key = shared.film_setup.lock().unwrap().key;
+        let feet = here.map(|(p, _)| p);
         if film_key > 0 && pressed(fkey(film_key), &mut film_was) && focused {
-            let ctrl = unsafe { GetAsyncKeyState(VK_CONTROL as i32) } as u16 & 0x8000 != 0;
-            match (ctrl, here) {
-                (false, _) => shared.film_key.store(true, Ordering::SeqCst),
-                (true, Some((p, _))) => {
-                    let at = [p[0], p[1], p[2] - crate::film::FEET];
-                    let mut setup = shared.film_setup.lock().unwrap();
-                    let near = setup.points.iter().position(|q| {
-                        ((q[0] - at[0]).powi(2) + (q[1] - at[1]).powi(2) + (q[2] - at[2]).powi(2)).sqrt()
-                            < crate::film::NEAR
-                    });
-                    let said = match near {
-                        Some(i) => {
-                            setup.points.remove(i);
-                            trf!("FILM_POINT_REMOVED", k = i + 1, n = setup.points.len())
-                        }
-                        None => {
-                            setup.points.push(at);
-                            setup.use_points = true;
-                            trf!("FILM_POINT_ADDED", n = setup.points.len())
-                        }
-                    };
-                    setup.save();
-                    drop(setup);
-                    banner_shown = Some((tr!("FILMING").to_string(), said));
-                    banner_until = Instant::now() + POINT_SAID_FOR;
-                    banner_used = 0;
-                }
-                (true, None) => {}
+            if let Some(said) = filmkeys::pressed(&shared, feet) {
+                banner_shown = Some((tr!("FILMING").to_string(), said));
+                banner_until = Instant::now() + POINT_SAID_FOR;
+                banner_used = 0;
             }
         }
-        // the take's points, drawn on the maps
+        filmkeys::follow(&shared, feet);
+        // the take's way, drawn on the maps: points numbered, a recording as a line
         {
-            let points = &shared.film_setup.lock().unwrap().points;
-            if state.film_points != *points {
-                state.film_points = points.clone();
+            let setup = shared.film_setup.lock().unwrap();
+            let (points, track) = match setup.source {
+                crate::film::Source::Recording => (Vec::new(), filmkeys::drawn(&setup)),
+                _ => (filmkeys::drawn(&setup), Vec::new()),
+            };
+            drop(setup);
+            if state.film_points != points {
+                state.film_points = points;
+            }
+            if state.film_track != track {
+                state.film_track = track;
             }
         }
         if toggle_now {

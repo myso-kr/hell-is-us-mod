@@ -926,3 +926,10 @@ AERIAL_DIVE	하강
 AERIAL_BANK	회전 선행
 AERIAL_OVERHEAD	부감
 AERIAL_ARRIVE	도착 푸시
+FILM_SOURCE_RECORDING	기록한 경로 ({n}개)
+FILM_RECORD_HOW	게임 안에서 {key}를 누르면 직접 이동하는 경로를 기록하고, 다시 누르면 멈추고 저장합니다.
+FILM_RECORDING	경로 기록 시작
+FILM_RECORDING_EMPTY	기록 중지: 이동하지 않았습니다.
+FILM_RECORDING_NAME	기록 {n}
+FILM_RECORDING_KEPT	{name} 저장 ({m}m, {s}초)
+FILM_RECORDING_NOW	기록 중: 지점 {n}개

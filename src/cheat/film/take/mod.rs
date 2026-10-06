@@ -31,6 +31,9 @@ pub struct Plan {
     pub countdown: u32,
     pub mode: crate::film::Mode,
     pub feed: Option<crate::film::RouteFeed>,
+    /// A recording played: its pace along it (shares of the fastest), and where in the path it
+    /// begins (cm): a walk goes at the pace it was walked.
+    pub paces: Option<(f32, Vec<(f32, f32)>)>,
 }
 
 /// What one tick of a take came to: on, standing so; or over.

@@ -926,3 +926,10 @@ AERIAL_DIVE	nurkowanie
 AERIAL_BANK	w zakręt
 AERIAL_OVERHEAD	z góry
 AERIAL_ARRIVE	przybycie
+FILM_SOURCE_RECORDING	Nagranie ({n})
+FILM_RECORD_HOW	Naciśnij {key} w grze, aby nagrać swoją drogę; ponownie, by zatrzymać i zachować.
+FILM_RECORDING	Nagrywanie drogi…
+FILM_RECORDING_EMPTY	Nagrywanie zatrzymane: bez ruchu.
+FILM_RECORDING_NAME	Nagranie {n}
+FILM_RECORDING_KEPT	Zapisano {name} ({m} m, {s} s)
+FILM_RECORDING_NOW	Nagrywanie: {n} punktów

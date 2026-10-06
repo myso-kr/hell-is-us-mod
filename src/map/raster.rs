@@ -833,6 +833,23 @@ pub fn draw_above(
         }
     }
 
+    // A recording chosen for the take: its way as a line, in the take's colour.
+    if state.film_track.len() >= 2 {
+        let colour = faded(FILM, marks);
+        let shadow = faded(OUTLINE, marks);
+        let at: Vec<(f32, f32)> = state.film_track.iter().map(|&p| view.project(p)).collect();
+        let mut from = at[0];
+        for &p in &at[1..] {
+            // a point every pixel or two on a wide map: drawn from the last drawn, 3 px on
+            if (p.0 - from.0).hypot(p.1 - from.1) < 3.0 {
+                continue;
+            }
+            let (a, b) = ((cx + from.0, cy + from.1), (cx + p.0, cy + p.1));
+            cv.line(a, b, 3.0, shadow);
+            cv.line(a, b, 1.5, colour);
+            from = p;
+        }
+    }
     // The filming take's points: joined in order, each numbered, in their own colour.
     if !state.film_points.is_empty() {
         let colour = faded(FILM, marks);

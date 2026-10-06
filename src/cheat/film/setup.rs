@@ -1,14 +1,14 @@
 //! The filming card's settings, kept in `Mods\\film.txt`, and the defaults they start from.
 
-use super::{Lens, Mode};
+use super::{Lens, Mode, Recording, Source};
 
-/// The filming card's settings, kept in `Mods\film.txt`: the points from the 3D map, whether
-/// to walk them (else the guide's route), the pace, the camera, its distance, back and forth,
-/// the key that starts and stops a take (F1–F12, 0 none), and the routes kept by name.
+/// The filming card's settings, kept in `Mods\film.txt`: the points taken, where the way comes
+/// from, the pace, the camera, its distance, back and forth, the key (F1–F12, 0 none), the routes
+/// of points kept by name, and the recordings with the one chosen.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Setup {
     pub points: Vec<[f32; 3]>,
-    pub use_points: bool,
+    pub source: Source,
     pub pace: f32,
     pub lens: Lens,
     pub distance: Option<f32>,
@@ -20,13 +20,15 @@ pub struct Setup {
     /// Who moves what: the mod walking the hero, the player playing, the camera alone.
     pub mode: Mode,
     pub routes: Vec<(String, Vec<[f32; 3]>)>,
+    pub recordings: Vec<Recording>,
+    pub recording: usize,
 }
 
 impl Default for Setup {
     fn default() -> Setup {
         Setup {
             points: Vec::new(),
-            use_points: false,
+            source: Source::Guide,
             pace: 0.6,
             lens: Lens::Follow,
             distance: None,
@@ -35,6 +37,8 @@ impl Default for Setup {
             key: KEY,
             mode: Mode::Walk,
             routes: Vec::new(),
+            recordings: Vec::new(),
+            recording: 0,
         }
     }
 }
@@ -68,15 +72,16 @@ impl Setup {
     pub fn render(&self) -> String {
         let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
         let mut out = format!(
-            "use_points {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nmode {}\n",
-            self.use_points,
+            "source {}\npace {}\nlens {}\ndistance {}\nfov {}\nrepeat {}\nkey {}\nkeys_version 2\nmode {}\nrecording_chosen {}\n",
+            self.source.word(),
             self.pace,
             self.lens.word(),
             self.distance.map_or("none".to_string(), |d| d.to_string()),
             self.fov.map_or("none".to_string(), |d| d.to_string()),
             self.repeat,
             self.key,
-            self.mode.word()
+            self.mode.word(),
+            self.recording
         );
         for p in &self.points {
             out += &format!("point {}\n", pt(p));
@@ -86,6 +91,12 @@ impl Setup {
             out += &format!("route {}\n", name.replace('\n', " "));
             for p in pts {
                 out += &format!("route_point {}\n", pt(p));
+            }
+        }
+        for r in &self.recordings {
+            out += &format!("recording {}\n", r.name.replace('\n', " "));
+            for (p, t) in r.points.iter().zip(&r.times) {
+                out += &format!("rec {} {t}\n", pt(p));
             }
         }
         out
@@ -102,7 +113,21 @@ impl Setup {
             let f: Vec<&str> = line.split_whitespace().collect();
             match f[..] {
                 ["keys_version", v] => keys_version = v.parse().unwrap_or(1),
-                ["use_points", v] => s.use_points = v == "true",
+                // before recordings: points or the guide's route
+                ["use_points", v] => s.source = if v == "true" { Source::Points } else { Source::Guide },
+                ["source", v] => s.source = Source::from_word(v).unwrap_or_default(),
+                ["recording_chosen", v] => s.recording = v.parse().unwrap_or(0),
+                ["recording", ..] => s.recordings.push(Recording {
+                    name: line["recording ".len()..].trim().to_string(),
+                    points: Vec::new(),
+                    times: Vec::new(),
+                }),
+                ["rec", ..] if f.len() == 5 => {
+                    if let (Some(r), Some(p), Ok(t)) = (s.recordings.last_mut(), point(&f[1..4]), f[4].parse::<f32>()) {
+                        r.points.push(p);
+                        r.times.push(t);
+                    }
+                }
                 ["pace", v] => s.pace = v.parse().unwrap_or(s.pace).clamp(0.2, 1.0),
                 ["lens", v] => s.lens = Lens::ALL.into_iter().find(|l| l.word() == v).unwrap_or_default(),
                 ["distance", v] => {
@@ -128,6 +153,7 @@ impl Setup {
         if keys_version < 2 && !text.is_empty() {
             s.key = KEY;
         }
+        s.recording = s.recording.min(s.recordings.len().saturating_sub(1));
         s
     }
 }
@@ -140,7 +166,7 @@ mod tests {
     fn the_setup_is_kept() {
         let s = Setup {
             points: vec![[1.0, 2.0, 3.0]],
-            use_points: true,
+            source: Source::Recording,
             pace: 0.8,
             lens: Lens::Orbit,
             distance: Some(900.0),
@@ -149,11 +175,18 @@ mod tests {
             key: 9,
             mode: Mode::Live,
             routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],
+            recordings: vec![Recording {
+                name: "the long way".into(),
+                points: vec![[1.0, 1.0, 1.0], [51.0, 1.0, 1.0]],
+                times: vec![0.0, 0.5],
+            }],
+            recording: 0,
         };
         assert_eq!(Setup::parse(&s.render()), s);
         assert_eq!(Setup::parse(""), Setup::default());
         // the first keys move to the new ones
-        let old = Setup::parse("key 6\npoint_key 8\npace 0.5\n");
+        let old = Setup::parse("key 6\npoint_key 8\npace 0.5\nuse_points true\n");
+        assert_eq!(old.source, Source::Points);
         assert_eq!((old.key, old.pace), (KEY, 0.5));
     }
 }

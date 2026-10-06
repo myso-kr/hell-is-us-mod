@@ -42,8 +42,10 @@ mod flight;
 mod gimbal;
 mod lens;
 mod mode;
+mod record;
 mod route;
 mod setup;
+mod source;
 mod take;
 mod walk;
 
@@ -53,11 +55,13 @@ pub use flight::{rounded, Flight, Fly, FLIGHT_DISTANCE};
 pub use gimbal::{aim, wrap, Axis, ORBIT_DPS};
 pub use lens::Lens;
 pub use mode::Mode;
+pub use record::{pace_at, Recorder, Recording};
+pub use source::Source;
 
 /// The guide's route as the overlay draws it (Unreal cm, and its colour): a live take follows it
 /// as it changes.
 pub type RouteFeed = std::sync::Arc<std::sync::Mutex<(Vec<[f32; 3]>, [u8; 3])>>;
-pub use route::{flight_path, path};
+pub use route::{flight_path, path, recording_starts};
 pub use setup::{Setup, DISTANCE, FEET, FOV, KEY, NEAR};
 pub use take::{roll, Plan, State, Take, Wiring, COUNTDOWN_S, KEY_GRACE};
 pub use walk::{Driver, Steer};

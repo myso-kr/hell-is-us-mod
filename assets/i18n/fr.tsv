@@ -926,3 +926,10 @@ AERIAL_DIVE	piqué
 AERIAL_BANK	dans le virage
 AERIAL_OVERHEAD	plongée verticale
 AERIAL_ARRIVE	arrivée
+FILM_SOURCE_RECORDING	Un enregistrement ({n})
+FILM_RECORD_HOW	Appuyez sur {key} en jeu pour enregistrer votre chemin ; encore pour arrêter et le garder.
+FILM_RECORDING	Enregistrement du chemin…
+FILM_RECORDING_EMPTY	Enregistrement arrêté : aucun déplacement.
+FILM_RECORDING_NAME	Enregistrement {n}
+FILM_RECORDING_KEPT	{name} gardé ({m} m, {s} s)
+FILM_RECORDING_NOW	Enregistrement : {n} points

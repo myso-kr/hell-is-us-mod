@@ -926,3 +926,10 @@ AERIAL_DIVE	Sturzflug
 AERIAL_BANK	in die Kurve
 AERIAL_OVERHEAD	Draufsicht
 AERIAL_ARRIVE	Ankunft
+FILM_SOURCE_RECORDING	Eine Aufnahme ({n})
+FILM_RECORD_HOW	{key} im Spiel drücken, um den eigenen Weg aufzunehmen; erneut zum Beenden und Behalten.
+FILM_RECORDING	Weg wird aufgenommen…
+FILM_RECORDING_EMPTY	Aufnahme beendet: nicht bewegt.
+FILM_RECORDING_NAME	Aufnahme {n}
+FILM_RECORDING_KEPT	{name} gespeichert ({m} m, {s} s)
+FILM_RECORDING_NOW	Aufnahme läuft: {n} Punkte

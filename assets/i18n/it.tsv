@@ -926,3 +926,10 @@ AERIAL_DIVE	picchiata
 AERIAL_BANK	dentro la curva
 AERIAL_OVERHEAD	dall’alto
 AERIAL_ARRIVE	arrivo
+FILM_SOURCE_RECORDING	Una registrazione ({n})
+FILM_RECORD_HOW	Premi {key} in gioco per registrare il tuo percorso; di nuovo per fermare e salvarlo.
+FILM_RECORDING	Registrazione del percorso…
+FILM_RECORDING_EMPTY	Registrazione fermata: non ti sei mosso.
+FILM_RECORDING_NAME	Registrazione {n}
+FILM_RECORDING_KEPT	{name} salvata ({m} m, {s} s)
+FILM_RECORDING_NOW	Registrazione: {n} punti

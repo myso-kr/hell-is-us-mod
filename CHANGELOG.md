@@ -10,6 +10,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- Recording your own way for filming: Ctrl+Shift+F8 in the game records where you walk (a point
+  every 50 cm, with when), again to stop and keep it; a take can then walk it again at the pace it
+  was walked, or fly it, directed or not. The take's way now comes from the guide's route, the
+  points or a recording; a recording is drawn on every map as a line.
 - Filming has a page of its own under a new sidebar group, Video, rather than a card among the
   cheats: the take (start and stop in its header), the route, the camera, and the director's
   plan — the shot it gives each stretch of the route as it stands.

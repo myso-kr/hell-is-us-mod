@@ -5,7 +5,7 @@
 //! The settings are shared with the worker (`Shared.film_setup`) and kept in `Mods\film.txt`.
 
 use super::*;
-use crate::film::{AerialPlan, Director, Lens, Mode, Setup};
+use crate::film::{AerialPlan, Director, Lens, Mode, Setup, Source};
 use crate::ui::theme::INLINE;
 
 /// The director's plan, kept while the route and the take it was made for stay the same: each
@@ -83,25 +83,57 @@ impl Panel {
         card(t, tr!("FILM_ROUTE"), |t| {
             let n = setup.points.len();
             choices(t, |t| {
-                if w(t, |ui| ui.radio(!setup.use_points, tr!("FILM_SOURCE_ROUTE"))).clicked() {
-                    setup.use_points = false;
-                }
-                if w(t, |ui| ui.radio(setup.use_points, trf!("FILM_SOURCE_POINTS", n = n))).clicked() {
-                    setup.use_points = true;
-                }
-                if n > 0 && w(t, |ui| ui.small_button(tr!("FILM_CLEAR_POINTS"))).clicked() {
-                    setup.points.clear();
+                for (src, label) in [
+                    (Source::Guide, tr!("FILM_SOURCE_ROUTE").to_string()),
+                    (Source::Points, trf!("FILM_SOURCE_POINTS", n = n)),
+                    (Source::Recording, trf!("FILM_SOURCE_RECORDING", n = setup.recordings.len())),
+                ] {
+                    if w(t, |ui| ui.radio(setup.source == src, label)).clicked() {
+                        setup.source = src;
+                    }
                 }
             });
-            if setup.use_points {
-                if n == 0 {
-                    note(t, trf!("FILM_POINTS_HOW", key = format!("Ctrl+F{}", setup.key)));
+            match setup.source {
+                Source::Guide => {}
+                Source::Points => {
+                    if n == 0 {
+                        note(t, trf!("FILM_POINTS_HOW", key = format!("Ctrl+F{}", setup.key)));
+                    } else if w(t, |ui| ui.small_button(tr!("FILM_CLEAR_POINTS"))).clicked() {
+                        setup.points.clear();
+                    }
+                    self.film_routes_kept(t, setup);
                 }
-                self.film_routes_kept(t, setup);
+                Source::Recording => self.film_recordings(t, setup),
             }
             field(t, tr!("FILM_PACE"), |t| tw::slider(t, &mut setup.pace, 0.2..=1.0, 0.05, ""));
             switch(t, &mut setup.repeat, tr!("FILM_REPEAT"));
         });
+    }
+
+    /// The recordings: each chosen to play, or removed; how to make one.
+    fn film_recordings(&mut self, t: &mut Tui, setup: &mut Setup) {
+        let recording = self.shared.film_recorder.lock().unwrap().as_ref().map(|r| r.len());
+        match recording {
+            Some(n) => text(t, RichText::new(trf!("FILM_RECORDING_NOW", n = n)).color(WAIT)),
+            None => note(t, trf!("FILM_RECORD_HOW", key = format!("Ctrl+Shift+F{}", setup.key))),
+        }
+        let mut remove = None;
+        for (k, r) in setup.recordings.iter().enumerate() {
+            let (cm, secs) = r.length();
+            t.style(tw::row(INLINE)).add(|t| {
+                if w(t, |ui| ui.radio(setup.recording == k, r.name.as_str())).clicked() {
+                    setup.recording = k;
+                }
+                tw::distance(t, format!("{:.0} m · {:.0} s", cm / 100.0, secs));
+                if w(t, |ui| ui.small_button("×")).clicked() {
+                    remove = Some(k);
+                }
+            });
+        }
+        if let Some(k) = remove {
+            setup.recordings.remove(k);
+            setup.recording = setup.recording.min(setup.recordings.len().saturating_sub(1));
+        }
     }
 
     /// The routes kept by name: each loaded back or removed; the points now saved under a name.

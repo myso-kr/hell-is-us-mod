@@ -257,3 +257,15 @@ watches the input (not for Live), paces and restores.
   22° into a turn before it, overhead (−35 → −60) over high open ground, an arriving push (the
   lens closing to 58°) — eased ahead of each change; the shared `director::runs` cuts and
   merges for both.
+
+### Recordings (2026-10-07)
+
+`film::record`: Ctrl+Shift+the filming key starts a `Recorder` in `Shared.film_recorder`; the overlay
+(`overlay/filmkeys.rs`, which now holds all of the key's work) gives it the feet every frame and it
+keeps a point every 50 cm with the time (up to 20,000). Pressed again, it becomes a `Recording`
+in `Setup.recordings` (`recording` / `rec x y z t` lines in film.txt), chosen as the take's
+`Source::Recording`. A walk reaches its first point on the navmesh and then follows it point by
+point, at the pace it was walked: `Recording::paces` (speed over a 3 m window as a share of the
+fastest, never under 0.2) times the card's pace, from `recording_starts` on. A flight takes every
+other point (a metre apart). The maps draw it as a line (`MapState::film_track`), not numbered.
+`Setup.use_points` gave way to `Setup.source` (Guide, Points, Recording); old files read as before.

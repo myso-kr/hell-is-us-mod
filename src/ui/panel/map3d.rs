@@ -459,8 +459,9 @@ pub struct Map3d {
     pub teleport: Option<[f32; 3]>,
     /// A spot to add to the filming take's points, for the page (groups.rs `film_card`).
     pub film_point: Option<[f32; 3]>,
-    /// The filming take's points, drawn joined and numbered.
+    /// The filming take's points, drawn joined and numbered; a recording, drawn as a line.
     pub film: Vec<[f32; 3]>,
+    pub film_track: Vec<[f32; 3]>,
 }
 
 impl Default for Map3d {
@@ -487,6 +488,7 @@ impl Default for Map3d {
             teleport: None,
             film_point: None,
             film: Vec::new(),
+            film_track: Vec::new(),
         }
     }
 }
@@ -757,6 +759,22 @@ impl Map3d {
                 if let Some(p) = project(&vp, [lo[0], st[1], lo[2]], rect) {
                     painter.rect_filled(egui::Rect::from_center_size(p, egui::vec2(14.0, 6.0)), 2.0, OUTLINE);
                     painter.rect_filled(egui::Rect::from_center_size(p, egui::vec2(12.0, 4.0)), 1.5, LIFT);
+                }
+            }
+        }
+        // a recording chosen for the take: its way as a line
+        if self.film_track.len() >= 2 {
+            let colour = Color32::from_rgb(255, 236, 170);
+            let at: Vec<Option<egui::Pos2>> = self
+                .film_track
+                .iter()
+                .step_by(4)
+                .map(|&p| project(&vp, scene.to_scene([p[0], p[1], p[2] + 30.0]), rect))
+                .collect();
+            for w in at.windows(2) {
+                if let (Some(a), Some(b)) = (w[0], w[1]) {
+                    painter.line_segment([a, b], egui::Stroke::new(3.0, OUTLINE));
+                    painter.line_segment([a, b], egui::Stroke::new(1.6, colour));
                 }
             }
         }
@@ -1781,7 +1799,13 @@ impl super::Panel {
             }
             tw::block(t, |ui| {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
-                self.map3d.film = self.shared.film_setup.lock().unwrap().points.clone();
+                {
+                    let setup = self.shared.film_setup.lock().unwrap();
+                    let recorded = setup.source == crate::film::Source::Recording;
+                    let rec = setup.recordings.get(setup.recording).map(|r| r.points.clone()).unwrap_or_default();
+                    self.map3d.film = if recorded { Vec::new() } else { setup.points.clone() };
+                    self.map3d.film_track = if recorded { rec } else { Vec::new() };
+                }
                 self.map3d.view(ui, height, hero, &route, colour, state, &shortcut);
                 if let Some(at) = self.map3d.film_point.take() {
                     let mut setup = self.shared.film_setup.lock().unwrap();

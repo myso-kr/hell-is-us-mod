@@ -926,3 +926,10 @@ AERIAL_DIVE	dive
 AERIAL_BANK	leaning into the turn
 AERIAL_OVERHEAD	overhead
 AERIAL_ARRIVE	arriving push
+FILM_SOURCE_RECORDING	A recording ({n})
+FILM_RECORD_HOW	Press {key} in the game to record your own way; again to stop and keep it.
+FILM_RECORDING	Recording your way…
+FILM_RECORDING_EMPTY	Recording stopped: you did not move.
+FILM_RECORDING_NAME	Recording {n}
+FILM_RECORDING_KEPT	{name} kept ({m} m, {s} s)
+FILM_RECORDING_NOW	Recording now: {n} points

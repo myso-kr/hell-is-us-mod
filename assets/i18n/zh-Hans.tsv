@@ -926,3 +926,10 @@ AERIAL_DIVE	俯冲
 AERIAL_BANK	转弯前瞻
 AERIAL_OVERHEAD	俯瞰
 AERIAL_ARRIVE	到达推镜
+FILM_SOURCE_RECORDING	录制的路线（{n}）
+FILM_RECORD_HOW	在游戏中按 {key} 录制自己的移动路线，再按一次停止并保存。
+FILM_RECORDING	开始录制路线
+FILM_RECORDING_EMPTY	录制已停止：未移动。
+FILM_RECORDING_NAME	录制 {n}
+FILM_RECORDING_KEPT	已保存 {name}（{m} 米，{s} 秒）
+FILM_RECORDING_NOW	录制中：{n} 个点

@@ -926,3 +926,10 @@ AERIAL_DIVE	пике
 AERIAL_BANK	в поворот
 AERIAL_OVERHEAD	сверху
 AERIAL_ARRIVE	прибытие
+FILM_SOURCE_RECORDING	Запись ({n})
+FILM_RECORD_HOW	Нажмите {key} в игре, чтобы записать свой путь; ещё раз — остановить и сохранить.
+FILM_RECORDING	Запись пути…
+FILM_RECORDING_EMPTY	Запись остановлена: вы не двигались.
+FILM_RECORDING_NAME	Запись {n}
+FILM_RECORDING_KEPT	{name} сохранена ({m} м, {s} с)
+FILM_RECORDING_NOW	Идёт запись: {n} точек
