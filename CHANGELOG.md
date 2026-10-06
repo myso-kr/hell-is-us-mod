@@ -18,6 +18,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- A flight carries the hero along just behind the camera's lens and above it (3 m back along
+  its look, 1 m up: never in the frame, whatever it looks at), since the game draws the land
+  finely only near the hero; the hero is kept alive and ignored by enemies for the take (the god
+  and ghost cheats added to what is on), and put back where it stood at once when the take ends,
+  with the cheats exactly as the player had them. While carried, the hero's mesh is shrunk to nothing,
+  so a glimpse shows nothing; it is its own size again when put back.
 - Directing that answers the hero's situation on a walk: moving, standing, turning, climbing,
   going down, fighting, meeting someone, coming on an item or a thing to work; open places get
   wide shots, narrow ones close shots. New shots: shoulder, chases, profile, lead, close-up, wide,

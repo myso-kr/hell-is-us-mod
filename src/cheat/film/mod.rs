@@ -55,7 +55,7 @@ pub use director::{
     judge, openness, Aerial, AerialPlan, Angle, Beat, Coverage, Ctx, Cue, Cuts, Director, Glance, GlanceLook, Motion,
     Rig, Shot, Sight, Situation,
 };
-pub use flight::{rounded, Flight, Fly, FLIGHT_DISTANCE};
+pub use flight::{rounded, Flight, Fly, FLIGHT_DISTANCE, HERO_ABOVE, HERO_BEHIND};
 pub use gimbal::{aim, wrap, Axis, ORBIT_DPS};
 pub use lens::Lens;
 pub use mode::Mode;
@@ -67,5 +67,5 @@ pub use subjects::{about, Subject, SubjectFeed, SubjectKind};
 pub type RouteFeed = std::sync::Arc<std::sync::Mutex<(Vec<[f32; 3]>, [u8; 3])>>;
 pub use route::{flight_path, path, recording_starts};
 pub use setup::{Setup, DISTANCE, FEET, FOV, KEY, NEAR};
-pub use take::{roll, Plan, State, Take, Wiring, COUNTDOWN_S, KEY_GRACE, ZOOM_AT};
+pub use take::{roll, HeroRoot, Plan, State, Take, Wiring, COUNTDOWN_S, KEY_GRACE, ZOOM_AT};
 pub use walk::{Driver, Steer};

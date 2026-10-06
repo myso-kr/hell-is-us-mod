@@ -1,6 +1,7 @@
 //! A take: what it is (`Plan`), where it writes (`Wiring`), where it stands (`State`), and the
 //! thread that rolls it (`roll`; the loop in `run`, the camera's settings in `knobs`).
 
+mod carry;
 mod cover;
 mod direct;
 mod drive;
@@ -53,6 +54,22 @@ pub(super) enum Step {
 /// start and target, twice), found on build 24045435.
 pub const ZOOM_AT: [u64; 6] = [0x40, 0x68, 0x80, 0xb0, 0xd8, 0xf0];
 
+/// Where the hero's root component keeps its place (its location and its world transform's
+/// translation, doubles) and the movement component its velocity: written as a teleport is.
+#[derive(Clone, Copy, Debug)]
+pub struct HeroRoot {
+    pub location: u64,
+    pub world: u64,
+    pub velocity: Option<u64>,
+    /// The movement component's `MovementMode` (a byte): set falling once the hero is put back,
+    /// so the game moves it there at once (a still hero is otherwise not redrawn until it moves).
+    pub mode: Option<u64>,
+    /// The hero's mesh's `RelativeScale3D` (doubles): shrunk to nothing while carried, so it is
+    /// not seen should the camera glimpse it (its weapons and clothes are attached to it, and go
+    /// with it); the game takes it up as the carried hero's place is updated.
+    pub scale: Option<u64>,
+}
+
 pub struct Wiring {
     pub input: u64,
     pub rotation: u64,
@@ -70,6 +87,8 @@ pub struct Wiring {
     /// distance behind the pivot (negative cm; `ZOOM_AT` into it, build 24045435): written for a
     /// cut, where the game would ease the distance.
     pub zoom: Option<[u64; 6]>,
+    /// A flight's hand on the hero, to carry it behind the camera and bring it back after.
+    pub hero_root: Option<HeroRoot>,
     /// What stands in the way (obstacles.rs), for the flight's path and the camera's room.
     pub scene: std::sync::Arc<crate::obstacles::Scene>,
 }
@@ -123,11 +142,17 @@ pub const KEY_GRACE: Duration = Duration::from_millis(600);
 /// A take running: stopping it ends the thread, which leaves the stick at rest.
 pub struct Take {
     stop: Arc<AtomicBool>,
+    done: Arc<AtomicBool>,
 }
 
 impl Take {
     pub fn stop(&self) {
         self.stop.store(true, Ordering::SeqCst);
+    }
+
+    /// Whether the take has ended and put everything back.
+    pub fn ended(&self) -> bool {
+        self.done.load(Ordering::SeqCst)
     }
 }
 
@@ -142,11 +167,14 @@ impl Drop for Take {
 pub fn roll(plan: Plan, wiring: Wiring, state: Arc<Mutex<State>>, ended: Arc<Mutex<Option<Instant>>>) -> Take {
     let stop = Arc::new(AtomicBool::new(false));
     let flag = stop.clone();
+    let done = Arc::new(AtomicBool::new(false));
+    let done_flag = done.clone();
     *state.lock().unwrap() = State::Countdown(plan.countdown.max(1));
     std::thread::spawn(move || {
         let end = run::run(&plan, &wiring, &flag, &state);
         *state.lock().unwrap() = end;
         *ended.lock().unwrap() = Some(Instant::now());
+        done_flag.store(true, Ordering::SeqCst);
     });
-    Take { stop }
+    Take { stop, done }
 }

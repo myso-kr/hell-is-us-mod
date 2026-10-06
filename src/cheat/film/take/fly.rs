@@ -1,6 +1,7 @@
 //! A flight: the camera's pivot along the cleared path in the hero's frame, the camera aimed by the
 //! lens or, directed, looked as an aerial film would (director/aerial.rs).
 
+use super::carry::Carry;
 use super::session::Session;
 use super::{State, Step};
 use crate::film::avoid::ROOM_AHEAD_S;
@@ -12,6 +13,7 @@ pub(super) struct Fly {
     flight: Flight,
     aerial: Option<AerialPlan>,
     glance: Glance,
+    carry: Carry,
     /// The camera's height over the path now (cm), eased toward the look's, and the most there is
     /// room for above, looked at now and then.
     lift: f32,
@@ -35,10 +37,17 @@ impl Fly {
         path.extend(s.plan.path.iter().copied());
         let path = clear_flight(&path, &s.blocking);
         let aerial = (s.plan.lens == Lens::Director).then(|| AerialPlan::new(&path, &s.blocking));
-        Ok(Fly { flight: Flight::new(&path), aerial, glance: Glance::default(), lift: 0.0, room: (f32::MAX, 0.0) })
+        Ok(Fly {
+            flight: Flight::new(&path),
+            aerial,
+            glance: Glance::default(),
+            carry: Carry,
+            lift: 0.0,
+            room: (f32::MAX, 0.0),
+        })
     }
 
-    pub fn tick(&mut self, s: &mut Session, hero: [f32; 3], dt: f32) -> Step {
+    pub fn tick(&mut self, s: &mut Session, mut hero: [f32; 3], dt: f32) -> Step {
         let (Some(pv), Some(body)) = (s.w.pivot, s.body_yaw()) else {
             return Step::End(State::Failed(trf!("NO_PROPERTY", name = "PivotToViewTarget")));
         };
@@ -63,6 +72,9 @@ impl Fly {
         let mut fly = fly;
         fly.at[2] += self.lift;
         ahead[2] += self.lift;
+        // the hero carried just behind the camera's back and above it (carry.rs; kept alive and
+        // ignored by the worker's guard)
+        hero = self.carry.place(s, hero, fly.at);
         // into the hero's frame: the body's yaw undone
         let (sn, c) = body.to_radians().sin_cos();
         let (dx, dy) = (fly.at[0] - hero[0], fly.at[1] - hero[1]);

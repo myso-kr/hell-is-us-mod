@@ -23,6 +23,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 mod attached;
+mod filming;
 mod snapshot;
 
 pub use attached::{attach, saved_guids, Attached};
@@ -78,6 +79,9 @@ pub struct Engine {
     before: Option<(String, [f64; 3])>,
     /// A filming take rolling (film.rs): dropped, it stops.
     take: Option<crate::film::Take>,
+    /// While a flight rolls, the cheats the player had on: the take adds its own guard (filming.rs)
+    /// and these come back when it ends.
+    film_guard: Option<filming::Guard>,
     /// Keep the game running when its window loses focus (the panel's setting): the game's
     /// own option is switched off while the panel runs, and back on after if it was.
     pub keep_running: bool,
@@ -101,6 +105,7 @@ impl Engine {
             slots: Default::default(),
             before: None,
             take: None,
+            film_guard: None,
             keep_running: true,
             unpaused: None,
             focus_checked: None,
@@ -144,6 +149,7 @@ impl Engine {
     }
 
     pub fn step(&mut self) -> Snapshot {
+        self.film_ended();
         let mut snap = Snapshot {
             game: Err(String::new()),
             gate: Err(String::new()),
@@ -390,88 +396,6 @@ impl Engine {
         Ok(())
     }
 
-    /// Roll a filming take (film.rs): the hero walked along `plan` by the stick's input, the
-    /// camera turned as it says. A take already rolling is stopped first.
-    pub fn film(
-        &mut self,
-        plan: crate::film::Plan,
-        state: std::sync::Arc<std::sync::Mutex<crate::film::State>>,
-        ended: std::sync::Arc<std::sync::Mutex<Option<Instant>>>,
-    ) -> Result<(), String> {
-        self.take = None;
-        let least = match plan.mode {
-            crate::film::Mode::Walk => 2,
-            crate::film::Mode::Flight => 1,
-        };
-        if plan.path.len() < least {
-            return Err(tr!("FILM_NO_ROUTE").into());
-        }
-        self.refresh()?;
-        let a = self.attached.as_ref().unwrap();
-        a.gate()?;
-        let (m, n) = (&a.game, &a.anchors.names);
-        let chain = a.chain()?;
-        let hero = chain.hero(m, &a.anchors)?;
-        let pc = chain.controller(m, &a.anchors)?;
-        let input =
-            n.field(m, hero, "ControlInputVector").ok_or_else(|| trf!("NO_PROPERTY", name = "ControlInputVector"))?;
-        // The cameras' own settings (exploration, combat, APC), which the game reads every
-        // frame; the camera mode's pivot and the hero's body, for a flight.
-        let pcm = n.follow(m, pc, "PlayerCameraManager").ok();
-        let mut distance = Vec::new();
-        let mut fov = Vec::new();
-        for name in ["ExplorationConfig", "CombatConfig", "APCConfig"] {
-            let Some(c) = pcm.and_then(|p| n.follow(m, p, name).ok()) else { continue };
-            distance.extend(n.field(m, c, "DefaultDistanceFromPlayer").map(|p| c + p.offset as u64));
-            fov.extend(n.field(m, c, "FieldOfView").map(|p| c + p.offset as u64));
-        }
-        distance.dedup();
-        fov.dedup();
-        let pivot = pcm
-            .and_then(|p| n.follow(m, p, "CameraModeInstance").ok())
-            .and_then(|mode| n.field(m, mode, "PivotToViewTarget").map(|p| mode + p.offset as u64 + 0x20));
-        let body = crate::mem::read_u64(m, hero + chain.root)
-            .filter(|&r| crate::mem::plausible(r))
-            .and_then(|r| n.field(m, r, "RelativeRotation").map(|p| r + p.offset as u64));
-        let blend = pcm.and_then(|p| n.follow(m, p, "CameraModeInstance").ok()).and_then(|mode| {
-            let i = n.field(m, mode, "PenetrationBlendInTime")?;
-            let o = n.field(m, mode, "PenetrationBlendOutTime")?;
-            Some((mode + i.offset as u64, mode + o.offset as u64))
-        });
-        let wiring = crate::film::Wiring {
-            input: hero + input.offset as u64,
-            rotation: pc + chain.rotation,
-            pose: chain.pose_source(m, &a.anchors)?,
-            distance,
-            fov,
-            pivot,
-            body,
-            blend,
-            safety: pcm
-                .and_then(|p| n.follow(m, p, "CameraModeInstance").ok())
-                .and_then(|mode| n.field(m, mode, "bValidateSafeLoc").map(|f| mode + f.offset as u64)),
-            zoom: pcm.and_then(|p| n.follow(m, p, "CameraModeInstance").ok()).and_then(|mode| {
-                let interp = n.field(m, mode, "CameraToPivotTranslationInterpolator")?;
-                Some(crate::film::ZOOM_AT.map(|o| mode + interp.offset as u64 + o))
-            }),
-            scene: a.obstacles(),
-        };
-        self.take = Some(crate::film::roll(plan, wiring, state, ended));
-        Ok(())
-    }
-
-    /// Whether a take is rolling now.
-    pub fn rolling(&self) -> bool {
-        self.take.is_some()
-    }
-
-    /// Stop the take rolling, if one is.
-    pub fn cut(&mut self) {
-        if let Some(t) = self.take.take() {
-            t.stop();
-        }
-    }
-
     /// Back to where the hero stood before teleporting to a place followed; the slot is
     /// emptied either way.
     pub fn go_back(&mut self) -> Result<(), String> {
@@ -500,6 +424,7 @@ impl Engine {
     /// Replace the active toggles. Turning anything on needs the gate; whatever a
     /// toggle being dropped had overwritten goes back at once.
     pub fn set_active(&mut self, toggles: Vec<Active>) -> Result<(), String> {
+        let toggles = self.guarded(toggles);
         let a = self.attached()?;
         if !toggles.is_empty() {
             a.gate()?;
@@ -524,6 +449,8 @@ impl Engine {
     /// hero is in play: the record names attributes, and only the hero's are ours.
     pub fn stop(&mut self) -> Result<(), String> {
         self.cut();
+        // everything off: the flight's guard too, and nothing brought back after it
+        self.film_guard = None;
         // the game's own pause on losing focus, as the player had it
         if let (Some(at), Some(a)) = (self.unpaused.take(), self.attached.as_ref()) {
             if a.pause_on_focus_lost() == Some(at) {

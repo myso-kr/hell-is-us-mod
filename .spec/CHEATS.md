@@ -311,3 +311,38 @@ look back (a whole turn, a 180° swing); the orbit is now a slow quarter circle,
 scored +6, the backbone), a new situation must last 1.5 s (a fight at once); flight shots are
 30–60 m (7–13 s) with 12 m blends, the eagle at least 80 m; a glance at most every 20 s, a hunt
 every 15 s, and a glance cuts only when every change is a cut.
+
+### A flight carries the hero (2026-10-07)
+
+Found in play: the game streams fine geometry around the hero, so a camera flown far from it sees
+only low-poly land. A flight now carries the hero: `Wiring.hero_root` (the root component's
+location and its world transform's translation, and the movement component's velocity, written as
+`Attached::teleport` does) lets `Session::place_hero` put it each tick `HERO_BEHIND` (5 m) back
+along the flight on the ground under the way (path z − `FLIGHT_LIFT` + `FEET`), out of the shot;
+`Session` keeps where it stood and puts it back in `restore`, unless the hero changed. The worker
+guards it (`engine/filming.rs`): `god` and `ghost` are added on top of the player's cheats while
+a flight rolls (`Engine::guarded` keeps the player's own list if they change it meanwhile), and
+the player's list comes back once the take has ended (`Take::ended`, checked each step);
+`Engine::stop` drops the guard.
+
+Tried in play the same day: the hero did follow, but 5 m back along the *way* came into view
+whenever the camera looked aside; and put back with one write, the hero stayed where it was drawn
+until the player moved it. Now `take/carry.rs` places it behind the camera's *look* (yaw),
+`HERO_BEHIND` + the camera's lift back, eased (3/s); `restore` holds the old place for 0.5 s and
+then sets `MovementMode` to falling (3), so the game moves the hero there at once. And the guard
+had turned off a cheat the player had on: it took god and ghost out of any list the panel sent
+while guarding. `filming::Guard` now records the player's list and only the ids the take added
+(`added`); only those are taken out, the list comes back exactly, and a failed restore is kept
+and tried again on the next step. Both lists are logged.
+
+The carried hero was still glimpsed now and then. With writes only (no calls), hiding by a flag
+would not reach the render state; instead the hero's `Mesh` `RelativeScale3D` is written to 0.001
+on every placement (the game recomputes the attached components' transforms as the root moves, and
+weapons and clothes hang off the mesh) and put back first in `restore`, only if the scale read as
+one (0.01–100) and the hero is still the same. Untested in play when written.
+
+Shrunk, the hero was still glimpsed: on the ground behind the camera it could sit at the frame's
+edge when the camera looked down, and eased after it, it lagged into view as the camera turned.
+`Carry` now puts it exactly each tick behind the lens along the camera's own look (the gimbal's
+pitch and yaw): the camera's distance (asked, else `FLIGHT_DISTANCE`) + `HERO_BEHIND` (3 m) back
+from the pivot, `HERO_ABOVE` (1 m) up. Its angle from the look is over 90°, so no lens frames it.

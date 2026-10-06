@@ -9,6 +9,10 @@ const FLIGHT_SPEED: f32 = 450.0;
 const FLIGHT_EASE_IN: f32 = 2.0;
 const FLIGHT_EASE_OUT: f32 = 600.0;
 pub const FLIGHT_DISTANCE: f32 = 150.0;
+/// How far behind the camera's lens, along its look, the hero is carried, and how much higher
+/// (cm): out of the frame whatever it looks at, near enough that the land it sees is drawn finely.
+pub const HERO_BEHIND: f32 = 300.0;
+pub const HERO_ABOVE: f32 = 100.0;
 
 /// Corners rounded: Chaikin's corner cutting, `rounds` times, the ends kept.
 pub fn rounded(path: &[[f32; 3]], rounds: usize) -> Vec<[f32; 3]> {

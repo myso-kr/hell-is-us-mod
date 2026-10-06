@@ -10,6 +10,13 @@ use crate::game::process::Game;
 use crate::mem::Memory;
 use crate::obstacles::Blocking;
 
+/// How long the hero is held where it stood when a flight ends, and Unreal's falling mode.
+const PUT_BACK: std::time::Duration = std::time::Duration::from_millis(500);
+const MOVE_FALLING: u8 = 3;
+/// The carried hero's mesh's scale: nothing to see, not quite nothing (a zero scale can upset the
+/// engine's maths).
+const HIDDEN_SCALE: f64 = 0.001;
+
 /// What a camera setting is, for which a take holds it.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Kind {
@@ -36,6 +43,10 @@ pub(super) struct Session<'a> {
     safety0: Option<(u64, u8)>,
     /// Where the take last put the camera (pitch, yaw), to tell the mouse's turn from its own.
     written: Option<(f32, f32)>,
+    /// Where the hero stood when a flight began, to bring it back to (its root, cm).
+    hero0: Option<[f64; 3]>,
+    /// The hero's mesh's scale as it was, while it is shrunk out of sight.
+    scale0: Option<[f64; 3]>,
 }
 
 impl<'a> Session<'a> {
@@ -58,6 +69,8 @@ impl<'a> Session<'a> {
             pivot0: None,
             safety0: None,
             written: None,
+            hero0: None,
+            scale0: None,
         };
         let Some(rot0) = s.read3(w.rotation) else { return Err(State::Failed(tr!("ROTATION_UNREADABLE").into())) };
         (s.pitch, s.yaw) = (Axis::new(wrap(rot0[0] as f32)), Axis::new(wrap(rot0[1] as f32)));
@@ -91,6 +104,15 @@ impl<'a> Session<'a> {
         // On a flight the game's own checks from the hero to the camera's pivot are off: they held
         // the camera on the hero's line of sight (probed: 80 m ahead reached 14 m with them, 78 m
         // without). The flight's path keeps clear of obstacles, and the camera's room is kept.
+        if flight && w.hero_root.is_some() {
+            s.hero0 = w.pose.read(&s.game).map(|(p, _)| p);
+            // only a scale that reads as one is shrunk and put back
+            s.scale0 = w
+                .hero_root
+                .and_then(|h| h.scale)
+                .and_then(|at| s.read3(at))
+                .filter(|v| v.iter().all(|x| x.is_finite() && *x > 0.01 && *x < 100.0));
+        }
         if flight {
             s.safety0 = w.safety.and_then(|at| {
                 let mut b = [0u8; 1];
@@ -190,6 +212,26 @@ impl<'a> Session<'a> {
         ease_knobs(&mut self.knobs, &mut self.room, &self.blocking, pivots, back, dt, &self.game);
     }
 
+    /// The hero put at `p` (its root, cm), still: a flight carries it behind the camera.
+    pub fn place_hero(&self, p: [f64; 3]) {
+        let Some(h) = self.w.hero_root else { return };
+        if let (Some(at), Some(_)) = (h.scale, self.scale0) {
+            self.write3(at, [HIDDEN_SCALE; 3]);
+        }
+        self.put(p);
+    }
+
+    /// The hero's place written, as a teleport does: its root, its world transform, still.
+    fn put(&self, p: [f64; 3]) {
+        let Some(h) = self.w.hero_root else { return };
+        let bytes: Vec<u8> = p.iter().flat_map(|v| v.to_le_bytes()).collect();
+        self.game.write(h.location, &bytes);
+        self.game.write(h.world, &bytes);
+        if let Some(v) = h.velocity {
+            self.game.write(v, &[0u8; 24]);
+        }
+    }
+
     /// The pivot moved, for a flight: the safety checks held off while it is away.
     pub fn hold_checks_off(&self) {
         if let Some((at, b)) = self.safety0 {
@@ -197,9 +239,25 @@ impl<'a> Session<'a> {
         }
     }
 
-    /// Everything the take changed put back: the stick at rest (when the mod drove the hero), the
-    /// pivot, the safety checks, the camera's settings.
+    /// Everything the take changed put back: the hero where it stood (a flight), the stick at rest
+    /// (when the mod drove the hero), the pivot, the safety checks, the camera's settings.
     pub fn restore(&self) {
+        // the hero back where it stood — unless it is gone (a load, a cutscene): held there a
+        // moment, as one write may be moved over, then let fall into place, which has the game
+        // move it there at once; its mesh its own size again first
+        if let (Some(p), Some(_)) = (self.hero0, self.hero()) {
+            if let (Some(at), Some(s0)) = (self.w.hero_root.and_then(|h| h.scale), self.scale0) {
+                self.write3(at, s0);
+            }
+            let until = std::time::Instant::now() + PUT_BACK;
+            while std::time::Instant::now() < until {
+                self.put(p);
+                std::thread::sleep(std::time::Duration::from_millis(4));
+            }
+            if let Some(m) = self.w.hero_root.and_then(|h| h.mode) {
+                self.game.write(m, &[MOVE_FALLING]);
+            }
+        }
         if self.plan.mode.drives() {
             self.write3(self.w.input, [0.0, 0.0, 0.0]);
         }
