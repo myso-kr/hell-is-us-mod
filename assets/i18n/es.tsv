@@ -964,3 +964,5 @@ AERIAL_EAGLE	Águila
 AERIAL_HUNT	Águila: acercamiento
 AERIAL_FLY_BY	Pasada
 AERIAL_VERTIGO	Vértigo ascendente
+NO_FALL_DAMAGE	Sin daño por caída
+NO_FALL_DAMAGE_NOT_FOUND	Sin daño por caída: no se encontró la configuración de caída

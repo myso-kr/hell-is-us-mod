@@ -964,3 +964,5 @@ AERIAL_EAGLE	Eagle
 AERIAL_HUNT	Eagle: zoomed in
 AERIAL_FLY_BY	Fly-by
 AERIAL_VERTIGO	Vertigo climb
+NO_FALL_DAMAGE	No fall damage
+NO_FALL_DAMAGE_NOT_FOUND	No fall damage: the game’s fall settings were not found

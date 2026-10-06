@@ -99,6 +99,8 @@ pub enum Effect {
     Ghost,
     /// The hero's own components generate no overlaps: enemy blows find nothing.
     Untouchable,
+    /// The game's fall damage heights out of reach (falls.rs).
+    NoFallDamage,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -165,6 +167,8 @@ pub const CHEATS: &[Cheat] = &[
     // Faction decides both who the enemies notice and whose blows land, so a ghost
     // is ignored and cannot strike — for getting past, not for fighting.
     toggle("ghost", Group::Survival, "GHOST_FOR_EXPLORING_YOU_CANNOT_ATTACK", &[Effect::Ghost], true),
+    // FallDamageConfig's default object, which the game weighs every landing against (falls.rs).
+    toggle("nofall", Group::Survival, "NO_FALL_DAMAGE", &[Effect::NoFallDamage], true),
     // Combat
     toggle("lymbic", Group::Combat, "INFINITE_LYMBIC_ENERGY", &[Fill(a::LYMBIC, a::LYMBIC_MAX)], false),
     // Coefficients like these held in memory but did nothing for every one tried in
@@ -290,7 +294,8 @@ impl Active {
                 | Effect::Stock(_)
                 | Effect::WeaponXp
                 | Effect::Ghost
-                | Effect::Untouchable => {}
+                | Effect::Untouchable
+                | Effect::NoFallDamage => {}
             }
         }
         Ok(())

@@ -964,3 +964,5 @@ AERIAL_EAGLE	Orzeł
 AERIAL_HUNT	Orzeł: zbliżenie
 AERIAL_FLY_BY	Przelot obok
 AERIAL_VERTIGO	Wznoszący Vertigo
+NO_FALL_DAMAGE	Brak obrażeń od upadku
+NO_FALL_DAMAGE_NOT_FOUND	Brak obrażeń od upadku: nie znaleziono ustawień upadku

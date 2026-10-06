@@ -964,3 +964,5 @@ AERIAL_EAGLE	독수리 활공
 AERIAL_HUNT	독수리: 포착 확대
 AERIAL_FLY_BY	지나치며 주시
 AERIAL_VERTIGO	버티고 상승
+NO_FALL_DAMAGE	낙사 데미지 없음
+NO_FALL_DAMAGE_NOT_FOUND	낙사 데미지 없음: 게임의 낙하 설정을 찾지 못했습니다

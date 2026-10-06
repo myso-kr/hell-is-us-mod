@@ -6,9 +6,9 @@ use super::Engine;
 use crate::cheats::Active;
 use std::time::Instant;
 
-/// The cheats a flight turns on for the hero it carries: health held at its cap, and the enemies'
-/// side (they leave it be).
-const GUARD: [&str; 2] = ["god", "ghost"];
+/// The cheats a flight turns on for the hero it carries: health held at its cap, the enemies'
+/// side (they leave it be), and no fall damage (carried in the air, it lands when put back).
+const GUARD: [&str; 3] = ["god", "ghost", "nofall"];
 
 impl Engine {
     /// Roll a filming take (film.rs): the hero walked along `plan` by the stick's input, the

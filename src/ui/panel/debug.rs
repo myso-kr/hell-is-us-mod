@@ -79,7 +79,8 @@ impl Panel {
                                         | Effect::Stock(_)
                                         | Effect::WeaponXp
                                         | Effect::Ghost
-                                        | Effect::Untouchable => {
+                                        | Effect::Untouchable
+                                        | Effect::NoFallDamage => {
                                             ui.label(crate::i18n::tr(c.label));
                                             ui.label(RichText::new(tr!("ENEMIES_AND_INVENTORY")).color(DIM).small());
                                             ui.label("");

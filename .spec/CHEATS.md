@@ -346,3 +346,17 @@ edge when the camera looked down, and eased after it, it lagged into view as the
 `Carry` now puts it exactly each tick behind the lens along the camera's own look (the gimbal's
 pitch and yaw): the camera's distance (asked, else `FLIGHT_DISTANCE`) + `HERO_BEHIND` (3 m) back
 from the pivot, `HERO_ABOVE` (1 m) up. Its angle from the look is over 90°, so no lens frames it.
+
+### No fall damage (2026-10-07)
+
+The hero carried above the camera took fall damage when put back (the user saw it in play): the
+landing is weighed from where the fall began, high in the air. `cheat/falls.rs`, a cheat of its
+own (`nofall`, `Effect::NoFallDamage`; verified in play 2026-10-07: no damage after a flight): the class default object
+`Default__FallDamageConfig` (found once through GObjects, checked by name before every write)
+has `LightLandingHeight`, `HeavyLandingHeight`, `DeathLandingHeight`, `LightDamageHeight`,
+`ScaledDamageStartHeight`, `KillHeight` set to 1e7 cm, `ScaledDamageMaxHeight` to 2e7, and
+`LightDamageRatio`, `MaxDamageRatio` to 0, by reflected field; `NoAnimationHeight` is left. The
+values as first read are put back when it goes off (`release`), forgotten when the game exits.
+On 24045435 they were 150 / 450 / 900 / 1500 / 450 / 0.1 / 900 / 1200 / 0.7 / 1500. The landing
+ability reads the default object at each landing (as `GetDefault` does): seen in play.
+The flight's guard now adds it with god and ghost.

@@ -8,6 +8,12 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ## Unreleased
 
+### Added (cheats)
+
+- No fall damage (Survival): the game's fall damage heights put out of reach while it is on, and
+  back as they were after. A flight turns it on with god and ghost for the hero it carries, which
+  otherwise took the height it was carried at as a fall when put back.
+
 ### Fixed
 
 - A take the mod moves no longer stops when nobody touched anything. It used Windows' last-input

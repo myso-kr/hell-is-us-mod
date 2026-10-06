@@ -964,3 +964,5 @@ AERIAL_EAGLE	Adler
 AERIAL_HUNT	Adler: herangezoomt
 AERIAL_FLY_BY	Vorbeiflug
 AERIAL_VERTIGO	Vertigo-Aufstieg
+NO_FALL_DAMAGE	Kein Fallschaden
+NO_FALL_DAMAGE_NOT_FOUND	Kein Fallschaden: Falleinstellungen des Spiels nicht gefunden

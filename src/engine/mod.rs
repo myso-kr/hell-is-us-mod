@@ -71,6 +71,8 @@ pub struct Engine {
     originals: Originals,
     /// What the cheats past the hero overwrote (extras.rs).
     extras: Extras,
+    /// The fall damage heights, while that cheat is on (falls.rs).
+    falls: crate::falls::Falls,
     active: Vec<Active>,
     notice: Option<String>,
     slots: [Option<(String, [f64; 3])>; SLOTS],
@@ -102,6 +104,7 @@ impl Engine {
             checked: None,
             originals: Originals::load(&hold::default_path())?,
             extras: Extras::new(),
+            falls: Default::default(),
             slots: Default::default(),
             before: None,
             take: None,
@@ -137,6 +140,7 @@ impl Engine {
                 self.notice = Some(tr!("THE_GAME_EXITED_CHEATS_OFF").into());
             }
             self.extras.forget();
+            self.falls.forget();
             self.originals.forget()?;
         }
         self.attached = Some(attach()?);
@@ -326,7 +330,8 @@ impl Engine {
                         }
                     }
                 }
-                let errors = self.extras.tick(a, &self.active);
+                let mut errors = self.extras.tick(a, &self.active);
+                errors.extend(self.falls.tick(a, &self.active));
                 if !errors.is_empty() && snap.notice.is_none() {
                     snap.notice = Some(errors.join("; "));
                 }
@@ -434,6 +439,7 @@ impl Engine {
         self.active = toggles;
         let a = self.attached.as_ref().unwrap();
         self.extras.release(a, &self.active);
+        self.falls.release(a, &self.active);
         if drop.is_empty() {
             return Ok(());
         }
@@ -460,6 +466,7 @@ impl Engine {
         self.active.clear();
         if let Some(a) = self.attached.as_ref() {
             self.extras.release(a, &[]);
+            self.falls.release(a, &[]);
         }
         if self.originals.is_empty() {
             return Ok(());
