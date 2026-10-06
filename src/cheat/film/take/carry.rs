@@ -27,6 +27,13 @@ impl Carry {
         if let Some(low) = above_floor(&s.blocking, [at[0], at[1], at[2] - FEET], FEET_OVER_FLOOR) {
             at[2] = at[2].max(low + FEET);
         }
+        // nor onto what stands there (a rock, a roof): over its top as well
+        let feet = at[2] - FEET;
+        for o in s.blocking.under(at[0], at[1]) {
+            if o.zmin < feet + FEET_OVER_FLOOR && o.zmax > feet - FEET_OVER_FLOOR {
+                at[2] = at[2].max(o.zmax + FEET_OVER_FLOOR + FEET);
+            }
+        }
         s.place_hero(at.map(|v| v as f64));
         at
     }

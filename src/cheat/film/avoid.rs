@@ -152,10 +152,10 @@ pub fn headroom(b: &crate::obstacles::Blocking, at: [f32; 3], want: f32) -> f32 
 }
 
 /// How far above the floor (the landscape or water over it) a flight's camera stays, and a carried
-/// hero's feet (cm); and how far the floor may be above before it is taken for the landscape over
+/// hero's feet — well clear, so it never lands and the game plays no landing (cm); and how far the floor may be above before it is taken for the landscape over
 /// a cave or a hall the flight is in, and left alone (cm).
 pub const CAMERA_OVER_FLOOR: f32 = 150.0;
-pub const FEET_OVER_FLOOR: f32 = 50.0;
+pub const FEET_OVER_FLOOR: f32 = 300.0;
 const FLOOR_ABOVE_INDOORS: f32 = 800.0;
 
 /// The lowest `p` may be at its (x, y) to be `over` the floor: the landscape or water there — not
