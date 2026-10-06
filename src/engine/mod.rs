@@ -443,6 +443,9 @@ impl Engine {
             pivot,
             body,
             blend,
+            safety: pcm
+                .and_then(|p| n.follow(m, p, "CameraModeInstance").ok())
+                .and_then(|mode| n.field(m, mode, "bValidateSafeLoc").map(|f| mode + f.offset as u64)),
             scene: a.obstacles(),
         };
         self.take = Some(crate::film::roll(plan, wiring, state, ended));

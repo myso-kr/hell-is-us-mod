@@ -225,3 +225,13 @@ on the filming card or the map settings' keys tab, never one the map's keys hold
 The points are drawn on every map: `MapState.film_points` (put there by the overlay, never saved)
 joined and numbered in a warm white on the minimap and the big map (raster.rs), and the same on
 the 3D map (map3d.rs, 30 cm above the floor).
+
+### A flight's reach (2026-10-06)
+
+The user found a flight unable to take the camera far from the hero. Probed (the pivot held
+ahead): 5 m → 5.6 m, 10 m → 9.1 m, but 20 m → 13.7 m, 40 m → 16.8 m, 80 m → 14.1 m, each having
+reached ~19 m at 0.5 s and been pulled back; 30 m up → 34 m. The camera mode checks the line from
+the hero to the pivot (`bValidateSafeLoc`, bit 0, and `bPreventCameraPenetration`, bit 1, of one
+byte with `bDoPredictiveAvoidance`) and holds the pivot short of what it hits. With both cleared:
+20 m → 18.4 m, 40 m → 38 m, 80 m → 77.9 m. A flight clears them while it runs and puts the byte
+back after; a walk keeps them, the camera being behind the hero there.

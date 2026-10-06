@@ -93,6 +93,9 @@ pub struct Wiring {
     pub body: Option<u64>,
     /// The camera mode's `PenetrationBlendInTime` and `PenetrationBlendOutTime` (floats).
     pub blend: Option<(u64, u64)>,
+    /// The camera mode's byte of `bValidateSafeLoc` (bit 0) and `bPreventCameraPenetration`
+    /// (bit 1): cleared on a flight, which plans its own way round obstacles.
+    pub safety: Option<u64>,
     /// What stands in the way (obstacles.rs), for the flight's path and the camera's room.
     pub scene: std::sync::Arc<crate::obstacles::Scene>,
 }
@@ -862,6 +865,14 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
     let mut room = f32::MAX;
     // A flight: from where the camera turns about now (the pivot, in the hero's frame).
     let pivot0 = w.pivot.and_then(read3);
+    // On a flight the game's own checks from the hero to the camera's pivot are off: they held
+    // the camera on the hero's line of sight (probed: 80 m ahead reached 14 m with them, 78 m
+    // without). The flight's path keeps clear of obstacles, and the camera's room is kept.
+    let read_b = |at: u64| -> Option<u8> {
+        let mut b = [0u8; 1];
+        game.read(at, &mut b).then_some(b[0])
+    };
+    let safety0 = w.safety.filter(|_| plan.flight).and_then(|at| Some((at, read_b(at)?)));
     let mut flight = None;
     if plan.flight {
         let (Some(p0), Some(body), Some((hp, _))) = (pivot0, w.body.and_then(read3), w.pose.read(&game)) else {
@@ -908,6 +919,9 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
             let (dx, dy) = (fly.at[0] - hero[0], fly.at[1] - hero[1]);
             let local = [(dx * c + dy * s) as f64, (-dx * s + dy * c) as f64, (fly.at[2] - hero[2]) as f64];
             write3(pv, local);
+            if let Some((at, b)) = safety0 {
+                game.write(at, &[b & !0b11]);
+            }
             let head = [hero[0], hero[1], hero[2] + EYE - 90.0];
             // Circling turns the camera about its pivot, which on a flight is on the path, not
             // the hero: there it looks at the hero instead.
@@ -977,6 +991,9 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
     }
     if let (Some(pv), Some(p0)) = (w.pivot, pivot0) {
         write3(pv, p0);
+    }
+    if let Some((at, b)) = safety0 {
+        game.write(at, &[b]);
     }
     for k in &knobs {
         game.write(k.at, &k.was.to_le_bytes());
