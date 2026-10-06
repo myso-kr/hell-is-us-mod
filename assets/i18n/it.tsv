@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Rifai da qui
 FILM_TOUR_MAKING	Calcolo del giro…
 FILM_TOUR_MADE	Giro pronto: {km} km
 FILM_TOUR_NO_NAV	La mappa percorribile non è ancora stata letta qui: apri la mappa 3D una volta o attendi.
+RESCUE_DONE	L'eroe è fuori: x {x} y {y} z {z}
+RESCUE_RESIZED	L'eroe era stato rimpicciolito da un volo non concluso: dimensioni ripristinate.
+RESCUE_NO_FLOOR	Nessun suolo trovato vicino all'eroe: la mappa percorribile non è stata letta qui.
+RESCUE_CAMERA	Telecamera riportata a riposo ({n} impostazioni); riavviare il gioco le ripristina tutte esattamente.

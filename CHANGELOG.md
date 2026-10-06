@@ -17,6 +17,14 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - A walk caught on a wall or in a narrow place steps back to one side and the other, then lifts
   the hero a little on along the route, before it gives up.
 
+### Added (command line)
+
+- `hiumod rescue`: gets the hero out of the ground after a take that ended badly — its size back,
+  set on the nearest walkable floor above or about it (else the landscape) — and puts the camera
+  back as at rest: the camera mode's pivot, checks and blend from its own defaults, the configs'
+  distance and field of view at their probed rest (484 cm, 70°; a restart of the game brings
+  every value back exactly).
+
 ### Added (cheats)
 
 - No fall damage (Survival): the game's fall damage heights put out of reach while it is on, and

@@ -403,3 +403,18 @@ left in the ground with the guard's cheats on. Fixed (the floor at most what is 
 test), and `logfile::catch_panics` now writes any panic's thread, place and message to the log
 before the default hook. Still true: a panic anywhere ends the panel without putting back a
 take's changes; `panic = "abort"` in the release profile means no unwinding and no Drop.
+
+### `hiumod rescue` (2026-10-07)
+
+Used the same day to get the hero out after the abort above. `Engine::rescue`
+(`engine/rescue.rs`): the hero's mesh `RelativeScale3D` set to 1 if under 0.01; the floor looked
+for straight up from the feet, every metre up to 40 m (`NavMesh::locate`, first floor not under
+the feet), else the landscape's height; teleported there, `ABOVE` (120 cm) over the root's height.
+`Engine::rescue_camera`: the three configs' `DefaultDistanceFromPlayer` and `FieldOfView` to 484 cm
+and 70° (the exploration camera's rest as probed; the combat and APC configs' own are not known,
+their class defaults (600, 70) are not the assets' values); the camera mode's `PivotToViewTarget`
+(the whole transform), the `bValidateSafeLoc` byte (0x07) and both blend times (0.15, 0.25) copied
+from its blueprint's default object (`Default__StoryHero_CameraMode_C`). Found left by the dead
+take: distance 10, FOV 85.18, the safety byte 0x04, blends 0.6 / 1.2, the camera under the hero.
+A take's originals are still only in memory: a crash loses them (to do: keep them on disk, as
+the ghost's are, for `hiumod restore`).

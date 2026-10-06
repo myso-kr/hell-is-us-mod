@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Refazer daqui
 FILM_TOUR_MAKING	Calculando o passeio…
 FILM_TOUR_MADE	Passeio pronto: {km} km
 FILM_TOUR_NO_NAV	O mapa caminhável ainda não foi lido aqui: abra o mapa 3D uma vez ou aguarde.
+RESCUE_DONE	O herói saiu: x {x} y {y} z {z}
+RESCUE_RESIZED	O herói estava encolhido por um voo não terminado: tamanho restaurado.
+RESCUE_NO_FLOOR	Nenhum chão encontrado perto do herói: o mapa caminhável não foi lido aqui.
+RESCUE_CAMERA	Câmera de volta ao normal ({n} ajustes); reiniciar o jogo restaura todos exatamente.

@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Von hier neu erstellen
 FILM_TOUR_MAKING	Reise wird berechnet…
 FILM_TOUR_MADE	Reise bereit: {km} km
 FILM_TOUR_NO_NAV	Die begehbare Karte ist hier noch nicht gelesen: einmal die 3D-Karte öffnen oder kurz warten.
+RESCUE_DONE	Die Figur ist draußen: x {x} y {y} z {z}
+RESCUE_RESIZED	Die Figur war von einem abgebrochenen Flug verkleinert: Größe wiederhergestellt.
+RESCUE_NO_FLOOR	Kein Boden bei der Figur gefunden: Die begehbare Karte ist hier nicht gelesen.
+RESCUE_CAMERA	Kamera auf Ruhewerte zurückgesetzt ({n} Einstellungen); ein Neustart des Spiels stellt alle exakt wieder her.

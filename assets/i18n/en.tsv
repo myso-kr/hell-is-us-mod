@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Make it again from here
 FILM_TOUR_MAKING	Working out the tour…
 FILM_TOUR_MADE	Tour ready: {km} km
 FILM_TOUR_NO_NAV	The walkable map is not read yet here: open the 3D map once, or wait a moment.
+RESCUE_DONE	The hero is out, at x {x} y {y} z {z}.
+RESCUE_RESIZED	The hero was shrunk by a flight that did not end: its size is back.
+RESCUE_NO_FLOOR	No floor found near the hero: the walkable map is not read here.
+RESCUE_CAMERA	The camera put back as at rest ({n} settings); a restart of the game brings back every one exactly.

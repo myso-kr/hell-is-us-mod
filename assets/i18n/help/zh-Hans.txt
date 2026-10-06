@@ -38,6 +38,7 @@ hiumod — 《Hell Is Us》(Steam) 单人作弊与小地图
   hiumod hold <cheat>...        例如 god stamina speed=2，持续到按 Ctrl+C；
                                 所有可保持的作弊都列在 `hiumod doctor` 中
   hiumod restore                还原被强制结束的 hold 所遗留的修改
+  hiumod rescue                 把卡在地里的主角救出（异常结束的拍摄）：恢复大小，放到最近的地面上
 
 选项
   --game-dir <dir>              安装根目录，其中包含 HellIsUs\

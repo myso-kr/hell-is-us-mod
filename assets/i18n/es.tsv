@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Rehacer desde aquí
 FILM_TOUR_MAKING	Calculando el recorrido…
 FILM_TOUR_MADE	Recorrido listo: {km} km
 FILM_TOUR_NO_NAV	El mapa transitable aún no se ha leído aquí: abre el mapa 3D una vez o espera un momento.
+RESCUE_DONE	El héroe está fuera: x {x} y {y} z {z}
+RESCUE_RESIZED	El héroe había quedado reducido por un vuelo sin terminar: tamaño restaurado.
+RESCUE_NO_FLOOR	No se encontró suelo cerca del héroe: el mapa transitable no se ha leído aquí.
+RESCUE_CAMERA	Cámara devuelta a su estado normal ({n} ajustes); reiniciar el juego restaura todos con exactitud.

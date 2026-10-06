@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Refaire d’ici
 FILM_TOUR_MAKING	Calcul de la visite…
 FILM_TOUR_MADE	Visite prête : {km} km
 FILM_TOUR_NO_NAV	La carte praticable n’est pas encore lue ici : ouvrez la carte 3D une fois ou patientez.
+RESCUE_DONE	Le héros est sorti : x {x} y {y} z {z}
+RESCUE_RESIZED	Le héros avait été réduit par un vol inachevé : taille rétablie.
+RESCUE_NO_FLOOR	Aucun sol trouvé près du héros : la carte praticable n’est pas lue ici.
+RESCUE_CAMERA	Caméra remise au repos ({n} réglages) ; redémarrer le jeu les rétablit tous exactement.

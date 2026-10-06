@@ -41,6 +41,7 @@ fn main() -> ExitCode {
         Command::Hold(names) => hold(names),
         Command::Restore => restore(),
         Command::Pose => pose(),
+        Command::Rescue => rescue(),
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -934,6 +935,29 @@ fn hold(names: &[String]) -> R {
 }
 
 /// Put back what a killed hold left changed.
+/// The hero out of the ground: the engine stepped until the walkable floor is read, then set on it.
+fn rescue() -> R {
+    let mut engine = Engine::new()?;
+    let until = std::time::Instant::now() + Duration::from_secs(30);
+    loop {
+        let snap = engine.step();
+        if !snap.nav.is_empty() || std::time::Instant::now() > until {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(200));
+    }
+    let (at, resized) = engine.rescue()?;
+    match engine.rescue_camera() {
+        Ok(n) => log!("{}", trf!("RESCUE_CAMERA", n = n)),
+        Err(e) => warn!("{e}"),
+    }
+    if resized {
+        log!("{}", tr!("RESCUE_RESIZED"));
+    }
+    log!("{}", trf!("RESCUE_DONE", x = at[0].round(), y = at[1].round(), z = at[2].round()));
+    Ok(())
+}
+
 fn restore() -> R {
     let mut engine = Engine::new()?;
     if engine.pending() == 0 {

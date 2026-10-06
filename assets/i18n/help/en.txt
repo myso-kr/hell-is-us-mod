@@ -38,6 +38,7 @@ USAGE
   hiumod hold <cheat>...        e.g. god stamina speed=2 — until Ctrl+C;
                                 every held cheat is in `hiumod doctor`'s list
   hiumod restore                restore anything a killed hold left changed
+  hiumod rescue                 get the hero out of the ground (a take that ended badly): its size back, on the nearest floor
 
 OPTIONS
   --game-dir <dir>              the install root, holding HellIsUs\

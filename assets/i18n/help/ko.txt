@@ -38,6 +38,7 @@ hiumod — Hell Is Us(Steam)용 싱글 플레이 치트·미니맵
   hiumod hold <치트>...         예: god stamina speed=2 — Ctrl+C까지 유지;
                                 유지할 수 있는 치트는 `hiumod doctor` 목록에 있음
   hiumod restore                강제 종료된 hold가 바꿔 둔 값을 되돌림
+  hiumod rescue                 땅에 갇힌 주인공을 꺼냄 (비정상 종료된 촬영): 크기를 되돌리고 가장 가까운 바닥 위로
 
 옵션
   --game-dir <폴더>             HellIsUs\ 가 들어 있는 설치 폴더

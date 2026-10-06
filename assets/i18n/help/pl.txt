@@ -38,6 +38,7 @@ UŻYCIE
   hiumod hold <cheat>...        np. god stamina speed=2 — do Ctrl+C;
                                 każdy utrzymywany cheat jest na liście `hiumod doctor`
   hiumod restore                przywraca to, co przerwany hold zostawił zmienione
+  hiumod rescue                 wyciąga bohatera z ziemi (przerwane ujęcie): przywraca rozmiar, na najbliższe podłoże
 
 OPCJE
   --game-dir <dir>              katalog główny instalacji, zawierający HellIsUs\

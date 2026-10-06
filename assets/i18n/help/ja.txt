@@ -38,6 +38,7 @@ hiumod — Hell Is Us (Steam) 用のシングルプレイ向けチートとミ�
   hiumod hold <cheat>...        例: god stamina speed=2 — Ctrl+C まで保持。
                                 使えるチートは `hiumod doctor` の一覧に載っている
   hiumod restore                強制終了した hold が残した変更を元に戻す
+  hiumod rescue                 地面に埋まった主人公を出す（異常終了した撮影）：大きさを戻し、最も近い床の上へ
 
 オプション
   --game-dir <dir>              HellIsUs\ を含むインストールのルート

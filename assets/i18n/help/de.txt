@@ -38,6 +38,7 @@ VERWENDUNG
   hiumod hold <cheat>...        z. B. god stamina speed=2 — bis Ctrl+C;
                                 jeder haltbare Cheat steht in der Liste von `hiumod doctor`
   hiumod restore                stellt zurück, was ein beendetes hold verändert hat
+  hiumod rescue                 holt die Figur aus dem Boden (abgebrochene Aufnahme): Größe zurück, auf den nächsten Boden
 
 OPTIONEN
   --game-dir <dir>              das Installationsverzeichnis, das HellIsUs\ enthält

@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Utwórz ponownie stąd
 FILM_TOUR_MAKING	Wyznaczanie wycieczki…
 FILM_TOUR_MADE	Wycieczka gotowa: {km} km
 FILM_TOUR_NO_NAV	Mapa przejść nie jest tu jeszcze wczytana: otwórz raz mapę 3D lub chwilę poczekaj.
+RESCUE_DONE	Bohater wydostany: x {x} y {y} z {z}
+RESCUE_RESIZED	Bohater był pomniejszony przez nieukończony lot: rozmiar przywrócony.
+RESCUE_NO_FLOOR	Nie znaleziono podłoża przy bohaterze: mapa przejść nie jest tu wczytana.
+RESCUE_CAMERA	Kamera przywrócona do spoczynku ({n} ustawień); restart gry przywróci wszystkie dokładnie.

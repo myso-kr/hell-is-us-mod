@@ -40,6 +40,8 @@ pub enum Command {
     Hold(Vec<String>),
     Restore,
     Pose,
+    /// The hero out of the ground (engine/rescue.rs).
+    Rescue,
 }
 
 #[derive(Debug, PartialEq)]
@@ -74,6 +76,7 @@ pub fn parse(args: impl IntoIterator<Item = String>) -> Result<Parsed, String> {
         Some("list") => Command::List,
         Some("restore") => Command::Restore,
         Some("pose") => Command::Pose,
+        Some("rescue") => Command::Rescue,
         Some("get") if words.len() > 1 => Command::Get(rest(1)),
         Some("set") if words.len() == 3 => {
             let v = words[2].parse().map_err(|_| format!("{} is not a number", words[2]))?;
@@ -101,6 +104,7 @@ mod tests {
         assert_eq!(run("doctor").unwrap().command, Command::Doctor);
         assert_eq!(run("restore").unwrap().command, Command::Restore);
         assert_eq!(run("pose").unwrap().command, Command::Pose);
+        assert_eq!(run("rescue").unwrap().command, Command::Rescue);
         assert_eq!(run("set emeralds 500").unwrap().command, Command::Set("emeralds".into(), 500.0));
         assert_eq!(run("hold god speed=2").unwrap().command, Command::Hold(vec!["god".into(), "speed=2".into()]));
         assert_eq!(run("--game-dir D:\\G doctor").unwrap().game_dir, Some(PathBuf::from("D:\\G")));

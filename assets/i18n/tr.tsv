@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	Buradan yeniden oluştur
 FILM_TOUR_MAKING	Tur hesaplanıyor…
 FILM_TOUR_MADE	Tur hazır: {km} km
 FILM_TOUR_NO_NAV	Yürünebilir harita burada henüz okunmadı: 3B haritayı bir kez açın ya da biraz bekleyin.
+RESCUE_DONE	Kahraman çıkarıldı: x {x} y {y} z {z}
+RESCUE_RESIZED	Bitmeyen bir uçuş kahramanı küçültmüştü: boyutu geri alındı.
+RESCUE_NO_FLOOR	Kahramanın yakınında zemin bulunamadı: yürünebilir harita burada okunmadı.
+RESCUE_CAMERA	Kamera dinlenme durumuna döndü ({n} ayar); oyunu yeniden başlatmak hepsini tam olarak geri getirir.

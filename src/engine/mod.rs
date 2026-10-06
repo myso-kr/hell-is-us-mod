@@ -24,6 +24,7 @@ use std::time::{Duration, Instant};
 
 mod attached;
 mod filming;
+mod rescue;
 mod snapshot;
 
 pub use attached::{attach, saved_guids, Attached};
@@ -35,7 +36,7 @@ const LIFT: f64 = 50.0;
 /// A teleport to a place followed lands this far short of it, toward the hero, and this
 /// far above it (cm): not inside what stands there (a chest, a person), and on its floor.
 const SHORT_OF: f64 = 150.0;
-const ABOVE: f64 = 120.0;
+pub(super) const ABOVE: f64 = 120.0;
 
 /// What the journal and the survey give, worked out once a second (`DERIVE_EVERY`).
 struct Derived {

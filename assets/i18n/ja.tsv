@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	ここから作り直す
 FILM_TOUR_MAKING	ツアーを計算中…
 FILM_TOUR_MADE	ツアー準備完了：{km} km
 FILM_TOUR_NO_NAV	ここの歩行マップをまだ読み込んでいません。3Dマップを一度開くか、少し待ってください。
+RESCUE_DONE	主人公を出しました：x {x} y {y} z {z}
+RESCUE_RESIZED	終わらなかった飛行で小さくなった主人公の大きさを戻しました。
+RESCUE_NO_FLOOR	主人公の近くに床が見つかりません：ここの歩行マップを読み込めていません。
+RESCUE_CAMERA	カメラを通常状態に戻しました（設定 {n} 個）。ゲームを再起動するとすべて正確に元に戻ります。

@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	从这里重新生成
 FILM_TOUR_MAKING	正在计算巡游…
 FILM_TOUR_MADE	巡游已就绪：{km} 公里
 FILM_TOUR_NO_NAV	此处的可行走地图尚未读取：请打开一次 3D 地图或稍候。
+RESCUE_DONE	主角已救出：x {x} y {y} z {z}
+RESCUE_RESIZED	未结束的飞行把主角缩小了：已恢复大小。
+RESCUE_NO_FLOOR	主角附近找不到地面：此处的可行走地图未读取。
+RESCUE_CAMERA	相机已恢复为常态（{n} 项设置）；重启游戏可精确恢复全部数值。

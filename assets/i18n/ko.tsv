@@ -975,3 +975,7 @@ FILM_TOUR_REMAKE	여기서 다시 만들기
 FILM_TOUR_MAKING	투어 경로를 계산하는 중…
 FILM_TOUR_MADE	투어 경로 준비됨: {km} km
 FILM_TOUR_NO_NAV	이곳의 보행 지도를 아직 읽지 못했습니다. 3D 지도를 한 번 열거나 잠시 기다려 주세요.
+RESCUE_DONE	주인공을 꺼냈습니다: x {x} y {y} z {z}
+RESCUE_RESIZED	끝나지 못한 비행으로 줄어든 주인공의 크기를 되돌렸습니다.
+RESCUE_NO_FLOOR	주인공 근처에서 바닥을 찾지 못했습니다: 이곳의 보행 지도를 읽지 못했습니다.
+RESCUE_CAMERA	카메라를 평소 상태로 되돌렸습니다 (설정 {n}개). 게임을 다시 시작하면 모든 값이 정확히 원래대로 돌아옵니다.

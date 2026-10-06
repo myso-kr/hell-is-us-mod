@@ -38,6 +38,7 @@ KULLANIM
   hiumod hold <cheat>...        örn. god stamina speed=2 — Ctrl+C'ye kadar;
                                 tutulan her hile `hiumod doctor` listesindedir
   hiumod restore                sonlandırılan bir hold'un değiştirilmiş bıraktığını geri alır
+  hiumod rescue                 kahramanı yerden çıkarır (yarım kalan çekim): boyutu geri, en yakın zemine
 
 SEÇENEKLER
   --game-dir <dir>              HellIsUs\ içeren kurulum kökü
