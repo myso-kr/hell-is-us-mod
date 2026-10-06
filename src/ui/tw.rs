@@ -715,6 +715,14 @@ pub fn choices<T>(tui: &mut Tui, body: impl FnOnce(&mut Tui) -> T) -> T {
     tui.style(wrap(super::theme::INLINE)).add(body)
 }
 
+/// A distance at the end of a line, small and dim (nothing when it is unknown): a column of its
+/// own, so the line before it wraps on its words, not round the number.
+pub fn distance(tui: &mut Tui, span: String) {
+    if !span.is_empty() {
+        w(tui, |ui| ui.label(RichText::new(span).monospace().size(11.5).color(super::theme::DIM)));
+    }
+}
+
 /// A slider whose track takes what is left of the row, and whose value box is its own
 /// node — measured, never guessed.
 pub fn slider<N: egui::emath::Numeric>(

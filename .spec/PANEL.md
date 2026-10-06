@@ -430,5 +430,7 @@ The `panel-designer` agent (.claude/agents) audited eight pages; taken from it: 
 `EDGE` (it was `CONTROL`, the wells' own fill, so a slider showed only its filled part), the map
 page's settings card two columns wide with the previews stacked in the third, shorter tab names
 (`LAYER_OPACITY`, `SCREEN3D`), the 3D map's hint raised above the story round's bar, the teleport
-card's hint only when it lists something. Left for later: the Now page's distances as a column,
-the quests' handovers wrapping, the Now page's long route text in a scroll list.
+card's hint only when it lists something. Then the rest: a distance at a line's end is `tw::distance`
+(shared by the Quests and Now pages; the lines' texts no longer carry `({far})`), a handover in
+another region says the way there under its name rather than squeezing it, and the keystones'
+route on the Now page sits in a scroll list.

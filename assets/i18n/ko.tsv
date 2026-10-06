@@ -649,8 +649,8 @@ LAST_TIME_LINE	지난번: {ago}, {place}
 NEXT_GOAL_LINE	다음 목표: {goal} ({far})
 NO_GOAL_YET	아직 고른 목표가 없어요. 갈 곳이 생기면 안내가 골라 줘요.
 DOABLE_NOW	지금 여기서 할 수 있는 것
-HAND_OVER_LINE	{who}에게 {what} 건네기 ({far})
-LOCK_OPENS_NOW_LINE	가진 막대로 열리는 림빅 잠금 ({far})
+HAND_OVER_LINE	{who}에게 {what} 건네기
+LOCK_OPENS_NOW_LINE	가진 막대로 열리는 림빅 잠금
 NOTHING_TO_DO_HERE_NOW	지금 여기서 건넬 것도 열 것도 없어요.
 SIDE_IN_PROGRESS	진행 중인 선행·미스터리 ({count})
 NO_SIDE_IN_PROGRESS	진행 중인 선행이나 미스터리가 없어요.

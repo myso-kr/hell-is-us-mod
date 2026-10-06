@@ -649,8 +649,8 @@ LAST_TIME_LINE	前回: {ago}、{place}
 NEXT_GOAL_LINE	次の目標: {goal} ({far})
 NO_GOAL_YET	まだ目標がありません。行き先ができると案内が選びます。
 DOABLE_NOW	今ここでできること
-HAND_OVER_LINE	{who}に{what}を渡す ({far})
-LOCK_OPENS_NOW_LINE	手持ちのロッドで開くリンビック錠 ({far})
+HAND_OVER_LINE	{who}に{what}を渡す
+LOCK_OPENS_NOW_LINE	手持ちのロッドで開くリンビック錠
 NOTHING_TO_DO_HERE_NOW	今ここで渡すものも開けるものもありません。
 SIDE_IN_PROGRESS	進行中の善行・ミステリー ({count})
 NO_SIDE_IN_PROGRESS	進行中の善行やミステリーはありません。

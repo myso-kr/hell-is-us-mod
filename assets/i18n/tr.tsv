@@ -649,8 +649,8 @@ LAST_TIME_LINE	Son kez: {ago}, {place}
 NEXT_GOAL_LINE	Sıradaki: {goal} ({far})
 NO_GOAL_YET	Henüz hedef yok: gidilecek bir yer olunca rehber seçer.
 DOABLE_NOW	Burada şimdi yapabileceklerin
-HAND_OVER_LINE	{what} → {who} ({far})
-LOCK_OPENS_NOW_LINE	Çubuklarının açtığı Limbik kilit ({far})
+HAND_OVER_LINE	{what} → {who}
+LOCK_OPENS_NOW_LINE	Çubuklarının açtığı Limbik kilit
 NOTHING_TO_DO_HERE_NOW	Şu an burada verilecek ya da açılacak bir şey yok.
 SIDE_IN_PROGRESS	Süren yan hikâyeler ({count})
 NO_SIDE_IN_PROGRESS	Süren bir iyilik ya da gizem yok.

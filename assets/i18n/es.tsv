@@ -649,8 +649,8 @@ LAST_TIME_LINE	La última vez: {ago}, en {place}
 NEXT_GOAL_LINE	Siguiente: {goal} ({far})
 NO_GOAL_YET	Aún sin objetivo: la guía elige uno cuando hay adónde ir.
 DOABLE_NOW	Lo que puedes hacer aquí ahora
-HAND_OVER_LINE	Dar {what} a {who} ({far})
-LOCK_OPENS_NOW_LINE	Una cerradura límbica que abren tus varas ({far})
+HAND_OVER_LINE	Dar {what} a {who}
+LOCK_OPENS_NOW_LINE	Una cerradura límbica que abren tus varas
 NOTHING_TO_DO_HERE_NOW	Ahora no hay nada que entregar ni abrir aquí.
 SIDE_IN_PROGRESS	Historias secundarias en curso ({count})
 NO_SIDE_IN_PROGRESS	No hay buenas acciones ni misterios en curso.

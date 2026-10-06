@@ -649,8 +649,8 @@ LAST_TIME_LINE	Ostatnio: {ago}, w: {place}
 NEXT_GOAL_LINE	Dalej: {goal} ({far})
 NO_GOAL_YET	Brak celu: przewodnik wybierze, gdy będzie dokąd iść.
 DOABLE_NOW	Co możesz tu teraz zrobić
-HAND_OVER_LINE	Oddaj {what}: {who} ({far})
-LOCK_OPENS_NOW_LINE	Zamek limbiczny, który otworzą twoje pręty ({far})
+HAND_OVER_LINE	Oddaj {what}: {who}
+LOCK_OPENS_NOW_LINE	Zamek limbiczny, który otworzą twoje pręty
 NOTHING_TO_DO_HERE_NOW	Teraz nie ma tu nic do oddania ani otwarcia.
 SIDE_IN_PROGRESS	Poboczne historie w toku ({count})
 NO_SIDE_IN_PROGRESS	Żaden dobry uczynek ani zagadka nie jest w toku.

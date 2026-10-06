@@ -45,7 +45,8 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 - Panel layout, after a page-by-page audit: every slider's rail shows against the well it sits in;
   the map page's settings take two columns (their seven tabs on one row, shorter tab names) with
   the previews stacked beside them; the 3D map's hint no longer sits under the story round's bar;
-  an empty teleport card is one line.
+  an empty teleport card is one line; distances on the Now page stand in a column of their own so
+  lines wrap on their words; a handover in another region says the way there under its name.
 
 ## 0.7.0 — 2026-10-06
 

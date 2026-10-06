@@ -649,8 +649,8 @@ LAST_TIME_LINE	L’ultima volta: {ago}, a {place}
 NEXT_GOAL_LINE	Prossimo: {goal} ({far})
 NO_GOAL_YET	Nessun obiettivo ancora: la guida ne sceglie uno appena c’è un luogo.
 DOABLE_NOW	Cosa puoi fare qui ora
-HAND_OVER_LINE	Dare {what} a {who} ({far})
-LOCK_OPENS_NOW_LINE	Una serratura limbica che le tue verghe aprono ({far})
+HAND_OVER_LINE	Dare {what} a {who}
+LOCK_OPENS_NOW_LINE	Una serratura limbica che le tue verghe aprono
 NOTHING_TO_DO_HERE_NOW	Al momento qui non c’è nulla da consegnare o aprire.
 SIDE_IN_PROGRESS	Storie secondarie in corso ({count})
 NO_SIDE_IN_PROGRESS	Nessuna buona azione o mistero in corso.

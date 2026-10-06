@@ -11,13 +11,6 @@ fn count(done: usize, all: usize) -> RichText {
     RichText::new(format!("{done}/{all}")).monospace().size(11.5).color(DIM)
 }
 
-/// A distance at the end of a line, small and dim (nothing when it is unknown).
-fn distance(t: &mut Tui, span: String) {
-    if !span.is_empty() {
-        w(t, |ui| ui.label(RichText::new(span).monospace().size(11.5).color(DIM)));
-    }
-}
-
 /// `s` cut to `n` characters, an ellipsis where it was cut.
 fn clip(s: &str, n: usize) -> String {
     match s.char_indices().nth(n) {
@@ -130,7 +123,7 @@ impl Panel {
                     let icon = |ui: &mut egui::Ui| {
                         crate::ui::svg::sort(ui, sort, 16.0);
                     };
-                    if tw::track_line(t, Some(state.track_colour(x.id)), icon, label, |t| distance(t, span)) {
+                    if tw::track_line(t, Some(state.track_colour(x.id)), icon, label, |t| tw::distance(t, span)) {
                         guide_to(state, &goals, x);
                     }
                 }
@@ -256,13 +249,14 @@ impl Panel {
                 let on = same.then_some(state.track_colour(x.id));
                 let end = |t: &mut Tui| {
                     if same {
-                        distance(t, here.map_or(String::new(), |h| crate::raster::span(h, x.at)));
-                    } else {
-                        tw::chip(t, trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world)), tw::Tone::Quiet);
+                        tw::distance(t, here.map_or(String::new(), |h| crate::raster::span(h, x.at)));
                     }
                 };
                 if tw::track_line(t, on, icon, label, end) {
                     guide_to(state, &goals, x);
+                }
+                if !same {
+                    note(t, trf!("TAKE_THE_APC", place = crate::i18n::place(&x.world)));
                 }
             }
         });

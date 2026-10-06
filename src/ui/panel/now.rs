@@ -214,8 +214,9 @@ impl Panel {
                 // The person's name without the talk goal's "Talk: " before it.
                 let talk = trf!("TALK_GOAL", npc = "");
                 let who = n.label.strip_prefix(talk.as_str()).unwrap_or(&n.label);
-                let line = trf!("HAND_OVER_LINE", what = n.what, who = who, far = far(n.at));
-                if tw::track_line(t, Some(state.track_colour(n.id)), |_| {}, line, |_| {}) {
+                let line = trf!("HAND_OVER_LINE", what = n.what, who = who);
+                let span = far(n.at);
+                if tw::track_line(t, Some(state.track_colour(n.id)), |_| {}, line, |t| tw::distance(t, span)) {
                     guide_to(state, &goals, n);
                 }
             }
@@ -228,8 +229,8 @@ impl Panel {
                     t,
                     Some(state.track_colour(l.id)),
                     |_| {},
-                    trf!("LOCK_OPENS_NOW_LINE", far = far(l.at)),
-                    |_| {},
+                    tr!("LOCK_OPENS_NOW_LINE"),
+                    |t| tw::distance(t, far(l.at)),
                 ) {
                     let x = crate::survey::Need {
                         world: l.world.clone(),
@@ -254,8 +255,8 @@ impl Panel {
                     t,
                     Some(state.track_colour(g.id)),
                     |_| {},
-                    format!("{} ({})", g.label, far(g.at)),
-                    |_| {},
+                    g.label.clone(),
+                    |t| tw::distance(t, far(g.at)),
                 ) {
                     follow_goal(state, g, &world);
                 }
@@ -324,10 +325,13 @@ impl Panel {
                 });
             }
             if let Some((left, before)) = crate::missables::keystone_advice(&journal, &list) {
-                note(t, trf!("KEYSTONES_LEFT_IN_ORDER", keystones = left.join(" → ")));
-                if !before.is_empty() {
-                    note(t, trf!("BEFORE_THE_NEXT_KEYSTONE", deeds = before.join(", ")));
-                }
+                // the route through the keystones can run long: a list of its own height
+                tw::scroll_list(t, "keystones", 220.0, |t| {
+                    note(t, trf!("KEYSTONES_LEFT_IN_ORDER", keystones = left.join(" → ")));
+                    if !before.is_empty() {
+                        note(t, trf!("BEFORE_THE_NEXT_KEYSTONE", deeds = before.join(", ")));
+                    }
+                });
             }
             let later = list.iter().filter(|d| d.when == When::Later).count();
             if later > 0 {

@@ -649,8 +649,8 @@ LAST_TIME_LINE	Last time: {ago}, in {place}
 NEXT_GOAL_LINE	Next: {goal} ({far})
 NO_GOAL_YET	No goal chosen yet: the guide picks one when there is a place to go.
 DOABLE_NOW	What you can do here now
-HAND_OVER_LINE	Give {what} to {who} ({far})
-LOCK_OPENS_NOW_LINE	A Lymbic lock your rods open ({far})
+HAND_OVER_LINE	Give {what} to {who}
+LOCK_OPENS_NOW_LINE	A Lymbic lock your rods open
 NOTHING_TO_DO_HERE_NOW	Nothing to hand over or open here right now.
 SIDE_IN_PROGRESS	Side stories under way ({count})
 NO_SIDE_IN_PROGRESS	No good deed or mystery is under way.

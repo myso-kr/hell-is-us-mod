@@ -649,8 +649,8 @@ LAST_TIME_LINE	La dernière fois : {ago}, à {place}
 NEXT_GOAL_LINE	Ensuite : {goal} ({far})
 NO_GOAL_YET	Pas encore d’objectif : le guide en choisit un dès qu’il y a un lieu.
 DOABLE_NOW	Ce que vous pouvez faire ici
-HAND_OVER_LINE	Donner {what} à {who} ({far})
-LOCK_OPENS_NOW_LINE	Une serrure lymbique que vos tiges ouvrent ({far})
+HAND_OVER_LINE	Donner {what} à {who}
+LOCK_OPENS_NOW_LINE	Une serrure lymbique que vos tiges ouvrent
 NOTHING_TO_DO_HERE_NOW	Rien à donner ni à ouvrir ici pour l’instant.
 SIDE_IN_PROGRESS	Histoires secondaires en cours ({count})
 NO_SIDE_IN_PROGRESS	Aucune bonne action ni mystère en cours.
