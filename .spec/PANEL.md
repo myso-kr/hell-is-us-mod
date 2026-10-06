@@ -416,3 +416,19 @@ objects at most every 30 s until found) and every 2 s switches the option off if
 remembering that it did; on closing (`Engine::stop`) or when the setting is turned off, it puts it
 back on. The game saves the profile when its options are saved, so a change of the player's own
 there is theirs.
+
+## The Video group and the layout audit (2026-10-07)
+
+Filming moved out of the Movement cheats into a sidebar group of its own, Video (`Tool::Film`,
+`NAV_FILM`; it needs the cheats' consent, as a take drives the hero and the camera). Its page is
+`panel/film.rs`, a card per concern: the take (`card_with`, start and stop in the header), the
+route, the camera (a setting the game may keep is a switch, its name and its slider on one row),
+and the director's plan, made again only when the route changes (`PlanCache`). The sidebar's
+group state is sized from `Tool::GROUPS` (it was `[bool; 3]`: a fourth group panicked at start).
+
+The `panel-designer` agent (.claude/agents) audited eight pages; taken from it: the slider rail in
+`EDGE` (it was `CONTROL`, the wells' own fill, so a slider showed only its filled part), the map
+page's settings card two columns wide with the previews stacked in the third, shorter tab names
+(`LAYER_OPACITY`, `SCREEN3D`), the 3D map's hint raised above the story round's bar, the teleport
+card's hint only when it lists something. Left for later: the Now page's distances as a column,
+the quests' handovers wrapping, the Now page's long route text in a scroll list.

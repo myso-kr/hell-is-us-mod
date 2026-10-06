@@ -727,6 +727,8 @@ pub fn slider<N: egui::emath::Numeric>(
     tui.style(grow(row(super::theme::INLINE))).add(|tui| {
         let track = tui.style(grow(Style::default())).ui_manual(|ui, _| {
             ui.spacing_mut().slider_width = ui.available_width().max(TRACK_MIN);
+            // the rail apart from a well's fill (both were CONTROL): the whole range shows
+            ui.visuals_mut().widgets.inactive.bg_fill = super::theme::EDGE;
             let mut s = egui::Slider::new(value, range.clone()).show_value(false);
             if step > 0.0 {
                 s = s.step_by(step);

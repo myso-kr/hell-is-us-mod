@@ -552,7 +552,7 @@ DRAW_AS_DOTS	Noktalarla çiz
 DRAW_AS_DOTS_HOVER	Zemini aralıklı noktalarla çizer, oyun arkadan görünür. Simgeler, rota ve işaretler dolu kalır.
 CONSOLE	Konsol
 CONSOLE_RUNNING	Çalışıyor
-LAYER_OPACITY	Katman opaklığı
+LAYER_OPACITY	Opaklık
 PRESET_SOLID	Net
 PRESET_BALANCED	Dengeli
 PRESET_SUBTLE	Hafif
@@ -816,7 +816,7 @@ MAP3D_LOADING	Bölge yükleniyor…
 MAP3D_MISSING	Bu bölgenin harita verisi yok: bir kez `hiumod doctor map3d` çalıştırın (birkaç dakika).
 MAP3D_NORTH	Kuzey yukarı
 MAP3D_ME	Beni takip et
-SCREEN3D	Oyun görünümünde
+SCREEN3D	Oyun görünümü
 SCREEN3D_ROUTE	Zeminde rota
 SCREEN3D_MARKS	Yakındakilerin üstünde simgeler (düşman, eşya, kişi)
 SCREEN3D_NOTE	Duvar ya da zemin gizlediğinde gizlenir; gösterilen türler mini haritanınkilerdir.
@@ -855,7 +855,7 @@ HINT_DEVICES	Ayarlanacak {n} düzenek, konumları:
 FOG_UNEXPLORED	Keşfedilmemiş yerleri karart
 FORGET_EXPLORED	Keşfi unut
 FILMING	Çekim modu
-FILM_NOTE	Kahraman rotayı kendi yürür, kamera drone gibi hareket eder. Başlat’tan sonra 3 saniye içinde oyuna tıklayın; herhangi bir tuş ya da fare durdurur.
+FILM_NOTE	Kahraman rotayı yürür, kamera drone gibi izler. 3 sn içinde oyuna tıklayın; her giriş durdurur.
 FILM_SOURCE_ROUTE	Rehber rotası boyunca
 FILM_SOURCE_POINTS	3D haritadaki noktalardan ({n})
 FILM_CLEAR_POINTS	Noktaları temizle
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	kahraman değişti (yükleme ya da ara sahne)
 GAME_NOT_RUNNING	oyun çalışmıyor
 FILM_N_POINTS	{n} nokta
 FILM_ROUTE_NAME	Rota adı
-FILM_DISTANCE	Kamera mesafesini ayarla
 FILM_DISTANCE_CM	Mesafe
 FILM_REPEAT	Durdurulana dek gidip gel
-FILM_KEY	Çekim tuşu (oyunda): başlat/durdur; Ctrl ile nokta ekle ya da sil
-FILM_FOV	Görüş açısını ayarla (yakınlaştırma)
-FILM_FOV_DEG	Görüş açısı (oyun: 70°)
+FILM_KEY	Çekim tuşu
+FILM_FOV_DEG	Görüş açısı
 KEEP_RUNNING_UNFOCUSED	Panele geçince oyun durmasın (panel açıkken odak kaybında duraklatmayı kapatır)
-FILM_FLIGHT	Yalnızca kamera uçar (kahraman kalır)
+FILM_FLIGHT	Yalnızca kamera
 FILM_FLIGHT_NOTE	Kamera noktalar arasında zeminden 1,8 m yukarıda düz uçar, köşeler yumuşatılır, ileri bakar (Takip). Odak kahramana bakar.
 FILM_ORBIT_NOT_IN_FLIGHT	Kamera tek başına uçarken olmaz: kahramanın değil rotadaki bir noktanın çevresinde döner (bunun yerine ileri bakar).
 FILM_POINT_ADDED	{n}. nokta eklendi
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	alt açı, yükselen
 SHOT_HIGH_FALL	üst açı, inen
 SHOT_CRANE_REVEAL	vinç yükseliş, açılış
 SHOT_DRONIE	dronie
+NAV_FILM	Video
+FILM_PAGE	Çekim
+ABOUT_FILM	Kahramanı bir rotada yürütür ya da kamerayı uçurur; kamera bir çekim ekibi ya da drone gibi hareket eder.
+FILM_TAKE	Çekim
+FILM_ROUTE	Rota
+FILM_PLAN	Yönetmen planı
+FILM_PLAN_OFF	Her bölümün çekimini görmek için yürüyüşte «Yönetmen» kamerasını seçin.
+FILM_DIRECTOR_NOTE	Yönetmen rotayı ve çevresini okur, her bölüme bir çekim verir: plana bakın.
+FILM_KEY_HOVER	Tek başına: başlat/durdur. Ctrl ile: burada nokta ekle ya da yakındakini sil.
+FILM_AS_THE_GAME	oyundaki gibi

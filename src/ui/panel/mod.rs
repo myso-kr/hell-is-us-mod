@@ -8,6 +8,7 @@ mod collect;
 mod consent;
 mod debug;
 mod deep;
+mod film;
 mod groups;
 mod guide;
 mod help;
@@ -202,10 +203,11 @@ enum Tool {
     Collect,
     Saves,
     Debug,
+    Film,
 }
 
 impl Tool {
-    const ALL: [Tool; 11] = [
+    const ALL: [Tool; 12] = [
         Tool::Now,
         Tool::Help,
         Tool::Settings,
@@ -217,15 +219,18 @@ impl Tool {
         Tool::Collect,
         Tool::Saves,
         Tool::Debug,
+        Tool::Film,
     ];
 
     /// Above the groups in the sidebar, in none.
     const TOP: [Tool; 3] = [Tool::Now, Tool::Help, Tool::Settings];
 
     /// The sidebar's groups: their names (i18n keys) and pages.
-    const GROUPS: [(&'static str, &'static [Tool]); 3] = [
+    const GROUPS: [(&'static str, &'static [Tool]); 4] = [
         ("NAV_PLAY", &[Tool::Quests, Tool::Clues, Tool::Puzzles, Tool::Collect]),
         ("NAV_WAY", &[Tool::Guide, Tool::Map]),
+        // filming is no cheat: a group of its own
+        ("NAV_FILM", &[Tool::Film]),
         ("NAV_SYSTEM", &[Tool::Saves, Tool::Debug]),
     ];
 
@@ -243,6 +248,7 @@ impl Tool {
             Tool::Collect => "collect",
             Tool::Saves => "saves",
             Tool::Debug => "debug",
+            Tool::Film => "film",
         }
     }
 
@@ -259,6 +265,7 @@ impl Tool {
             Tool::Collect => tr!("COLLECT"),
             Tool::Saves => tr!("SAVES"),
             Tool::Debug => tr!("DEBUG"),
+            Tool::Film => tr!("FILM_PAGE"),
         }
     }
 
@@ -276,6 +283,7 @@ impl Tool {
             Tool::Collect => tr!("ABOUT_COLLECT"),
             Tool::Saves => tr!("ABOUT_SAVES"),
             Tool::Debug => tr!("ABOUT_DEBUG"),
+            Tool::Film => tr!("ABOUT_FILM"),
         }
     }
 }
@@ -330,8 +338,9 @@ pub struct Panel {
     clue_open: Option<String>,
     /// Puzzle answers and vault codes asked for, by id (not kept between runs).
     revealed: std::collections::HashSet<u64>,
-    /// A name for the filming route to keep (groups.rs `film_card`).
+    /// A name for the filming route to keep (film.rs), and the director's plan as last made.
     film_name: String,
+    film_plan: film::PlanCache,
     /// How far a logic puzzle's hints are opened (deep.rs `hint`): 0 shut, 1 where its devices
     /// are, 2 the first step too, 3 the whole answer.
     hints: std::collections::HashMap<u64, u8>,
@@ -361,7 +370,7 @@ pub struct Panel {
     /// The sidebar's two groups, each folded under its heading line: the tools start
     /// open, the cheats folded.
     /// The sidebar's groups (play, way-finding, system), each folded or not.
-    groups_open: [bool; 3],
+    groups_open: [bool; Tool::GROUPS.len()],
     cheats_open: bool,
     session_saved: Option<Instant>,
     /// What the player turned on — not what is on right now. The game exiting or the
@@ -463,6 +472,7 @@ impl Panel {
             clue_open: None,
             revealed: Default::default(),
             film_name: String::new(),
+            film_plan: Default::default(),
             hints: Default::default(),
             shown_quest: None,
             slot_hints: Default::default(),
@@ -476,7 +486,7 @@ impl Panel {
             height: 0.0,
             width: 0.0,
             previous,
-            groups_open: [true; 3],
+            groups_open: [true; Tool::GROUPS.len()],
             cheats_open: !back && !Tool::ALL.iter().any(|t| Some(t.id()) == tab),
             session_saved: None,
         }
@@ -538,6 +548,8 @@ impl Panel {
             Tool::Map => self.grants(Consent::MAP),
             Tool::Guide => self.grants(Consent::GUIDE),
             Tool::Puzzles => self.grants(Consent::ANSWERS),
+            // a take drives the hero and the camera: as the cheats do
+            Tool::Film => self.grants(Consent::CHEATS),
             _ => true,
         }
     }
@@ -832,18 +844,18 @@ impl Panel {
                     _ => self.slots_card(t),
                 })
             }
+            _ if self.tool == Some(Tool::Film) => self.film_page(t, snap),
             _ if self.tool.is_some() => self.map_tab(t, snap),
             // A group's cheats two columns wide, what is on (every group's) beside them;
             // Movement adds the teleport to what is followed and the saved positions.
             g => {
                 let cols = self.columns;
-                let spans: &[u16] = if g == Group::Movement { &[2, 1, 2, 1, 2] } else { &[2, 1] };
+                let spans: &[u16] = if g == Group::Movement { &[2, 1, 2, 1] } else { &[2, 1] };
                 tw::spans(t, cols, spans, |t, i| match i {
                     0 => card(t, g.label(), |t| self.held(t, g, snap)),
                     1 => self.summary(t, snap),
                     2 => self.teleports(t, snap),
-                    3 => self.positions(t, snap),
-                    _ => self.film_card(t, snap),
+                    _ => self.positions(t, snap),
                 })
             }
         }

@@ -552,7 +552,7 @@ DRAW_AS_DOTS	以点绘制
 DRAW_AS_DOTS_HOVER	用有间隔的点绘制地形，透出游戏画面。图标、路线和标记保持实心。
 CONSOLE	控制台
 CONSOLE_RUNNING	运行中
-LAYER_OPACITY	图层不透明度
+LAYER_OPACITY	不透明度
 PRESET_SOLID	清晰
 PRESET_BALANCED	均衡
 PRESET_SUBTLE	柔和
@@ -816,7 +816,7 @@ MAP3D_LOADING	正在加载地区…
 MAP3D_MISSING	此地区的地图数据尚未提取：请运行一次 `hiumod doctor map3d`（几分钟）。
 MAP3D_NORTH	北向上
 MAP3D_ME	跟随我
-SCREEN3D	游戏画面 3D
+SCREEN3D	游戏画面
 SCREEN3D_ROUTE	地面上的路线
 SCREEN3D_MARKS	附近的标记 (怪物·物品·NPC)
 SCREEN3D_NOTE	被墙或地形遮挡时隐藏；显示的种类与小地图相同。
@@ -855,7 +855,7 @@ HINT_DEVICES	需要调整的装置 {n} 个，位置：
 FOG_UNEXPLORED	未探索区域变暗
 FORGET_EXPLORED	清除探索记录
 FILMING	拍摄模式
-FILM_NOTE	主角自动沿路线行走，镜头像无人机一样移动。点击开始后 3 秒内点击游戏窗口；任何按键或鼠标操作都会停止。
+FILM_NOTE	主角沿路线行走，镜头像无人机跟随。开始后 3 秒内点击游戏；任何输入都会停止。
 FILM_SOURCE_ROUTE	沿引导路线
 FILM_SOURCE_POINTS	经过 3D 地图的点（{n}）
 FILM_CLEAR_POINTS	清除点
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	主角已改变（读取或过场）
 GAME_NOT_RUNNING	游戏未运行
 FILM_N_POINTS	{n} 个点
 FILM_ROUTE_NAME	路线名称
-FILM_DISTANCE	设置镜头距离
 FILM_DISTANCE_CM	距离
 FILM_REPEAT	往返直到停止
-FILM_KEY	拍摄键（游戏内）：开始/停止；配合 Ctrl 添加或删除点
-FILM_FOV	设置视野（变焦）
-FILM_FOV_DEG	视野（游戏：70°）
+FILM_KEY	拍摄键
+FILM_FOV_DEG	视野
 KEEP_RUNNING_UNFOCUSED	切换到面板时游戏不暂停（面板运行时关闭「失去焦点时暂停」）
-FILM_FLIGHT	仅镜头飞行（主角原地）
+FILM_FLIGHT	仅镜头
 FILM_FLIGHT_NOTE	镜头在点之间离地 1.8 米直线飞行，拐角圆滑，默认看向前进方向（跟随）；「聚焦」始终看向主角。
 FILM_ORBIT_NOT_IN_FLIGHT	仅镜头飞行时不可用：会绕路线上的点而非主角旋转（改为看向前进方向）。
 FILM_POINT_ADDED	已添加拍摄点 {n}
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	低角度上升
 SHOT_HIGH_FALL	高角度下降
 SHOT_CRANE_REVEAL	摇臂上升揭示
 SHOT_DRONIE	无人机自拍
+NAV_FILM	影像
+FILM_PAGE	拍摄
+ABOUT_FILM	让主角沿路线行走或让镜头飞行，镜头像摄制组或无人机一样移动，用于录制。
+FILM_TAKE	拍摄
+FILM_ROUTE	路线
+FILM_PLAN	导演计划
+FILM_PLAN_OFF	步行拍摄时选择「导演」镜头，即可在此看到每段路线的镜头。
+FILM_DIRECTOR_NOTE	导演读取路线和周围结构，为每段选择镜头：见导演计划。
+FILM_KEY_HOVER	单按：开始/停止。配合 Ctrl：在所站处添加点，或删除附近的点。
+FILM_AS_THE_GAME	游戏默认

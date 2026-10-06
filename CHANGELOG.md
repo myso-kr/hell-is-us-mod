@@ -10,6 +10,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Added
 
+- Filming has a page of its own under a new sidebar group, Video, rather than a card among the
+  cheats: the take (start and stop in its header), the route, the camera, and the director's
+  plan — the shot it gives each stretch of the route as it stands.
 - Filming: the camera can fly alone, the hero left where it stands — straight between the 3D map's
   points (or along the guide's route), 1.8 m above the floor, its corners rounded, eased in and
   out; Spotlight keeps it on the hero. The camera's distance and field of view now apply to the
@@ -36,6 +39,13 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   going down, a crane up reveal on high ground, a dronie to close), eased into one another into
   one continuous take, the camera raised when something hides the hero. The card shows the shot
   playing.
+
+### Changed
+
+- Panel layout, after a page-by-page audit: every slider's rail shows against the well it sits in;
+  the map page's settings take two columns (their seven tabs on one row, shorter tab names) with
+  the previews stacked beside them; the 3D map's hint no longer sits under the story round's bar;
+  an empty teleport card is one line.
 
 ## 0.7.0 — 2026-10-06
 

@@ -552,7 +552,7 @@ DRAW_AS_DOTS	Draw as dots
 DRAW_AS_DOTS_HOVER	The ground as dots with gaps between them, so the game shows through. Icons, the route and pins stay solid.
 CONSOLE	Console
 CONSOLE_RUNNING	Running
-LAYER_OPACITY	Layer Opacity
+LAYER_OPACITY	Opacity
 PRESET_SOLID	Solid
 PRESET_BALANCED	Balanced
 PRESET_SUBTLE	Subtle
@@ -816,7 +816,7 @@ MAP3D_LOADING	Loading the region…
 MAP3D_MISSING	This region's map data is not extracted yet: run `hiumod doctor map3d` once (a few minutes).
 MAP3D_NORTH	North up
 MAP3D_ME	Follow me
-SCREEN3D	In the game view
+SCREEN3D	Game view
 SCREEN3D_ROUTE	The route on the floor
 SCREEN3D_MARKS	Icons over what is near (enemies, items, people)
 SCREEN3D_NOTE	Hidden where walls or the ground hide them; the kinds and sorts shown are the minimap's.
@@ -855,7 +855,7 @@ HINT_DEVICES	{n} devices to set, here:
 FOG_UNEXPLORED	Darken where you have not been
 FORGET_EXPLORED	Forget explored
 FILMING	Filming mode
-FILM_NOTE	The hero walks the route by itself while the camera moves like a drone’s. After Start, click the game window within 3 seconds; any key or mouse move stops it.
+FILM_NOTE	The hero walks the route, the camera follows like a drone. Click the game within 3 s of Start; any input stops it.
 FILM_SOURCE_ROUTE	Along the guide’s route
 FILM_SOURCE_POINTS	Through the 3D map’s points ({n})
 FILM_CLEAR_POINTS	Clear points
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	the hero changed (a load or a cutscene)
 GAME_NOT_RUNNING	the game is not running
 FILM_N_POINTS	{n} points
 FILM_ROUTE_NAME	Name this route
-FILM_DISTANCE	Set the camera’s distance
 FILM_DISTANCE_CM	Distance
 FILM_REPEAT	Back and forth until stopped
-FILM_KEY	Filming key (in the game): start/stop; with Ctrl, add or remove a point
-FILM_FOV	Set the field of view (zoom)
-FILM_FOV_DEG	Field of view (game: 70°)
+FILM_KEY	Filming key
+FILM_FOV_DEG	Field of view
 KEEP_RUNNING_UNFOCUSED	Keep the game running when you switch to the panel (turns off the game’s pause on losing focus while the panel runs)
-FILM_FLIGHT	Fly the camera alone (the hero stays)
+FILM_FLIGHT	Camera only
 FILM_FLIGHT_NOTE	The camera flies straight between the points, 1.8 m above the floor, its corners rounded, looking the way it goes (Track). Spotlight keeps it on the hero.
 FILM_ORBIT_NOT_IN_FLIGHT	Not while the camera flies alone: it would circle a point on the path, not the hero (it looks the way ahead instead).
 FILM_POINT_ADDED	Point {n} added where you stand
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	low angle, rising
 SHOT_HIGH_FALL	high angle, following down
 SHOT_CRANE_REVEAL	crane up reveal
 SHOT_DRONIE	dronie
+NAV_FILM	Video
+FILM_PAGE	Filming
+ABOUT_FILM	Walks the hero along a route or flies the camera, the camera moving as a film crew’s or a drone’s, for recording.
+FILM_TAKE	Take
+FILM_ROUTE	Route
+FILM_PLAN	Director’s plan
+FILM_PLAN_OFF	Choose the Director camera for a walk to see the shot it gives each stretch of the route.
+FILM_DIRECTOR_NOTE	The director reads the route and what stands about it, and gives each stretch its shot: see the plan.
+FILM_KEY_HOVER	Alone: start or stop a take. With Ctrl: add a point where you stand, or remove the one you stand by.
+FILM_AS_THE_GAME	as the game has it

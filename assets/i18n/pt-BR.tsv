@@ -552,7 +552,7 @@ DRAW_AS_DOTS	Desenhar com pontos
 DRAW_AS_DOTS_HOVER	O terreno em pontos espaçados para o jogo aparecer por trás. Ícones, rota e marcadores continuam sólidos.
 CONSOLE	Console
 CONSOLE_RUNNING	Executando
-LAYER_OPACITY	Opacidade das camadas
+LAYER_OPACITY	Opacidade
 PRESET_SOLID	Nítido
 PRESET_BALANCED	Equilibrado
 PRESET_SUBTLE	Sutil
@@ -816,7 +816,7 @@ MAP3D_LOADING	Carregando a região…
 MAP3D_MISSING	Faltam os dados de mapa desta região: execute `hiumod doctor map3d` uma vez (alguns minutos).
 MAP3D_NORTH	Norte para cima
 MAP3D_ME	Seguir-me
-SCREEN3D	Na visão do jogo
+SCREEN3D	Visão do jogo
 SCREEN3D_ROUTE	A rota no chão
 SCREEN3D_MARKS	Ícones sobre o que está perto (inimigos, itens, pessoas)
 SCREEN3D_NOTE	Ocultos onde paredes ou o chão os cobrem; os tipos mostrados são os do minimapa.
@@ -855,7 +855,7 @@ HINT_DEVICES	{n} mecanismos para ajustar, aqui:
 FOG_UNEXPLORED	Escurecer o que não foi explorado
 FORGET_EXPLORED	Esquecer o explorado
 FILMING	Modo de filmagem
-FILM_NOTE	O herói percorre a rota sozinho e a câmera se move como um drone. Após Iniciar, clique no jogo em 3 segundos; qualquer tecla ou mouse para.
+FILM_NOTE	O herói percorre a rota, a câmera segue como um drone. Clique no jogo em 3 s; qualquer entrada para.
 FILM_SOURCE_ROUTE	Pela rota guiada
 FILM_SOURCE_POINTS	Pelos pontos do mapa 3D ({n})
 FILM_CLEAR_POINTS	Limpar pontos
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	o herói mudou (carregamento ou cena)
 GAME_NOT_RUNNING	o jogo não está rodando
 FILM_N_POINTS	{n} pontos
 FILM_ROUTE_NAME	Nome da rota
-FILM_DISTANCE	Definir a distância da câmera
 FILM_DISTANCE_CM	Distância
 FILM_REPEAT	Ida e volta até parar
-FILM_KEY	Tecla de filmagem (no jogo): iniciar/parar; com Ctrl, adicionar ou remover ponto
-FILM_FOV	Definir o campo de visão (zoom)
-FILM_FOV_DEG	Campo de visão (jogo: 70°)
+FILM_KEY	Tecla de filmagem
+FILM_FOV_DEG	Campo de visão
 KEEP_RUNNING_UNFOCUSED	O jogo continua ao mudar para o painel (desliga a pausa ao perder o foco enquanto o painel roda)
-FILM_FLIGHT	Só a câmera voa (o herói fica)
+FILM_FLIGHT	Só a câmera
 FILM_FLIGHT_NOTE	A câmera voa reta entre os pontos, 1,8 m acima do chão, com curvas suaves, olhando à frente (Seguir). Foco mira o herói.
 FILM_ORBIT_NOT_IN_FLIGHT	Não durante o voo da câmera: ela circularia um ponto da rota, não o herói (olha para a frente em vez disso).
 FILM_POINT_ADDED	Ponto {n} adicionado
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	contra-plongée subindo
 SHOT_HIGH_FALL	plongée descendo
 SHOT_CRANE_REVEAL	grua subindo, revelação
 SHOT_DRONIE	dronie
+NAV_FILM	Vídeo
+FILM_PAGE	Filmagem
+ABOUT_FILM	Leva o herói por uma rota ou faz a câmera voar, movida como por uma equipe de filmagem ou um drone.
+FILM_TAKE	Tomada
+FILM_ROUTE	Rota
+FILM_PLAN	Plano do diretor
+FILM_PLAN_OFF	Escolha a câmera «Diretor» numa caminhada para ver o plano de cada trecho.
+FILM_DIRECTOR_NOTE	O diretor lê a rota e o entorno e dá a cada trecho seu plano: veja o plano.
+FILM_KEY_HOVER	Sozinha: iniciar/parar. Com Ctrl: adicionar ponto aqui ou remover o próximo.
+FILM_AS_THE_GAME	como no jogo

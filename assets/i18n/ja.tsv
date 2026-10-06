@@ -552,7 +552,7 @@ DRAW_AS_DOTS	点で描く
 DRAW_AS_DOTS_HOVER	地形を間隔のある点で描き、ゲーム画面が透けて見えるようにします。アイコン、経路、ピンはそのまま描きます。
 CONSOLE	コンソール
 CONSOLE_RUNNING	実行中
-LAYER_OPACITY	レイヤーの不透明度
+LAYER_OPACITY	不透明度
 PRESET_SOLID	くっきり
 PRESET_BALANCED	バランス
 PRESET_SUBTLE	控えめ
@@ -816,7 +816,7 @@ MAP3D_LOADING	地域を読み込み中…
 MAP3D_MISSING	この地域の地図データがまだありません。`hiumod doctor map3d` を一度実行してください（数分）。
 MAP3D_NORTH	北を上に
 MAP3D_ME	自分を追う
-SCREEN3D	ゲーム画面 3D
+SCREEN3D	ゲーム画面
 SCREEN3D_ROUTE	床に経路
 SCREEN3D_MARKS	近くのマーカー (敵・アイテム・NPC)
 SCREEN3D_NOTE	壁や地形に隠れると見えません。表示する種類はミニマップの設定に従います。
@@ -855,7 +855,7 @@ HINT_DEVICES	合わせる装置 {n} 個、位置:
 FOG_UNEXPLORED	未探索の場所を暗くする
 FORGET_EXPLORED	探索記録を消す
 FILMING	撮影モード
-FILM_NOTE	主人公が経路を自動で歩き、カメラはドローンのように動きます。開始後3秒以内にゲーム画面をクリックしてください。キーやマウスを使うと止まります。
+FILM_NOTE	主人公が経路を歩き、カメラがドローンのように追います。開始後3秒以内にゲームをクリック。入力すると止まります。
 FILM_SOURCE_ROUTE	案内経路に沿って
 FILM_SOURCE_POINTS	3D地図の地点を通って（{n}）
 FILM_CLEAR_POINTS	地点を消す
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	主人公が変わりました（ロードまたはムービー
 GAME_NOT_RUNNING	ゲームが起動していません
 FILM_N_POINTS	{n} 地点
 FILM_ROUTE_NAME	経路の名前
-FILM_DISTANCE	カメラの距離を設定
 FILM_DISTANCE_CM	距離
 FILM_REPEAT	止めるまで往復
-FILM_KEY	撮影キー（ゲーム内）：開始/停止、Ctrl同時押しで地点の追加・削除
-FILM_FOV	視野角を設定（ズーム）
-FILM_FOV_DEG	視野角（標準 70°）
+FILM_KEY	撮影キー
+FILM_FOV_DEG	視野角
 KEEP_RUNNING_UNFOCUSED	パネルに切り替えてもゲームを止めない（パネル実行中は「フォーカスを失ったら一時停止」をオフ）
-FILM_FLIGHT	カメラだけ飛ぶ（主人公はその場）
+FILM_FLIGHT	カメラだけ
 FILM_FLIGHT_NOTE	カメラは地点間を床から1.8m上でまっすぐ飛び、角は丸めます。標準は進む方向（追従）を見て、「注視」は主人公を見続けます。
 FILM_ORBIT_NOT_IN_FLIGHT	カメラだけ飛ぶときは使えません。主人公ではなく経路上の点を回るため、代わりに進む方向を見ます。
 FILM_POINT_ADDED	撮影地点 {n} を追加
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	ローアングル上昇
 SHOT_HIGH_FALL	ハイアングル下降
 SHOT_CRANE_REVEAL	クレーンアップ・リビール
 SHOT_DRONIE	ドローニー
+NAV_FILM	映像
+FILM_PAGE	撮影
+ABOUT_FILM	録画用に主人公を経路どおり歩かせたりカメラを飛ばしたりし、撮影監督やドローンのように動かします。
+FILM_TAKE	テイク
+FILM_ROUTE	経路
+FILM_PLAN	演出プラン
+FILM_PLAN_OFF	歩き撮影でカメラを「監督」にすると、区間ごとのショットがここに表示されます。
+FILM_DIRECTOR_NOTE	監督が経路と周囲を読み、区間ごとにショットを選びます。演出プランを見てください。
+FILM_KEY_HOVER	単独：開始/停止。Ctrl同時：立っている場所に地点を追加、近くの地点なら削除。
+FILM_AS_THE_GAME	ゲームのまま

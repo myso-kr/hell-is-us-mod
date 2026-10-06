@@ -169,7 +169,8 @@ impl Panel {
         let (mini, big) = self.previews(&t.egui_ctx().clone());
         card(t, tr!("MAP_PREVIEW"), |t| {
             w(t, |ui| {
-                ui.horizontal_top(|ui| {
+                // one over the other, in a column of its own
+                ui.vertical(|ui| {
                     let side = MINI_PREVIEW;
                     ui.vertical(|ui| {
                         ui.label(RichText::new(tr!("MINIMAP")).small().color(DIM));
@@ -409,8 +410,8 @@ impl Panel {
             // beside them in one card, a tab each; the legend, the same for every map, under.
             _ => tw::spans(t, cols, &[3, 2, 1, 3], |t, i| match i {
                 0 => self.map3d_card(t, guard, snap),
-                1 => self.preview_card(t, guard),
-                2 => self.settings_card(t, guard),
+                1 => self.settings_card(t, guard),
+                2 => self.preview_card(t, guard),
                 _ => self.legend_card(t, guard),
             }),
         }

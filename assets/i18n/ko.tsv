@@ -552,7 +552,7 @@ DRAW_AS_DOTS	점으로 그리기
 DRAW_AS_DOTS_HOVER	지형을 점으로 듬성듬성 그려 게임 화면이 비쳐 보이게 합니다. 아이콘, 경로, 핀은 그대로 진하게 그립니다.
 CONSOLE	콘솔
 CONSOLE_RUNNING	실행 중
-LAYER_OPACITY	레이어 투명도
+LAYER_OPACITY	투명도
 PRESET_SOLID	선명
 PRESET_BALANCED	균형
 PRESET_SUBTLE	은은하게
@@ -816,7 +816,7 @@ MAP3D_LOADING	지역을 불러오는 중…
 MAP3D_MISSING	이 지역의 지도 데이터가 아직 없습니다. `hiumod doctor map3d`를 한 번 실행하세요(몇 분 걸림).
 MAP3D_NORTH	북쪽을 위로
 MAP3D_ME	내 위치 따라가기
-SCREEN3D	게임 화면 3D
+SCREEN3D	화면 3D
 SCREEN3D_ROUTE	바닥에 길찾기 경로
 SCREEN3D_MARKS	주변 마커 (몬스터·아이템·NPC)
 SCREEN3D_NOTE	벽이나 지형에 가려지면 숨겨지고, 보이는 종류는 미니맵 설정을 따릅니다.
@@ -855,7 +855,7 @@ HINT_DEVICES	맞춰야 할 장치 {n}개, 위치:
 FOG_UNEXPLORED	가보지 않은 곳 어둡게 (탐험 안개)
 FORGET_EXPLORED	탐험 기록 지우기
 FILMING	촬영 모드
-FILM_NOTE	영웅이 경로를 스스로 걷고 카메라는 드론처럼 움직입니다. 시작을 누른 뒤 3초 안에 게임 창을 클릭하세요. 키보드나 마우스를 쓰면 바로 멈춥니다.
+FILM_NOTE	영웅이 경로를 걷고 카메라가 드론처럼 따라갑니다. 시작 후 3초 안에 게임 창을 클릭하세요. 아무 입력이나 하면 멈춥니다.
 FILM_SOURCE_ROUTE	안내 경로를 따라
 FILM_SOURCE_POINTS	3D 지도 지점을 따라 ({n}개)
 FILM_CLEAR_POINTS	지점 비우기
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	영웅이 바뀌었습니다 (불러오기 또는 컷신)
 GAME_NOT_RUNNING	게임이 실행 중이 아닙니다
 FILM_N_POINTS	지점 {n}개
 FILM_ROUTE_NAME	경로 이름
-FILM_DISTANCE	카메라 거리 조절
-FILM_DISTANCE_CM	거리
+FILM_DISTANCE_CM	카메라 거리
 FILM_REPEAT	멈출 때까지 왕복
-FILM_KEY	촬영 단축키 (게임 안): 시작/정지, Ctrl과 함께 누르면 지점 추가·삭제
-FILM_FOV	시야각 조절 (줌)
-FILM_FOV_DEG	시야각 (기본 70°)
+FILM_KEY	촬영 키
+FILM_FOV_DEG	시야각
 KEEP_RUNNING_UNFOCUSED	패널로 전환해도 게임이 멈추지 않게 (패널 실행 중에는 게임의 「포커스를 잃으면 일시정지」를 끕니다)
-FILM_FLIGHT	카메라만 비행 (영웅은 제자리)
+FILM_FLIGHT	카메라만 비행
 FILM_FLIGHT_NOTE	카메라가 지점 사이를 바닥 1.8m 위로 곧게 날며 모서리는 둥글게 돕니다. 기본은 진행 방향(추적)을 보고, 「주시」는 영웅을 계속 바라봅니다.
 FILM_ORBIT_NOT_IN_FLIGHT	카메라만 비행할 때는 쓸 수 없습니다. 영웅이 아니라 경로 위 지점을 돌게 되므로, 대신 진행 방향을 봅니다.
 FILM_POINT_ADDED	촬영 지점 {n} 추가
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	로우앵글 상승
 SHOT_HIGH_FALL	하이앵글 하강
 SHOT_CRANE_REVEAL	크레인 업 리빌
 SHOT_DRONIE	드로니
+NAV_FILM	영상
+FILM_PAGE	촬영
+ABOUT_FILM	녹화를 위해 영웅을 경로대로 걷게 하거나 카메라를 날리고, 카메라를 촬영 감독이나 드론처럼 움직입니다.
+FILM_TAKE	촬영
+FILM_ROUTE	경로
+FILM_PLAN	연출 계획
+FILM_PLAN_OFF	걷기 촬영에서 카메라를 「감독」으로 고르면 경로 구간마다 고른 샷이 여기에 보입니다.
+FILM_DIRECTOR_NOTE	감독이 경로와 주변 구조를 읽고 구간마다 샷을 고릅니다. 연출 계획에서 확인하세요.
+FILM_KEY_HOVER	단독: 촬영 시작/정지. Ctrl과 함께: 서 있는 곳에 지점 추가, 근처 지점이면 삭제.
+FILM_AS_THE_GAME	게임 기본값

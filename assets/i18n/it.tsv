@@ -552,7 +552,7 @@ DRAW_AS_DOTS	Disegna a punti
 DRAW_AS_DOTS_HOVER	Il terreno a punti distanziati, così il gioco si vede attraverso. Icone, percorso e segnaposti restano pieni.
 CONSOLE	Console
 CONSOLE_RUNNING	In esecuzione
-LAYER_OPACITY	Opacità dei livelli
+LAYER_OPACITY	Opacità
 PRESET_SOLID	Netto
 PRESET_BALANCED	Bilanciato
 PRESET_SUBTLE	Discreto
@@ -816,7 +816,7 @@ MAP3D_LOADING	Caricamento della regione…
 MAP3D_MISSING	Mancano i dati della mappa di questa regione: esegui `hiumod doctor map3d` una volta (qualche minuto).
 MAP3D_NORTH	Nord in alto
 MAP3D_ME	Seguimi
-SCREEN3D	Nella vista di gioco
+SCREEN3D	Vista di gioco
 SCREEN3D_ROUTE	Il percorso a terra
 SCREEN3D_MARKS	Icone su ciò che è vicino (nemici, oggetti, persone)
 SCREEN3D_NOTE	Nascosti dove muri o terreno li coprono; i tipi mostrati sono quelli della minimappa.
@@ -855,7 +855,7 @@ HINT_DEVICES	{n} meccanismi da regolare, qui:
 FOG_UNEXPLORED	Oscura le zone inesplorate
 FORGET_EXPLORED	Dimentica l’esplorato
 FILMING	Modalità riprese
-FILM_NOTE	L’eroe percorre il percorso da solo, la telecamera si muove come un drone. Dopo Avvia, clicca sul gioco entro 3 secondi; qualsiasi tasto o mouse lo ferma.
+FILM_NOTE	L’eroe percorre il percorso, la telecamera segue come un drone. Clicca sul gioco entro 3 s; ogni input lo ferma.
 FILM_SOURCE_ROUTE	Lungo il percorso guidato
 FILM_SOURCE_POINTS	Per i punti della mappa 3D ({n})
 FILM_CLEAR_POINTS	Cancella punti
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	l’eroe è cambiato (caricamento o filmato)
 GAME_NOT_RUNNING	il gioco non è in esecuzione
 FILM_N_POINTS	{n} punti
 FILM_ROUTE_NAME	Nome del percorso
-FILM_DISTANCE	Imposta la distanza della telecamera
 FILM_DISTANCE_CM	Distanza
 FILM_REPEAT	Avanti e indietro fino allo stop
-FILM_KEY	Tasto riprese (in gioco): avvia/ferma; con Ctrl, aggiungi o rimuovi un punto
-FILM_FOV	Imposta il campo visivo (zoom)
-FILM_FOV_DEG	Campo visivo (gioco: 70°)
+FILM_KEY	Tasto riprese
+FILM_FOV_DEG	Campo visivo
 KEEP_RUNNING_UNFOCUSED	Il gioco continua quando passi al pannello (disattiva la pausa alla perdita di focus mentre il pannello è attivo)
-FILM_FLIGHT	Vola solo la telecamera (l’eroe resta)
+FILM_FLIGHT	Solo telecamera
 FILM_FLIGHT_NOTE	La telecamera vola dritta tra i punti, a 1,8 m dal suolo, con curve morbide, guardando avanti (Segui). Fuoco guarda l’eroe.
 FILM_ORBIT_NOT_IN_FLIGHT	Non durante il volo della telecamera: girerebbe attorno a un punto del percorso, non all’eroe (guarda avanti invece).
 FILM_POINT_ADDED	Punto {n} aggiunto
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	dal basso, in salita
 SHOT_HIGH_FALL	dall’alto, in discesa
 SHOT_CRANE_REVEAL	gru in salita, rivelazione
 SHOT_DRONIE	dronie
+NAV_FILM	Video
+FILM_PAGE	Riprese
+ABOUT_FILM	Fa camminare l’eroe lungo un percorso o volare la telecamera, mossa come da una troupe o un drone.
+FILM_TAKE	Ripresa
+FILM_ROUTE	Percorso
+FILM_PLAN	Piano del regista
+FILM_PLAN_OFF	Scegli la telecamera «Regista» per una camminata per vedere l’inquadratura di ogni tratto.
+FILM_DIRECTOR_NOTE	Il regista legge il percorso e i dintorni e dà a ogni tratto la sua inquadratura: vedi il piano.
+FILM_KEY_HOVER	Da solo: avvia o ferma. Con Ctrl: aggiungi un punto qui o rimuovi quello vicino.
+FILM_AS_THE_GAME	come nel gioco

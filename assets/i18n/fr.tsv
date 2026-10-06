@@ -552,7 +552,7 @@ DRAW_AS_DOTS	Dessiner en points
 DRAW_AS_DOTS_HOVER	Le terrain en points espacés, pour laisser voir le jeu. Icônes, itinéraire et repères restent pleins.
 CONSOLE	Console
 CONSOLE_RUNNING	En cours
-LAYER_OPACITY	Opacité des calques
+LAYER_OPACITY	Opacité
 PRESET_SOLID	Net
 PRESET_BALANCED	Équilibré
 PRESET_SUBTLE	Discret
@@ -816,7 +816,7 @@ MAP3D_LOADING	Chargement de la région…
 MAP3D_MISSING	Les données de carte de cette région manquent : lancez `hiumod doctor map3d` une fois (quelques minutes).
 MAP3D_NORTH	Nord en haut
 MAP3D_ME	Me suivre
-SCREEN3D	Dans la vue du jeu
+SCREEN3D	Vue du jeu
 SCREEN3D_ROUTE	L'itinéraire au sol
 SCREEN3D_MARKS	Icônes sur ce qui est proche (ennemis, objets, gens)
 SCREEN3D_NOTE	Cachés là où murs ou sol les masquent ; les types affichés sont ceux de la mini-carte.
@@ -855,7 +855,7 @@ HINT_DEVICES	{n} mécanismes à régler, ici :
 FOG_UNEXPLORED	Assombrir les zones inexplorées
 FORGET_EXPLORED	Oublier l’exploration
 FILMING	Mode tournage
-FILM_NOTE	Le héros suit l’itinéraire seul, la caméra bouge comme un drone. Après Démarrer, cliquez dans le jeu sous 3 secondes ; toute touche ou souris l’arrête.
+FILM_NOTE	Le héros suit le trajet, la caméra comme un drone. Cliquez dans le jeu sous 3 s ; toute saisie l’arrête.
 FILM_SOURCE_ROUTE	Le long de l’itinéraire guidé
 FILM_SOURCE_POINTS	Par les points de la carte 3D ({n})
 FILM_CLEAR_POINTS	Effacer les points
@@ -883,14 +883,12 @@ THE_HERO_CHANGED	le héros a changé (chargement ou cinématique)
 GAME_NOT_RUNNING	le jeu ne tourne pas
 FILM_N_POINTS	{n} points
 FILM_ROUTE_NAME	Nom de l’itinéraire
-FILM_DISTANCE	Régler la distance de la caméra
 FILM_DISTANCE_CM	Distance
 FILM_REPEAT	Aller-retour jusqu’à l’arrêt
-FILM_KEY	Touche de tournage (en jeu) : démarrer/arrêter ; avec Ctrl, ajouter ou retirer un point
-FILM_FOV	Régler le champ de vision (zoom)
-FILM_FOV_DEG	Champ de vision (jeu : 70°)
+FILM_KEY	Touche de tournage
+FILM_FOV_DEG	Champ de vision
 KEEP_RUNNING_UNFOCUSED	Le jeu continue quand vous passez au panneau (désactive la pause à la perte de focus tant que le panneau tourne)
-FILM_FLIGHT	Seule la caméra vole (le héros reste)
+FILM_FLIGHT	Caméra seule
 FILM_FLIGHT_NOTE	La caméra vole droit entre les points, à 1,8 m du sol, coins arrondis, en regardant devant (Suivre). Focus garde le héros en vue.
 FILM_ORBIT_NOT_IN_FLIGHT	Pas pendant le vol de la caméra : elle tournerait autour d’un point du trajet, pas du héros (elle regarde devant à la place).
 FILM_POINT_ADDED	Point {n} ajouté
@@ -906,3 +904,13 @@ SHOT_LOW_RISE	contre-plongée montante
 SHOT_HIGH_FALL	plongée descendante
 SHOT_CRANE_REVEAL	grue montante, révélation
 SHOT_DRONIE	dronie
+NAV_FILM	Vidéo
+FILM_PAGE	Tournage
+ABOUT_FILM	Fait marcher le héros sur un trajet ou voler la caméra, mue comme par une équipe de tournage ou un drone.
+FILM_TAKE	Prise
+FILM_ROUTE	Trajet
+FILM_PLAN	Plan du réalisateur
+FILM_PLAN_OFF	Choisissez la caméra « Réalisateur » pour une marche afin de voir le plan de chaque tronçon.
+FILM_DIRECTOR_NOTE	Le réalisateur lit le trajet et ses abords et donne à chaque tronçon son plan : voir le plan.
+FILM_KEY_HOVER	Seule : démarrer ou arrêter. Avec Ctrl : ajouter un point ici ou retirer le proche.
+FILM_AS_THE_GAME	comme le jeu

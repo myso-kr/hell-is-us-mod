@@ -990,7 +990,7 @@ impl Map3d {
         });
         // the hint, faint, bottom left
         painter.text(
-            rect.left_bottom() + egui::vec2(pad, -pad),
+            rect.left_bottom() + egui::vec2(pad, -pad - 48.0),
             egui::Align2::LEFT_BOTTOM,
             tr!("MAP3D_HINT"),
             egui::FontId::proportional(11.0),
