@@ -116,7 +116,7 @@ pub struct Extras {
     time: HashMap<u64, (u64, f32)>,
     /// Enemy → what was found of it and its Health before the cheat.
     frail: HashMap<u64, Frail>,
-    /// Enemy → (its class, its Health's base when first seen, the share it was cut to).
+    /// Enemy → (its class, its HealthMax when first cut, the share it was cut to).
     weaker: HashMap<u64, (u64, f32, f32)>,
     /// Inventory stack → the least it is held at.
     stock: HashMap<u64, u32>,
@@ -292,9 +292,10 @@ impl Extras {
             }
         }
 
-        // Weaker enemies: each cut once to the share of its health when first seen (and again,
-        // lower only, when the share is lowered); the fight goes on from there. Frail wins.
-        let frail = wants(|e| matches!(e, Effect::EnemyFrail)).is_some();
+        // Weaker enemies: each cut once to the share of its maximum health (and again, lower
+        // only, when the share is lowered); the fight goes on from there. Frail wins, and while
+        // any frail record is left (being put back) nothing is cut: its health is not its own.
+        let frail = wants(|e| matches!(e, Effect::EnemyFrail)).is_some() || !self.frail.is_empty();
         if let (Some(t), false) = (wants(|e| matches!(e, Effect::EnemyHealth)), frail) {
             let share = t.value.clamp(0.1, 1.0);
             for &e in &alive {
@@ -302,9 +303,15 @@ impl Extras {
                 if done.is_some_and(|(_, _, s)| s <= share + 1e-3) {
                     continue;
                 }
-                let Some((_, at)) = health_of(m, n, e) else { continue };
-                let Some((b, c)) = pair(m, at) else { continue };
-                let base = done.map_or(b, |(_, b0, _)| b0);
+                let Some((set, at)) = health_of(m, n, e) else { continue };
+                let Some((_, c)) = pair(m, at) else { continue };
+                // The maximum, not the health: that may be cut already (by frail, or a hit).
+                let Some(max) =
+                    n.field(m, set, "HealthMax").and_then(|p| pair(m, set + p.offset as u64)).map(|(_, c)| c)
+                else {
+                    continue;
+                };
+                let base = done.map_or(max, |(_, b0, _)| b0);
                 let to = base * share;
                 if c > to && !put_pair(m, at, to, to) {
                     errors.push("weaker enemies: write failed".into());
