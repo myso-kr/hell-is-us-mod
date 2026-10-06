@@ -19,6 +19,7 @@ Reference:
 | [ANCHORS.md](ANCHORS.md) | How the tool finds its way in, and what a game update can break |
 | [CHEATS.md](CHEATS.md) | Every cheat: what it writes, and whether it was seen working |
 | [CHEATS-RESEARCH.md](CHEATS-RESEARCH.md) | Research for more cheats: existing trainers, probes, why coefficients fail, the stages |
+| [FILMING-RESEARCH.md](FILMING-RESEARCH.md) | Camera language (film, drones, motion graphics) and the proposed shot-choosing director |
 | [DOCTOR.md](DOCTOR.md) | The `doctor` probes: inspect, find, dump, watch, scan |
 | [GUIDE.md](GUIDE.md) | Compass and goal guidance: what the game knows, how goals are worked out |
 | [ROUTES.md](ROUTES.md) | Routes to the goal: obstacles, water and slopes, the game's navmesh |
