@@ -55,6 +55,11 @@ impl Driver {
         Driver { path: pts, at_len, along: 0.0, t: 0.0, best: (0.0, 0.0) }
     }
 
+    /// A fresh start for being stuck: the hero has been helped on (unstick.rs).
+    pub fn unstuck(&mut self) {
+        self.best = (self.along, self.t);
+    }
+
     /// How far along the route the hero is (cm).
     pub fn along(&self) -> f32 {
         self.along

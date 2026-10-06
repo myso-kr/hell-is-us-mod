@@ -3,6 +3,7 @@
 
 use super::cover::Cover;
 use super::session::Session;
+use super::unstick::{height_on, Unstick, Way, HOP, HOP_ABOVE};
 use super::{direct, State, Step};
 use crate::film::avoid::ROOM_AHEAD_CM;
 use crate::film::gimbal::EYE;
@@ -17,6 +18,7 @@ pub(super) struct Drive {
     driver: Driver,
     director: Option<Director>,
     cover: Cover,
+    unstick: Unstick,
     end: [f32; 3],
     /// When the hero arrived, for the closing shot to play out.
     arrived: Option<Instant>,
@@ -61,8 +63,22 @@ impl Drive {
         if self.arrived.is_some_and(|t| t.elapsed() > CLOSING_HOLD) {
             return Step::End(State::Finished);
         }
-        if step.stuck {
-            return Step::End(State::Stuck);
+        // caught on something: a step aside, then a hop on along the route, before giving up
+        let mut step = step;
+        match self.unstick.way(step.input, step.stuck && self.arrived.is_none(), dt) {
+            Way::On => {}
+            Way::Aside(stick) => {
+                step.input = stick;
+                self.driver.unstuck();
+            }
+            Way::Hop => {
+                let a = self.driver.ahead(HOP);
+                let z = height_on(&self.route, a).unwrap_or(hero[2] - crate::film::FEET);
+                crate::logfile::line("film: stuck; the hero lifted on along the route");
+                s.hop([a[0] as f64, a[1] as f64, (z + crate::film::FEET + HOP_ABOVE) as f64]);
+                self.driver.unstuck();
+            }
+            Way::GiveUp => return Step::End(State::Stuck),
         }
         if self.arrived.is_none() && !s.write3(s.w.input, [step.input[0] as f64, step.input[1] as f64, 0.0]) {
             return Step::End(State::Failed(tr!("COULD_NOT_WRITE_THE_HEROS_POSITION").into()));
@@ -101,6 +117,7 @@ impl Drive {
             driver: Driver::new(route),
             director: (s.plan.lens == Lens::Director).then(|| Director::new(route, &s.blocking)),
             cover: Cover::default(),
+            unstick: Unstick::default(),
             end: *route.last().unwrap_or(&[0.0; 3]),
             arrived: None,
         }

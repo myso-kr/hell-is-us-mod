@@ -10,6 +10,7 @@ mod input;
 mod knobs;
 mod run;
 mod session;
+mod unstick;
 
 use crate::player::PoseSource;
 use std::sync::atomic::{AtomicBool, Ordering};

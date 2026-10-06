@@ -59,23 +59,18 @@ impl Engine {
             let o = n.field(m, mode, "PenetrationBlendOutTime")?;
             Some((mode + i.offset as u64, mode + o.offset as u64))
         });
-        // a flight carries the hero behind the camera: the game draws the land finely only near it
-        let hero_root = (plan.mode == crate::film::Mode::Flight).then(|| {
-            let root = crate::mem::read_u64(m, hero + chain.root).filter(|&r| crate::mem::plausible(r))?;
+        // a flight carries the hero behind the camera (the game draws the land finely only near
+        // it); a walk lifts it on when it is caught on something
+        let hero_root = crate::mem::read_u64(m, hero + chain.root).filter(|&r| crate::mem::plausible(r)).map(|root| {
             let mc = n.follow(m, hero, "CharacterMovement").ok();
-            let velocity = mc.and_then(|mc| n.field(m, mc, "Velocity").map(|v| mc + v.offset as u64));
-            let mode = mc.and_then(|mc| n.field(m, mc, "MovementMode").map(|v| mc + v.offset as u64));
-            let scale = n
-                .follow(m, hero, "Mesh")
-                .ok()
-                .and_then(|mesh| n.field(m, mesh, "RelativeScale3D").map(|v| mesh + v.offset as u64));
-            Some(crate::film::HeroRoot {
+            let at = |o: u64, name: &str| n.field(m, o, name).map(|v| o + v.offset as u64);
+            crate::film::HeroRoot {
                 location: root + chain.location,
                 world: root + crate::obstacles::COMPONENT_TO_WORLD + 0x20,
-                velocity,
-                mode,
-                scale,
-            })
+                velocity: mc.and_then(|mc| at(mc, "Velocity")),
+                mode: mc.and_then(|mc| at(mc, "MovementMode")),
+                scale: n.follow(m, hero, "Mesh").ok().and_then(|mesh| at(mesh, "RelativeScale3D")),
+            }
         });
         let wiring = crate::film::Wiring {
             input: hero + input.offset as u64,
@@ -94,7 +89,7 @@ impl Engine {
                 Some(crate::film::ZOOM_AT.map(|o| mode + interp.offset as u64 + o))
             }),
             scene: a.obstacles(),
-            hero_root: hero_root.flatten(),
+            hero_root,
         };
         let flight = plan.mode == crate::film::Mode::Flight;
         self.take = Some(crate::film::roll(plan, wiring, state, ended));

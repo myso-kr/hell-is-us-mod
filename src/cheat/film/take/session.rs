@@ -227,6 +227,15 @@ impl<'a> Session<'a> {
         self.put(p);
     }
 
+    /// The hero lifted to `p` and let fall into place (a walk caught on something): the game moves
+    /// it there at once.
+    pub fn hop(&self, p: [f64; 3]) {
+        self.put(p);
+        if let Some(m) = self.w.hero_root.and_then(|h| h.mode) {
+            self.game.write(m, &[MOVE_FALLING]);
+        }
+    }
+
     /// Waits until the hero has landed (its movement walking again), and a moment more: the fall
     /// is weighed as it lands, and the cheats guarding it must outlast that.
     fn landed(&self, mode: u64) {
