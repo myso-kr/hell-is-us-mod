@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	The camera flies straight between the points, 1.8 m above the f
 FILM_ORBIT_NOT_IN_FLIGHT	Not while the camera flies alone: it would circle a point on the path, not the hero (it looks the way ahead instead).
 FILM_POINT_ADDED	Point {n} added where you stand
 FILM_POINT_REMOVED	Point {k} removed ({n} left)
+FILM_LENS_DIRECTOR	Director (chooses each shot)
+FILM_STATE_DIRECTING	Filming · {pct}% · {shot}
+SHOT_CRANE_DOWN	crane down
+SHOT_PUSH_IN	push in
+SHOT_SIDE_TRACK	side track
+SHOT_STEADICAM	Steadicam follow
+SHOT_ARC	arc
+SHOT_LOW_RISE	low angle, rising
+SHOT_HIGH_FALL	high angle, following down
+SHOT_CRANE_REVEAL	crane up reveal
+SHOT_DRONIE	dronie

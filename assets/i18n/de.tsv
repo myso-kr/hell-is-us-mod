@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	Die Kamera fliegt gerade zwischen den Punkten, 1,8 m über dem 
 FILM_ORBIT_NOT_IN_FLIGHT	Nicht beim Kameraflug: sie würde einen Punkt der Route umkreisen, nicht den Helden (sie blickt stattdessen voraus).
 FILM_POINT_ADDED	Punkt {n} hinzugefügt
 FILM_POINT_REMOVED	Punkt {k} entfernt ({n} übrig)
+FILM_LENS_DIRECTOR	Regie (wählt jede Einstellung)
+FILM_STATE_DIRECTING	Filmen · {pct} % · {shot}
+SHOT_CRANE_DOWN	Kran abwärts
+SHOT_PUSH_IN	Heranfahrt
+SHOT_SIDE_TRACK	seitliche Fahrt
+SHOT_STEADICAM	Steadicam-Folge
+SHOT_ARC	Bogenfahrt
+SHOT_LOW_RISE	Untersicht, steigend
+SHOT_HIGH_FALL	Aufsicht, abwärts
+SHOT_CRANE_REVEAL	Kran aufwärts, Enthüllung
+SHOT_DRONIE	Dronie

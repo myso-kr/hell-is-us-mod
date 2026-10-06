@@ -18,6 +18,7 @@ pub(super) struct Knob {
     pub now: f32,
     pub want: f32,
     pub distance: bool,
+    pub fov: bool,
 }
 
 /// The camera's settings eased one tick toward what is asked: a distance no further than the

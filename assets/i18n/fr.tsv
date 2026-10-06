@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	La caméra vole droit entre les points, à 1,8 m du sol, coins 
 FILM_ORBIT_NOT_IN_FLIGHT	Pas pendant le vol de la caméra : elle tournerait autour d’un point du trajet, pas du héros (elle regarde devant à la place).
 FILM_POINT_ADDED	Point {n} ajouté
 FILM_POINT_REMOVED	Point {k} retiré ({n} restants)
+FILM_LENS_DIRECTOR	Réalisateur (choisit chaque plan)
+FILM_STATE_DIRECTING	Tournage · {pct} % · {shot}
+SHOT_CRANE_DOWN	grue descendante
+SHOT_PUSH_IN	travelling avant
+SHOT_SIDE_TRACK	travelling latéral
+SHOT_STEADICAM	suivi Steadicam
+SHOT_ARC	arc
+SHOT_LOW_RISE	contre-plongée montante
+SHOT_HIGH_FALL	plongée descendante
+SHOT_CRANE_REVEAL	grue montante, révélation
+SHOT_DRONIE	dronie

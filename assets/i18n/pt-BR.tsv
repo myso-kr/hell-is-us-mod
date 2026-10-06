@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	A câmera voa reta entre os pontos, 1,8 m acima do chão, com c
 FILM_ORBIT_NOT_IN_FLIGHT	Não durante o voo da câmera: ela circularia um ponto da rota, não o herói (olha para a frente em vez disso).
 FILM_POINT_ADDED	Ponto {n} adicionado
 FILM_POINT_REMOVED	Ponto {k} removido ({n} restantes)
+FILM_LENS_DIRECTOR	Diretor (escolhe cada plano)
+FILM_STATE_DIRECTING	Filmando · {pct}% · {shot}
+SHOT_CRANE_DOWN	grua descendo
+SHOT_PUSH_IN	aproximação
+SHOT_SIDE_TRACK	travelling lateral
+SHOT_STEADICAM	acompanhamento Steadicam
+SHOT_ARC	arco
+SHOT_LOW_RISE	contra-plongée subindo
+SHOT_HIGH_FALL	plongée descendo
+SHOT_CRANE_REVEAL	grua subindo, revelação
+SHOT_DRONIE	dronie

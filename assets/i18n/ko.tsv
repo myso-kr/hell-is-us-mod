@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	카메라가 지점 사이를 바닥 1.8m 위로 곧게 날며 
 FILM_ORBIT_NOT_IN_FLIGHT	카메라만 비행할 때는 쓸 수 없습니다. 영웅이 아니라 경로 위 지점을 돌게 되므로, 대신 진행 방향을 봅니다.
 FILM_POINT_ADDED	촬영 지점 {n} 추가
 FILM_POINT_REMOVED	촬영 지점 {k} 삭제 ({n}개 남음)
+FILM_LENS_DIRECTOR	감독 (장면마다 자동 연출)
+FILM_STATE_DIRECTING	촬영 중 · {pct}% · {shot}
+SHOT_CRANE_DOWN	크레인 다운
+SHOT_PUSH_IN	푸시인
+SHOT_SIDE_TRACK	측면 트래킹
+SHOT_STEADICAM	스테디캠 추적
+SHOT_ARC	아크
+SHOT_LOW_RISE	로우앵글 상승
+SHOT_HIGH_FALL	하이앵글 하강
+SHOT_CRANE_REVEAL	크레인 업 리빌
+SHOT_DRONIE	드로니

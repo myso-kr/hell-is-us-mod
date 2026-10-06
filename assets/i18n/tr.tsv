@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	Kamera noktalar arasında zeminden 1,8 m yukarıda düz uçar, 
 FILM_ORBIT_NOT_IN_FLIGHT	Kamera tek başına uçarken olmaz: kahramanın değil rotadaki bir noktanın çevresinde döner (bunun yerine ileri bakar).
 FILM_POINT_ADDED	{n}. nokta eklendi
 FILM_POINT_REMOVED	{k}. nokta silindi ({n} kaldı)
+FILM_LENS_DIRECTOR	Yönetmen (her çekimi seçer)
+FILM_STATE_DIRECTING	Çekim · %{pct} · {shot}
+SHOT_CRANE_DOWN	vinç iniş
+SHOT_PUSH_IN	yaklaşma
+SHOT_SIDE_TRACK	yan takip
+SHOT_STEADICAM	Steadicam takibi
+SHOT_ARC	yay
+SHOT_LOW_RISE	alt açı, yükselen
+SHOT_HIGH_FALL	üst açı, inen
+SHOT_CRANE_REVEAL	vinç yükseliş, açılış
+SHOT_DRONIE	dronie

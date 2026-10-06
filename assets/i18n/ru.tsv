@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	Камера летит прямо между точками н
 FILM_ORBIT_NOT_IN_FLIGHT	Недоступно при полёте камеры: она кружила бы вокруг точки маршрута, а не героя (вместо этого смотрит вперёд).
 FILM_POINT_ADDED	Точка {n} добавлена
 FILM_POINT_REMOVED	Точка {k} удалена (осталось {n})
+FILM_LENS_DIRECTOR	Режиссёр (сам выбирает планы)
+FILM_STATE_DIRECTING	Съёмка · {pct}% · {shot}
+SHOT_CRANE_DOWN	кран вниз
+SHOT_PUSH_IN	наезд
+SHOT_SIDE_TRACK	боковое сопровождение
+SHOT_STEADICAM	стедикам
+SHOT_ARC	дуга
+SHOT_LOW_RISE	нижний ракурс, подъём
+SHOT_HIGH_FALL	верхний ракурс, спуск
+SHOT_CRANE_REVEAL	кран вверх, раскрытие
+SHOT_DRONIE	дрони

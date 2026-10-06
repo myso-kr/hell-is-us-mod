@@ -29,6 +29,13 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   the floors' free edges let down to show their steps and levels, ladders drawn with rails and
   rungs (jumps and drops dashed), and lifts as a shaft with a platform at each stop.
 - A filming flight looks the way it goes (Track) by default.
+- Filming has a director (camera: "Director"): before a walk it reads the route and what stands
+  about it — open or closed either side, rising or falling, turning, a view — cuts it into beats
+  and gives each a shot from film and drone practice (crane down to open, Steadicam in corridors,
+  side tracking in the open, an arc through turns, a low angle rising on a climb, a high angle
+  going down, a crane up reveal on high ground, a dronie to close), eased into one another into
+  one continuous take, the camera raised when something hides the hero. The card shows the shot
+  playing.
 
 ## 0.7.0 — 2026-10-06
 

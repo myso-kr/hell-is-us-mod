@@ -55,6 +55,11 @@ impl Driver {
         Driver { path: pts, at_len, along: 0.0, t: 0.0, best: (0.0, 0.0) }
     }
 
+    /// How far along the route the hero is (cm).
+    pub fn along(&self) -> f32 {
+        self.along
+    }
+
     pub fn length(&self) -> f32 {
         *self.at_len.last().unwrap_or(&0.0)
     }

@@ -2,15 +2,24 @@
 //! pivot along the path (a flight), the camera aimed, its settings eased; until the end, a stop,
 //! the player's input, or the hero stuck.
 
+use super::direct;
 use super::knobs::{ease_knobs, Knob, BLEND};
 use super::{last_input, Plan, State, Wiring, KEY_GRACE, RATE_HZ};
 use crate::film::avoid::{ROOM_AHEAD_CM, ROOM_AHEAD_S};
 use crate::film::gimbal::{back_of, EYE};
-use crate::film::{aim, clear_flight, wrap, Axis, Driver, Flight, Lens, FLIGHT_DISTANCE, ORBIT_DPS};
+use crate::film::{aim, clear_flight, wrap, Axis, Director, Driver, Flight, Lens, FLIGHT_DISTANCE, ORBIT_DPS};
 use crate::mem::Memory;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
+
+/// What a camera setting is, for which a take holds it.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Kind {
+    Distance,
+    Fov,
+    Other,
+}
 
 pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> State {
     let game = match crate::game::process::Game::find() {
@@ -47,19 +56,23 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
         let mut b = [0u8; 4];
         game.read(at, &mut b).then(|| f32::from_le_bytes(b)).filter(|v| v.is_finite())
     };
+    // the director chooses the shots of a walk (a flight looks the way it goes instead)
+    let directed = plan.lens == Lens::Director && !plan.flight;
     // a flight keeps the camera close to its pivot unless asked otherwise; the distance is held
     // either way, kept within the room behind the camera (the game's own when none is asked)
     let distance = plan.distance.or(plan.flight.then_some(FLIGHT_DISTANCE));
     let mut knobs: Vec<Knob> = w
         .distance
         .iter()
-        .map(|&at| (at, distance, true))
-        .chain(w.fov.iter().map(|&at| (at, plan.fov, false)))
-        .chain(w.blend.iter().flat_map(|&(i, o)| [(i, Some(BLEND.0), false), (o, Some(BLEND.1), false)]))
-        .filter_map(|(at, want, is_distance)| {
+        .map(|&at| (at, distance, Kind::Distance))
+        .chain(w.fov.iter().map(|&at| (at, plan.fov, Kind::Fov)))
+        .chain(w.blend.iter().flat_map(|&(i, o)| [(i, Some(BLEND.0), Kind::Other), (o, Some(BLEND.1), Kind::Other)]))
+        .filter_map(|(at, want, kind)| {
             let was = read_f(at)?;
-            let want = want.or(is_distance.then_some(was))?;
-            Some(Knob { at, was, now: was, want, distance: is_distance })
+            // the distance is always held; the field of view too when the director moves it
+            let held = kind == Kind::Distance || (kind == Kind::Fov && directed);
+            let want = want.or(held.then_some(was))?;
+            Some(Knob { at, was, now: was, want, distance: kind == Kind::Distance, fov: kind == Kind::Fov })
         })
         .collect();
     let blocking = w.scene.blocking();
@@ -75,6 +88,7 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
         game.read(at, &mut b).then_some(b[0])
     };
     let safety0 = w.safety.filter(|_| plan.flight).and_then(|at| Some((at, read_b(at)?)));
+    let mut director = directed.then(|| Director::new(&route, &blocking));
     let mut flight = None;
     if plan.flight {
         let (Some(p0), Some(body), Some((hp, _))) = (pivot0, w.body.and_then(read3), w.pose.read(&game)) else {
@@ -125,7 +139,7 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
             let head = [hero[0], hero[1], hero[2] + EYE - 90.0];
             // Circling turns the camera about its pivot, which on a flight is on the path, not
             // the hero: there it looks the way ahead instead.
-            let lens = if plan.lens == Lens::Orbit { Lens::Follow } else { plan.lens };
+            let lens = if matches!(plan.lens, Lens::Orbit | Lens::Director) { Lens::Follow } else { plan.lens };
             if let Some((tp, ty)) = aim(lens, fly.at, fly.ahead_yaw, head, orbit) {
                 let (np, ny) = (pitch.toward(tp, dt), yaw.toward(ty, dt));
                 let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
@@ -149,6 +163,7 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
             route.reverse();
             driver = Driver::new(&route);
             end3 = *route.last().unwrap_or(&[0.0; 3]);
+            director = directed.then(|| Director::new(&route, &blocking));
             continue;
         }
         if s.done {
@@ -161,7 +176,10 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
             break State::Failed(tr!("COULD_NOT_WRITE_THE_HEROS_POSITION").into());
         }
         let eye = [hero[0], hero[1], hero[2] + EYE];
-        if let Some((tp, ty)) = aim(plan.lens, eye, s.ahead_yaw, end3, orbit) {
+        let cue = director.as_mut().map(|d| d.cue(driver.along(), s.ahead_yaw, hero, &blocking, dt));
+        if let Some(cue) = &cue {
+            direct::apply(&game, cue, (&mut pitch, &mut yaw), (w.rotation, w.pivot), &mut knobs, dt);
+        } else if let Some((tp, ty)) = aim(plan.lens, eye, s.ahead_yaw, end3, orbit) {
             let (np, ny) = (pitch.toward(tp, dt), yaw.toward(ty, dt));
             let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
             write3(w.rotation, [np.rem_euclid(360.0) as f64, ny as f64, roll]);
@@ -177,7 +195,10 @@ pub(super) fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<Stat
             back_of(pitch.angle, yaw.angle)
         };
         ease_knobs(&mut knobs, &mut room, &blocking, [pivot, ahead], back, dt, &game);
-        *state.lock().unwrap() = State::Rolling(s.share);
+        *state.lock().unwrap() = match cue {
+            Some(c) => State::Directing(s.share, c.shot),
+            None => State::Rolling(s.share),
+        };
         next += tick;
         let now = Instant::now();
         if next > now {

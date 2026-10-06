@@ -1,0 +1,157 @@
+//! The director (`Lens::Director`): before a walk it reads the route and what stands about it,
+//! cuts it into beats and gives each a shot (`read`, `beats`, `shot`); while it rolls, it gives
+//! the camera's targets for where the hero is — the shot's rig eased into the next one ahead of
+//! the change (anticipation), the camera raised and slid aside when something hides the hero.
+//! One continuous take, no cuts (.spec/FILMING-RESEARCH.md §4).
+
+mod beats;
+mod read;
+mod shot;
+
+pub use beats::Beat;
+pub use shot::{Rig, Shot};
+
+use crate::obstacles::Blocking;
+
+/// How far before a beat's end the next shot starts to take over (cm, ~1.5 s at a walk), how fast
+/// the camera rises when the hero is hidden and settles back after (degrees a second), and how
+/// high it may rise for it (degrees).
+const ANTICIPATE: f32 = 300.0;
+const HIDDEN_RISE: f32 = 25.0;
+const HIDDEN_SETTLE: f32 = 12.0;
+const HIDDEN_MOST: f32 = 35.0;
+
+/// What the camera should do now: its pitch and yaw (Unreal degrees), the point it turns about in
+/// the hero's frame (cm), its distance (cm) and field of view (degrees), and the shot playing.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Cue {
+    pub pitch: f32,
+    pub yaw: f32,
+    pub pivot: [f32; 3],
+    pub distance: f32,
+    pub fov: f32,
+    pub shot: Shot,
+}
+
+pub struct Director {
+    beats: Vec<Beat>,
+    /// How much the camera is raised now to see the hero past something (degrees).
+    raised: f32,
+}
+
+impl Director {
+    /// The director for `route`, reading the obstacles about it.
+    pub fn new(route: &[[f32; 3]], b: &Blocking) -> Director {
+        let senses = read::read(route, b);
+        let length = senses.last().map_or(0.0, |s| s.at);
+        Director { beats: beats::plan(&senses, length), raised: 0.0 }
+    }
+
+    pub fn beats(&self) -> &[Beat] {
+        &self.beats
+    }
+
+    /// The rig `along` cm into the route, and the shot that owns it: the beat's own, blended into
+    /// the next over the last `ANTICIPATE` of it.
+    pub fn rig(&self, along: f32) -> (Rig, Shot) {
+        let Some(i) = self.beats.iter().position(|b| along < b.to).or(self.beats.len().checked_sub(1)) else {
+            return (Shot::Steadicam.rig(0.0, 1.0), Shot::Steadicam);
+        };
+        let b = self.beats[i];
+        let u = ((along - b.from) / (b.to - b.from).max(1.0)).clamp(0.0, 1.0);
+        let here = b.shot.rig(u, b.side);
+        match self.beats.get(i + 1) {
+            Some(n) if b.to - along < ANTICIPATE => {
+                let k = 1.0 - (b.to - along).max(0.0) / ANTICIPATE;
+                let k = k * k * (3.0 - 2.0 * k);
+                (here.mix(n.shot.rig(0.0, n.side), k), if k > 0.5 { n.shot } else { b.shot })
+            }
+            _ => (here, b.shot),
+        }
+    }
+
+    /// The camera's cue for the hero at `hero` (its root, cm), `along` the route, going `heading`
+    /// (degrees): the rig turned into the camera's numbers, raised while the obstacles hide the
+    /// hero from where the camera would be.
+    pub fn cue(&mut self, along: f32, heading: f32, hero: [f32; 3], b: &Blocking, dt: f32) -> Cue {
+        let (rig, shot) = self.rig(along);
+        // from where the camera would be (azimuth about the hero, its elevation, its distance)
+        let place = |el: f32| {
+            let (a, e) = ((heading + rig.az).to_radians(), el.to_radians());
+            let head = [hero[0], hero[1], hero[2] + rig.lift];
+            [
+                head[0] + a.cos() * e.cos() * rig.dist,
+                head[1] + a.sin() * e.cos() * rig.dist,
+                head[2] + e.sin() * rig.dist,
+            ]
+        };
+        let eye = [hero[0], hero[1], hero[2] + 60.0];
+        let hidden = b.blocks(place(rig.el + self.raised), eye);
+        self.raised = if hidden {
+            (self.raised + HIDDEN_RISE * dt).min(HIDDEN_MOST)
+        } else {
+            (self.raised - HIDDEN_SETTLE * dt).max(0.0)
+        };
+        Cue {
+            // the camera looks back at the hero from its place: the azimuth turned round
+            pitch: -(rig.el + self.raised),
+            yaw: crate::film::wrap(heading + rig.az + 180.0),
+            pivot: [rig.ahead, 0.0, rig.lift],
+            distance: rig.dist,
+            fov: rig.fov,
+            shot,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_take_flows_without_jumps() {
+        let scene = crate::obstacles::Scene::default();
+        let route: Vec<[f32; 3]> = (0..=40).map(|i| [i as f32 * 250.0, (i as f32 * 0.3).sin() * 300.0, 0.0]).collect();
+        let d = Director::new(&route, &scene.blocking());
+        assert!(d.beats().len() >= 3, "{:?}", d.beats());
+        let mut last = d.rig(0.0).0;
+        let mut s = 0.0;
+        while s < 10_000.0 {
+            let (r, _) = d.rig(s);
+            // 10 cm of walk moves nothing far: no cut
+            assert!(crate::film::wrap(r.az - last.az).abs() < 8.0, "azimuth jumps at {s}");
+            assert!((r.dist - last.dist).abs() < 40.0, "distance jumps at {s}: {} → {}", last.dist, r.dist);
+            assert!((r.el - last.el).abs() < 4.0, "elevation jumps at {s}");
+            last = r;
+            s += 10.0;
+        }
+    }
+
+    #[test]
+    fn a_hidden_hero_raises_the_camera() {
+        // walls all round the hero, as tall as the camera would be: hidden from any side
+        let wall = |x0: f32, x1: f32, y0: f32, y1: f32| crate::obstacles::Obstacle {
+            hull: vec![[x0, y0], [x1, y0], [x1, y1], [x0, y1]],
+            zmin: 0.0,
+            zmax: 500.0,
+            water: false,
+        };
+        let scene = crate::obstacles::Scene {
+            obstacles: vec![
+                wall(-400.0, -300.0, -800.0, 800.0),
+                wall(300.0, 400.0, -800.0, 800.0),
+                wall(-800.0, 800.0, 300.0, 400.0),
+                wall(-800.0, 800.0, -400.0, -300.0),
+            ],
+            ..Default::default()
+        };
+        let b = scene.blocking();
+        let route: Vec<[f32; 3]> = (0..=40).map(|i| [i as f32 * 250.0, 0.0, 0.0]).collect();
+        let mut d = Director::new(&route, &b);
+        let mut c = d.cue(3000.0, 0.0, [0.0, 0.0, 0.0], &b, 0.05);
+        for _ in 0..60 {
+            c = d.cue(3000.0, 0.0, [0.0, 0.0, 0.0], &b, 0.05);
+        }
+        assert!(d.raised > 5.0, "not raised: {} ({:?})", d.raised, c);
+    }
+}

@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	La telecamera vola dritta tra i punti, a 1,8 m dal suolo, con c
 FILM_ORBIT_NOT_IN_FLIGHT	Non durante il volo della telecamera: girerebbe attorno a un punto del percorso, non all’eroe (guarda avanti invece).
 FILM_POINT_ADDED	Punto {n} aggiunto
 FILM_POINT_REMOVED	Punto {k} rimosso ({n} rimasti)
+FILM_LENS_DIRECTOR	Regista (sceglie ogni inquadratura)
+FILM_STATE_DIRECTING	Riprese · {pct}% · {shot}
+SHOT_CRANE_DOWN	gru in discesa
+SHOT_PUSH_IN	carrellata in avanti
+SHOT_SIDE_TRACK	carrellata laterale
+SHOT_STEADICAM	inseguimento Steadicam
+SHOT_ARC	arco
+SHOT_LOW_RISE	dal basso, in salita
+SHOT_HIGH_FALL	dall’alto, in discesa
+SHOT_CRANE_REVEAL	gru in salita, rivelazione
+SHOT_DRONIE	dronie

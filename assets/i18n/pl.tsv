@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	Kamera leci prosto między punktami, 1,8 m nad podłogą, z zao
 FILM_ORBIT_NOT_IN_FLIGHT	Nie podczas lotu kamery: krążyłaby wokół punktu trasy, nie bohatera (zamiast tego patrzy przed siebie).
 FILM_POINT_ADDED	Dodano punkt {n}
 FILM_POINT_REMOVED	Usunięto punkt {k} (zostało {n})
+FILM_LENS_DIRECTOR	Reżyser (wybiera każde ujęcie)
+FILM_STATE_DIRECTING	Filmowanie · {pct}% · {shot}
+SHOT_CRANE_DOWN	kran w dół
+SHOT_PUSH_IN	najazd
+SHOT_SIDE_TRACK	jazda boczna
+SHOT_STEADICAM	śledzenie Steadicam
+SHOT_ARC	łuk
+SHOT_LOW_RISE	żabia perspektywa, w górę
+SHOT_HIGH_FALL	z góry, w dół
+SHOT_CRANE_REVEAL	kran w górę, odsłona
+SHOT_DRONIE	dronie

@@ -58,6 +58,8 @@ pub fn aim(lens: Lens, eye: [f32; 3], ahead_yaw: f32, look_at: [f32; 3], orbit: 
             Some((dz.atan2(flat).to_degrees().clamp(-45.0, 30.0), dy.atan2(dx).to_degrees()))
         }
         Lens::Orbit => Some((FOLLOW_PITCH, orbit)),
+        // the director cues the camera itself (take/direct.rs); here, the way ahead
+        Lens::Director => Some((FOLLOW_PITCH, ahead_yaw)),
     }
 }
 

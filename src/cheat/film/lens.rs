@@ -12,10 +12,13 @@ pub enum Lens {
     Spotlight,
     /// Circle: about the hero, `ORBIT_DPS` a second.
     Orbit,
+    /// The director: each beat of the route its own shot, chosen from the route and what stands
+    /// about it (director/).
+    Director,
 }
 
 impl Lens {
-    pub const ALL: [Lens; 4] = [Lens::Free, Lens::Follow, Lens::Spotlight, Lens::Orbit];
+    pub const ALL: [Lens; 5] = [Lens::Director, Lens::Follow, Lens::Spotlight, Lens::Orbit, Lens::Free];
 
     pub fn label(self) -> &'static str {
         match self {
@@ -23,6 +26,7 @@ impl Lens {
             Lens::Follow => tr!("FILM_LENS_FOLLOW"),
             Lens::Spotlight => tr!("FILM_LENS_SPOTLIGHT"),
             Lens::Orbit => tr!("FILM_LENS_ORBIT"),
+            Lens::Director => tr!("FILM_LENS_DIRECTOR"),
         }
     }
 }
@@ -34,6 +38,7 @@ impl Lens {
             Lens::Follow => "follow",
             Lens::Spotlight => "spotlight",
             Lens::Orbit => "orbit",
+            Lens::Director => "director",
         }
     }
 }

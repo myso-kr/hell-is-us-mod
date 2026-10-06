@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	カメラは地点間を床から1.8m上でまっすぐ飛び�
 FILM_ORBIT_NOT_IN_FLIGHT	カメラだけ飛ぶときは使えません。主人公ではなく経路上の点を回るため、代わりに進む方向を見ます。
 FILM_POINT_ADDED	撮影地点 {n} を追加
 FILM_POINT_REMOVED	撮影地点 {k} を削除（残り {n}）
+FILM_LENS_DIRECTOR	監督（場面ごとに自動演出）
+FILM_STATE_DIRECTING	撮影中 · {pct}% · {shot}
+SHOT_CRANE_DOWN	クレーンダウン
+SHOT_PUSH_IN	プッシュイン
+SHOT_SIDE_TRACK	側面トラッキング
+SHOT_STEADICAM	ステディカム追従
+SHOT_ARC	アーク
+SHOT_LOW_RISE	ローアングル上昇
+SHOT_HIGH_FALL	ハイアングル下降
+SHOT_CRANE_REVEAL	クレーンアップ・リビール
+SHOT_DRONIE	ドローニー

@@ -1,6 +1,7 @@
 //! A take: what it is (`Plan`), where it writes (`Wiring`), where it stands (`State`), and the
 //! thread that rolls it (`roll`; the loop in `run`, the camera's settings in `knobs`).
 
+mod direct;
 mod knobs;
 mod run;
 
@@ -57,6 +58,8 @@ pub enum State {
     Countdown(u32),
     /// Rolling: how much of the route is walked (0–1).
     Rolling(f32),
+    /// Rolling, directed: how much is walked, and the shot playing.
+    Directing(f32, crate::film::Shot),
     Finished,
     Stuck,
     /// Stopped by the player's keyboard or mouse.
@@ -71,6 +74,9 @@ impl State {
             State::Idle => tr!("FILM_STATE_IDLE").into(),
             State::Countdown(n) => trf!("FILM_STATE_COUNTDOWN", n = n),
             State::Rolling(k) => trf!("FILM_STATE_ROLLING", pct = (k * 100.0).round() as u32),
+            State::Directing(k, shot) => {
+                trf!("FILM_STATE_DIRECTING", pct = (k * 100.0).round() as u32, shot = shot.label())
+            }
             State::Finished => tr!("FILM_STATE_FINISHED").into(),
             State::Stuck => tr!("FILM_STATE_STUCK").into(),
             State::Interrupted => tr!("FILM_STATE_INTERRUPTED").into(),
@@ -80,7 +86,7 @@ impl State {
     }
 
     pub fn rolling(&self) -> bool {
-        matches!(self, State::Countdown(_) | State::Rolling(_))
+        matches!(self, State::Countdown(_) | State::Rolling(_) | State::Directing(..))
     }
 }
 

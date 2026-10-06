@@ -895,3 +895,14 @@ FILM_FLIGHT_NOTE	镜头在点之间离地 1.8 米直线飞行，拐角圆滑，�
 FILM_ORBIT_NOT_IN_FLIGHT	仅镜头飞行时不可用：会绕路线上的点而非主角旋转（改为看向前进方向）。
 FILM_POINT_ADDED	已添加拍摄点 {n}
 FILM_POINT_REMOVED	已删除拍摄点 {k}（剩 {n} 个）
+FILM_LENS_DIRECTOR	导演（逐段自动运镜）
+FILM_STATE_DIRECTING	拍摄中 · {pct}% · {shot}
+SHOT_CRANE_DOWN	摇臂下降
+SHOT_PUSH_IN	推镜
+SHOT_SIDE_TRACK	侧面跟拍
+SHOT_STEADICAM	斯坦尼康跟拍
+SHOT_ARC	弧形运镜
+SHOT_LOW_RISE	低角度上升
+SHOT_HIGH_FALL	高角度下降
+SHOT_CRANE_REVEAL	摇臂上升揭示
+SHOT_DRONIE	无人机自拍

@@ -3,7 +3,10 @@
 Research for the filming mode's next step (2026-10-07): which camera moves film, television, drones
 and 3D motion graphics use — especially those that move the camera vertically and change its
 distance at once — and how a take could choose them by itself from the route and what stands
-around it. The design at the end is a proposal; nothing of it is built yet.
+around it. The design at the end is built (2026-10-07) as `src/cheat/film/director/`: `read` (the route read
+every 2 m), `beats` (the rules, merging and variety), `shot` (each shot's rig as it plays) and the
+director itself (blending ahead of a change, raising the camera when the hero is hidden); a
+directed walk's tick is `take/direct.rs`.
 
 ## 1. What a take can move
 
