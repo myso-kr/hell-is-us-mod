@@ -23,9 +23,11 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 mod attached;
+mod camera;
 mod filming;
 mod rescue;
 mod snapshot;
+mod take_record;
 
 pub use attached::{attach, saved_guids, Attached};
 pub use snapshot::{Snapshot, SLOTS};
@@ -105,7 +107,7 @@ impl Engine {
             checked: None,
             originals: Originals::load(&hold::default_path())?,
             extras: Extras::new(),
-            falls: Default::default(),
+            falls: crate::falls::Falls::load(),
             slots: Default::default(),
             before: None,
             take: None,
@@ -155,6 +157,7 @@ impl Engine {
 
     pub fn step(&mut self) -> Snapshot {
         self.film_ended();
+        self.put_back_left_take();
         let mut snap = Snapshot {
             game: Err(String::new()),
             gate: Err(String::new()),

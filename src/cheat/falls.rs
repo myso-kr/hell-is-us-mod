@@ -22,12 +22,34 @@ const HEIGHTS: [&str; 6] = [
 const SHARES: [&str; 2] = ["LightDamageRatio", "MaxDamageRatio"];
 const MAX_HEIGHT: &str = "ScaledDamageMaxHeight";
 
-#[derive(Default)]
 pub struct Falls {
     /// The default object, once found.
     cdo: Option<u64>,
-    /// Each field's address and its value as it was, while on.
-    was: Vec<(u64, f32)>,
+    /// Each field and its value as it was, while on.
+    was: Vec<(String, f32)>,
+}
+
+fn path() -> std::path::PathBuf {
+    crate::paths::data_dir().join("falls.txt")
+}
+
+fn save(was: &[(String, f32)]) {
+    if was.is_empty() {
+        let _ = std::fs::remove_file(path());
+    } else {
+        let text: String = was.iter().map(|(f, v)| format!("{f} {v}\n")).collect();
+        let _ = std::fs::write(path(), text);
+    }
+}
+
+fn parse(text: &str) -> Vec<(String, f32)> {
+    text.lines()
+        .filter_map(|l| {
+            let (f, v) = l.split_once(' ')?;
+            let v: f32 = v.trim().parse().ok().filter(|v: &f32| v.is_finite())?;
+            (HEIGHTS.contains(&f) || SHARES.contains(&f) || f == MAX_HEIGHT).then(|| (f.to_string(), v))
+        })
+        .collect()
 }
 
 fn wanted(active: &[Active]) -> bool {
@@ -37,6 +59,11 @@ fn wanted(active: &[Active]) -> bool {
 }
 
 impl Falls {
+    /// Start from a record a panel left with the cheat on.
+    pub fn load() -> Falls {
+        Falls { cdo: None, was: std::fs::read_to_string(path()).map(|t| parse(&t)).unwrap_or_default() }
+    }
+
     fn find(&mut self, a: &dyn Reach) -> Option<u64> {
         let (m, n) = (a.memory(), a.names());
         let ok = |o: u64| n.object(m, o).as_deref() == Some("Default__FallDamageConfig");
@@ -60,18 +87,23 @@ impl Falls {
             let mut b = [0u8; 4];
             m.read(at, &mut b).then(|| f32::from_le_bytes(b)).filter(|v| v.is_finite())
         };
-        let mut writes: Vec<(u64, f32)> = Vec::new();
-        writes.extend(HEIGHTS.iter().filter_map(|f| at(f)).map(|p| (p, OUT_OF_REACH)));
-        writes.extend(at(MAX_HEIGHT).map(|p| (p, OUT_OF_REACH * 2.0)));
-        writes.extend(SHARES.iter().filter_map(|f| at(f)).map(|p| (p, 0.0)));
-        for (p, v) in writes {
-            if !self.was.iter().any(|(q, _)| *q == p) {
+        let mut writes: Vec<(&str, f32)> = Vec::new();
+        writes.extend(HEIGHTS.iter().map(|f| (*f, OUT_OF_REACH)));
+        writes.push((MAX_HEIGHT, OUT_OF_REACH * 2.0));
+        writes.extend(SHARES.iter().map(|f| (*f, 0.0)));
+        let before = self.was.len();
+        for (f, v) in writes {
+            let Some(p) = at(f) else { continue };
+            if !self.was.iter().any(|(q, _)| q == f) {
                 match read(p) {
-                    Some(old) => self.was.push((p, old)),
+                    Some(old) => self.was.push((f.to_string(), old)),
                     None => continue,
                 }
             }
             m.write(p, &v.to_le_bytes());
+        }
+        if self.was.len() != before {
+            save(&self.was);
         }
         None
     }
@@ -81,19 +113,31 @@ impl Falls {
         if wanted(keep) || self.was.is_empty() {
             return;
         }
+        let Some(cdo) = self.find(a) else { return };
         let (m, n) = (a.memory(), a.names());
-        // only into the same default object
-        if self.cdo.is_some_and(|o| n.object(m, o).as_deref() == Some("Default__FallDamageConfig")) {
-            for (p, v) in self.was.drain(..) {
-                m.write(p, &v.to_le_bytes());
+        for (f, v) in self.was.drain(..) {
+            if let Some(p) = n.field(m, cdo, &f) {
+                m.write(cdo + p.offset as u64, &v.to_le_bytes());
             }
         }
-        self.was.clear();
+        save(&self.was);
     }
 
-    /// The game went away: what was written went with it.
+    /// The game went away: what was written went with it, and the record with it.
     pub fn forget(&mut self) {
         self.cdo = None;
         self.was.clear();
+        save(&self.was);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn the_heights_as_they_were_are_read_back_and_nothing_else() {
+        let was = parse("KillHeight 1500\nLightDamageRatio 0.1\nSomethingElse 3\nKillHeight nan\n");
+        assert_eq!(was, vec![("KillHeight".to_string(), 1500.0), ("LightDamageRatio".to_string(), 0.1)]);
     }
 }

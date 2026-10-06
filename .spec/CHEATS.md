@@ -418,3 +418,16 @@ from its blueprint's default object (`Default__StoryHero_CameraMode_C`). Found l
 take: distance 10, FOV 85.18, the safety byte 0x04, blends 0.6 / 1.2, the camera under the hero.
 A take's originals are still only in memory: a crash loses them (to do: keep them on disk, as
 the ghost's are, for `hiumod restore`).
+
+### A take's originals on disk (2026-10-07)
+
+`engine/take_record.rs`: before a take rolls, `Record::capture` reads by name (`engine/camera.rs`,
+shared with the rescue) each config's distance and field of view, the camera mode's whole
+`PivotToViewTarget`, its checks' byte and blend times, and for a flight the hero's root and mesh
+scale; saved as `Modsilm_take.txt`. A take started over one not yet ended keeps the first's
+record. When the take ends (`Take::ended`) the record goes. Found with no take rolling, it is put
+back on the next step the hero is in play (`Engine::put_back_left_take`, also run by
+`hiumod restore`): the camera always, the hero's size and place only while its mesh is still
+under 0.01 — after a restart, or once the take had put it back, the hero stays where it is.
+`falls.rs` keeps its originals by field name in `Modsalls.txt` while on, read back at start
+(as the ghost's are) and put back by the usual release; the record goes when the game exits.

@@ -2,6 +2,7 @@
 //! and — while a flight carries the hero behind the camera — the hero guarded: kept alive and
 //! ignored by the enemies, the player's own cheats back when the take ends.
 
+use super::take_record::Record;
 use super::Engine;
 use crate::cheats::Active;
 use std::time::Instant;
@@ -92,6 +93,14 @@ impl Engine {
             hero_root,
         };
         let flight = plan.mode == crate::film::Mode::Flight;
+        // what the take changes, kept on disk until it has put it back (take_record.rs); a take
+        // started over one not yet ended keeps the first's record: the values read now may be the
+        // first take's own
+        if Record::load().is_none() {
+            if let Some(r) = Record::capture(a, flight) {
+                r.save();
+            }
+        }
         self.take = Some(crate::film::roll(plan, wiring, state, ended));
         if flight {
             self.guard();
@@ -116,6 +125,8 @@ impl Engine {
     pub(super) fn film_ended(&mut self) {
         if self.take.as_ref().is_some_and(|t| t.ended()) {
             self.take = None;
+            // it put everything back itself
+            Record::forget();
         }
         if self.take.is_some() {
             return;
@@ -129,6 +140,21 @@ impl Engine {
                 self.film_guard = Some(g);
             }
         }
+    }
+
+    /// A take's record left by a panel that ended mid-take, put back (and the record gone), once
+    /// the hero is in play; what was done, if there was one.
+    pub fn put_back_left_take(&mut self) -> Option<String> {
+        if self.take.is_some() {
+            return None;
+        }
+        let r = Record::load()?;
+        let a = self.attached.as_ref()?;
+        a.gate().ok()?;
+        let done = r.put_back(a);
+        Record::forget();
+        crate::logfile::line(&format!("film: a take left by a panel that ended mid-take, put back: {done}"));
+        Some(done)
     }
 
     /// The flight's guard: the hero, carried behind the camera, kept alive and ignored —

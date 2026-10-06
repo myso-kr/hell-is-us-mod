@@ -6,6 +6,7 @@
 //! the configs' distance and field of view to their values at rest as probed (484 cm, 70°) —
 //! the combat and APC configs' own are not known, and a restart of the game brings them back.
 
+use super::camera::{CameraAt, TRANSFORM};
 use super::{Engine, ABOVE};
 use crate::mem::Memory;
 
@@ -17,8 +18,6 @@ const SHRUNK: f64 = 0.01;
 /// The exploration camera's distance and field of view at rest (probed on 24045435, .spec/CHEATS.md).
 const REST_DISTANCE: f32 = 484.0;
 const REST_FOV: f32 = 70.0;
-/// An FTransform's size (rotation, translation, scale: doubles, padded).
-const TRANSFORM: usize = 0x60;
 
 impl Engine {
     /// The hero out of the ground: where it was put, and whether its size was put back.
@@ -68,22 +67,18 @@ impl Engine {
         self.refresh()?;
         let a = self.attached.as_ref().unwrap();
         let (m, n) = (&a.game, &a.anchors.names);
-        let chain = a.chain()?;
-        let pc = chain.controller(m, &a.anchors)?;
-        let pcm = n.follow(m, pc, "PlayerCameraManager")?;
+        let cam = CameraAt::find(a)?;
         let mut put = 0;
         // the configs: distance and field of view at rest
-        for name in ["ExplorationConfig", "CombatConfig", "APCConfig"] {
-            let Ok(c) = n.follow(m, pcm, name) else { continue };
-            for (field, v) in [("DefaultDistanceFromPlayer", REST_DISTANCE), ("FieldOfView", REST_FOV)] {
-                if let Some(f) = n.field(m, c, field) {
-                    put += m.write(c + f.offset as u64, &v.to_le_bytes()) as usize;
+        for (_, d, f) in &cam.configs {
+            for (at, v) in [(d, REST_DISTANCE), (f, REST_FOV)] {
+                if let Some(at) = at {
+                    put += m.write(*at, &v.to_le_bytes()) as usize;
                 }
             }
         }
         // the camera mode: from its class's default object
-        let mode = n.follow(m, pcm, "CameraModeInstance")?;
-        let class = n.class(m, mode).ok_or("the camera mode has no class")?;
+        let class = n.class(m, cam.mode).ok_or("the camera mode has no class")?;
         let objects = crate::gobjects::discover(m, a.game.base)?;
         let default = format!("Default__{class}");
         let cdo = objects
@@ -91,16 +86,13 @@ impl Engine {
             .into_iter()
             .find(|&o| n.object(m, o).as_deref() == Some(default.as_str()))
             .ok_or_else(|| format!("no {default}"))?;
-        for (field, len) in [
-            ("PivotToViewTarget", TRANSFORM),
-            ("bValidateSafeLoc", 1),
-            ("PenetrationBlendInTime", 4),
-            ("PenetrationBlendOutTime", 4),
-        ] {
-            let Some(f) = n.field(m, mode, field) else { continue };
+        let fields =
+            [(cam.pivot, TRANSFORM), (cam.safety, 1), (cam.blend.map(|b| b.0), 4), (cam.blend.map(|b| b.1), 4)];
+        for (at, len) in fields {
+            let Some(at) = at else { continue };
             let mut b = vec![0u8; len];
-            if m.read(cdo + f.offset as u64, &mut b) {
-                put += m.write(mode + f.offset as u64, &b) as usize;
+            if m.read(cdo + (at - cam.mode), &mut b) {
+                put += m.write(at, &b) as usize;
             }
         }
         Ok(put)

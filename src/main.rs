@@ -960,6 +960,15 @@ fn rescue() -> R {
 
 fn restore() -> R {
     let mut engine = Engine::new()?;
+    // a take a panel left mid-take: put back on the first step the hero is in play
+    let until = std::time::Instant::now() + Duration::from_secs(10);
+    while std::time::Instant::now() < until {
+        let snap = engine.step();
+        if snap.gate.is_ok() {
+            break;
+        }
+        std::thread::sleep(Duration::from_millis(200));
+    }
     if engine.pending() == 0 {
         log!("{}", tr!("NOTHING_TO_RESTORE"));
         return Ok(());
