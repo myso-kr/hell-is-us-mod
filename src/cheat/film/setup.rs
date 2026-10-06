@@ -1,4 +1,4 @@
-//! The filming card's settings, kept in `Mods\\film.txt`, and the defaults they start from.
+//! The filming card's settings, kept in `Mods\film.txt`, and the defaults they start from.
 
 use super::{Cuts, Lens, Mode, Recording, Source};
 

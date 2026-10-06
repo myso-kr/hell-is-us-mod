@@ -165,7 +165,7 @@ enemies had the same flaw (a panel started with frail on recorded 1 as the origi
   settings (`film_take`), waiting 0.6 s for the key to be let go of before watching input. A
   press within 1.5 s of a take ending — the key's own press stops a take, as any input does — is
   not taken as a start.
-- **Settings and routes kept**: `Shared.film_setup`, written to `Modsilm.txt` when changed; the
+- **Settings and routes kept**: `Shared.film_setup`, written to `Mods\film.txt` when changed; the
   3D map's points can be saved under a name and loaded back.
 
 ### Flight (2026-10-06)
@@ -424,10 +424,10 @@ the ghost's are, for `hiumod restore`).
 `engine/take_record.rs`: before a take rolls, `Record::capture` reads by name (`engine/camera.rs`,
 shared with the rescue) each config's distance and field of view, the camera mode's whole
 `PivotToViewTarget`, its checks' byte and blend times, and for a flight the hero's root and mesh
-scale; saved as `Modsilm_take.txt`. A take started over one not yet ended keeps the first's
+scale; saved as `Mods\film_take.txt`. A take started over one not yet ended keeps the first's
 record. When the take ends (`Take::ended`) the record goes. Found with no take rolling, it is put
 back on the next step the hero is in play (`Engine::put_back_left_take`, also run by
 `hiumod restore`): the camera always, the hero's size and place only while its mesh is still
 under 0.01 — after a restart, or once the take had put it back, the hero stays where it is.
-`falls.rs` keeps its originals by field name in `Modsalls.txt` while on, read back at start
+`falls.rs` keeps its originals by field name in `Mods\falls.txt` while on, read back at start
 (as the ghost's are) and put back by the usual release; the record goes when the game exits.
