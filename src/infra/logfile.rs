@@ -31,6 +31,24 @@ pub fn stamp() -> String {
     now().replace(' ', "_").replace(':', "-")
 }
 
+/// Panics written here before the process ends (a release build aborts on one, and the panel has
+/// no console to show it): where, and what it said.
+pub fn catch_panics() {
+    let before = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        let at = info.location().map_or(String::new(), |l| format!("{}:{}", l.file(), l.line()));
+        let what = info
+            .payload()
+            .downcast_ref::<&str>()
+            .map(|s| s.to_string())
+            .or_else(|| info.payload().downcast_ref::<String>().cloned())
+            .unwrap_or_default();
+        let thread = std::thread::current().name().unwrap_or("unnamed").to_string();
+        line(&format!("PANIC in {thread} at {at}: {what}"));
+        before(info);
+    }));
+}
+
 /// Append one line. Never fails loudly: a log that cannot be written must not stop
 /// the thing it was logging.
 pub fn line(text: &str) {

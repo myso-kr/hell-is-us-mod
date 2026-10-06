@@ -15,6 +15,8 @@ use std::time::Duration;
 type R = Result<(), String>;
 
 fn main() -> ExitCode {
+    // a panic says where in the log before the process ends
+    hiumod::logfile::catch_panics();
     // Messages in the game's language, as in the panel (.spec/I18N.md).
     hiumod::i18n::follow_game();
     let opt = match cli::parse(std::env::args().skip(1)) {

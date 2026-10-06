@@ -125,7 +125,9 @@ pub fn room_behind(b: &crate::obstacles::Blocking, pivot: [f32; 3], back: [f32; 
             lo = mid;
         }
     }
-    (lo - ROOM_MARGIN).clamp(ROOM_MIN, want)
+    // never less than ROOM_MIN, unless less is asked (a flight's drone is 10 cm back): a clamp
+    // whose floor is over its ceiling panics, and took the panel down with the hero mid-flight
+    (lo - ROOM_MARGIN).max(ROOM_MIN.min(want)).min(want)
 }
 
 /// How far up from `at` the camera may go, up to `want` (cm): short of the first thing above (a
@@ -238,5 +240,8 @@ mod tests {
         let r = room_behind(&b, [0.0, 0.0, 100.0], back, 800.0);
         assert!((r - (350.0 - ROOM_MARGIN)).abs() < 15.0, "{r}");
         assert_eq!(room_behind(&b, [0.0, 0.0, 100.0], back_of(0.0, 180.0), 800.0), 800.0);
+        // asked for less than the least room, against the wall: what was asked, no panic
+        let r = room_behind(&b, [-300.0, 0.0, 100.0], back, 10.0);
+        assert!((0.0..=10.0).contains(&r), "{r}");
     }
 }

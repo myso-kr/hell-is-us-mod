@@ -392,3 +392,14 @@ a cave, a hall), where nothing is known of the floor.
   back and to one side, then the other), then a hop of 2.5 m along the route, set down 30 cm
   over the route's height and let fall (`Session::hop`); after three hops it gives up. Fifteen
   seconds walking well forgives the count. Every take now has the hero's root wired for this.
+
+### The panel aborted mid-flight (2026-10-07)
+
+0xc0000409 at 06:37:08 (Windows Error Reporting; a release build aborts on panic): the drone
+change made `FLIGHT_DISTANCE` 10 cm, under `ROOM_MIN` (80); when the camera came down near the
+ground, `room_behind` clamped `(lo − margin).clamp(80, 10)`, and `f32::clamp` panics when its
+floor is over its ceiling. The process ended before `Session::restore`, so the carried hero was
+left in the ground with the guard's cheats on. Fixed (the floor at most what is asked, with a
+test), and `logfile::catch_panics` now writes any panic's thread, place and message to the log
+before the default hook. Still true: a panic anywhere ends the panel without putting back a
+take's changes; `panic = "abort"` in the release profile means no unwinding and no Drop.

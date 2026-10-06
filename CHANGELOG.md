@@ -25,6 +25,10 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
 
 ### Fixed
 
+- The panel no longer closes when a flight's camera comes down near the ground: the room behind
+  the camera was clamped between 80 cm and the 10 cm a drone asks for, and a clamp whose floor
+  is over its ceiling stops the program — leaving the carried hero where it was, in the ground.
+  A crash now also writes where it happened to `Mods\hiumod.log`.
 - A take the mod moves no longer stops when nobody touched anything. It used Windows' last-input
   time, which virtual devices (a mouse or keyboard suite's driver) and a mouse's sensor touch on
   their own; now only a key or button newly pressed, or the camera turned by the mouse, stops it,
