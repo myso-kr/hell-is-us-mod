@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Zatrzymano: {e}
 MAP3D_ADD_FILM_POINT	Dodaj do filmowania
 THE_HERO_CHANGED	bohater się zmienił (wczytanie lub przerywnik)
 GAME_NOT_RUNNING	gra nie działa
+FILM_N_POINTS	{n} punktów
+FILM_ROUTE_NAME	Nazwa trasy
+FILM_DISTANCE	Ustaw odległość kamery
+FILM_DISTANCE_CM	Odległość
+FILM_REPEAT	Tam i z powrotem do zatrzymania
+FILM_KEY	Klawisz start/stop (w grze)

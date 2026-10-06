@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Gestoppt: {e}
 MAP3D_ADD_FILM_POINT	Zum Filmen hinzufügen
 THE_HERO_CHANGED	der Held hat gewechselt (Laden oder Zwischensequenz)
 GAME_NOT_RUNNING	das Spiel läuft nicht
+FILM_N_POINTS	{n} Punkte
+FILM_ROUTE_NAME	Route benennen
+FILM_DISTANCE	Kameraabstand festlegen
+FILM_DISTANCE_CM	Abstand
+FILM_REPEAT	Hin und zurück bis zum Stopp
+FILM_KEY	Start/Stopp-Taste (im Spiel)

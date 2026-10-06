@@ -9,7 +9,9 @@
 //! The camera follows drone practice (DJI's): every move eased in and out (Cine), the gimbal a
 //! critically damped spring under a turn-rate cap, and four modes — left alone, ActiveTrack
 //! (looking the way ahead), Spotlight (on the destination while walking) and Circle (turning
-//! about the hero at a steady rate).
+//! about the hero at a steady rate). The camera's distance is eased to the one asked for and
+//! put back after: the camera mode's CameraToPivot interpolator, held (probed: 487 → 827 cm
+//! with −900 written, smoothly); the field of view could not be moved from outside.
 
 use crate::mem::Memory;
 use crate::player::PoseSource;
@@ -44,20 +46,163 @@ impl Lens {
     }
 }
 
-/// A take: the route (cm), the pace (the stick's length, 0–1) and the camera.
+/// A take: the route (cm), the pace (the stick's length, 0–1), the camera, its distance (cm,
+/// `None` as it is), whether to walk back and forth until stopped, and the countdown (s).
 #[derive(Clone, Debug, PartialEq)]
 pub struct Plan {
     pub path: Vec<[f32; 3]>,
     pub pace: f32,
     pub lens: Lens,
+    pub distance: Option<f32>,
+    pub repeat: bool,
+    pub countdown: u32,
 }
 
 /// Where a take writes and reads, found by the worker: the hero's `ControlInputVector`, the
-/// controller's `ControlRotation`, and the pose.
+/// controller's `ControlRotation`, the pose, and the camera mode's distance (the
+/// interpolator's values, held together), when it was found.
 pub struct Wiring {
     pub input: u64,
     pub rotation: u64,
     pub pose: PoseSource,
+    pub zoom: Option<[u64; 6]>,
+}
+
+/// In the camera mode's `CameraToPivotTranslationInterpolator`, the doubles that hold the
+/// camera's distance behind the pivot (negative cm): found on build 24045435.
+pub const ZOOM_AT: [u64; 6] = [0x40, 0x68, 0x80, 0xb0, 0xd8, 0xf0];
+
+/// The filming card's settings, kept in `Mods\film.txt`: the points from the 3D map, whether
+/// to walk them (else the guide's route), the pace, the camera, its distance, back and forth,
+/// the key that starts and stops a take (F1–F12, 0 none), and the routes kept by name.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Setup {
+    pub points: Vec<[f32; 3]>,
+    pub use_points: bool,
+    pub pace: f32,
+    pub lens: Lens,
+    pub distance: Option<f32>,
+    pub repeat: bool,
+    pub key: u8,
+    pub routes: Vec<(String, Vec<[f32; 3]>)>,
+}
+
+impl Default for Setup {
+    fn default() -> Setup {
+        Setup {
+            points: Vec::new(),
+            use_points: false,
+            pace: 0.6,
+            lens: Lens::Follow,
+            distance: None,
+            repeat: false,
+            key: 6,
+            routes: Vec::new(),
+        }
+    }
+}
+
+/// The distance the card offers (cm).
+pub const DISTANCE: std::ops::RangeInclusive<f32> = 250.0..=1500.0;
+
+impl Lens {
+    fn word(self) -> &'static str {
+        match self {
+            Lens::Free => "free",
+            Lens::Follow => "follow",
+            Lens::Spotlight => "spotlight",
+            Lens::Orbit => "orbit",
+        }
+    }
+}
+
+impl Setup {
+    pub fn path() -> std::path::PathBuf {
+        crate::paths::data_dir().join("film.txt")
+    }
+
+    pub fn load() -> Setup {
+        std::fs::read_to_string(Setup::path()).map(|t| Setup::parse(&t)).unwrap_or_default()
+    }
+
+    pub fn save(&self) {
+        let _ = std::fs::write(Setup::path(), self.render());
+    }
+
+    pub fn render(&self) -> String {
+        let pt = |p: &[f32; 3]| format!("{} {} {}", p[0], p[1], p[2]);
+        let mut out = format!(
+            "use_points {}\npace {}\nlens {}\ndistance {}\nrepeat {}\nkey {}\n",
+            self.use_points,
+            self.pace,
+            self.lens.word(),
+            self.distance.map_or("none".to_string(), |d| d.to_string()),
+            self.repeat,
+            self.key
+        );
+        for p in &self.points {
+            out += &format!("point {}\n", pt(p));
+        }
+        for (name, pts) in &self.routes {
+            // the name last, as it may hold spaces
+            out += &format!("route {}\n", name.replace('\n', " "));
+            for p in pts {
+                out += &format!("route_point {}\n", pt(p));
+            }
+        }
+        out
+    }
+
+    pub fn parse(text: &str) -> Setup {
+        let mut s = Setup::default();
+        let point = |f: &[&str]| -> Option<[f32; 3]> {
+            let v: Vec<f32> = f.iter().filter_map(|x| x.parse().ok()).filter(|v: &f32| v.is_finite()).collect();
+            (v.len() == 3).then(|| [v[0], v[1], v[2]])
+        };
+        for line in text.lines() {
+            let f: Vec<&str> = line.split_whitespace().collect();
+            match f[..] {
+                ["use_points", v] => s.use_points = v == "true",
+                ["pace", v] => s.pace = v.parse().unwrap_or(s.pace).clamp(0.2, 1.0),
+                ["lens", v] => s.lens = Lens::ALL.into_iter().find(|l| l.word() == v).unwrap_or_default(),
+                ["distance", v] => {
+                    s.distance = v.parse().ok().map(|d: f32| d.clamp(*DISTANCE.start(), *DISTANCE.end()))
+                }
+                ["repeat", v] => s.repeat = v == "true",
+                ["key", v] => s.key = v.parse().unwrap_or(s.key).min(12),
+                ["point", ..] => s.points.extend(point(&f[1..])),
+                ["route", ..] => s.routes.push((line["route ".len()..].trim().to_string(), Vec::new())),
+                ["route_point", ..] => {
+                    if let (Some(r), Some(p)) = (s.routes.last_mut(), point(&f[1..])) {
+                        r.1.push(p);
+                    }
+                }
+                _ => {}
+            }
+        }
+        s
+    }
+}
+
+/// A take's route from the hero: the guide's route as drawn (`route`), or through the setup's
+/// points, each leg walked on the navmesh (straight where it has none).
+pub fn path(setup: &Setup, hero: [f32; 3], route: &[[f32; 3]], nav: &crate::navmesh::NavMesh) -> Option<Vec<[f32; 3]>> {
+    if !setup.use_points {
+        return (route.len() >= 2).then(|| route.to_vec());
+    }
+    if setup.points.is_empty() {
+        return None;
+    }
+    let mut path = vec![hero];
+    let mut from = hero;
+    for &to in &setup.points {
+        match nav.route(from, to) {
+            Some((leg, _)) => path.extend(leg.points.iter().skip(1).map(|q| [q[0], q[1], to[2]])),
+            None => path.push(to),
+        }
+        from = to;
+    }
+    Some(path)
 }
 
 /// Where a take is.
@@ -117,7 +262,12 @@ pub const ORBIT_DPS: f32 = 18.0;
 const EYE: f32 = 160.0;
 /// Writes a second.
 const RATE_HZ: f64 = 250.0;
-const COUNTDOWN_S: u32 = 3;
+/// The countdown from the card, which leaves time to switch to the game; from the key, a
+/// moment for the key to be let go of before input is watched.
+pub const COUNTDOWN_S: u32 = 3;
+pub const KEY_GRACE: Duration = Duration::from_millis(600);
+/// How fast the camera's distance eases to the one asked for (share a second).
+const ZOOM_EASE: f32 = 1.2;
 
 /// The walk along a route: the stick's input each moment from where the hero is.
 pub struct Driver {
@@ -305,13 +455,14 @@ fn last_input() -> u32 {
 
 /// Roll a take on a thread of its own, the game opened for writing there: a countdown, then
 /// the walk at `RATE_HZ` until the end, a stop, the player's input, or the hero stuck.
-pub fn roll(plan: Plan, wiring: Wiring, state: Arc<Mutex<State>>) -> Take {
+pub fn roll(plan: Plan, wiring: Wiring, state: Arc<Mutex<State>>, ended: Arc<Mutex<Option<Instant>>>) -> Take {
     let stop = Arc::new(AtomicBool::new(false));
     let flag = stop.clone();
-    *state.lock().unwrap() = State::Countdown(COUNTDOWN_S);
+    *state.lock().unwrap() = State::Countdown(plan.countdown.max(1));
     std::thread::spawn(move || {
         let end = run(&plan, &wiring, &flag, &state);
         *state.lock().unwrap() = end;
+        *ended.lock().unwrap() = Some(Instant::now());
     });
     Take { stop }
 }
@@ -323,11 +474,12 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         Err(e) => return State::Failed(e),
     };
     let start = Instant::now();
-    while start.elapsed() < Duration::from_secs(COUNTDOWN_S as u64) {
+    let wait = if plan.countdown == 0 { KEY_GRACE } else { Duration::from_secs(plan.countdown as u64) };
+    while start.elapsed() < wait {
         if stop.load(Ordering::SeqCst) {
             return State::Stopped;
         }
-        let left = COUNTDOWN_S - start.elapsed().as_secs() as u32;
+        let left = plan.countdown.saturating_sub(start.elapsed().as_secs() as u32);
         *state.lock().unwrap() = State::Countdown(left.max(1));
         std::thread::sleep(Duration::from_millis(50));
     }
@@ -342,8 +494,19 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
     let Some(rot0) = read3(w.rotation) else { return State::Failed(tr!("ROTATION_UNREADABLE").into()) };
     let (mut pitch, mut yaw) = (Axis::new(wrap(rot0[0] as f32)), Axis::new(wrap(rot0[1] as f32)));
     let mut orbit = yaw.angle;
-    let mut driver = Driver::new(&plan.path);
-    let end3 = *plan.path.last().unwrap_or(&[0.0; 3]);
+    let mut route = plan.path.clone();
+    let mut driver = Driver::new(&route);
+    let mut end3 = *route.last().unwrap_or(&[0.0; 3]);
+    // The camera's distance as it was, put back after; eased from there to the one asked for.
+    let read1 = |at: u64| -> Option<f64> {
+        let mut b = [0u8; 8];
+        game.read(at, &mut b).then(|| f64::from_le_bytes(b))
+    };
+    let zoom: Option<([u64; 6], f64)> = plan.distance.and(w.zoom).and_then(|z| {
+        let v = read1(z[0])?;
+        (-3000.0..-50.0).contains(&v).then_some((z, v))
+    });
+    let mut zoom_now = zoom.map_or(0.0, |(_, v)| v);
     let touched = last_input();
     let tick = Duration::from_secs_f64(1.0 / RATE_HZ);
     let mut next = Instant::now();
@@ -360,6 +523,13 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         last = Instant::now();
         let hero = [p[0] as f32, p[1] as f32, p[2] as f32];
         let s = driver.step([hero[0], hero[1]], plan.pace, dt);
+        if s.done && plan.repeat {
+            // back the way it came, the camera and the clock carried on
+            route.reverse();
+            driver = Driver::new(&route);
+            end3 = *route.last().unwrap_or(&[0.0; 3]);
+            continue;
+        }
         if s.done {
             break State::Finished;
         }
@@ -375,6 +545,12 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
             let roll = read3(w.rotation).map_or(0.0, |r| r[2]);
             write3(w.rotation, [np.rem_euclid(360.0) as f64, ny as f64, roll]);
         }
+        if let (Some((z, _)), Some(d)) = (zoom, plan.distance) {
+            zoom_now += (-(d as f64) - zoom_now) * (ZOOM_EASE * dt).min(1.0) as f64;
+            for at in z {
+                game.write(at, &zoom_now.to_le_bytes());
+            }
+        }
         *state.lock().unwrap() = State::Rolling(s.share);
         next += tick;
         let now = Instant::now();
@@ -385,6 +561,11 @@ fn run(plan: &Plan, w: &Wiring, stop: &AtomicBool, state: &Mutex<State>) -> Stat
         }
     };
     write3(w.input, [0.0, 0.0, 0.0]);
+    if let Some((z, v)) = zoom {
+        for at in z {
+            game.write(at, &v.to_le_bytes());
+        }
+    }
     outcome
 }
 
@@ -449,6 +630,22 @@ mod tests {
             last = now;
         }
         assert!(wrap(a.angle + 170.0).abs() < 1.0, "settled at {}", a.angle);
+    }
+
+    #[test]
+    fn the_setup_is_kept() {
+        let s = Setup {
+            points: vec![[1.0, 2.0, 3.0]],
+            use_points: true,
+            pace: 0.8,
+            lens: Lens::Orbit,
+            distance: Some(900.0),
+            repeat: true,
+            key: 7,
+            routes: vec![("bridge at dusk".into(), vec![[4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])],
+        };
+        assert_eq!(Setup::parse(&s.render()), s);
+        assert_eq!(Setup::parse(""), Setup::default());
     }
 
     #[test]

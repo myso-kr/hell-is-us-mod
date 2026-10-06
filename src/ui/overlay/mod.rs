@@ -257,6 +257,7 @@ pub fn run(shared: Arc<Shared>) {
     // Half-size icons for the Map page's big-map preview, which is drawn small.
     let mut icons_small = make((icon_px / 2).max(8));
     let mut was = [false; 4];
+    let mut film_was = false;
     // A route per thing followed (guide/track.rs), and since when a goal followed has been
     // gone.
     let mut routes: std::collections::HashMap<u64, route::Route> = Default::default();
@@ -432,6 +433,10 @@ pub fn run(shared: Arc<Shared>) {
             now[i] = pressed(fkey(keys[i]), &mut was[i]) && focused;
         }
         let [toggle_now, marker_now, compass_now, cycle_now] = now;
+        let film_key = shared.film_setup.lock().unwrap().key;
+        if film_key > 0 && pressed(fkey(film_key), &mut film_was) && focused {
+            shared.film_key.store(true, Ordering::SeqCst);
+        }
         if toggle_now {
             state.display = state.next_display();
             state.dirty = true;

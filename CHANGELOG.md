@@ -15,6 +15,9 @@ game, and what an update can break, is in [`.spec/ANCHORS.md`](.spec/ANCHORS.md)
   moves as a drone's: eased in and out, turned by a damped gimbal, tracking the way ahead,
   watching the destination, circling the hero, or left alone. A 3-second countdown to switch to
   the game; any key or mouse move stops it, as does a blocked way.
+  The camera's distance can be set for a take (eased in, put back after); a take can walk
+  back and forth until stopped; a key (F6 by default) starts and stops it in the game; routes of
+  3D map points are kept by name. The settings are kept in `Modsilm.txt`.
 
 ## 0.6.0 — 2026-10-06
 

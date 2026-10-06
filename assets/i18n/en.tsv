@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Stopped: {e}
 MAP3D_ADD_FILM_POINT	Add to filming
 THE_HERO_CHANGED	the hero changed (a load or a cutscene)
 GAME_NOT_RUNNING	the game is not running
+FILM_N_POINTS	{n} points
+FILM_ROUTE_NAME	Name this route
+FILM_DISTANCE	Set the camera’s distance
+FILM_DISTANCE_CM	Distance
+FILM_REPEAT	Back and forth until stopped
+FILM_KEY	Start/stop key (in the game)

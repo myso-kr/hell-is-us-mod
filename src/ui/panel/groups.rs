@@ -100,51 +100,96 @@ impl Panel {
     }
 
     /// Filming mode (film.rs): the hero walked along the guide's route or the 3D map's points
-    /// by the stick's input, the camera as a drone's; a countdown to switch to the game, and
-    /// any key or mouse move stops it.
+    /// by the stick's input, the camera as a drone's; started from here after a countdown, or
+    /// by its key in the game; any key or mouse move stops it. The settings are the worker's
+    /// too (`Shared.film_setup`), kept in `Mods\film.txt`.
     pub(super) fn film_card(&mut self, t: &mut Tui, snap: Option<&Snapshot>) {
         let state = self.shared.film.lock().unwrap().clone();
         let rolling = state.rolling();
         let may = self.grants(crate::settings::Consent::CHEATS) && snap.is_some_and(|s| s.gate.is_ok());
+        let taken = self.shared.map.lock().unwrap().keys().to_vec();
+        let mut setup = self.shared.film_setup.lock().unwrap().clone();
+        let before = setup.clone();
         card(t, tr!("FILMING"), |t| {
             note(t, tr!("FILM_NOTE"));
-            let n = self.film.points.len();
+            let n = setup.points.len();
             choices(t, |t| {
-                let route = w(t, |ui| ui.radio(!self.film.use_points, tr!("FILM_SOURCE_ROUTE")));
-                if route.clicked() {
-                    self.film.use_points = false;
+                if w(t, |ui| ui.radio(!setup.use_points, tr!("FILM_SOURCE_ROUTE"))).clicked() {
+                    setup.use_points = false;
                 }
-                let points = w(t, |ui| ui.radio(self.film.use_points, trf!("FILM_SOURCE_POINTS", n = n)));
-                if points.clicked() {
-                    self.film.use_points = true;
+                if w(t, |ui| ui.radio(setup.use_points, trf!("FILM_SOURCE_POINTS", n = n))).clicked() {
+                    setup.use_points = true;
                 }
                 if n > 0 && w(t, |ui| ui.small_button(tr!("FILM_CLEAR_POINTS"))).clicked() {
-                    self.film.points.clear();
+                    setup.points.clear();
                 }
             });
-            if self.film.use_points && n == 0 {
-                note(t, tr!("FILM_POINTS_HOW"));
+            if setup.use_points {
+                if n == 0 {
+                    note(t, tr!("FILM_POINTS_HOW"));
+                }
+                // routes kept by name: the points saved, loaded back, removed
+                let mut load = None;
+                let mut remove = None;
+                for (k, (name, pts)) in setup.routes.iter().enumerate() {
+                    t.style(tw::row(INLINE)).add(|t| {
+                        block(t, |ui| {
+                            ui.label(format!("{name}  ·  {}", trf!("FILM_N_POINTS", n = pts.len())));
+                        });
+                        if w(t, |ui| ui.small_button(tr!("LOAD_POSITION"))).clicked() {
+                            load = Some(k);
+                        }
+                        if w(t, |ui| ui.small_button("×")).clicked() {
+                            remove = Some(k);
+                        }
+                    });
+                }
+                if let Some(k) = load {
+                    setup.points = setup.routes[k].1.clone();
+                }
+                if let Some(k) = remove {
+                    setup.routes.remove(k);
+                }
+                if n > 0 {
+                    t.style(tw::row(INLINE)).add(|t| {
+                        w(t, |ui| {
+                            ui.add(egui::TextEdit::singleline(&mut self.film_name).hint_text(tr!("FILM_ROUTE_NAME")))
+                        });
+                        let name = self.film_name.trim().to_string();
+                        if w(t, |ui| ui.add_enabled(!name.is_empty(), egui::Button::new(tr!("SAVE")))).clicked() {
+                            setup.routes.retain(|(k, _)| *k != name);
+                            setup.routes.push((name, setup.points.clone()));
+                            self.film_name.clear();
+                        }
+                    });
+                }
             }
-            field(t, tr!("FILM_PACE"), |t| tw::slider(t, &mut self.film.pace, 0.2..=1.0, 0.05, ""));
+            field(t, tr!("FILM_PACE"), |t| tw::slider(t, &mut setup.pace, 0.2..=1.0, 0.05, ""));
             field(t, tr!("FILM_LENS"), |t| {
                 choices(t, |t| {
                     for l in crate::film::Lens::ALL {
-                        if w(t, |ui| ui.radio(self.film.lens == l, l.label())).clicked() {
-                            self.film.lens = l;
+                        if w(t, |ui| ui.radio(setup.lens == l, l.label())).clicked() {
+                            setup.lens = l;
                         }
                     }
                 });
             });
+            let mut far = setup.distance.is_some();
+            switch(t, &mut far, tr!("FILM_DISTANCE"));
+            match (far, setup.distance) {
+                (true, None) => setup.distance = Some(800.0),
+                (false, Some(_)) => setup.distance = None,
+                _ => {}
+            }
+            if let Some(d) = setup.distance.as_mut() {
+                field(t, tr!("FILM_DISTANCE_CM"), |t| tw::slider(t, d, crate::film::DISTANCE, 50.0, " cm"));
+            }
+            switch(t, &mut setup.repeat, tr!("FILM_REPEAT"));
+            field(t, tr!("FILM_KEY"), |t| w(t, |ui| super::map::keycap_picker(ui, "film_key", &mut setup.key, &taken)));
             choices(t, |t| {
                 let start = w(t, |ui| ui.add_enabled(may && !rolling, egui::Button::new(tr!("FILM_START"))));
                 if start.clicked() {
-                    match self.film_path(snap) {
-                        Some(path) => {
-                            let plan = crate::film::Plan { path, pace: self.film.pace, lens: self.film.lens };
-                            let _ = self.tx.send(Request::Film(plan));
-                        }
-                        None => self.reply = Some((false, tr!("FILM_NO_ROUTE").into(), Instant::now())),
-                    }
+                    let _ = self.tx.send(Request::Film(crate::film::COUNTDOWN_S));
                 }
                 if w(t, |ui| ui.add_enabled(rolling, egui::Button::new(tr!("FILM_STOP")))).clicked() {
                     let _ = self.tx.send(Request::Cut);
@@ -152,31 +197,10 @@ impl Panel {
             });
             text(t, RichText::new(state.text()).color(if rolling { OK } else { DIM }));
         });
-    }
-
-    /// The take's route: the guide's route as drawn, or from the hero through the 3D map's
-    /// points, each leg walked on the navmesh (a straight line where it has none).
-    fn film_path(&self, snap: Option<&Snapshot>) -> Option<Vec<[f32; 3]>> {
-        let s = snap?;
-        let (p, _) = s.pose?;
-        let hero = [p[0] as f32, p[1] as f32, p[2] as f32];
-        if !self.film.use_points {
-            let route = self.shared.route3d.lock().unwrap().0.clone();
-            return (route.len() >= 2).then_some(route);
+        if setup != before {
+            setup.save();
+            *self.shared.film_setup.lock().unwrap() = setup;
         }
-        if self.film.points.is_empty() {
-            return None;
-        }
-        let mut path = vec![hero];
-        let mut from = hero;
-        for &to in &self.film.points {
-            match s.nav.route(from, to) {
-                Some((leg, _)) => path.extend(leg.points.iter().skip(1).map(|q| [q[0], q[1], to[2]])),
-                None => path.push(to),
-            }
-            from = to;
-        }
-        Some(path)
     }
 
     /// Saved positions: save where the hero stands, go back to it. One row a slot: its

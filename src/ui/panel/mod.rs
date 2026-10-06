@@ -330,8 +330,8 @@ pub struct Panel {
     clue_open: Option<String>,
     /// Puzzle answers and vault codes asked for, by id (not kept between runs).
     revealed: std::collections::HashSet<u64>,
-    /// The filming card's choices (groups.rs `film_card`).
-    film: FilmChoices,
+    /// A name for the filming route to keep (groups.rs `film_card`).
+    film_name: String,
     /// How far a logic puzzle's hints are opened (deep.rs `hint`): 0 shut, 1 where its devices
     /// are, 2 the first step too, 3 the whole answer.
     hints: std::collections::HashMap<u64, u8>,
@@ -384,16 +384,6 @@ pub struct Panel {
     resume: Option<Vec<Active>>,
     /// settings.txt as last written, and when.
     saved: (String, Instant),
-}
-
-/// The filming card's choices: the take's points from the 3D map, whether to follow them (else
-/// the guide's route), the pace and the camera.
-#[derive(Default)]
-struct FilmChoices {
-    points: Vec<[f32; 3]>,
-    use_points: bool,
-    pace: f32,
-    lens: crate::film::Lens,
 }
 
 impl Panel {
@@ -472,7 +462,7 @@ impl Panel {
             clue_query: String::new(),
             clue_open: None,
             revealed: Default::default(),
-            film: FilmChoices { pace: 0.6, ..Default::default() },
+            film_name: String::new(),
             hints: Default::default(),
             shown_quest: None,
             slot_hints: Default::default(),

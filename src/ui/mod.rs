@@ -61,8 +61,8 @@ pub enum Request {
     GoBack,
     /// To a spot picked on the 3D map (its world, the spot, cm).
     TeleportHere(String, [f32; 3]),
-    /// Roll a filming take; stop it (film.rs).
-    Film(crate::film::Plan),
+    /// Roll a filming take from the card's setup, after this countdown (s); stop it (film.rs).
+    Film(u32),
     Cut,
     Quit,
 }
@@ -130,8 +130,13 @@ pub struct Shared {
     /// overlay: the route in focus's shortcut down (route.rs `Shortcut`), draped, and its drops'
     /// tops with their heights (cm): the 3D map and the game view draw it beside the route.
     pub shortcut3d: Mutex<Shortcut3d>,
-    /// film thread: where the filming take is (film.rs).
+    /// film thread: where the filming take is (film.rs), and when the last one ended.
     pub film: Arc<Mutex<crate::film::State>>,
+    pub film_ended: Arc<Mutex<Option<Instant>>>,
+    /// panel: the filming card's settings; the worker makes a take from them.
+    pub film_setup: Mutex<crate::film::Setup>,
+    /// overlay: the filming key was pressed in the game.
+    pub film_key: AtomicBool,
     /// overlay: the goals left out of the guide by the consent: (hidden places, answers).
     pub withheld: Mutex<(usize, usize)>,
     /// overlay: what the guide works with, as JSON (trace.rs): the Debug page's trace.
@@ -182,6 +187,29 @@ fn backups(shared: Arc<Shared>) {
 /// a second it visibly stepped.
 const STEP: Duration = Duration::from_millis(100);
 
+/// A filming take from the card's setup: the route from the hero (the guide's, or through the
+/// points), rolled after `countdown` seconds (0: from the key).
+fn film_take(shared: &Shared, engine: &mut Engine, countdown: u32) -> Result<(), String> {
+    let setup = shared.film_setup.lock().unwrap().clone();
+    let route = shared.route3d.lock().unwrap().0.clone();
+    let (hero, nav) = {
+        let snap = shared.snap.lock().unwrap();
+        let s = snap.as_ref().ok_or(tr!("FILM_NO_ROUTE"))?;
+        let (p, _) = s.pose.ok_or(tr!("FILM_NO_ROUTE"))?;
+        ([p[0] as f32, p[1] as f32, p[2] as f32], s.nav.clone())
+    };
+    let path = crate::film::path(&setup, hero, &route, &nav).ok_or(tr!("FILM_NO_ROUTE"))?;
+    let plan = crate::film::Plan {
+        path,
+        pace: setup.pace,
+        lens: setup.lens,
+        distance: setup.distance,
+        repeat: setup.repeat,
+        countdown,
+    };
+    engine.film(plan, shared.film.clone(), shared.film_ended.clone())
+}
+
 fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context) {
     use crate::logfile::line as log;
     let reply = |ok: bool, text: String| {
@@ -204,6 +232,19 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
     // does not move it). Waiting a whole STEP after each step made them ~160 ms apart.
     let mut due = Instant::now();
     loop {
+        // The filming key, pressed in the game: a take rolling stops; else one starts at once
+        // (not when the key's own press just stopped one, as any input does).
+        if shared.film_key.swap(false, Ordering::SeqCst) {
+            let just = shared.film_ended.lock().unwrap().is_some_and(|t| t.elapsed() < Duration::from_millis(1500));
+            if shared.film.lock().unwrap().rolling() {
+                engine.cut();
+            } else if !just {
+                match film_take(&shared, &mut engine, 0) {
+                    Ok(()) => log("film: started by the key"),
+                    Err(e) => reply(false, e),
+                }
+            }
+        }
         match rx.recv_timeout(due.saturating_duration_since(Instant::now())) {
             Ok(Request::Quit) | Err(RecvTimeoutError::Disconnected) => {
                 match engine.stop() {
@@ -239,7 +280,7 @@ fn worker(shared: Arc<Shared>, rx: Receiver<Request>, ctx: eframe::egui::Context
                 Ok(()) => reply(true, tr!("MOVED_TO_SPOT").to_string()),
                 Err(e) => reply(false, e),
             },
-            Ok(Request::Film(plan)) => match engine.film(plan, shared.film.clone()) {
+            Ok(Request::Film(countdown)) => match film_take(&shared, &mut engine, countdown) {
                 Ok(()) => reply(true, tr!("FILM_ROLLING").to_string()),
                 Err(e) => reply(false, e),
             },
@@ -350,6 +391,7 @@ fn panel_and_launch(launch: bool) -> Result<(), String> {
     shared.visible.store(true, Ordering::SeqCst);
     *shared.pos.lock().unwrap() = crate::settings::load().pos;
     *shared.map.lock().unwrap() = overlay::load();
+    *shared.film_setup.lock().unwrap() = crate::film::Setup::load();
     if launch && Game::find()?.is_none() {
         locate::find(None)?;
         launch::launch()?;

@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Durdu: {e}
 MAP3D_ADD_FILM_POINT	Çekime ekle
 THE_HERO_CHANGED	kahraman değişti (yükleme ya da ara sahne)
 GAME_NOT_RUNNING	oyun çalışmıyor
+FILM_N_POINTS	{n} nokta
+FILM_ROUTE_NAME	Rota adı
+FILM_DISTANCE	Kamera mesafesini ayarla
+FILM_DISTANCE_CM	Mesafe
+FILM_REPEAT	Durdurulana dek gidip gel
+FILM_KEY	Başlat/durdur tuşu (oyunda)

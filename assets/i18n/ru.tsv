@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Остановлено: {e}
 MAP3D_ADD_FILM_POINT	Добавить в съёмку
 THE_HERO_CHANGED	герой сменился (загрузка или ролик)
 GAME_NOT_RUNNING	игра не запущена
+FILM_N_POINTS	точек: {n}
+FILM_ROUTE_NAME	Название маршрута
+FILM_DISTANCE	Задать расстояние камеры
+FILM_DISTANCE_CM	Расстояние
+FILM_REPEAT	Туда-обратно до остановки
+FILM_KEY	Клавиша старт/стоп (в игре)

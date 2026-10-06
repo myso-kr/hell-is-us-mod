@@ -374,6 +374,7 @@ impl Engine {
         &mut self,
         plan: crate::film::Plan,
         state: std::sync::Arc<std::sync::Mutex<crate::film::State>>,
+        ended: std::sync::Arc<std::sync::Mutex<Option<Instant>>>,
     ) -> Result<(), String> {
         self.take = None;
         if plan.path.len() < 2 {
@@ -388,13 +389,25 @@ impl Engine {
         let pc = chain.controller(m, &a.anchors)?;
         let input =
             n.field(m, hero, "ControlInputVector").ok_or_else(|| trf!("NO_PROPERTY", name = "ControlInputVector"))?;
+        // The camera mode's distance: the manager's mode, its CameraToPivot interpolator.
+        let zoom = n.follow(m, pc, "PlayerCameraManager").ok().and_then(|pcm| {
+            let mode = n.follow(m, pcm, "CameraModeInstance").ok()?;
+            let interp = n.field(m, mode, "CameraToPivotTranslationInterpolator")?;
+            Some(crate::film::ZOOM_AT.map(|o| mode + interp.offset as u64 + o))
+        });
         let wiring = crate::film::Wiring {
             input: hero + input.offset as u64,
             rotation: pc + chain.rotation,
             pose: chain.pose_source(m, &a.anchors)?,
+            zoom,
         };
-        self.take = Some(crate::film::roll(plan, wiring, state));
+        self.take = Some(crate::film::roll(plan, wiring, state, ended));
         Ok(())
+    }
+
+    /// Whether a take is rolling now.
+    pub fn rolling(&self) -> bool {
+        self.take.is_some()
     }
 
     /// Stop the take rolling, if one is.

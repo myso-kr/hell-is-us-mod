@@ -768,7 +768,7 @@ impl Panel {
 
 /// `key_picker` drawn as a keycap: the same choices and behaviour, the key in
 /// monospace on the control fill.
-fn keycap_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
+pub(super) fn keycap_picker(ui: &mut egui::Ui, id: &str, key: &mut u8, taken: &[u8]) {
     ui.scope(|ui| {
         ui.style_mut().override_text_style = Some(egui::TextStyle::Monospace);
         ui.visuals_mut().widgets.inactive.weak_bg_fill = super::super::theme::CONTROL;

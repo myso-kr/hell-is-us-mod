@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Detenido: {e}
 MAP3D_ADD_FILM_POINT	Añadir a la grabación
 THE_HERO_CHANGED	el héroe cambió (carga o cinemática)
 GAME_NOT_RUNNING	el juego no está en marcha
+FILM_N_POINTS	{n} puntos
+FILM_ROUTE_NAME	Nombre de la ruta
+FILM_DISTANCE	Fijar la distancia de la cámara
+FILM_DISTANCE_CM	Distancia
+FILM_REPEAT	Ida y vuelta hasta detener
+FILM_KEY	Tecla iniciar/detener (en el juego)

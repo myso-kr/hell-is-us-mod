@@ -151,4 +151,17 @@ enemies had the same flaw (a panel started with frail on recorded 1 as the origi
 - **Stopping**: the Stop button, any keyboard or mouse input (`GetLastInputInfo` changed since the
   countdown ended), the hero changed, the panel closed (`Engine::stop`).
 
-Not yet: named routes kept, a key to start and stop, looping, the camera's distance and FOV.
+- **The camera's distance** (probed): `ExplorationConfig.DefaultDistanceFromPlayer` is only read
+  when the camera mode starts; the mode's `CameraToPivotTranslationInterpolator` holds it live,
+  as six doubles (`ZOOM_AT`, −550 at rest): held at −900, the camera went from 487 to 827 cm from
+  the hero, smoothly. A take eases them to the distance asked for and puts the first value back
+  after. The field of view did not move from any of `PadCamera.FieldOfView`, the manager's
+  `DefaultFOV`, its cached views, or the mode: the game sets it each frame from elsewhere.
+- **Back and forth**: at the end the route is reversed and walked again, until stopped.
+- **The key** (F6 by default, `Setup.key`): the overlay sees it in the game and sets
+  `Shared.film_key`; the worker stops a take rolling, or rolls one at once from the card's
+  settings (`film_take`), waiting 0.6 s for the key to be let go of before watching input. A
+  press within 1.5 s of a take ending — the key's own press stops a take, as any input does — is
+  not taken as a start.
+- **Settings and routes kept**: `Shared.film_setup`, written to `Modsilm.txt` when changed; the
+  3D map's points can be saved under a name and loaded back.

@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Parado: {e}
 MAP3D_ADD_FILM_POINT	Adicionar à filmagem
 THE_HERO_CHANGED	o herói mudou (carregamento ou cena)
 GAME_NOT_RUNNING	o jogo não está rodando
+FILM_N_POINTS	{n} pontos
+FILM_ROUTE_NAME	Nome da rota
+FILM_DISTANCE	Definir a distância da câmera
+FILM_DISTANCE_CM	Distância
+FILM_REPEAT	Ida e volta até parar
+FILM_KEY	Tecla iniciar/parar (no jogo)

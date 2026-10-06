@@ -881,3 +881,9 @@ FILM_STATE_FAILED	멈춤: {e}
 MAP3D_ADD_FILM_POINT	촬영 지점에 추가
 THE_HERO_CHANGED	영웅이 바뀌었습니다 (불러오기 또는 컷신)
 GAME_NOT_RUNNING	게임이 실행 중이 아닙니다
+FILM_N_POINTS	지점 {n}개
+FILM_ROUTE_NAME	경로 이름
+FILM_DISTANCE	카메라 거리 조절
+FILM_DISTANCE_CM	거리
+FILM_REPEAT	멈출 때까지 왕복
+FILM_KEY	시작/정지 키 (게임 안)

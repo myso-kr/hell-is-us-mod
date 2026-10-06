@@ -881,3 +881,9 @@ FILM_STATE_FAILED	Arrêté : {e}
 MAP3D_ADD_FILM_POINT	Ajouter au tournage
 THE_HERO_CHANGED	le héros a changé (chargement ou cinématique)
 GAME_NOT_RUNNING	le jeu ne tourne pas
+FILM_N_POINTS	{n} points
+FILM_ROUTE_NAME	Nom de l’itinéraire
+FILM_DISTANCE	Régler la distance de la caméra
+FILM_DISTANCE_CM	Distance
+FILM_REPEAT	Aller-retour jusqu’à l’arrêt
+FILM_KEY	Touche démarrer/arrêter (en jeu)

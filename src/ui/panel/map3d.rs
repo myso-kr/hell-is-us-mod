@@ -1598,7 +1598,9 @@ impl super::Panel {
                 let height = (ui.ctx().content_rect().height() * 0.62).clamp(380.0, 720.0);
                 self.map3d.view(ui, height, hero, &route, colour, state, &shortcut);
                 if let Some(at) = self.map3d.film_point.take() {
-                    self.film.points.push(at);
+                    let mut setup = self.shared.film_setup.lock().unwrap();
+                    setup.points.push(at);
+                    setup.save();
                 }
                 if let Some(at) = self.map3d.teleport.take() {
                     let _ = self.tx.send(crate::ui::Request::TeleportHere(full_world.clone(), at));
