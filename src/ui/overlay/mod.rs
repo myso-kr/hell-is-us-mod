@@ -410,6 +410,11 @@ pub fn run(shared: Arc<Shared>) {
             }
             tracker_window = Layered::new_scaled("hiumod-tracker", "Hell Is Us Quests", tracker::W, tracker::H, k);
             banner_window = Layered::new_scaled("hiumod-banner", "Hell Is Us Notice", banner::W, banner::H, k);
+            // their text drawn sharp at the new size: the pens made again, and all redrawn
+            pen = Pen::new_scaled(tracker::W, tracker::H, k);
+            banner_pen = Pen::new_scaled(banner::W, banner::H, k);
+            tracked = None;
+            banner_used = 0;
             marker_windows.clear();
         }
         if state.haze_links != *haze_links {
@@ -1094,7 +1099,7 @@ pub fn run(shared: Arc<Shared>) {
                     }
                     if tracker_used > 0 {
                         crate::prof::timed("present.tracker", || {
-                            w.present(&tracker_cv, r.right - sc(tracker::W, k) - MARGIN, y)
+                            w.present_over(&tracker_cv, &pen.hi, r.right - sc(tracker::W, k) - MARGIN, y)
                         });
                     } else {
                         w.hide();
@@ -1154,7 +1159,7 @@ pub fn run(shared: Arc<Shared>) {
                         }
                         let x = r.left + (r.right - r.left - sc(banner::W, k)) / 2;
                         let y = r.top + 12 + if state.compass { sc(COMPASS_H, k) + 6 } else { 0 };
-                        w.present(&banner_cv, x, y);
+                        w.present_over(&banner_cv, &bp.hi, x, y);
                     }
                     (Some(w), ..) => {
                         w.hide();

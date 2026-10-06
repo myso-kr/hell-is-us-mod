@@ -19,8 +19,15 @@ pub struct Pen {
     dc: HDC,
     bitmap: HBITMAP,
     bits: *mut u32,
+    /// The block it writes, in drawing pixels; its bitmap is `scale` times that.
     w: i32,
     h: i32,
+    /// The overlay scale: above or below 1, text is laid out at the drawing size but drawn
+    /// at the shown size into `hi`, so it stays sharp when the window is scaled.
+    scale: f32,
+    /// The text at the shown size (`scale` × the block), over the scaled card (layered.rs
+    /// `present_over`); empty at scale 1, where text goes onto the canvas itself.
+    pub hi: Canvas,
     /// By (pixel height, bold).
     fonts: HashMap<(i32, bool), HFONT>,
 }
@@ -28,6 +35,14 @@ pub struct Pen {
 impl Pen {
     /// A pen that writes blocks of text up to `w` × `h` pixels.
     pub fn new(w: i32, h: i32) -> Option<Pen> {
+        Pen::new_scaled(w, h, 1.0)
+    }
+
+    /// As `new`, its text drawn `scale` times as large into `hi`.
+    pub fn new_scaled(w: i32, h: i32, scale: f32) -> Option<Pen> {
+        let scale = if (scale - 1.0).abs() < 0.01 { 1.0 } else { scale };
+        let (lw, lh) = (w, h);
+        let (w, h) = ((w as f32 * scale).ceil() as i32 + 2, (h as f32 * scale).ceil() as i32 + 2);
         unsafe {
             let dc = CreateCompatibleDC(std::ptr::null_mut());
             if dc.is_null() {
@@ -52,7 +67,13 @@ impl Pen {
             SelectObject(dc, bitmap);
             SetBkMode(dc, TRANSPARENT as _);
             SetTextColor(dc, 0x00FF_FFFF);
-            Some(Pen { dc, bitmap, bits: bits.cast(), w, h, fonts: HashMap::new() })
+            let hi = if scale == 1.0 {
+                Canvas::new(0, 0)
+            } else {
+                Canvas::new((lw as f32 * scale).round() as usize, (lh as f32 * scale).round() as usize)
+            };
+            let _ = (w, h);
+            Some(Pen { dc, bitmap, bits: bits.cast(), w: lw, h: lh, scale, hi, fonts: HashMap::new() })
         }
     }
 
@@ -100,38 +121,54 @@ impl Pen {
         if text.is_empty() || width <= 0 {
             return 0;
         }
-        let font = self.font(px, bold);
         let wide: Vec<u16> = text.encode_utf16().collect();
         let format = DT_WORDBREAK | DT_NOPREFIX | DT_EDITCONTROL;
-        unsafe {
-            SelectObject(self.dc, font);
+        // Laid out at the drawing size, so the card around it is as tall either way.
+        let h = unsafe {
+            SelectObject(self.dc, self.font(px, bold));
             let mut r = RECT { left: 0, top: 0, right: width, bottom: 0 };
             DrawTextW(self.dc, wide.as_ptr(), wide.len() as i32, &mut r, format | DT_CALCRECT);
             let line = (px as f32 * 1.4).ceil() as i32;
-            let h = r.bottom.min(line * lines.max(1)).min(self.h - 1);
+            r.bottom.min(line * lines.max(1)).min(self.h - 1)
+        };
+        let k = self.scale;
+        let s = |v: i32| (v as f32 * k).round() as i32;
+        let (bw, bh, fpx) = (s(width), s(h), s(px).max(1));
+        // The bitmap's row length, in pixels.
+        let stride = (self.w as f32 * k).ceil() as i32 + 2;
+        let shadow = Rgba(0, 0, 0, 200);
+        let off = s(1).max(1);
+        unsafe {
+            SelectObject(self.dc, self.font(fpx, bold));
             // Clear the block, then draw into it.
-            for row in 0..h + 1 {
-                std::slice::from_raw_parts_mut(self.bits.add((row * self.w) as usize), (width + 1) as usize).fill(0);
+            for row in 0..bh + 1 {
+                std::slice::from_raw_parts_mut(self.bits.add((row * stride) as usize), (bw + 1) as usize).fill(0);
             }
-            let mut r = RECT { left: 0, top: 0, right: width, bottom: h };
+            let mut r = RECT { left: 0, top: 0, right: bw, bottom: bh };
             DrawTextW(self.dc, wide.as_ptr(), wide.len() as i32, &mut r, format | DT_END_ELLIPSIS);
             GdiFlush();
-            let shadow = Rgba(0, 0, 0, 200);
-            for row in 0..h {
-                let src = std::slice::from_raw_parts(self.bits.add((row * self.w) as usize), width as usize);
+            let target: &mut Canvas = if k == 1.0 { cv } else { &mut self.hi };
+            let (ox, oy) = (s(x), s(y));
+            for row in 0..bh {
+                let src = std::slice::from_raw_parts(self.bits.add((row * stride) as usize), bw as usize);
                 for (col, &p) in src.iter().enumerate() {
                     let cover = ((p >> 16) & 0xFF).max((p >> 8) & 0xFF).max(p & 0xFF);
                     if cover == 0 {
                         continue;
                     }
-                    let k = cover as f32 / 255.0;
-                    let (px_, py_) = (x + col as i32, y + row);
-                    cv.blend(px_ + 1, py_ + 1, shadow, k);
-                    cv.blend(px_, py_, c, k);
+                    let a = cover as f32 / 255.0;
+                    let (px_, py_) = (ox + col as i32, oy + row);
+                    target.blend(px_ + off, py_ + off, shadow, a);
+                    target.blend(px_, py_, c, a);
                 }
             }
-            h
         }
+        h
+    }
+
+    /// The sharp text cleared, as the canvas it goes over is.
+    pub fn clear(&mut self) {
+        self.hi.clear();
     }
 }
 

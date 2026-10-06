@@ -70,6 +70,8 @@ pub struct Layered {
     /// The canvas last scaled, and what it scaled to: a canvas unchanged is not scaled again.
     seen: Vec<u32>,
     scaled: Vec<u32>,
+    /// The scaled canvas with sharp text over it (`present_over`).
+    composed_px: Vec<u32>,
     shown: bool,
     /// Where and how faded it was last presented: with the same pixels (the DIB still holds
     /// them), presenting again is skipped.
@@ -184,6 +186,7 @@ impl Layered {
                 scale,
                 seen: Vec::new(),
                 scaled: Vec::new(),
+                composed_px: Vec::new(),
                 shown: false,
                 last: None,
                 composed: comp,
@@ -224,6 +227,35 @@ impl Layered {
         let px = std::mem::take(&mut self.scaled);
         self.show(&px, x, y, alpha);
         self.scaled = px;
+    }
+
+    /// As `present`, with `text` (the window's shown size, premultiplied) laid over the
+    /// scaled canvas: text drawn at the shown size stays sharp (pen.rs `hi`).
+    pub fn present_over(&mut self, cv: &Canvas, text: &Canvas, x: i32, y: i32) {
+        if self.scale == 1.0 || text.px.len() != (self.pw * self.ph) as usize {
+            self.present_alpha(cv, x, y, 255);
+            return;
+        }
+        if self.seen != cv.px {
+            self.seen.clone_from(&cv.px);
+            resample(&cv.px, self.w as usize, self.h as usize, &mut self.scaled, self.pw as usize, self.ph as usize);
+        }
+        let mut out = std::mem::take(&mut self.composed_px);
+        out.clone_from(&self.scaled);
+        for (d, &s) in out.iter_mut().zip(&text.px) {
+            let a = s >> 24;
+            if a == 0 {
+                continue;
+            }
+            let keep = 255 - a;
+            let ch = |shift: u32| {
+                let v = ((s >> shift) & 0xFF) + (((*d >> shift) & 0xFF) * keep + 127) / 255;
+                v.min(255) << shift
+            };
+            *d = ch(24) | ch(16) | ch(8) | ch(0);
+        }
+        self.show(&out, x, y, 255);
+        self.composed_px = out;
     }
 
     /// `px` (exactly the window's pw × ph) shown at (x, y), faded to `alpha`.

@@ -17,6 +17,7 @@ const TEXT: Rgba = Rgba(0xD9, 0xE1, 0xEA, 255);
 /// down its left edge. The height used.
 pub fn draw(cv: &mut Canvas, pen: &mut Pen, title: &str, body: &str, colour: Rgba) -> i32 {
     cv.clear();
+    pen.clear();
     let x = PAD + 10;
     let width = W - x - PAD;
     let mut y = PAD;

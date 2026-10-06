@@ -69,6 +69,7 @@ pub fn draw(
     max_h: i32,
 ) -> i32 {
     cv.clear();
+    pen.clear();
     let max_h = max_h.clamp(60, H);
     let mut list: Vec<&Quest> = Vec::new();
     if let Some(f) = followed {
